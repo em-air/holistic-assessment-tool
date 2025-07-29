@@ -1,6 +1,5 @@
 import React from 'react';
 import { QuizQuestion as QuizQuestionType } from '../types';
-
 interface QuizQuestionProps {
   question: QuizQuestionType;
   selectedAnswer: string | number | null;
