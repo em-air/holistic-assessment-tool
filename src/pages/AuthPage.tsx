@@ -1,19 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { signUp, signIn } from '../supabase-client';
+
+interface FormData {
+  email: string;
+  password: string;
+  studentName: string;
+  age: number;
+  grade: string;
+  parentEmail: string;
+  studentEmail: string;
+  confirmPassword: string;
+}
+
+const gradeOptions = [
+  'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4',
+  'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8'
+];
+
+const ageOptions = [5, 6, 7, 8, 9, 10, 11, 12];
 
 const AuthPage: React.FC = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [formData, setFormData] = useState({
-    // Login fields
+  const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
-    
-    // Signup fields
     studentName: '',
     age: 6,
     grade: 'Grade 1',
@@ -21,23 +38,15 @@ const AuthPage: React.FC = () => {
     studentEmail: '',
     confirmPassword: ''
   });
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [showPassword, setShowPassword] = useState(false);
-
-  // Grade options
-  const gradeOptions = [
-    'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 
-    'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8'
-  ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ 
-      ...prev, 
-      [name]: name === 'age' ? parseInt(value) : value 
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'age' ? parseInt(value) : value
     }));
-    
-    // Clear error when user starts typing
+
+    // clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -45,10 +54,10 @@ const AuthPage: React.FC = () => {
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (isLogin) {
-      // Login validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      // login validation
       if (!formData.email) {
         newErrors.email = 'Email is required';
       } else if (!emailRegex.test(formData.email)) {
@@ -59,7 +68,7 @@ const AuthPage: React.FC = () => {
         newErrors.password = 'Password is required';
       }
     } else {
-      // Signup validation
+      // signup validation
       if (!formData.studentName.trim()) {
         newErrors.studentName = 'Student name is required';
       }
@@ -68,7 +77,6 @@ const AuthPage: React.FC = () => {
         newErrors.age = 'Age must be between 5 and 12';
       }
 
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!formData.parentEmail) {
         newErrors.parentEmail = 'Parent email is required';
       } else if (!emailRegex.test(formData.parentEmail)) {
@@ -96,7 +104,7 @@ const AuthPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setIsLoading(true);
@@ -107,7 +115,6 @@ const AuthPage: React.FC = () => {
       if (isLogin) {
         result = await signIn(formData.email, formData.password);
       } else {
-        // Create student profile object
         const studentProfile = {
           studentName: formData.studentName,
           age: formData.age,
@@ -123,13 +130,8 @@ const AuthPage: React.FC = () => {
         setErrors({ general: result.error.message });
         setIsLoading(false);
       } else {
-        // Show success animation
         setShowSuccess(true);
-        
-        // Navigate after animation
-        setTimeout(() => {
-          navigate('/');
-        }, 2500);
+        setTimeout(() => navigate('/'), 2500);
       }
     } catch (error) {
       setErrors({ general: 'An unexpected error occurred' });
@@ -152,7 +154,6 @@ const AuthPage: React.FC = () => {
     setErrors({});
   };
 
-  // Success Animation Component
   const SuccessAnimation = () => (
     <motion.div
       className="fixed inset-0 bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-100 z-50 flex items-center justify-center"
@@ -160,64 +161,49 @@ const AuthPage: React.FC = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      {/* Floating celebration elements */}
+      {/* floating celebration elements */}
       {[...Array(12)].map((_, i) => (
         <motion.div
           key={i}
           className="absolute w-4 h-4 bg-gradient-to-r from-violet-400 to-purple-400 rounded-full"
-          initial={{ 
-            x: 0, 
-            y: 0, 
-            scale: 0,
-            opacity: 0
-          }}
-          animate={{ 
+          initial={{ x: 0, y: 0, scale: 0, opacity: 0 }}
+          animate={{
             x: Math.cos(i * 30 * Math.PI / 180) * 200,
             y: Math.sin(i * 30 * Math.PI / 180) * 200,
             scale: [0, 1, 0],
             opacity: [0, 1, 0]
           }}
-          transition={{ 
-            duration: 2,
-            delay: 0.5,
-            ease: "easeOut"
-          }}
+          transition={{ duration: 2, delay: 0.5, ease: "easeOut" }}
         />
       ))}
-      
+
       <div className="text-center space-y-6">
-        {/* Success Icon */}
+        {/* success icon */}
         <motion.div
           className="mx-auto w-24 h-24 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full flex items-center justify-center shadow-xl"
           initial={{ scale: 0, rotate: -180 }}
-          animate={{ 
-            scale: [0, 1.2, 1], 
-            rotate: [-180, 0, 0] 
-          }}
-          transition={{ 
-            duration: 0.8, 
-            ease: "easeOut" 
-          }}
+          animate={{ scale: [0, 1.2, 1], rotate: [-180, 0, 0] }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          <motion.svg 
-            className="w-12 h-12 text-white" 
-            fill="none" 
-            stroke="currentColor" 
+          <motion.svg
+            className="w-12 h-12 text-white"
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
             transition={{ duration: 0.8, delay: 0.3 }}
           >
-            <motion.path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={3} 
-              d="M5 13l4 4L19 7" 
+            <motion.path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={3}
+              d="M5 13l4 4L19 7"
             />
           </motion.svg>
         </motion.div>
 
-        {/* Success Message */}
+        {/* success message */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -227,39 +213,110 @@ const AuthPage: React.FC = () => {
             {isLogin ? 'Welcome Back!' : 'Account Created!'}
           </h2>
           <p className="text-lg text-slate-600 max-w-md mx-auto">
-            {isLogin 
-              ? `Welcome back! Let's continue your learning journey! 🎉` 
+            {isLogin
+              ? `Welcome back! Let's continue your learning journey! 🎉`
               : `Welcome ${formData.studentName}! Your learning adventure begins now! 🚀`
             }
           </p>
         </motion.div>
 
-        {/* Loading indicator */}
+        {/* loading indicator */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
           className="flex items-center justify-center space-x-2"
         >
-          <motion.div
-            className="w-2 h-2 bg-violet-500 rounded-full"
-            animate={{ scale: [1, 1.5, 1] }}
-            transition={{ duration: 0.8, repeat: Infinity, delay: 0 }}
-          />
-          <motion.div
-            className="w-2 h-2 bg-purple-500 rounded-full"
-            animate={{ scale: [1, 1.5, 1] }}
-            transition={{ duration: 0.8, repeat: Infinity, delay: 0.2 }}
-          />
-          <motion.div
-            className="w-2 h-2 bg-indigo-500 rounded-full"
-            animate={{ scale: [1, 1.5, 1] }}
-            transition={{ duration: 0.8, repeat: Infinity, delay: 0.4 }}
-          />
+          {[0, 0.2, 0.4].map((delay, index) => (
+            <motion.div
+              key={index}
+              className={`w-2 h-2 ${index === 0 ? 'bg-violet-500' : index === 1 ? 'bg-purple-500' : 'bg-indigo-500'} rounded-full`}
+              animate={{ scale: [1, 1.5, 1] }}
+              transition={{ duration: 0.8, repeat: Infinity, delay }}
+            />
+          ))}
           <span className="ml-3 text-slate-600 font-medium">Taking you to your dashboard...</span>
         </motion.div>
       </div>
     </motion.div>
+  );
+
+  const InputField = ({ type = 'text', name, label, placeholder, required = true, optional = false }: {
+    type?: string;
+    name: keyof FormData;
+    label: string;
+    placeholder: string;
+    required?: boolean;
+    optional?: boolean;
+  }) => (
+    <div>
+      <label className="block text-sm font-medium text-slate-700 mb-2">
+        {label} {optional && <span className="text-slate-400 text-xs">(optional)</span>}
+      </label>
+      <motion.input
+        type={type}
+        name={name}
+        value={formData[name]}
+        onChange={handleInputChange}
+        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all duration-300 text-slate-800 placeholder-slate-400 ${
+          errors[name] ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-white/50'
+        }`}
+        placeholder={placeholder}
+        whileFocus={{ scale: 1.02 }}
+      />
+      {errors[name] && (
+        <motion.p
+          className="text-red-500 text-sm mt-1"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          {errors[name]}
+        </motion.p>
+      )}
+    </div>
+  );
+
+  const PasswordField = ({ name, label, placeholder }: {
+    name: keyof FormData;
+    label: string;
+    placeholder: string;
+  }) => (
+    <div>
+      <label className="block text-sm font-medium text-slate-700 mb-2">{label}</label>
+      <div className="relative">
+        <motion.input
+          type={showPassword ? "text" : "password"}
+          name={name}
+          value={formData[name]}
+          onChange={handleInputChange}
+          className={`w-full px-4 py-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all duration-300 text-slate-800 placeholder-slate-400 ${
+            errors[name] ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-white/50'
+          }`}
+          placeholder={placeholder}
+          whileFocus={{ scale: 1.02 }}
+        />
+        <motion.button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showPassword ? "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.464 8.464M14.12 14.12l1.415 1.415M14.12 14.12L9.878 9.878m4.242 4.242L16.535 16.535" : "M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"} />
+          </svg>
+        </motion.button>
+      </div>
+      {errors[name] && (
+        <motion.p
+          className="text-red-500 text-sm mt-1"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          {errors[name]}
+        </motion.p>
+      )}
+    </div>
   );
 
   return (
@@ -268,36 +325,36 @@ const AuthPage: React.FC = () => {
         {showSuccess && <SuccessAnimation />}
       </AnimatePresence>
 
-      <motion.div 
+      <motion.div
         className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-100 relative overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
-        {/* Animated background elements */}
+        {/* animated background elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <motion.div 
+          <motion.div
             className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-violet-200/30 to-purple-200/30 rounded-full blur-3xl"
-            animate={{ 
+            animate={{
               x: [0, 50, 0],
               y: [0, -30, 0],
               scale: [1, 1.1, 1]
             }}
-            transition={{ 
+            transition={{
               duration: 8,
               repeat: Infinity,
               ease: "easeInOut"
             }}
           />
-          <motion.div 
+          <motion.div
             className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-indigo-200/30 to-violet-200/30 rounded-full blur-3xl"
-            animate={{ 
+            animate={{
               x: [0, -30, 0],
               y: [0, 40, 0],
               scale: [1, 1.2, 1]
             }}
-            transition={{ 
+            transition={{
               duration: 10,
               repeat: Infinity,
               ease: "easeInOut"
@@ -305,7 +362,7 @@ const AuthPage: React.FC = () => {
           />
         </div>
 
-        {/* Back button */}
+        {/* back button */}
         <div className="absolute top-6 left-6 z-50">
           <motion.button
             onClick={() => navigate('/')}
@@ -320,20 +377,17 @@ const AuthPage: React.FC = () => {
           </motion.button>
         </div>
 
-        {/* Main content */}
+        {/* main content */}
         <div className="flex items-center justify-center min-h-screen px-4 py-8 relative z-10">
-          <motion.div 
-            className="w-full max-w-md"
-            layout
-          >
-            {/* Header */}
-            <motion.div 
+          <motion.div className="w-full max-w-md" layout>
+            {/* header */}
+            <motion.div
               className="text-center mb-8"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <motion.div 
+              <motion.div
                 className="flex justify-center mb-4"
                 whileHover={{ scale: 1.1, rotate: 12 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -350,21 +404,21 @@ const AuthPage: React.FC = () => {
               </p>
             </motion.div>
 
-            {/* Form container */}
-            <motion.div 
+            {/* form container */}
+            <motion.div
               className="bg-white/70 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-violet-200/40"
               layout
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3 }}
             >
-              {/* Toggle buttons */}
+              {/* toggle buttons */}
               <div className="flex mb-8 bg-violet-100/50 rounded-xl p-1">
                 <motion.button
                   onClick={() => !isLogin && toggleMode()}
                   className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-300 ${
-                    isLogin 
-                      ? 'bg-white text-violet-700 shadow-sm' 
+                    isLogin
+                      ? 'bg-white text-violet-700 shadow-sm'
                       : 'text-slate-600 hover:text-slate-800'
                   }`}
                   whileHover={!isLogin ? { scale: 1.02 } : {}}
@@ -375,8 +429,8 @@ const AuthPage: React.FC = () => {
                 <motion.button
                   onClick={() => isLogin && toggleMode()}
                   className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-300 ${
-                    !isLogin 
-                      ? 'bg-white text-violet-700 shadow-sm' 
+                    !isLogin
+                      ? 'bg-white text-violet-700 shadow-sm'
                       : 'text-slate-600 hover:text-slate-800'
                   }`}
                   whileHover={isLogin ? { scale: 1.02 } : {}}
@@ -386,7 +440,7 @@ const AuthPage: React.FC = () => {
                 </motion.button>
               </div>
 
-              {/* Form */}
+              {/* form */}
               <AnimatePresence mode="wait">
                 <motion.form
                   key={isLogin ? 'login' : 'signup'}
@@ -417,7 +471,7 @@ const AuthPage: React.FC = () => {
                           whileFocus={{ scale: 1.02 }}
                         />
                         {errors.email && (
-                          <motion.p 
+                          <motion.p
                             className="text-red-500 text-sm mt-1"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -464,7 +518,7 @@ const AuthPage: React.FC = () => {
                           </motion.button>
                         </div>
                         {errors.password && (
-                          <motion.p 
+                          <motion.p
                             className="text-red-500 text-sm mt-1"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -494,7 +548,7 @@ const AuthPage: React.FC = () => {
                           whileFocus={{ scale: 1.02 }}
                         />
                         {errors.studentName && (
-                          <motion.p 
+                          <motion.p
                             className="text-red-500 text-sm mt-1"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -520,12 +574,12 @@ const AuthPage: React.FC = () => {
                             }`}
                             whileFocus={{ scale: 1.02 }}
                           >
-                            {[5, 6, 7, 8, 9, 10, 11, 12].map(age => (
+                            {ageOptions.map(age => (
                               <option key={age} value={age}>{age}</option>
                             ))}
                           </motion.select>
                           {errors.age && (
-                            <motion.p 
+                            <motion.p
                               className="text-red-500 text-sm mt-1"
                               initial={{ opacity: 0, y: -10 }}
                               animate={{ opacity: 1, y: 0 }}
@@ -571,7 +625,7 @@ const AuthPage: React.FC = () => {
                           whileFocus={{ scale: 1.02 }}
                         />
                         {errors.parentEmail && (
-                          <motion.p 
+                          <motion.p
                             className="text-red-500 text-sm mt-1"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -598,7 +652,7 @@ const AuthPage: React.FC = () => {
                           whileFocus={{ scale: 1.02 }}
                         />
                         {errors.studentEmail && (
-                          <motion.p 
+                          <motion.p
                             className="text-red-500 text-sm mt-1"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -645,7 +699,7 @@ const AuthPage: React.FC = () => {
                           </motion.button>
                         </div>
                         {errors.password && (
-                          <motion.p 
+                          <motion.p
                             className="text-red-500 text-sm mt-1"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -672,7 +726,7 @@ const AuthPage: React.FC = () => {
                           whileFocus={{ scale: 1.02 }}
                         />
                         {errors.confirmPassword && (
-                          <motion.p 
+                          <motion.p
                             className="text-red-500 text-sm mt-1"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -727,8 +781,8 @@ const AuthPage: React.FC = () => {
                 </motion.form>
               </AnimatePresence>
 
-              {/* Footer */}
-              <motion.div 
+              {/* footer */}
+              <motion.div
                 className="mt-6 text-center"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
