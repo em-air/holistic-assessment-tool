@@ -44,7 +44,7 @@ export default {
   daisyui: {
     themes: [
       {
-        bloom: {
+        grow360: {
           "primary": "#8b5cf6",
           "secondary": "#f97316", 
           "accent": "#ec4899",

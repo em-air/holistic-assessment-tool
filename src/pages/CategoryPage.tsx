@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { assessmentCategories } from '../data/assessmentData';
+import FloatingBackground from '../components/FloatingBackground';
 
 const CategoryPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
@@ -11,8 +12,9 @@ const CategoryPage: React.FC = () => {
 
   if (!category) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-stone-100 to-amber-50 flex items-center justify-center">
-        <div className="text-center bg-stone-100 p-8 rounded-2xl shadow-xl border border-stone-200">
+      <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 flex items-center justify-center">
+        <FloatingBackground />
+        <div className="text-center bg-stone-100 p-8 rounded-2xl shadow-xl border border-stone-200 relative z-10">
           <h1 className="text-2xl font-bold text-stone-800 mb-4">Category Not Found</h1>
           <button
             onClick={() => navigate('/')}
@@ -35,8 +37,9 @@ const CategoryPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#e9ecdb] via-[#b7cdc3] to-[#8ab6b6] py-8">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 py-8">
+      <FloatingBackground />
+      <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button

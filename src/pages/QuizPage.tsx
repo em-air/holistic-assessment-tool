@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import QuizQuestion from '../components/QuizQuestion';
 import { assessmentCategories } from '../data/assessmentData';
-import { QuizResult } from '../types'; 
+import { QuizResult } from '../types';
+import FloatingBackground from '../components/FloatingBackground'; 
 
 const QuizPage: React.FC = () => {
   const { categoryId, subcategoryId } = useParams();
@@ -24,8 +25,9 @@ const QuizPage: React.FC = () => {
 
   if (!category || !subcategory || !subcategory.questions.length) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-stone-100 to-amber-50 flex items-center justify-center">
-        <div className="text-center bg-stone-100 p-8 rounded-2xl shadow-xl">
+      <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 flex items-center justify-center">
+        <FloatingBackground />
+        <div className="text-center bg-stone-100 p-8 rounded-2xl shadow-xl relative z-10">
           <h1 className="text-2xl font-bold text-stone-800 mb-4">Quiz not found</h1>
           <button
             onClick={() => navigate('/')}
@@ -145,8 +147,9 @@ const QuizPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-100 to-amber-50 py-8">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 py-8">
+      <FloatingBackground />
+      <div className="container mx-auto px-4 relative z-10">
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={() => navigate(`/category/${categoryId}`)}

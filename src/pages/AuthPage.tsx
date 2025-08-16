@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { signUp, signIn } from '../supabase-client';
+import FloatingBackground from '../components/FloatingBackground';
 
 interface FormData {
   email: string;
@@ -326,41 +327,14 @@ const AuthPage: React.FC = () => {
       </AnimatePresence>
 
       <motion.div
-        className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-100 relative overflow-hidden"
+        className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 relative overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
         {/* animated background elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <motion.div
-            className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-violet-200/30 to-purple-200/30 rounded-full blur-3xl"
-            animate={{
-              x: [0, 50, 0],
-              y: [0, -30, 0],
-              scale: [1, 1.1, 1]
-            }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
-          <motion.div
-            className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-indigo-200/30 to-violet-200/30 rounded-full blur-3xl"
-            animate={{
-              x: [0, -30, 0],
-              y: [0, 40, 0],
-              scale: [1, 1.2, 1]
-            }}
-            transition={{
-              duration: 10,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
-        </div>
+        <FloatingBackground />
 
         {/* back button */}
         <div className="absolute top-6 left-6 z-50">

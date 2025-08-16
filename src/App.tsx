@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import ScrollableHomepage from './pages/ScrollableHomepage';
+import Homepage from './pages/Homepage';
+import CategoriesPage from './pages/CategoriesPage';
 import CategoryPage from './pages/CategoryPage';
 import QuizPage from './pages/QuizPage';
 import AssessmentGenerator from './pages/AssessmentGenerator';
@@ -24,7 +25,7 @@ function AnimatedRoutes() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
             >
-              <ScrollableHomepage />
+              <Homepage />
             </motion.div>
           }
         />
@@ -38,6 +39,19 @@ function AnimatedRoutes() {
               transition={{ duration: 0.15, ease: "easeOut" }}
             >
               <AuthPage />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/categories"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+            >
+              <CategoriesPage />
             </motion.div>
           }
         />
@@ -89,7 +103,7 @@ function App() {
   return (
     <AuthProvider>
       <Router basename={base}>
-        <div className="App" data-theme="bloom">
+        <div className="App" data-theme="grow360">
           <AnimatedRoutes />
         </div>
       </Router>
