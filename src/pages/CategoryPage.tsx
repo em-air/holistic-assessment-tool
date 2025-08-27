@@ -31,6 +31,8 @@ const CategoryPage: React.FC = () => {
   const handleSubcategoryClick = (subcategoryId: string) => {
     if (subcategoryId === 'assessment-generator') {
       navigate('/assessment-generator');
+    } else if (subcategoryId === 'reading') {
+      navigate(`/reading-assessment/${categoryId}`);
     } else {
       navigate(`/quiz/${categoryId}/${subcategoryId}`);
     }
@@ -73,7 +75,7 @@ const CategoryPage: React.FC = () => {
                   <span className="text-stone-800 font-semibold">{subcategory.title}</span>
                 </div>
                 <div className="relative flex items-center space-x-3">
-                  {(subcategory.id === 'attention' || subcategory.id === 'assessment-generator') ? (
+                  {(subcategory.id === 'attention' || subcategory.id === 'assessment-generator' || subcategory.id === 'reading') ? (
                     <span className="text-emerald-600 text-sm font-medium">Available</span>
                   ) : (
                     <span className="text-stone-400 text-sm">Coming Soon</span>
