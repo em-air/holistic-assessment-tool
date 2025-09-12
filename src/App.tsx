@@ -5,6 +5,7 @@ import CategoriesPage from './pages/CategoriesPage';
 import CategoryPage from './pages/CategoryPage';
 import QuizPage from './pages/QuizPage';
 import PhonicsQuiz from './pages/PhonicsQuizNew';
+import BlendingQuiz from './pages/BlendingQuiz';
 import AssessmentGenerator from './pages/AssessmentGenerator';
 import ReadingAssessment from './pages/ReadingAssessment';
 import AuthPage from './pages/AuthPage';
@@ -25,7 +26,7 @@ function AnimatedRoutes() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <Homepage />
             </motion.div>
@@ -38,7 +39,7 @@ function AnimatedRoutes() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <AuthPage />
             </motion.div>
@@ -51,7 +52,7 @@ function AnimatedRoutes() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <CategoriesPage />
             </motion.div>
@@ -64,7 +65,7 @@ function AnimatedRoutes() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <CategoryPage />
             </motion.div>
@@ -77,7 +78,7 @@ function AnimatedRoutes() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <QuizPage />
             </motion.div>
@@ -90,9 +91,22 @@ function AnimatedRoutes() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <PhonicsQuiz />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/blending-quiz/:categoryId"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <BlendingQuiz />
             </motion.div>
           }
         />
@@ -103,7 +117,7 @@ function AnimatedRoutes() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <AssessmentGenerator />
             </motion.div>

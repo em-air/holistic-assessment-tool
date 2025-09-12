@@ -151,25 +151,25 @@ const PhonicsQuiz: React.FC = () => {
     // Map letters to their phonetic sounds using spellings that speech synthesis pronounces correctly
     const soundMap: { [key: string]: string } = {
       // Basic consonants with phonetic spellings that sound right
-      'm': 'muh',
+      'm': 'mah',
   'p': 'puh',
   't': 'tuh',
-  's': 'sssuh',   // avoid "ess"
+  's': 'sssuh',   
   'b': 'bah',
   'r': 'raah',
-  'n': 'nah',    // avoid "en"
-  'f': 'fuh',   // avoid "ef"
+  'n': 'nah',    
+  'f': 'fuh',   
   'd': 'dah',
   'g': 'gah',
   'h': 'hah',
   'k': 'kuh',
-  'l': 'luh',    // avoid "el"
-  'v': 'vuh',    // avoid "vee"
+  'l': 'luh',    
+  'v': 'vuh',    
   'w': 'wuh',
   'y': 'yah',
-  'z': 'zah',   // avoid "zee"
+  'z': 'zah',   
   'j': 'jah',
-  'c': 'kuh',     // or "suh" when soft
+  'c': 'kuh',   
   'x': 'ksuh',
   // Digraphs and blends
   'ch': 'chuh',
@@ -177,7 +177,6 @@ const PhonicsQuiz: React.FC = () => {
   'th': 'thuh',
   'wh': 'wuh',
   'ck': 'kuh',
-  'ng': 'nguh',
   'qu': 'kwuh',
   'ph': 'fffuh',
   // Complex patterns
@@ -212,7 +211,6 @@ const PhonicsQuiz: React.FC = () => {
         setIsPlayingSound(false);
       };
       
-      // Try to use a female voice that's good for phonics
       const voices = speechSynthesis.getVoices();
       
       // Priority order for female voices
@@ -228,12 +226,10 @@ const PhonicsQuiz: React.FC = () => {
         'Fiona'
       ];
       
-      // First try to find a specifically named female voice
       let preferredVoice = voices.find(voice => 
         femaleVoiceNames.some(femaleName => voice.name.includes(femaleName.split(' ')[1]))
       );
       
-      // If no specific female voice found, look for any voice with "Female" in the name
       if (!preferredVoice) {
         preferredVoice = voices.find(voice => 
           voice.lang.startsWith('en') && 
@@ -242,7 +238,6 @@ const PhonicsQuiz: React.FC = () => {
         );
       }
       
-      // Fallback to any English voice (browser will usually default to female)
       if (!preferredVoice) {
         preferredVoice = voices.find(voice => voice.lang.startsWith('en'));
       }
@@ -265,7 +260,6 @@ const PhonicsQuiz: React.FC = () => {
     setShowResults(false);
     setCurrentQuestions([]);
     setIsPlayingSound(false);
-    // Cancel any ongoing speech
     if ('speechSynthesis' in window) {
       speechSynthesis.cancel();
     }

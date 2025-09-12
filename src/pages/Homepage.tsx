@@ -97,37 +97,40 @@ const HomePage: React.FC = () => {
           {/* Hero Card */}
           <motion.div
             className="bg-white/98 backdrop-blur-lg rounded-3xl shadow-2xl p-8 md:p-12 mb-8 border border-white/30"
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
           >
             {/* Title Section */}
             <div className="text-center mb-12">
               <div className="flex justify-center mb-6">
                 <motion.div
                   className="flex space-x-4 text-4xl"
-                  initial={{ scale: 0 }}
+                  initial={{ scale: 0.8 }}
                   animate={{ scale: 1 }}
-                  transition={{ duration: 0.6, delay: 0.3 }}
+                  transition={{ duration: 0.3, delay: 0.1, ease: "easeOut" }}
                 >
                   <motion.div
                     className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg"
-                    animate={{ y: [-5, 5, -5] }}
-                    transition={{ duration: 2, repeat: Infinity }}
+                    animate={{ y: [-3, 3, -3] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    style={{ willChange: 'transform' }}
                   >
                     <span className="text-white text-2xl">⭐</span>
                   </motion.div>
                   <motion.div
                     className="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center shadow-lg"
-                    animate={{ y: [5, -5, 5] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+                    animate={{ y: [3, -3, 3] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.2, ease: "linear" }}
+                    style={{ willChange: 'transform' }}
                   >
                     <span className="text-white text-2xl">📚</span>
                   </motion.div>
                   <motion.div
                     className="w-16 h-16 bg-gradient-to-br from-pink-400 to-red-500 rounded-full flex items-center justify-center shadow-lg"
-                    animate={{ y: [-5, 5, -5] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.6 }}
+                    animate={{ y: [-3, 3, -3] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.4, ease: "linear" }}
+                    style={{ willChange: 'transform' }}
                   >
                     <span className="text-white text-2xl">🧠</span>
                   </motion.div>
@@ -136,28 +139,28 @@ const HomePage: React.FC = () => {
 
               <motion.h1
                 className="text-4xl md:text-6xl font-semibold bg-gradient-to-r from-white via-gray-100 to-white bg-clip-text text-transparent mb-6 drop-shadow-lg"
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
+                whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
               >
                 Discover Your Learning Strengths
               </motion.h1>
               
               <motion.p
                 className="text-lg md:text-xl text-white drop-shadow-md max-w-4xl mx-auto mb-8 font-normal"
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-                whileHover={{ scale: 1.01 }}
+                transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
+                whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
               >
                 Simple, engaging tools to explore your abilities in reading, memory, attention, and more. Perfect for students aged 6-12
               </motion.p>
 
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.8 }}
+                transition={{ duration: 0.4, delay: 0.4, ease: "easeOut" }}
                 className="flex flex-col items-center space-y-4"
               >
                 <motion.button
@@ -166,7 +169,8 @@ const HomePage: React.FC = () => {
                   whileHover={{ 
                     scale: 1.02,
                     backgroundColor: "rgba(255,255,255,0.25)",
-                    borderColor: "rgba(255,255,255,0.6)"
+                    borderColor: "rgba(255,255,255,0.6)",
+                    transition: { duration: 0.2 }
                   }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -175,8 +179,8 @@ const HomePage: React.FC = () => {
                     <motion.div
                       className="w-5 h-5 text-white"
                       initial={{ x: 0 }}
-                      whileHover={{ x: 5 }}
-                      transition={{ duration: 0.2 }}
+                      whileHover={{ x: 3 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
                     >
                       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -188,7 +192,7 @@ const HomePage: React.FC = () => {
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 1 }}
+                  transition={{ duration: 0.4, delay: 0.5, ease: "easeOut" }}
                   className="text-white/80 text-sm font-light"
                 >
                   Takes about 45 minutes
@@ -199,9 +203,9 @@ const HomePage: React.FC = () => {
             {/* Stats Grid */}
             <motion.div
               className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-12"
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 1 }}
+              transition={{ duration: 0.4, delay: 0.5, ease: "easeOut" }}
             >
               {[
                 { number: "3", label: "Categories", icon: "📊", color: "from-blue-500 to-purple-600" },
@@ -213,25 +217,26 @@ const HomePage: React.FC = () => {
                   key={index}
                   className="bg-gradient-to-br from-white/95 via-white/98 to-white/95 backdrop-blur-sm rounded-2xl p-4 md:p-6 text-center border border-white/50 shadow-lg"
                   whileHover={{ 
-                    scale: 1.05,
+                    scale: 1.03,
                     background: "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,255,255,1))",
                     borderColor: "#0891b2",
-                    boxShadow: "0 20px 40px rgba(0,0,0,0.15)"
+                    boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
+                    transition: { duration: 0.2, ease: "easeOut" }
                   }}
-                  transition={{ duration: 0.3 }}
+                  transition={{ duration: 0.2 }}
                 >
                   <div className={`w-10 h-10 mx-auto mb-3 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-md`}>
                     <span className="text-white text-lg">{stat.icon}</span>
                   </div>
                   <motion.div
                     className={`text-2xl md:text-3xl font-medium bg-gradient-to-r ${stat.color} bg-clip-text text-transparent mb-1`}
-                    whileHover={{ scale: 1.1 }}
+                    whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
                   >
                     {stat.number}
                   </motion.div>
                   <motion.div
                     className="text-sm md:text-base text-gray-700 drop-shadow-sm font-normal"
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
                   >
                     {stat.label}
                   </motion.div>
@@ -242,9 +247,9 @@ const HomePage: React.FC = () => {
             {/* Features Grid */}
             <motion.div
               className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 1.2 }}
+              transition={{ duration: 0.4, delay: 0.6, ease: "easeOut" }}
             >
               {[
                 { 
@@ -273,29 +278,30 @@ const HomePage: React.FC = () => {
                   key={index}
                   className={`bg-gradient-to-br ${feature.bgGradient} backdrop-blur-sm rounded-2xl p-6 border border-white/60 text-center shadow-lg`}
                   whileHover={{ 
-                    scale: 1.03,
+                    scale: 1.02,
                     boxShadow: "0 25px 50px rgba(0,0,0,0.15)",
                     borderColor: "#0891b2",
-                    background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,1))"
+                    background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,1))",
+                    transition: { duration: 0.2, ease: "easeOut" }
                   }}
-                  transition={{ duration: 0.3 }}
+                  transition={{ duration: 0.2 }}
                 >
                   <motion.div
                     className={`w-16 h-16 mx-auto mb-4 bg-gradient-to-br ${feature.gradient} rounded-2xl flex items-center justify-center shadow-lg`}
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    transition={{ duration: 0.3 }}
+                    whileHover={{ scale: 1.05, rotate: 3, transition: { duration: 0.2 } }}
+                    transition={{ duration: 0.2 }}
                   >
                     <span className="text-white text-2xl">{feature.icon}</span>
                   </motion.div>
                   <motion.h3
                     className={`text-lg font-medium bg-gradient-to-r ${feature.gradient} bg-clip-text text-transparent mb-2`}
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
                   >
                     {feature.title}
                   </motion.h3>
                   <motion.p
                     className="text-gray-700 drop-shadow-sm font-normal"
-                    whileHover={{ scale: 1.02 }}
+                    whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
                   >
                     {feature.desc}
                   </motion.p>
@@ -306,9 +312,9 @@ const HomePage: React.FC = () => {
             {/* Trust Indicators */}
             <motion.div
               className="flex flex-wrap justify-center gap-4 md:gap-6"
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 1.4 }}
+              transition={{ duration: 0.4, delay: 0.7, ease: "easeOut" }}
             >
               {[
                 { text: "Educator Approved", icon: "✅", gradient: "from-emerald-500 to-green-600" },
