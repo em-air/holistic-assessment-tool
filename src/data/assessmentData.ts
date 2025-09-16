@@ -189,7 +189,7 @@ export const assessmentCategories: AssessmentCategory[] = [
       },
       {
         id: 'sentence-formation',
-        title: 'Sentence Formation',
+  title: 'Vocabulary',
         color: 'bg-pink-500',
         questions: []
       },

@@ -6,6 +6,7 @@ import CategoryPage from './pages/CategoryPage';
 import QuizPage from './pages/QuizPage';
 import PhonicsQuiz from './pages/PhonicsQuizNew';
 import BlendingQuiz from './pages/BlendingQuiz';
+import VocabularyMatching from './pages/VocabularyMatching';
 import AssessmentGenerator from './pages/AssessmentGenerator';
 import ReadingAssessment from './pages/ReadingAssessment';
 import AuthPage from './pages/AuthPage';
@@ -107,6 +108,19 @@ function AnimatedRoutes() {
               transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <BlendingQuiz />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/vocabulary-matching"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <VocabularyMatching />
             </motion.div>
           }
         />
