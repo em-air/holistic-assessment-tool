@@ -7,6 +7,9 @@ import QuizPage from './pages/QuizPage';
 import PhonicsQuiz from './pages/PhonicsQuizNew';
 import BlendingQuiz from './pages/BlendingQuiz';
 import VocabularyMatching from './pages/VocabularyMatching';
+import LearningStylesQuiz from './pages/LearningStylesQuiz';
+import SpellingGradeSelector from './pages/SpellingGradeSelector';
+import SpellingTest from './pages/SpellingTest';
 import AssessmentGenerator from './pages/AssessmentGenerator';
 import ReadingAssessment from './pages/ReadingAssessment';
 import AuthPage from './pages/AuthPage';
@@ -125,6 +128,19 @@ function AnimatedRoutes() {
           }
         />
         <Route
+          path="/learning-styles-quiz"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <LearningStylesQuiz />
+            </motion.div>
+          }
+        />
+        <Route
           path="/assessment-generator"
           element={
             <motion.div
@@ -147,6 +163,32 @@ function AnimatedRoutes() {
               transition={{ duration: 0.15, ease: "easeOut" }}
             >
               <ReadingAssessment />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/spelling-grades"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <SpellingGradeSelector />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/spelling-test/:grade"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <SpellingTest />
             </motion.div>
           }
         />

@@ -39,6 +39,10 @@ const CategoryPage: React.FC = () => {
       navigate(`/blending-quiz/${categoryId}`);
     } else if (subcategoryId === 'sentence-formation') {
       navigate('/vocabulary-matching');
+    } else if (subcategoryId === 'learning-style') {
+      navigate('/learning-styles-quiz');
+    } else if (subcategoryId === 'spelling') {
+      navigate('/spelling-grades');
     } else {
       navigate(`/quiz/${categoryId}/${subcategoryId}`);
     }
@@ -81,7 +85,7 @@ const CategoryPage: React.FC = () => {
                   <span className="text-stone-800 font-semibold">{subcategory.title}</span>
                 </div>
                 <div className="relative flex items-center space-x-3">
-                  {(subcategory.id === 'attention' || subcategory.id === 'assessment-generator' || subcategory.id === 'reading' || subcategory.id === 'phonics-awareness' || subcategory.id === 'blending' || subcategory.id === 'sentence-formation') ? (
+                  {(subcategory.id === 'attention' || subcategory.id === 'assessment-generator' || subcategory.id === 'reading' || subcategory.id === 'phonics-awareness' || subcategory.id === 'blending' || subcategory.id === 'sentence-formation' || subcategory.id === 'learning-style') ? (
                     <span className="text-emerald-600 text-sm font-medium">Available</span>
                   ) : (
                     <span className="text-stone-400 text-sm">Coming Soon</span>
