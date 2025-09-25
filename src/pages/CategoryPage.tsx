@@ -43,6 +43,8 @@ const CategoryPage: React.FC = () => {
       navigate('/learning-styles-quiz');
     } else if (subcategoryId === 'spelling') {
       navigate('/spelling-grades');
+    } else if (subcategoryId === 'writing') {
+      navigate('/writing-grades');
     } else {
       navigate(`/quiz/${categoryId}/${subcategoryId}`);
     }

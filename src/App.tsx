@@ -10,6 +10,8 @@ import VocabularyMatching from './pages/VocabularyMatching';
 import LearningStylesQuiz from './pages/LearningStylesQuiz';
 import SpellingGradeSelector from './pages/SpellingGradeSelector';
 import SpellingTest from './pages/SpellingTest';
+import WritingGradeSelector from './pages/WritingGradeSelector';
+import WritingTest from './pages/WritingTest';
 import AssessmentGenerator from './pages/AssessmentGenerator';
 import ReadingAssessment from './pages/ReadingAssessment';
 import AuthPage from './pages/AuthPage';
@@ -189,6 +191,32 @@ function AnimatedRoutes() {
               transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <SpellingTest />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/writing-grades"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <WritingGradeSelector />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/writing-test/:grade"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <WritingTest />
             </motion.div>
           }
         />
