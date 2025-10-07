@@ -9,7 +9,7 @@ export const assessmentCategories: AssessmentCategory[] = [
     subcategories: [
       {
         id: 'attention',
-        title: 'Attention/Focus',
+        title: 'Attention/Memory',
         color: 'bg-purple-500',
         questions : [
   // Focusing (1–6)
