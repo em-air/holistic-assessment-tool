@@ -48,9 +48,9 @@ const CategoryPage: React.FC = () => {
     } else if (subcategoryId === 'writing') {
       navigate('/writing-grades');
     } else if (subcategoryId === 'attention') {
-      navigate('/attention-quiz');
-    } else if (subcategoryId === 'critical-thinking') {
-      navigate('/odd-one-out');
+      navigate('/attention-memory-selection');
+    } else if (subcategoryId === 'oral-language') {
+      navigate('/oral-language-quiz');
     } else {
       navigate(`/quiz/${categoryId}/${subcategoryId}`);
     }
@@ -93,7 +93,7 @@ const CategoryPage: React.FC = () => {
                   <span className="text-stone-800 font-semibold">{subcategory.title}</span>
                 </div>
                 <div className="relative flex items-center space-x-3">
-                  {(subcategory.id === 'attention' || subcategory.id === 'perception' || subcategory.id === 'assessment-generator' || subcategory.id === 'reading' || subcategory.id === 'phonics-awareness' || subcategory.id === 'blending' || subcategory.id === 'sentence-formation' || subcategory.id === 'learning-style') ? (
+                  {(subcategory.id === 'attention' || subcategory.id === 'perception' || subcategory.id === 'assessment-generator' || subcategory.id === 'reading' || subcategory.id === 'phonics-awareness' || subcategory.id === 'blending' || subcategory.id === 'sentence-formation' || subcategory.id === 'learning-style' || subcategory.id === 'oral-language') ? (
                     <span className="text-emerald-600 text-sm font-medium">Available</span>
                   ) : (
                     <span className="text-stone-400 text-sm">Coming Soon</span>

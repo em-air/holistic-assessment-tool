@@ -10,8 +10,10 @@ import VocabularyMatching from './pages/VocabularyMatching';
 import LearningStylesQuiz from './pages/LearningStylesQuiz';
 import AttentionQuiz from './pages/AttentionQuiz';
 import MemoryQuiz from './pages/MemoryQuiz';
+import AttentionMemorySelection from './pages/AttentionMemorySelection';
+import AttentionAssessment from './pages/AttentionAssessment';
 import PerceptionQuiz from './pages/PerceptionQuiz';
-import OddOneOutGame from './pages/OddOneOutGame';
+import OralLanguageQuiz from './pages/OralLanguageQuiz';
 import SpellingGradeSelector from './pages/SpellingGradeSelector';
 import SpellingTest from './pages/SpellingTest';
 import WritingGradeSelector from './pages/WritingGradeSelector';
@@ -160,6 +162,45 @@ function AnimatedRoutes() {
           }
         />
         <Route
+          path="/oral-language-quiz"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <OralLanguageQuiz />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/attention-memory-selection"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <AttentionMemorySelection />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/attention-assessment"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <AttentionAssessment />
+            </motion.div>
+          }
+        />
+        <Route
           path="/attention-quiz"
           element={
             <motion.div
@@ -182,19 +223,6 @@ function AnimatedRoutes() {
               transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <MemoryQuiz />
-            </motion.div>
-          }
-        />
-        <Route
-          path="/odd-one-out"
-          element={
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.1, ease: "easeOut" }}
-            >
-              <OddOneOutGame />
             </motion.div>
           }
         />
