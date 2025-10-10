@@ -285,19 +285,19 @@ export const oralLanguageCategories: QuizCategory[] = [
         sequenceImages: [
           {
             id: 'wake_up',
-            image: 'src/public/img/st1_1.png',
+            image: 'https://i.postimg.cc/jD4fXB28/st1-1.png',
             correctOrder: 1,
             description: 'Child waking up in bed'
           },
           {
             id: 'go_to_school',
-            image: 'src/public/img/st1_3.png',
+            image: 'https://i.postimg.cc/dhjCBg3z/st1-3.png',
             correctOrder: 3,
             description: 'Child walking to school'
           },
           {
             id: 'brush_teeth',
-            image: 'src/public/img/st1_2.png',
+            image: 'https://i.postimg.cc/CRs8N953/st1-2.png',
             correctOrder: 2,
             description: 'Child brushing teeth'
           }
@@ -316,21 +316,23 @@ export const oralLanguageCategories: QuizCategory[] = [
         image: '', // Not used for sequence questions
         options: [], // Not used for sequence questions
         sequenceImages: [
-          {
-            id: 'get_bread',
-            image: '/api/placeholder/200/150?text=Get+Bread',
-            correctOrder: 1,
-            description: 'Taking bread from the bag'
-          },
-          {
+             {
             id: 'add_filling',
-            image: '/api/placeholder/200/150?text=Add+Filling',
+            image: 'https://images.unsplash.com/photo-1717048888698-277377758ff1?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170',
             correctOrder: 2,
             description: 'Adding peanut butter and jam'
           },
+          
+          {
+            id: 'get_bread',
+            image: 'https://plus.unsplash.com/premium_photo-1700767194982-b72f275582bd?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aG9sZGluZyUyMGJyZWFkfGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=600',
+            correctOrder: 1,
+            description: 'Taking bread from the bag'
+          },
+       
           {
             id: 'eat_sandwich',
-            image: '/api/placeholder/200/150?text=Eat+Sandwich',
+            image: 'https://plus.unsplash.com/premium_photo-1679166276587-0085a4bf7aef?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8ZWF0aW5nJTIwc2FuZHdpY2h8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&q=60&w=600',
             correctOrder: 3,
             description: 'Child eating the finished sandwich'
           }
@@ -350,23 +352,24 @@ export const oralLanguageCategories: QuizCategory[] = [
         options: [], // Not used for sequence questions
         sequenceImages: [
           {
+            id: 'flower_grows',
+            image: 'https://images.unsplash.com/photo-1592683249810-bdf5c51eaf0a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170',
+            correctOrder: 3,
+            description: 'Beautiful flower blooming'
+          },
+          {
             id: 'plant_seed',
-            image: '/api/placeholder/200/150?text=Plant+Seed',
+            image: 'https://images.pexels.com/photos/169523/pexels-photo-169523.jpeg',
             correctOrder: 1,
             description: 'Putting seed in the soil'
           },
           {
             id: 'water_plant',
-            image: '/api/placeholder/200/150?text=Water+Plant',
+            image: 'https://images.unsplash.com/photo-1599277100479-3252d492a19a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1112',
             correctOrder: 2,
             description: 'Watering the planted seed'
-          },
-          {
-            id: 'flower_grows',
-            image: '/api/placeholder/200/150?text=Flower+Grows',
-            correctOrder: 3,
-            description: 'Beautiful flower blooming'
           }
+          
         ],
         correctSequence: ['plant_seed', 'water_plant', 'flower_grows'],
         feedback: {

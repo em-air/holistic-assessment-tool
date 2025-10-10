@@ -207,6 +207,12 @@ const AttentionQuiz: React.FC = () => {
   };
 
   const startQuiz = (type: 'attention' | 'memory' | 'sequence') => {
+    if (type === 'attention') {
+      // Redirect to Memory Assessment component
+      navigate('/memory-assessment');
+      return;
+    }
+    
     setQuizType(type);
     setCurrentLevel(1);
     setScore(0);
@@ -256,7 +262,7 @@ const AttentionQuiz: React.FC = () => {
               <div className="text-center text-white">
                 <div className="mb-6">
                   <Target className="w-16 h-16 mx-auto mb-4 group-hover:scale-110 transition-transform duration-300" />
-                  <h2 className="text-2xl font-bold mb-2">Attention Quiz</h2>
+                  <h2 className="text-2xl font-bold mb-2">Correct Identification</h2>
                   <p className="text-emerald-100 text-sm">
                     Test your focus and concentration skills
                   </p>
@@ -273,7 +279,7 @@ const AttentionQuiz: React.FC = () => {
                 </div>
 
                 <div className="bg-emerald-600 text-white px-6 py-3 rounded-full font-bold group-hover:bg-emerald-700 transition-colors duration-300">
-                  Start Attention Quiz
+                  Start Correct Identification
                 </div>
               </div>
             </motion.div>

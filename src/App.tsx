@@ -12,6 +12,7 @@ import AttentionQuiz from './pages/AttentionQuiz';
 import MemoryQuiz from './pages/MemoryQuiz';
 import AttentionMemorySelection from './pages/AttentionMemorySelection';
 import AttentionAssessment from './pages/AttentionAssessment';
+import MemoryAssessment from './pages/MemoryAssessment';
 import PerceptionQuiz from './pages/PerceptionQuiz';
 import OralLanguageQuiz from './pages/OralLanguageQuiz';
 import SpellingGradeSelector from './pages/SpellingGradeSelector';
@@ -197,6 +198,19 @@ function AnimatedRoutes() {
               transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <AttentionAssessment />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/memory-assessment"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <MemoryAssessment />
             </motion.div>
           }
         />
