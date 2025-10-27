@@ -22,6 +22,9 @@ import WritingTest from './pages/WritingTest';
 import AssessmentGenerator from './pages/AssessmentGenerator';
 import ReadingAssessment from './pages/ReadingAssessment';
 import AuthPage from './pages/AuthPage';
+import CriticalThinkingPage from './pages/CriticalThinkingPage';
+import AnalogyQuiz from './pages/AnalogyQuiz';
+import CategoryQuiz from './pages/CategoryQuiz';
 import { AuthProvider } from './contexts/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -315,6 +318,45 @@ function AnimatedRoutes() {
               transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <WritingTest />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/critical-thinking"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <CriticalThinkingPage />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/analogy-quiz"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <AnalogyQuiz />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/category-quiz"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <CategoryQuiz />
             </motion.div>
           }
         />

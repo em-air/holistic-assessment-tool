@@ -51,6 +51,8 @@ const CategoryPage: React.FC = () => {
       navigate('/attention-memory-selection');
     } else if (subcategoryId === 'oral-language') {
       navigate('/oral-language-quiz');
+    } else if (subcategoryId === 'critical-thinking') {
+      navigate('/critical-thinking');
     } else {
       navigate(`/quiz/${categoryId}/${subcategoryId}`);
     }
@@ -93,7 +95,7 @@ const CategoryPage: React.FC = () => {
                   <span className="text-stone-800 font-semibold">{subcategory.title}</span>
                 </div>
                 <div className="relative flex items-center space-x-3">
-                  {(subcategory.id === 'attention' || subcategory.id === 'perception' || subcategory.id === 'assessment-generator' || subcategory.id === 'reading' || subcategory.id === 'phonics-awareness' || subcategory.id === 'blending' || subcategory.id === 'sentence-formation' || subcategory.id === 'learning-style' || subcategory.id === 'oral-language') ? (
+                  {(subcategory.id === 'attention' || subcategory.id === 'perception' || subcategory.id === 'assessment-generator' || subcategory.id === 'reading' || subcategory.id === 'phonics-awareness' || subcategory.id === 'blending' || subcategory.id === 'sentence-formation' || subcategory.id === 'learning-style' || subcategory.id === 'oral-language' || subcategory.id === 'critical-thinking') ? (
                     <span className="text-emerald-600 text-sm font-medium">Available</span>
                   ) : (
                     <span className="text-stone-400 text-sm">Coming Soon</span>

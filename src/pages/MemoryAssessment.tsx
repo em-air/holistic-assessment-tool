@@ -71,7 +71,7 @@ const MemoryAssessment: React.FC = () => {
     
     // Start showing phase
     setGamePhase('showing');
-    const showTime = type === 'missing_object' ? 4 : 3; // Longer for missing object
+    const showTime = 6; // 5 seconds for both picture sequence and missing object
     setTimeLeft(showTime);
     setShowTimer(true);
   }, []);
