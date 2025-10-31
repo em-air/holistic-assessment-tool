@@ -56,3 +56,5 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
+// a jigsaw puzzle where all the pieces are solved except for one piece that is missing and the student must find that missing piece. this quiz should appear when perception is clicked.right now let use random images as a template, i will do the real images later. the quiz should get harder as the student progresses through the levels. make sure to include feedback for correct and incorrect answers.

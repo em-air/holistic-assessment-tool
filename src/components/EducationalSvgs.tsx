@@ -117,3 +117,4 @@ export const EducationalSvgs: React.FC = () => {
 };
 
 export default EducationalSvgs;
+

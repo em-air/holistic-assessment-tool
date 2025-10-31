@@ -166,6 +166,19 @@ function AnimatedRoutes() {
           }
         />
         <Route
+          path="/missing-object-quiz"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <PerceptionQuiz />
+            </motion.div>
+          }
+        />
+        <Route
           path="/oral-language-quiz"
           element={
             <motion.div
