@@ -61,17 +61,17 @@ const questions: Question[] = [
   },
   {
     id: 8,
-    image: "",
+    image: "https://previews.123rf.com/images/markusgann/markusgann0806/markusgann080600081/3189361-a-photography-of-a-house-without-door-and-windows.jpg",
     question: "what is missing from this house?",
     options: ["a door", "a window", "a roof"],
     correctAnswer: "a door",
   },
   {
     id:9,
-    image: "",
+    image: "https://cdn.outsideonline.com/wp-content/uploads/2022/11/Soja-1024x640.jpg",
     question: "what is missing from this bicycle?",
-    options: ["a seat", "a handlebar", "a wheel"],
-    correctAnswer: "a wheel",
+    options: ["a seat", "a handlebar", "wheels"],
+    correctAnswer: "a handlebar",
   }
 ];
 
