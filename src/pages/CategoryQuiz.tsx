@@ -20,13 +20,11 @@ const CategoryQuiz: React.FC = () => {
   const [questions, setQuestions] = useState<CategoryQuestion[]>([]);
   const [draggedItem, setDraggedItem] = useState<CategoryItem | null>(null);
 
-  // Load grade from localStorage or default to null
+  // Always start with grade selection (don't auto-load from localStorage)
   useEffect(() => {
-    const savedGrade = localStorage.getItem('selectedGrade') as GradeLevel;
-    if (savedGrade && Object.keys(categoryQuestions).includes(savedGrade)) {
-      setSelectedGrade(savedGrade);
-      setQuestions(categoryQuestions[savedGrade]);
-    }
+    // Clear any previously stored grade to ensure grade selection shows
+    localStorage.removeItem('selectedGrade');
+    setSelectedGrade(null);
   }, []);
 
   // Initialize items when question changes
@@ -42,7 +40,8 @@ const CategoryQuiz: React.FC = () => {
   const handleGradeSelect = (grade: GradeLevel) => {
     setSelectedGrade(grade);
     setQuestions(categoryQuestions[grade]);
-    localStorage.setItem('selectedGrade', grade);
+    // Only store for current session, will be cleared on page reload
+    sessionStorage.setItem('selectedGrade', grade);
     resetQuiz();
   };
 

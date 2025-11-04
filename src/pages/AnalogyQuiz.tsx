@@ -14,19 +14,18 @@ const AnalogyQuiz: React.FC = () => {
   const [isComplete, setIsComplete] = useState(false);
   const [questions, setQuestions] = useState<AnalogyQuestion[]>([]);
 
-  // Load grade from localStorage or default to null
+  // Always start with grade selection (don't auto-load from localStorage)
   useEffect(() => {
-    const savedGrade = localStorage.getItem('selectedGrade') as GradeLevel;
-    if (savedGrade && Object.keys(analogyQuestions).includes(savedGrade)) {
-      setSelectedGrade(savedGrade);
-      setQuestions(analogyQuestions[savedGrade]);
-    }
+    // Clear any previously stored grade to ensure grade selection shows
+    localStorage.removeItem('selectedGrade');
+    setSelectedGrade(null);
   }, []);
 
   const handleGradeSelect = (grade: GradeLevel) => {
     setSelectedGrade(grade);
     setQuestions(analogyQuestions[grade]);
-    localStorage.setItem('selectedGrade', grade);
+    // Only store for current session, will be cleared on page reload
+    sessionStorage.setItem('selectedGrade', grade);
     resetQuiz();
   };
 
