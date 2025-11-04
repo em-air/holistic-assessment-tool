@@ -253,10 +253,10 @@ const AttentionAssessment: React.FC = () => {
                 Try Memory Games
               </button>
               <button
-                onClick={() => navigate('/categories')}
+                onClick={() => navigate('/attention-memory-selection')}
                 className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200 transform hover:scale-105"
               >
-                Back to Categories
+                Back
               </button>
             </div>
           </motion.div>

@@ -97,10 +97,10 @@ const AnalogyQuiz: React.FC = () => {
 
             <div className="text-center">
               <button
-                onClick={() => navigate('/categories')}
+                onClick={() => navigate('/critical-thinking')}
                 className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-colors duration-200"
               >
-                Back to Categories
+                Back
               </button>
             </div>
           </motion.div>
@@ -163,10 +163,10 @@ const AnalogyQuiz: React.FC = () => {
                 Change Grade
               </button>
               <button
-                onClick={() => navigate('/categories')}
+                onClick={() => navigate('/critical-thinking')}
                 className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-colors duration-200"
               >
-                Back to Menu
+                Back
               </button>
             </div>
           </motion.div>
@@ -182,7 +182,7 @@ const AnalogyQuiz: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate('/categories')}
+            onClick={() => navigate('/critical-thinking')}
             className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:bg-white/20 transition-colors duration-200"
           >
             <ArrowLeft size={20} />

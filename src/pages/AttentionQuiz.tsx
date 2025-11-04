@@ -231,11 +231,11 @@ const AttentionQuiz: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <button
-              onClick={() => navigate('/categories/mind')}
+              onClick={() => navigate('/category/mind')}
               className="group flex items-center space-x-2 px-4 py-2 text-stone-600 rounded-lg transition-all duration-300 ease-out hover:text-emerald-700 hover:bg-white/50 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
             >
               <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
-              <span className="font-medium">Back to Mind</span>
+              <span className="font-medium">Back</span>
             </button>
           </div>
 
@@ -328,11 +328,11 @@ const AttentionQuiz: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate('/categories/mind')}
+            onClick={() => navigate('/category/mind')}
             className="group flex items-center space-x-2 px-4 py-2 text-stone-600 rounded-lg transition-all duration-300 ease-out hover:text-emerald-700 hover:bg-white/50 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
           >
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
-            <span className="font-medium">Back to Mind</span>
+            <span className="font-medium">Back</span>
           </button>
           
           <div className="text-center">
@@ -551,10 +551,10 @@ const AttentionQuiz: React.FC = () => {
                   Play Again
                 </button>
                 <button
-                  onClick={() => navigate('/categories/mind')}
+                  onClick={() => navigate('/category/mind')}
                   className="px-8 py-3 bg-gradient-to-r from-stone-500 to-stone-600 text-white rounded-full font-bold hover:shadow-lg transition-all duration-300"
                 >
-                  Back to Mind
+                  Back
                 </button>
               </div>
             </div>

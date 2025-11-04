@@ -45,6 +45,34 @@ const questions: Question[] = [
     options: ["a number", "a hand", "a frame"],
     correctAnswer: "a hand",
   },
+  {
+    id: 6,
+    image: "https://www.pngkey.com/png/detail/183-1834807_clipart-smile-cartoon-face-cartoon-face-without-nose.png",
+    question: "what is missing from this face?",
+    options: ["a nose", "an ear", "a hat"],
+    correctAnswer: "a nose",
+  },
+  {
+    id: 7,
+    image: "https://c7.alamy.com/comp/KK6PGC/violet-modern-cartoon-colored-cabriolet-car-isolated-on-transparent-KK6PGC.jpg",
+    question: "what is missing from this car?",
+    options: ["a door", "tires", "windows"],
+    correctAnswer: "windows",
+  },
+  {
+    id: 8,
+    image: "",
+    question: "what is missing from this house?",
+    options: ["a door", "a window", "a roof"],
+    correctAnswer: "a door",
+  },
+  {
+    id:9,
+    image: "",
+    question: "what is missing from this bicycle?",
+    options: ["a seat", "a handlebar", "a wheel"],
+    correctAnswer: "a wheel",
+  }
 ];
 
 const MissingObjectQuiz: React.FC = () => {
@@ -89,8 +117,8 @@ const MissingObjectQuiz: React.FC = () => {
   };
 
   const handleFinish = () => {
-    // Route to perception quiz
-    navigate('/perception-quiz');
+    // Route back to mind category
+    navigate('/category/mind');
   };
 
   const resetForRetry = () => {
@@ -122,7 +150,7 @@ const MissingObjectQuiz: React.FC = () => {
             onClick={handleFinish}
             className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-8 rounded-full text-lg transition-colors shadow-lg"
           >
-            continue to perception quiz →
+            Continue
           </button>
         </div>
       </div>

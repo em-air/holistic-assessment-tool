@@ -11,11 +11,11 @@ const PerceptionQuiz: React.FC = () => {
       {/* Header with back button */}
       <div className="absolute top-4 left-4 z-20">
         <button
-          onClick={() => navigate('/categories')}
+          onClick={() => navigate('/category/mind')}
           className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
         >
           <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
-          <span className="font-medium">Back to Categories</span>
+          <span className="font-medium">Back</span>
         </button>
       </div>
 

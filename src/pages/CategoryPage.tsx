@@ -17,11 +17,11 @@ const CategoryPage: React.FC = () => {
         <div className="text-center bg-stone-100 p-8 rounded-2xl shadow-xl border border-stone-200 relative z-10">
           <h1 className="text-2xl font-bold text-stone-800 mb-4">Category Not Found</h1>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/categories')}
             className="group relative px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-stone-100 rounded-full font-medium overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-emerald-500/25 transform hover:scale-105 hover:-translate-y-1"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-700 to-teal-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <span className="relative">Back to Home</span>
+            <span className="relative">Back</span>
           </button>
         </div>
       </div>
@@ -65,11 +65,11 @@ const CategoryPage: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/categories')}
             className="group flex items-center space-x-2 px-4 py-2 text-stone-600 rounded-lg transition-all duration-300 ease-out hover:text-emerald-700 hover:bg-white/50 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
           >
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
-            <span className="font-medium">Back to Dashboard</span>
+            <span className="font-medium">Back</span>
           </button>
         </div>
 

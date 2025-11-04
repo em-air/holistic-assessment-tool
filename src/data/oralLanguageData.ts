@@ -48,7 +48,7 @@ export const oralLanguageTranslations = {
   en: {
     title: "Oral Language Assessment",
     subtitle: "Choose an activity to test language skills",
-    backToCategories: "Back to Categories",
+    backToCategories: "Back",
     level: "Level",
     question: "Question",
     of: "of",
@@ -58,7 +58,7 @@ export const oralLanguageTranslations = {
     complete: "Quiz Complete!",
     score: "Score",
     restart: "Restart",
-    backToSelection: "Back to Selection",
+    backToSelection: "Back",
     excellent: "Excellent work!",
     good: "Good job!",
     keepTrying: "Keep practicing!"
