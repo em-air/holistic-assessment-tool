@@ -214,6 +214,18 @@ const AnalogyQuiz: React.FC = () => {
               <h2 className="text-2xl font-bold text-gray-800 mb-4">
                 {currentQuestion?.question}
               </h2>
+              {currentQuestion?.image && (
+                <div className="mb-6">
+                  <img
+                    src={currentQuestion.image}
+                    alt="Question illustration"
+                    className="w-64 h-64 object-contain bg-gray-50 rounded-xl shadow-lg mx-auto border border-gray-200"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "https://via.placeholder.com/256x256/f0f0f0/999999?text=Image";
+                    }}
+                  />
+                </div>
+              )}
               <div className="w-20 h-1 bg-gradient-to-r from-blue-400 to-purple-500 rounded mx-auto"></div>
             </div>
 
@@ -248,7 +260,7 @@ const AnalogyQuiz: React.FC = () => {
                     className={buttonClass}
                   >
                     <div className="flex items-center justify-between">
-                      <span>{choice}</span>
+                      <span className="text-lg font-medium">{choice}</span>
                       {showFeedback && index === currentQuestion.correctAnswer && (
                         <CheckCircle size={24} className="text-green-600" />
                       )}

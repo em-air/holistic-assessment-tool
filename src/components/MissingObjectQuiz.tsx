@@ -115,7 +115,6 @@ const MissingObjectQuiz: React.FC = () => {
       setIsQuizComplete(true);
     }
   };
-
   const handleFinish = () => {
     // Route back to mind category
     navigate('/category/mind');

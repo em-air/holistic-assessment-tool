@@ -294,9 +294,17 @@ const CategoryQuiz: React.FC = () => {
                       onDragStart={() => handleDragStart(item)}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="bg-blue-100 border-2 border-blue-200 rounded-xl px-4 py-2 cursor-move hover:bg-blue-200 transition-colors duration-200 select-none"
+                      className="bg-blue-100 border-2 border-blue-200 rounded-xl p-3 cursor-move hover:bg-blue-200 transition-colors duration-200 select-none flex flex-col items-center space-y-2"
                     >
-                      <span className="font-medium text-blue-800">{item.name}</span>
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-16 h-16 object-cover rounded-lg shadow-sm"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "https://via.placeholder.com/64x64/f0f0f0/999999?text=" + encodeURIComponent(item.name);
+                        }}
+                      />
+                      <span className="font-medium text-blue-800 text-sm text-center">{item.name}</span>
                     </motion.div>
                   ))}
                 </div>
@@ -349,7 +357,15 @@ const CategoryQuiz: React.FC = () => {
                             onClick={() => !showResults && handleItemClick(item)}
                             className={itemClass}
                           >
-                            <div className="flex items-center justify-center gap-2">
+                            <div className="flex items-center justify-center gap-3">
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="w-16 h-16 object-cover rounded-lg shadow-sm"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = "https://via.placeholder.com/64x64/f0f0f0/999999?text=" + encodeURIComponent(item.name);
+                                }}
+                              />
                               <span>{item.name}</span>
                               {showResults && (
                                 <>
