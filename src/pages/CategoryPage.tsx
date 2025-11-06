@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { assessmentCategories } from '../data/assessmentData';
 import FloatingBackground from '../components/FloatingBackground';
+import MindProgressBar from '../components/MindProgressBar';
+import MindSectionReport from '../components/MindSectionReport';
+import '../utils/testProgressUtils'; // For testing - adds window.addTestResults() and window.clearTestResults()
 
 const CategoryPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
   const navigate = useNavigate();
+  const [showReport, setShowReport] = useState(false);
 
   const category = assessmentCategories.find(cat => cat.id === categoryId);
 
@@ -79,6 +83,16 @@ const CategoryPage: React.FC = () => {
           <p className="text-stone-700 text-lg max-w-2xl mx-auto">{category.description}</p>
         </div>
 
+        {/* Progress Bar for Mind Section */}
+        {categoryId === 'mind' && (
+          <div className="max-w-4xl mx-auto mb-8">
+            <MindProgressBar 
+              onShowReport={() => setShowReport(true)}
+              className="mb-6"
+            />
+          </div>
+        )}
+
         {/* Subcategories */}
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-semibold text-stone-800 mb-8">Choose an Assessment</h2>
@@ -109,6 +123,11 @@ const CategoryPage: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Report Modal */}
+      {showReport && (
+        <MindSectionReport onClose={() => setShowReport(false)} />
+      )}
     </div>
   );
 };

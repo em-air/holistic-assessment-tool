@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, CheckCircle, XCircle, Trophy, RotateCcw, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { categoryQuestions, gradeOptions, type GradeLevel, type CategoryQuestion, type CategoryItem } from '../data/criticalThinkingData';
+import { ProgressTracker } from '../utils/progressTracker';
+import MindProgressBar from '../components/MindProgressBar';
+import MindSectionReport from '../components/MindSectionReport';
 
 interface DroppedItem extends CategoryItem {
   droppedIn: string;
@@ -19,6 +22,8 @@ const CategoryQuiz: React.FC = () => {
   const [isComplete, setIsComplete] = useState(false);
   const [questions, setQuestions] = useState<CategoryQuestion[]>([]);
   const [draggedItem, setDraggedItem] = useState<CategoryItem | null>(null);
+  const [startTime, setStartTime] = useState<number>(Date.now());
+  const [showReport, setShowReport] = useState(false);
 
   // Always start with grade selection (don't auto-load from localStorage)
   useEffect(() => {
@@ -50,6 +55,7 @@ const CategoryQuiz: React.FC = () => {
     setScore(0);
     setIsComplete(false);
     setShowResults(false);
+    setStartTime(Date.now());
   };
 
   const handleDragStart = (item: CategoryItem) => {
@@ -114,6 +120,23 @@ const CategoryQuiz: React.FC = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
+      // Quiz completed - save result
+      const timeSpent = Math.round((Date.now() - startTime) / 1000);
+      const totalQuestions = questions.reduce((sum, q) => sum + q.items.length, 0);
+      const percentage = Math.round((score / totalQuestions) * 100);
+      
+      ProgressTracker.saveQuizResult({
+        quizId: 'category-quiz',
+        quizName: 'Category Quiz',
+        subcategory: 'critical-thinking',
+        score,
+        totalQuestions,
+        percentage,
+        timeSpent,
+        completedAt: new Date().toISOString(),
+        gradeLevel: selectedGrade || 'unknown'
+      });
+      
       setIsComplete(true);
     }
   };
@@ -259,6 +282,13 @@ const CategoryQuiz: React.FC = () => {
           </div>
           
           <div className="w-20"></div>
+        </div>
+
+        {/* Progress Bar for Mind Section */}
+        <div className="mb-6">
+          <MindProgressBar 
+            onShowReport={() => setShowReport(true)} 
+          />
         </div>
 
         <AnimatePresence mode="wait">
@@ -439,6 +469,11 @@ const CategoryQuiz: React.FC = () => {
             </div>
           </motion.div>
         </AnimatePresence>
+
+        {/* Report Modal */}
+        {showReport && (
+          <MindSectionReport onClose={() => setShowReport(false)} />
+        )}
       </div>
     </div>
   );

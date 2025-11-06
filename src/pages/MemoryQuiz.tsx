@@ -2,6 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Star, Brain, Check, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ProgressTracker } from '../utils/progressTracker';
+import MindProgressBar from '../components/MindProgressBar';
+import MindSectionReport from '../components/MindSectionReport';
 
 // Tile interface
 interface Tile {
@@ -22,6 +25,8 @@ const MemoryQuiz: React.FC = () => {
   const [gamePhase, setGamePhase] = useState<'memorize' | 'select'>('memorize');
   const [showingTime, setShowingTime] = useState(3);
   const [isCorrect, setIsCorrect] = useState(false);
+  const [startTime] = useState<Date>(new Date());
+  const [showReport, setShowReport] = useState(false);
 
   const maxLevel = 6;
   const currentTileCount = Math.min(2 + currentLevel, 6);
@@ -70,7 +75,8 @@ const MemoryQuiz: React.FC = () => {
 
       if (selectedTiles.length + 1 === currentTileCount) {
         // Level completed successfully
-        setScore(prev => prev + currentLevel * 10);
+        const newScore = score + currentLevel * 10;
+        setScore(newScore);
         setIsCorrect(true);
         setGameState('result');
         
@@ -80,6 +86,19 @@ const MemoryQuiz: React.FC = () => {
             generateTiles();
           } else {
             setGameState('complete');
+            
+            // Save progress to tracker - use the calculated final score
+            const maxPossibleScore = Array.from({ length: maxLevel }, (_, i) => (i + 1) * 10).reduce((a, b) => a + b, 0);
+            ProgressTracker.saveQuizResult({
+              quizId: 'memory-quiz',
+              quizName: 'Memory Challenge Quiz',
+              subcategory: 'attention',
+              score: newScore,
+              totalQuestions: maxLevel,
+              percentage: Math.round((newScore / maxPossibleScore) * 100),
+              timeSpent: Math.round((new Date().getTime() - startTime.getTime()) / 1000),
+              completedAt: new Date().toISOString()
+            });
           }
         }, 2000);
       }
@@ -161,6 +180,13 @@ const MemoryQuiz: React.FC = () => {
               Reset
             </span>
           </button>
+        </div>
+
+        {/* Mind Section Progress Bar */}
+        <div className="mb-6">
+          <MindProgressBar 
+            onShowReport={() => setShowReport(true)} 
+          />
         </div>
 
         {/* Game Instructions */}
@@ -273,6 +299,11 @@ const MemoryQuiz: React.FC = () => {
               </div>
             </div>
           </motion.div>
+        )}
+
+        {/* Report Modal */}
+        {showReport && (
+          <MindSectionReport onClose={() => setShowReport(false)} />
         )}
       </div>
     </div>

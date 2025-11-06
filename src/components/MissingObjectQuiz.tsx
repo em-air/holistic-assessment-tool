@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ProgressTracker } from '../utils/progressTracker';
 
 interface Question {
   id: number;
@@ -82,6 +83,7 @@ const MissingObjectQuiz: React.FC = () => {
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [showNext, setShowNext] = useState(false);
   const [isQuizComplete, setIsQuizComplete] = useState(false);
+  const [startTime] = useState<Date>(new Date());
   const navigate = useNavigate();
 
   const currentQuestion = questions[currentQuestionIndex];
@@ -116,6 +118,19 @@ const MissingObjectQuiz: React.FC = () => {
     }
   };
   const handleFinish = () => {
+    // Save quiz result to progress tracker
+    const percentage = Math.round((score / questions.length) * 100);
+    ProgressTracker.saveQuizResult({
+      quizId: 'perception-quiz',
+      quizName: 'Perception Quiz',
+      subcategory: 'perception',
+      score: score,
+      totalQuestions: questions.length,
+      percentage: percentage,
+      timeSpent: Math.round((new Date().getTime() - startTime.getTime()) / 1000),
+      completedAt: new Date().toISOString()
+    });
+
     // Route back to mind category
     navigate('/category/mind');
   };

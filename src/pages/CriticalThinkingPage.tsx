@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Brain, Target } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import MindProgressBar from '../components/MindProgressBar';
+import MindSectionReport from '../components/MindSectionReport';
 
 const CriticalThinkingPage: React.FC = () => {
   const navigate = useNavigate();
+  const [showReport, setShowReport] = useState(false);
 
   const quizTypes = [
     {
@@ -58,6 +61,13 @@ const CriticalThinkingPage: React.FC = () => {
           </div>
           
           <div className="w-32"></div> {/* Spacer for centering */}
+        </div>
+
+        {/* Progress Bar for Mind Section */}
+        <div className="mb-6">
+          <MindProgressBar 
+            onShowReport={() => setShowReport(true)} 
+          />
         </div>
 
         {/* Introduction */}
@@ -160,6 +170,11 @@ const CriticalThinkingPage: React.FC = () => {
             </p>
           </div>
         </motion.div>
+
+        {/* Report Modal */}
+        {showReport && (
+          <MindSectionReport onClose={() => setShowReport(false)} />
+        )}
       </div>
     </div>
   );

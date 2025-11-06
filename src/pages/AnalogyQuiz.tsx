@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, CheckCircle, XCircle, Trophy, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { analogyQuestions, gradeOptions, type GradeLevel, type AnalogyQuestion } from '../data/criticalThinkingData';
+import { ProgressTracker } from '../utils/progressTracker';
+import MindProgressBar from '../components/MindProgressBar';
+import MindSectionReport from '../components/MindSectionReport';
 
 const AnalogyQuiz: React.FC = () => {
   const navigate = useNavigate();
@@ -13,6 +16,8 @@ const AnalogyQuiz: React.FC = () => {
   const [score, setScore] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [questions, setQuestions] = useState<AnalogyQuestion[]>([]);
+  const [startTime, setStartTime] = useState<number>(Date.now());
+  const [showReport, setShowReport] = useState(false);
 
   // Always start with grade selection (don't auto-load from localStorage)
   useEffect(() => {
@@ -35,6 +40,7 @@ const AnalogyQuiz: React.FC = () => {
     setShowFeedback(false);
     setScore(0);
     setIsComplete(false);
+    setStartTime(Date.now());
   };
 
   const handleAnswerSelect = (answerIndex: number) => {
@@ -55,6 +61,22 @@ const AnalogyQuiz: React.FC = () => {
       setSelectedAnswer(null);
       setShowFeedback(false);
     } else {
+      // Quiz completed - save result
+      const timeSpent = Math.round((Date.now() - startTime) / 1000);
+      const percentage = Math.round((score / questions.length) * 100);
+      
+      ProgressTracker.saveQuizResult({
+        quizId: 'analogy-quiz',
+        quizName: 'Analogy Quiz',
+        subcategory: 'critical-thinking',
+        score,
+        totalQuestions: questions.length,
+        percentage,
+        timeSpent,
+        completedAt: new Date().toISOString(),
+        gradeLevel: selectedGrade || 'unknown'
+      });
+      
       setIsComplete(true);
     }
   };
@@ -201,6 +223,13 @@ const AnalogyQuiz: React.FC = () => {
           <div className="w-20"></div>
         </div>
 
+        {/* Progress Bar for Mind Section */}
+        <div className="mb-6">
+          <MindProgressBar 
+            onShowReport={() => setShowReport(true)} 
+          />
+        </div>
+
         <AnimatePresence mode="wait">
           <motion.div
             key={currentQuestionIndex}
@@ -322,6 +351,11 @@ const AnalogyQuiz: React.FC = () => {
             )}
           </motion.div>
         </AnimatePresence>
+
+        {/* Report Modal */}
+        {showReport && (
+          <MindSectionReport onClose={() => setShowReport(false)} />
+        )}
       </div>
     </div>
   );

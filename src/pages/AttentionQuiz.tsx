@@ -2,6 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Star, Eye, Check, X, Brain, Target } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ProgressTracker } from '../utils/progressTracker';
+import MindProgressBar from '../components/MindProgressBar';
+import MindSectionReport from '../components/MindSectionReport';
 
 // Tile interface
 interface Tile {
@@ -28,6 +31,8 @@ const AttentionQuiz: React.FC = () => {
   const [sequenceGuess, setSequenceGuess] = useState<number[]>([]);
   const [sequenceTiles, setSequenceTiles] = useState<{ id: number; number: number; isFlipped: boolean; isCorrect?: boolean; isWrong?: boolean }[]>([]);
   const [showInstructions, setShowInstructions] = useState(true);
+  const [startTime] = useState<Date>(new Date());
+  const [showReport, setShowReport] = useState(false);
 
   const maxLevel = 6;
   const currentTileCount = Math.min(2 + currentLevel, 6);
@@ -206,6 +211,27 @@ const AttentionQuiz: React.FC = () => {
     setQuizType(null);
   };
 
+  const handleBackToMind = () => {
+    // Save quiz result to progress tracker if completed
+    if (gameState === 'complete' && quizType) {
+      const maxPossibleScore = Array.from({ length: maxLevel }, (_, i) => (i + 1) * 10).reduce((a, b) => a + b, 0);
+      const percentage = Math.round((score / maxPossibleScore) * 100);
+      
+      ProgressTracker.saveQuizResult({
+        quizId: 'attention-memory',
+        quizName: 'Attention & Memory Assessment',
+        subcategory: 'attention',
+        score: score,
+        totalQuestions: maxLevel,
+        percentage: percentage,
+        timeSpent: Math.round((new Date().getTime() - startTime.getTime()) / 1000),
+        completedAt: new Date().toISOString()
+      });
+    }
+
+    navigate('/category/mind');
+  };
+
   const startQuiz = (type: 'attention' | 'memory' | 'sequence') => {
     if (type === 'attention') {
       // Redirect to Memory Assessment component
@@ -231,12 +257,19 @@ const AttentionQuiz: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <button
-              onClick={() => navigate('/category/mind')}
+              onClick={handleBackToMind}
               className="group flex items-center space-x-2 px-4 py-2 text-stone-600 rounded-lg transition-all duration-300 ease-out hover:text-emerald-700 hover:bg-white/50 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
             >
               <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
               <span className="font-medium">Back</span>
             </button>
+          </div>
+
+          {/* Progress Bar for Mind Section */}
+          <div className="mb-6">
+            <MindProgressBar 
+              onShowReport={() => setShowReport(true)} 
+            />
           </div>
 
           {/* Title */}
@@ -328,7 +361,7 @@ const AttentionQuiz: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate('/category/mind')}
+            onClick={handleBackToMind}
             className="group flex items-center space-x-2 px-4 py-2 text-stone-600 rounded-lg transition-all duration-300 ease-out hover:text-emerald-700 hover:bg-white/50 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
           >
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
@@ -361,6 +394,13 @@ const AttentionQuiz: React.FC = () => {
               Reset
             </span>
           </button>
+        </div>
+
+        {/* Progress Bar for Mind Section */}
+        <div className="mb-6">
+          <MindProgressBar 
+            onShowReport={() => setShowReport(true)} 
+          />
         </div>
 
         {/* Sequence Game Instructions */}
@@ -551,7 +591,7 @@ const AttentionQuiz: React.FC = () => {
                   Play Again
                 </button>
                 <button
-                  onClick={() => navigate('/category/mind')}
+                  onClick={handleBackToMind}
                   className="px-8 py-3 bg-gradient-to-r from-stone-500 to-stone-600 text-white rounded-full font-bold hover:shadow-lg transition-all duration-300"
                 >
                   Back
@@ -559,6 +599,11 @@ const AttentionQuiz: React.FC = () => {
               </div>
             </div>
           </motion.div>
+        )}
+
+        {/* Report Modal */}
+        {showReport && (
+          <MindSectionReport onClose={() => setShowReport(false)} />
         )}
       </div>
     </div>

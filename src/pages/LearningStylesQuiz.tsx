@@ -10,6 +10,9 @@ import {
   quizTexts, 
   LearningStyle 
 } from '../data/learningStylesData';
+import { ProgressTracker } from '../utils/progressTracker';
+import MindProgressBar from '../components/MindProgressBar';
+import MindSectionReport from '../components/MindSectionReport';
 
 interface QuizAnswer {
   questionId: string;
@@ -28,11 +31,13 @@ const LearningStylesQuiz: React.FC = () => {
   const [language, setLanguage] = useState<'en' | 'ar'>('en');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [answers, setAnswers] = useState<QuizAnswer[]>([]);
+  const [showReport, setShowReport] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showResults, setShowResults] = useState<boolean>(false);
   const [isQuizStarted, setIsQuizStarted] = useState<boolean>(false);
   const [scores, setScores] = useState<LearningStyleScore[]>([]);
   const [dominantStyle, setDominantStyle] = useState<LearningStyle | null>(null);
+  const [startTime] = useState<number>(Date.now());
 
   // Get current question
   const currentQuestion = quizQuestions[currentQuestionIndex];
@@ -106,6 +111,25 @@ const LearningStylesQuiz: React.FC = () => {
       setDominantStyle(dominantStyleInfo);
     }
 
+    // Save progress
+    const timeSpent = Math.round((Date.now() - startTime) / 1000);
+    const percentage = Math.round((scoreArray[0].score / totalAnswers) * 100);
+    
+    ProgressTracker.saveQuizResult({
+      quizId: 'learning-styles',
+      quizName: 'Learning Styles Quiz',
+      subcategory: 'learning-style',
+      score: scoreArray[0].score,
+      totalQuestions: totalAnswers,
+      percentage,
+      timeSpent,
+      completedAt: new Date().toISOString(),
+      additionalData: {
+        dominantStyle: scoreArray[0].style,
+        allScores: scoreArray
+      }
+    });
+
     setShowResults(true);
   };
 
@@ -153,6 +177,13 @@ const LearningStylesQuiz: React.FC = () => {
           <LanguageToggle
             language={language}
             onLanguageChange={setLanguage}
+          />
+        </div>
+
+        {/* Progress Bar for Mind Section */}
+        <div className="mb-6">
+          <MindProgressBar 
+            onShowReport={() => setShowReport(true)} 
           />
         </div>
 
@@ -294,6 +325,11 @@ const LearningStylesQuiz: React.FC = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Report Modal */}
+        {showReport && (
+          <MindSectionReport onClose={() => setShowReport(false)} />
+        )}
       </div>
     </div>
   );

@@ -8,6 +8,9 @@ import {
   generateSequenceQuestion, 
   evaluatePerformance
 } from '../data/memoryAssessmentData';
+import { ProgressTracker } from '../utils/progressTracker';
+import MindProgressBar from '../components/MindProgressBar';
+import MindSectionReport from '../components/MindSectionReport';
 
 type GamePhase = 'menu' | 'showing' | 'hidden' | 'testing' | 'feedback' | 'results';
 type AssessmentType = 'sequence_recall' | 'missing_object';
@@ -40,6 +43,8 @@ const MemoryAssessment: React.FC = () => {
   
   // Results
   const [finalResults, setFinalResults] = useState<AssessmentResults | null>(null);
+  const [startTime] = useState<Date>(new Date());
+  const [showReport, setShowReport] = useState(false);
 
   // Timer effect for showing phase
   useEffect(() => {
@@ -157,13 +162,28 @@ const MemoryAssessment: React.FC = () => {
   // Complete assessment
   const completeAssessment = () => {
     const performance = evaluatePerformance(correctAnswers, questionsAnswered + 1, difficulty);
+    const finalCorrect = correctAnswers + (isCorrect ? 1 : 0);
+    const finalTotal = questionsAnswered + 1;
+    
     setFinalResults({
-      questionsAnswered: questionsAnswered + 1,
-      correctAnswers: correctAnswers + (isCorrect ? 1 : 0),
+      questionsAnswered: finalTotal,
+      correctAnswers: finalCorrect,
       difficulty,
       performance
     });
     setGamePhase('results');
+
+    // Save progress to tracker
+    ProgressTracker.saveQuizResult({
+      quizId: 'memory-assessment',
+      quizName: 'Memory Assessment',
+      subcategory: 'attention',
+      score: finalCorrect,
+      totalQuestions: finalTotal,
+      percentage: Math.round((finalCorrect / finalTotal) * 100),
+      timeSpent: Math.round((new Date().getTime() - startTime.getTime()) / 1000),
+      completedAt: new Date().toISOString()
+    });
   };
 
   // Reset to menu
@@ -211,6 +231,13 @@ const MemoryAssessment: React.FC = () => {
               <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
               <span className="font-medium">Back to Selection</span>
             </button>
+          </div>
+
+          {/* Mind Section Progress Bar */}
+          <div className="mb-6">
+            <MindProgressBar 
+              onShowReport={() => setShowReport(true)} 
+            />
           </div>
 
           {/* Title */}
@@ -276,6 +303,11 @@ const MemoryAssessment: React.FC = () => {
               </motion.div>
             ))}
           </div>
+
+          {/* Report Modal */}
+          {showReport && (
+            <MindSectionReport onClose={() => setShowReport(false)} />
+          )}
         </div>
       </div>
     );
@@ -286,6 +318,13 @@ const MemoryAssessment: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 py-8">
         <div className="container mx-auto px-4 max-w-4xl">
+          {/* Mind Section Progress Bar */}
+          <div className="mb-6">
+            <MindProgressBar 
+              onShowReport={() => setShowReport(true)} 
+            />
+          </div>
+
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -367,6 +406,11 @@ const MemoryAssessment: React.FC = () => {
               </button>
             </div>
           </motion.div>
+
+          {/* Report Modal */}
+          {showReport && (
+            <MindSectionReport onClose={() => setShowReport(false)} />
+          )}
         </div>
       </div>
     );
@@ -398,6 +442,13 @@ const MemoryAssessment: React.FC = () => {
           </div>
           
           <div className="w-20"></div> {/* Spacer for centering */}
+        </div>
+
+        {/* Mind Section Progress Bar */}
+        <div className="mb-6">
+          <MindProgressBar 
+            onShowReport={() => setShowReport(true)} 
+          />
         </div>
 
         {/* Game Content */}
@@ -539,6 +590,11 @@ const MemoryAssessment: React.FC = () => {
             )}
           </motion.div>
         </AnimatePresence>
+
+        {/* Report Modal */}
+        {showReport && (
+          <MindSectionReport onClose={() => setShowReport(false)} />
+        )}
       </div>
     </div>
   );

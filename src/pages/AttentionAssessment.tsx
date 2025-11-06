@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, CheckCircle, Brain, Target, TrendingUp, AlertCircle, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { attentionControlQuestions, calculateAttentionScores, interpretScores, getRecommendations } from '../data/attentionControlData';
+import { ProgressTracker } from '../utils/progressTracker';
+import MindProgressBar from '../components/MindProgressBar';
+import MindSectionReport from '../components/MindSectionReport';
 
 interface AttentionResults {
   focusingScore: number;
@@ -25,6 +28,8 @@ const AttentionAssessment: React.FC = () => {
   const [responses, setResponses] = useState<number[]>(new Array(attentionControlQuestions.length).fill(0));
   const [isCompleted, setIsCompleted] = useState(false);
   const [results, setResults] = useState<AttentionResults | null>(null);
+  const [startTime] = useState<Date>(new Date());
+  const [showReport, setShowReport] = useState(false);
 
   const question = attentionControlQuestions[currentQuestion];
   const progress = ((currentQuestion + 1) / attentionControlQuestions.length) * 100;
@@ -102,6 +107,18 @@ const AttentionAssessment: React.FC = () => {
 
     setResults(assessmentResults);
     setIsCompleted(true);
+
+    // Save progress to tracker
+    ProgressTracker.saveQuizResult({
+      quizId: 'attention-assessment',
+      quizName: 'Attention Control Assessment',
+      subcategory: 'attention',
+      score: assessmentResults.totalScore,
+      totalQuestions: attentionControlQuestions.length,
+      percentage: assessmentResults.totalPercentage,
+      timeSpent: Math.round((new Date().getTime() - startTime.getTime()) / 1000),
+      completedAt: new Date().toISOString()
+    });
   };
 
   const resetAssessment = () => {
@@ -129,6 +146,13 @@ const AttentionAssessment: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 py-8">
         <div className="container mx-auto px-4 max-w-4xl">
+          {/* Mind Section Progress Bar */}
+          <div className="mb-6">
+            <MindProgressBar 
+              onShowReport={() => setShowReport(true)} 
+            />
+          </div>
+
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -260,6 +284,11 @@ const AttentionAssessment: React.FC = () => {
               </button>
             </div>
           </motion.div>
+
+          {/* Report Modal */}
+          {showReport && (
+            <MindSectionReport onClose={() => setShowReport(false)} />
+          )}
         </div>
       </div>
     );
@@ -280,6 +309,13 @@ const AttentionAssessment: React.FC = () => {
           <div className="text-white text-sm font-medium">
             Question {currentQuestion + 1} of {attentionControlQuestions.length}
           </div>
+        </div>
+
+        {/* Mind Section Progress Bar */}
+        <div className="mb-6">
+          <MindProgressBar 
+            onShowReport={() => setShowReport(true)} 
+          />
         </div>
 
         {/* Progress Bar */}
@@ -380,6 +416,11 @@ const AttentionAssessment: React.FC = () => {
             <ArrowRight size={20} />
           </button>
         </div>
+
+        {/* Report Modal */}
+        {showReport && (
+          <MindSectionReport onClose={() => setShowReport(false)} />
+        )}
       </div>
     </div>
   );

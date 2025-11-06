@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Brain, Target, Eye, Focus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import MindProgressBar from '../components/MindProgressBar';
+import MindSectionReport from '../components/MindSectionReport';
 
 const AttentionMemorySelection: React.FC = () => {
   const navigate = useNavigate();
+  const [showReport, setShowReport] = useState(false);
 
   const assessmentOptions = [
     {
@@ -55,6 +58,13 @@ const AttentionMemorySelection: React.FC = () => {
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
             <span className="font-medium">Back</span>
           </button>
+        </div>
+
+        {/* Progress Bar for Mind Section */}
+        <div className="mb-6">
+          <MindProgressBar 
+            onShowReport={() => setShowReport(true)} 
+          />
         </div>
 
         {/* Title Section */}
@@ -169,6 +179,11 @@ const AttentionMemorySelection: React.FC = () => {
             </div>
           </div>
         </motion.div>
+
+        {/* Report Modal */}
+        {showReport && (
+          <MindSectionReport onClose={() => setShowReport(false)} />
+        )}
       </div>
     </div>
   );
