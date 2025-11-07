@@ -22,26 +22,32 @@ export interface ProgressData {
 // Mind section quiz configurations
 export const MIND_QUIZZES = [
   {
-    id: 'attention-assessment',
-    name: 'Attention Control Assessment',
+    id: 'attention-quiz',
+    name: 'Attention Quiz',
     subcategory: 'attention',
-    route: '/attention-assessment'
+    route: '/attention-quiz'
   },
   {
-    id: 'memory-assessment',
-    name: 'Memory Assessment',
-    subcategory: 'attention',
-    route: '/memory-assessment'
+    id: 'picture-sequence',
+    name: 'Picture Sequence',
+    subcategory: 'memory',
+    route: '/memory-assessment?type=sequence'
   },
   {
-    id: 'memory-quiz',
-    name: 'Memory Challenge Quiz',
-    subcategory: 'attention',
+    id: 'missing-object',
+    name: 'Missing Object',
+    subcategory: 'memory',
+    route: '/memory-assessment?type=missing'
+  },
+  {
+    id: 'number-tiles',
+    name: 'Number Tiles',
+    subcategory: 'memory',
     route: '/memory-quiz'
   },
   {
     id: 'learning-styles',
-    name: 'Learning Styles Quiz',
+    name: 'Learning Style Quiz',
     subcategory: 'learning-style',
     route: '/learning-styles-quiz'
   },

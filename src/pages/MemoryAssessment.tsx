@@ -173,11 +173,14 @@ const MemoryAssessment: React.FC = () => {
     });
     setGamePhase('results');
 
-    // Save progress to tracker
+    // Save progress to tracker based on assessment type
+    const quizId = selectedType === 'sequence_recall' ? 'picture-sequence' : 'missing-object';
+    const quizName = selectedType === 'sequence_recall' ? 'Picture Sequence' : 'Missing Object';
+    
     ProgressTracker.saveQuizResult({
-      quizId: 'memory-assessment',
-      quizName: 'Memory Assessment',
-      subcategory: 'attention',
+      quizId: quizId,
+      quizName: quizName,
+      subcategory: 'memory',
       score: finalCorrect,
       totalQuestions: finalTotal,
       percentage: Math.round((finalCorrect / finalTotal) * 100),

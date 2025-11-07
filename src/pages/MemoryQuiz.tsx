@@ -17,7 +17,7 @@ interface Tile {
 
 const MemoryQuiz: React.FC = () => {
   const navigate = useNavigate();
-  const [gameState, setGameState] = useState<'playing' | 'showing' | 'result' | 'complete'>('playing');
+  const [gameState, setGameState] = useState<'playing' | 'showing' | 'result' | 'complete' | 'out-of-tries'>('playing');
   const [currentLevel, setCurrentLevel] = useState(1);
   const [tiles, setTiles] = useState<Tile[]>([]);
   const [selectedTiles, setSelectedTiles] = useState<number[]>([]);
@@ -27,6 +27,8 @@ const MemoryQuiz: React.FC = () => {
   const [isCorrect, setIsCorrect] = useState(false);
   const [startTime] = useState<Date>(new Date());
   const [showReport, setShowReport] = useState(false);
+  const [attemptsPerLevel, setAttemptsPerLevel] = useState<Record<number, number>>({});
+  const [currentLevelAttempts, setCurrentLevelAttempts] = useState(0);
 
   const maxLevel = 6;
   const currentTileCount = Math.min(2 + currentLevel, 6);
@@ -55,6 +57,7 @@ const MemoryQuiz: React.FC = () => {
     setGamePhase('memorize');
     setShowingTime(3);
     setGameState('showing');
+    setCurrentLevelAttempts(0); // Reset attempts for new level
   }, [currentTileCount]);
 
   // Handle tile selection
@@ -83,35 +86,34 @@ const MemoryQuiz: React.FC = () => {
         setTimeout(() => {
           if (currentLevel < maxLevel) {
             setCurrentLevel(prev => prev + 1);
+            setCurrentLevelAttempts(0); // Reset attempts for next level
             generateTiles();
           } else {
+            // Final level completed - show score screen
             setGameState('complete');
-            
-            // Save progress to tracker - use the calculated final score
-            const maxPossibleScore = Array.from({ length: maxLevel }, (_, i) => (i + 1) * 10).reduce((a, b) => a + b, 0);
-            ProgressTracker.saveQuizResult({
-              quizId: 'memory-quiz',
-              quizName: 'Memory Challenge Quiz',
-              subcategory: 'attention',
-              score: newScore,
-              totalQuestions: maxLevel,
-              percentage: Math.round((newScore / maxPossibleScore) * 100),
-              timeSpent: Math.round((new Date().getTime() - startTime.getTime()) / 1000),
-              completedAt: new Date().toISOString()
-            });
           }
         }, 2000);
       }
     } else {
-      // Wrong selection
+      // Wrong selection - check attempts
       setTiles(prev => prev.map(t => 
         t.id === tileId ? { ...t, isSelected: true, isCorrect: false, isRevealed: true } : t
       ));
       setIsCorrect(false);
       setGameState('result');
       
+      const newAttempts = currentLevelAttempts + 1;
+      setCurrentLevelAttempts(newAttempts);
+      setAttemptsPerLevel(prev => ({ ...prev, [currentLevel]: newAttempts }));
+      
       setTimeout(() => {
-        generateTiles(); // Restart same level
+        if (newAttempts >= 3) {
+          // Out of tries for this level
+          setGameState('out-of-tries');
+        } else {
+          // Try again same level
+          generateTiles();
+        }
       }, 2000);
     }
   }, [gamePhase, gameState, tiles, selectedTiles, currentTileCount, currentLevel, maxLevel, generateTiles]);
@@ -135,9 +137,36 @@ const MemoryQuiz: React.FC = () => {
     generateTiles();
   }, [generateTiles]);
 
+  // Handle game completion and progress tracking
+  useEffect(() => {
+    if (gameState === 'complete' || gameState === 'out-of-tries') {
+      // Save progress to tracker when game completes or runs out of tries
+      const maxPossibleScore = Array.from({ length: maxLevel }, (_, i) => (i + 1) * 10).reduce((a, b) => a + b, 0);
+      const completedLevels = gameState === 'complete' ? maxLevel : Math.max(currentLevel - 1, 0);
+      
+      ProgressTracker.saveQuizResult({
+        quizId: 'number-tiles',
+        quizName: 'Number Tiles',
+        subcategory: 'memory',
+        score: score,
+        totalQuestions: maxLevel,
+        percentage: Math.round((score / maxPossibleScore) * 100),
+        timeSpent: Math.round((new Date().getTime() - startTime.getTime()) / 1000),
+        completedAt: new Date().toISOString(),
+        additionalData: {
+          levelsCompleted: completedLevels,
+          attemptsPerLevel: attemptsPerLevel,
+          endReason: gameState === 'complete' ? 'finished' : 'out-of-tries'
+        }
+      });
+    }
+  }, [gameState, score, maxLevel, startTime, currentLevel, attemptsPerLevel]);
+
   const resetGame = () => {
     setCurrentLevel(1);
     setScore(0);
+    setAttemptsPerLevel({});
+    setCurrentLevelAttempts(0);
     generateTiles();
   };
 
@@ -259,12 +288,63 @@ const MemoryQuiz: React.FC = () => {
                   <p className="text-lg">Level {currentLevel} completed! +{currentLevel * 10} points</p>
                 </div>
               ) : (
-                <div className="text-red-500">
+                <div className="text-orange-500">
                   <X className="w-12 h-12 mx-auto mb-3" />
-                  <h3 className="text-2xl font-bold mb-2">Try to Remember Better!</h3>
-                  <p className="text-lg">Select tiles in numerical order: 1 → 2 → 3 → 4 → 5 → 6</p>
+                  <h3 className="text-2xl font-bold mb-2">Keep Practicing!</h3>
+                  <p className="text-lg">Remember: Select tiles in numerical order (1 → 2 → 3...)</p>
+                  <p className="text-sm mt-2 text-gray-600">Don't worry, you'll move to the next level!</p>
                 </div>
               )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Out of Tries Screen */}
+        {gameState === 'out-of-tries' && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center"
+          >
+            <div className="bg-stone-100 rounded-2xl p-8 shadow-xl border border-stone-200 max-w-2xl mx-auto">
+              <X className="w-16 h-16 text-red-500 mx-auto mb-4" />
+              <h2 className="text-3xl font-bold text-stone-800 mb-4">Out of Tries!</h2>
+              <p className="text-xl text-stone-600 mb-6">
+                You've used all 3 attempts for level {currentLevel}. Don't worry, you can try the entire quiz again!
+              </p>
+              
+              {/* Current Progress Display */}
+              <div className="bg-white rounded-xl p-6 mb-6 shadow-inner">
+                <h3 className="text-lg font-bold text-gray-800 mb-4">Progress So Far</h3>
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div>
+                    <div className="text-3xl font-bold text-indigo-600">{score}</div>
+                    <div className="text-sm text-gray-600">Points Earned</div>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-bold text-orange-600">{currentLevel - 1}</div>
+                    <div className="text-sm text-gray-600">Levels Completed</div>
+                  </div>
+                </div>
+                <div className="mt-4 text-sm text-gray-700">
+                  <p>💪 <strong>Keep practicing!</strong> Memory games get easier with repetition.</p>
+                </div>
+              </div>
+              
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={resetGame}
+                  className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full font-bold hover:shadow-lg transition-all duration-300"
+                >
+                  Try Again
+                </button>
+                <button
+                  onClick={() => navigate('/attention-quiz')}
+                  className="px-8 py-3 bg-gradient-to-r from-stone-500 to-stone-600 text-white rounded-full font-bold hover:shadow-lg transition-all duration-300"
+                >
+                  Back to Selection
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -278,11 +358,31 @@ const MemoryQuiz: React.FC = () => {
           >
             <div className="bg-stone-100 rounded-2xl p-8 shadow-xl border border-stone-200 max-w-2xl mx-auto">
               <Star className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-              <h2 className="text-3xl font-bold text-stone-800 mb-4">Amazing Memory!</h2>
+              <h2 className="text-3xl font-bold text-stone-800 mb-4">Memory Quiz Complete!</h2>
               <p className="text-xl text-stone-600 mb-6">
-                You've completed all {maxLevel} levels of the memory quiz!
+                You've completed all {maxLevel} levels of the memory challenge!
               </p>
-              <p className="text-2xl font-bold text-indigo-600 mb-8">Final Score: {score}</p>
+              
+              {/* Score Display */}
+              <div className="bg-white rounded-xl p-6 mb-6 shadow-inner">
+                <h3 className="text-lg font-bold text-gray-800 mb-4">Your Results</h3>
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div>
+                    <div className="text-3xl font-bold text-indigo-600">{score}</div>
+                    <div className="text-sm text-gray-600">Total Points</div>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-bold text-green-600">
+                      {Math.round((score / (Array.from({ length: maxLevel }, (_, i) => (i + 1) * 10).reduce((a, b) => a + b, 0))) * 100)}%
+                    </div>
+                    <div className="text-sm text-gray-600">Success Rate</div>
+                  </div>
+                </div>
+                <div className="mt-4 text-sm text-gray-700">
+                  <p>🧠 <strong>Memory Skills:</strong> {score >= 150 ? 'Excellent!' : score >= 100 ? 'Good!' : score >= 50 ? 'Developing' : 'Keep Practicing!'}</p>
+                </div>
+              </div>
+              
               <div className="flex justify-center gap-4">
                 <button
                   onClick={resetGame}

@@ -1,13 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { X, Download, Share2, Brain, Award } from 'lucide-react';
+import { pdf } from '@react-pdf/renderer';
 import { ProgressTracker, MIND_QUIZZES, QuizResult } from '../utils/progressTracker';
+import ReportPDF from './ReportPDF';
 
 interface MindSectionReportProps {
   onClose: () => void;
 }
 
 const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
+  const [isGeneratingPDF, setIsGeneratingPDF] = React.useState(false);
   
   const progress = ProgressTracker.getProgress();
   const results = progress.mindSectionResults;
@@ -18,8 +21,6 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
     : 0;
   
   const totalTimeSpent = results.reduce((sum, r) => sum + (r.timeSpent || 0), 0);
-  const totalQuestions = results.reduce((sum, r) => sum + r.totalQuestions, 0);
-  const totalCorrect = results.reduce((sum, r) => sum + r.score, 0);
 
   const formatTime = (seconds: number): string => {
     if (seconds < 60) return `${seconds}s`;
@@ -29,17 +30,41 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
 
   const getSubcategoryName = (subcategory: string): string => {
     const names: Record<string, string> = {
-      'attention': 'Attention & Memory',
-      'learning-style': 'Learning Styles',
+      'attention': 'Attention',
+      'memory': 'Memory',
+      'learning-style': 'Learning Style',
       'critical-thinking': 'Critical Thinking',
       'perception': 'Perception'
     };
     return names[subcategory] || subcategory;
   };
 
+  const getCategoryColor = (subcategory: string): string => {
+    const colors: Record<string, string> = {
+      'attention': 'text-yellow-600',
+      'memory': 'text-orange-600',
+      'learning-style': 'text-green-600',
+      'critical-thinking': 'text-purple-600',
+      'perception': 'text-indigo-600'
+    };
+    return colors[subcategory] || 'text-gray-600';
+  };
+
+  const remapQuizCategory = (result: QuizResult): string => {
+    // Remap certain quizzes to correct categories based on user specification
+    if (result.quizId === 'memory-assessment' || result.quizId === 'memory-quiz') {
+      return 'memory';
+    }
+    if (result.quizId === 'attention-assessment') {
+      return 'attention';
+    }
+    return result.subcategory;
+  };
+
   const getSkillDescription = (subcategory: string): string => {
     const descriptions: Record<string, string> = {
-      'attention': 'Attention and Memory skills involve the ability to focus on tasks, filter out distractions, and retain information for both short-term and long-term use. These skills are fundamental for learning and academic success.',
+      'attention': 'Attention skills involve the ability to focus on tasks and filter out distractions effectively. These skills are fundamental for learning and academic success.',
+      'memory': 'Memory skills encompass the ability to retain, recall, and work with information over different time periods. This includes both short-term and long-term memory functions.',
       'learning-style': 'Learning Styles refer to how your child best receives, processes, and retains information. Understanding their preferred learning style helps optimize their educational experience.',
       'critical-thinking': 'Critical Thinking encompasses reasoning, problem-solving, and analytical skills. It includes the ability to make connections, recognize patterns, and think logically about relationships between concepts.',
       'perception': 'Perception involves how your child interprets and understands visual and spatial information. This includes recognizing patterns, understanding spatial relationships, and processing visual details.'
@@ -48,21 +73,48 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
   };
 
   const getDetailedAnalysis = (result: QuizResult): string => {
-    const subcategory = result.subcategory;
+    const category = remapQuizCategory(result);
     
     let analysis = '';
     
-    if (subcategory === 'attention') {
+    if (category === 'attention') {
       if (result.percentage >= 90) {
-        analysis = 'Your child demonstrates excellent attention and memory capabilities. They can focus well on tasks and remember information effectively. This is a strong foundation for academic learning.';
+        analysis = 'Your child demonstrates excellent attention capabilities. They can focus well on tasks and maintain concentration effectively. This is a strong foundation for academic learning.';
       } else if (result.percentage >= 75) {
-        analysis = 'Your child shows good attention and memory skills. They generally focus well and retain information, with some areas for continued development.';
+        analysis = 'Your child shows good attention skills. They generally focus well with some areas for continued development.';
       } else if (result.percentage >= 60) {
-        analysis = 'Your child has developing attention and memory skills. Consider activities that help improve focus and memory techniques to support their learning.';
+        analysis = 'Your child has developing attention skills. Consider activities that help improve focus and concentration to support their learning.';
       } else {
-        analysis = 'Your child may benefit from additional support in developing attention and memory skills. Simple focusing exercises and memory games can be helpful.';
+        analysis = 'Your child may benefit from additional support in developing attention skills. Simple focusing exercises and structured activities can be helpful.';
       }
-    } else if (subcategory === 'learning-style') {
+    } else if (category === 'memory') {
+      // Special handling for Memory Quiz with additional data
+      if (result.quizId === 'memory-quiz' && result.additionalData) {
+        const { levelsCompleted, endReason, attemptsPerLevel } = result.additionalData;
+        const totalAttempts = Object.values(attemptsPerLevel || {}).reduce((sum: number, attempts: any) => sum + attempts, 0);
+        
+        if (endReason === 'out-of-tries') {
+          analysis = `Your child completed ${levelsCompleted} out of 6 memory levels before running out of attempts. They made ${totalAttempts} total attempts, showing persistence. Memory games require practice - encourage them to try again as repetition improves memory skills.`;
+        } else if (result.percentage >= 90) {
+          analysis = `Excellent memory performance! Your child completed all 6 levels with ${totalAttempts} total attempts. They demonstrate strong visual memory and pattern recognition skills.`;
+        } else if (result.percentage >= 75) {
+          analysis = `Good memory skills shown. Your child completed the memory challenge with ${totalAttempts} attempts, displaying solid visual memory abilities with room for improvement.`;
+        } else {
+          analysis = `Your child shows developing memory skills. They made ${totalAttempts} attempts across ${levelsCompleted} levels. Regular practice with memory games can strengthen these important cognitive abilities.`;
+        }
+      } else {
+        // Standard memory analysis
+        if (result.percentage >= 90) {
+          analysis = 'Your child demonstrates excellent memory capabilities. They can retain and recall information effectively. This is a strong foundation for academic learning.';
+        } else if (result.percentage >= 75) {
+          analysis = 'Your child shows good memory skills. They generally retain information well, with some areas for continued development.';
+        } else if (result.percentage >= 60) {
+          analysis = 'Your child has developing memory skills. Consider activities that help improve memory techniques to support their learning.';
+        } else {
+          analysis = 'Your child may benefit from additional support in developing memory skills. Memory games and exercises can be helpful.';
+        }
+      }
+    } else if (category === 'learning-style') {
       if (result.percentage >= 90) {
         analysis = 'Your child has a clear understanding of how they learn best. This self-awareness will help them succeed across different learning situations.';
       } else if (result.percentage >= 75) {
@@ -70,7 +122,7 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       } else {
         analysis = 'Your child is still discovering their optimal learning style. Try different approaches to see what works best for them.';
       }
-    } else if (subcategory === 'critical-thinking') {
+    } else if (category === 'critical-thinking') {
       if (result.percentage >= 90) {
         analysis = 'Your child excels in critical thinking and reasoning. They can make connections, solve problems, and think logically about complex relationships.';
       } else if (result.percentage >= 75) {
@@ -80,7 +132,7 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       } else {
         analysis = 'Your child would benefit from activities that build reasoning and problem-solving skills. Puzzles, games, and guided discussions can help.';
       }
-    } else if (subcategory === 'perception') {
+    } else if (category === 'perception') {
       if (result.percentage >= 90) {
         analysis = 'Your child has excellent visual and spatial perception skills. They can accurately interpret visual information and understand spatial relationships.';
       } else if (result.percentage >= 75) {
@@ -97,10 +149,40 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
 
 
 
-  const exportReport = (): void => {
+  const exportReport = async (): Promise<void> => {
+    try {
+      setIsGeneratingPDF(true);
+      
+      // Generate PDF blob
+      const blob = await pdf(<ReportPDF progress={progress} />).toBlob();
+      
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const isCompleteReport = progress.overallProgress === 100;
+      link.download = `cognitive-skills-report${isCompleteReport ? '' : '-partial'}-${new Date().toISOString().split('T')[0]}.pdf`;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      // Fallback to text export if PDF generation fails
+      exportTextReport();
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
+  const exportTextReport = (): void => {
     const date = new Date().toLocaleDateString();
     const isCompleteReport = progress.overallProgress === 100;
-    let reportText = `COGNITIVE SKILLS ASSESSMENT REPORT${isCompleteReport ? '' : ' (PARTIAL)'}
+    let reportText = `HOLISTIC SKILLS ASSESSMENT REPORT${isCompleteReport ? '' : ' (PARTIAL)'}
 Generated: ${date}
 
 ================================
@@ -109,11 +191,10 @@ ASSESSMENT SUMMARY
 
 Overall Progress: ${progress.overallProgress}% (${results.length}/${MIND_QUIZZES.length} assessments completed)
 Average Score: ${averageScore}%
-Total Questions Answered: ${totalCorrect}/${totalQuestions}
 Total Time Invested: ${formatTime(totalTimeSpent)}
 
 Dear Parent,
-This ${isCompleteReport ? 'comprehensive' : 'partial'} report provides an overview of your child's performance across key cognitive skill areas. ${isCompleteReport ? 'Each section below explains what skills were tested and how your child performed.' : 'Your child has completed some assessments so far. Additional assessments can be taken for a more complete evaluation.'}
+This ${isCompleteReport ? 'comprehensive' : 'partial'} report provides an overview of your child's performance across key cognitive skill areas.
 
 ================================
 DETAILED SKILL ANALYSIS
@@ -122,8 +203,8 @@ DETAILED SKILL ANALYSIS
 `;
 
     // Group results by skill category
-    ['attention', 'critical-thinking', 'perception', 'learning-style'].forEach(category => {
-      const categoryResults = results.filter(r => r.subcategory === category);
+    ['attention', 'memory', 'learning-style', 'critical-thinking', 'perception'].forEach(category => {
+      const categoryResults = results.filter(r => remapQuizCategory(r) === category);
       if (categoryResults.length === 0) return;
       
       const categoryAverage = Math.round(
@@ -133,9 +214,6 @@ DETAILED SKILL ANALYSIS
       reportText += `${getSubcategoryName(category).toUpperCase()} - Average: ${categoryAverage}%
 ${'-'.repeat(50)}
 
-What this skill area measures:
-${getSkillDescription(category)}
-
 Assessment Results:
 `;
       
@@ -144,8 +222,7 @@ Assessment Results:
         reportText += `
 • ${result.quizName}
   Score: ${result.score}/${result.totalQuestions} (${result.percentage}%)
-  Performance Level: ${performance.level} ${performance.emoji}
-  Time Spent: ${formatTime(result.timeSpent || 0)}
+  Performance Level: ${performance.level}
   Analysis: ${getDetailedAnalysis(result)}
 
 `;
@@ -154,56 +231,12 @@ Assessment Results:
       reportText += '\n';
     });
 
-    reportText += `================================
-RECOMMENDATIONS FOR PARENTS
-================================
-
-STRENGTHS TO CELEBRATE:
-`;
-    
-    results.filter(r => r.percentage >= 85).forEach(result => {
-      reportText += `• ${result.quizName}: Excellent performance showing mastery\n`;
-    });
-    
-    if (results.filter(r => r.percentage >= 85).length === 0) {
-      reportText += `• Your child is developing their skills across all areas assessed\n`;
-    }
-
-    reportText += `
-AREAS FOR GROWTH:
-`;
-    
-    results.filter(r => r.percentage < 75).forEach(result => {
-      reportText += `• ${getSubcategoryName(result.subcategory)}: Consider additional practice and support\n`;
-    });
-    
-    if (results.filter(r => r.percentage < 75).length === 0) {
-      reportText += `• Your child shows consistent performance across all assessed areas\n`;
-    }
-
-    reportText += `
-GENERAL RECOMMENDATIONS:
-• Encourage regular practice in areas where scores were below 75%
-• Celebrate successes and maintain motivation for continued learning
-• Consider educational games and activities that target specific skill areas
-• Discuss results with your child's teacher for additional classroom support
-• Re-assess periodically to track improvement over time
-
-================================
-IMPORTANT NOTE
-================================
-This assessment provides insights into your child's cognitive abilities at this point in time. Results should be considered alongside other factors such as classroom performance, motivation, and individual learning style. For concerns about your child's development, please consult with educational professionals.
-
-Report generated by Holistic Assessment Tool
-${date}
-`;
-
     const dataBlob = new Blob([reportText], { type: 'text/plain' });
     const url = URL.createObjectURL(dataBlob);
     
     const link = document.createElement('a');
     link.href = url;
-    link.download = `cognitive-skills-report-${new Date().toISOString().split('T')[0]}.txt`;
+    link.download = `cognitive-skills-report-fallback-${new Date().toISOString().split('T')[0]}.txt`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -246,10 +279,19 @@ ${date}
             <div className="flex items-center space-x-2">
               <button
                 onClick={exportReport}
-                className="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors duration-200"
-                title="Export Report"
+                disabled={isGeneratingPDF}
+                className={`p-2 rounded-lg transition-colors duration-200 ${
+                  isGeneratingPDF 
+                    ? 'bg-white/10 cursor-not-allowed' 
+                    : 'bg-white/20 hover:bg-white/30'
+                }`}
+                title={isGeneratingPDF ? "Generating PDF..." : "Download PDF Report"}
               >
-                <Download size={20} />
+                {isGeneratingPDF ? (
+                  <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
+                ) : (
+                  <Download size={20} />
+                )}
               </button>
               <button
                 onClick={printReport}
@@ -314,8 +356,8 @@ ${date}
             <h3 className="text-xl font-bold text-gray-800 mb-6">🧠 Detailed Skill Analysis</h3>
             
             {/* Group results by skill category */}
-            {['attention', 'critical-thinking', 'perception', 'learning-style'].map(category => {
-              const categoryResults = results.filter(r => r.subcategory === category);
+            {['attention', 'memory', 'learning-style', 'critical-thinking', 'perception'].map(category => {
+              const categoryResults = results.filter(r => remapQuizCategory(r) === category);
               if (categoryResults.length === 0) return null;
               
               const categoryAverage = Math.round(
@@ -326,14 +368,10 @@ ${date}
                 <div key={category} className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
                   <div className="mb-6">
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-lg font-bold text-gray-800">{getSubcategoryName(category)}</h4>
+                      <h4 className={`text-lg font-bold ${getCategoryColor(category)}`}>{getSubcategoryName(category)}</h4>
                       <div className="flex items-center space-x-2">
                         <span className="text-sm text-gray-500">Category Average:</span>
-                        <span className={`font-bold text-lg ${
-                          categoryAverage >= 90 ? 'text-green-600' :
-                          categoryAverage >= 75 ? 'text-blue-600' :
-                          categoryAverage >= 60 ? 'text-yellow-600' : 'text-red-600'
-                        }`}>
+                        <span className={`font-bold text-lg ${getCategoryColor(category)}`}>
                           {categoryAverage}%
                         </span>
                       </div>
@@ -348,9 +386,12 @@ ${date}
                   <div className="space-y-4">
                     {categoryResults.map((result) => {
                       const performance = ProgressTracker.getPerformanceLevel(result.percentage);
+                      const performanceText = result.percentage >= 90 ? 'Excellent' : 
+                                            result.percentage >= 75 ? 'Good' : 
+                                            result.percentage >= 60 ? 'Developing' : 'Needs Support';
                       
                       return (
-                        <div key={result.quizId} className="border-l-4 border-gray-200 pl-4">
+                        <div key={result.quizId} className={`border-l-4 pl-4 ${getCategoryColor(category).replace('text-', 'border-')}`}>
                           <div className="flex items-start justify-between mb-3">
                             <div>
                               <h5 className="font-semibold text-gray-800">{result.quizName}</h5>
@@ -361,11 +402,10 @@ ${date}
                               )}
                             </div>
                             <div className="text-right">
-                              <div className={`text-xl font-bold ${performance.color} flex items-center space-x-1`}>
-                                <span>{performance.emoji}</span>
+                              <div className={`text-xl font-bold ${getCategoryColor(category)} flex items-center space-x-1`}>
                                 <span>{result.percentage}%</span>
                               </div>
-                              <div className="text-sm text-gray-500">{result.score}/{result.totalQuestions} correct</div>
+                              <div className="text-sm text-gray-500">Performance: {performanceText}</div>
                             </div>
                           </div>
                           
@@ -449,7 +489,7 @@ ${date}
                 <ul className="text-green-800 text-sm space-y-1 ml-4">
                   {results.filter(r => r.percentage < 75).map(result => (
                     <li key={result.quizId} className="list-disc">
-                      <strong>{getSubcategoryName(result.subcategory)}:</strong> Consider additional practice and support
+                      <strong>{getSubcategoryName(remapQuizCategory(result))}:</strong> Consider additional practice and support
                     </li>
                   ))}
                   {results.filter(r => r.percentage < 75).length === 0 && (

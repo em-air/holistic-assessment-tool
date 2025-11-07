@@ -14,6 +14,28 @@ const MindProgressBar: React.FC<MindProgressBarProps> = ({ onShowReport, classNa
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [showClearSuccess, setShowClearSuccess] = useState(false);
 
+  const getSubcategoryName = (subcategory: string): string => {
+    const names: Record<string, string> = {
+      'attention': 'Attention',
+      'memory': 'Memory',
+      'learning-style': 'Learning Style',
+      'critical-thinking': 'Critical Thinking',
+      'perception': 'Perception'
+    };
+    return names[subcategory] || subcategory;
+  };
+
+  const getCategoryColor = (subcategory: string): string => {
+    const colors: Record<string, string> = {
+      'attention': 'text-yellow-600',
+      'memory': 'text-orange-600',
+      'learning-style': 'text-green-600',
+      'critical-thinking': 'text-purple-600',
+      'perception': 'text-indigo-600'
+    };
+    return colors[subcategory] || 'text-gray-600';
+  };
+
   useEffect(() => {
     const handleProgressUpdate = (event: CustomEvent) => {
       setProgress(event.detail);
@@ -159,14 +181,18 @@ const MindProgressBar: React.FC<MindProgressBarProps> = ({ onShowReport, classNa
                   )}
                   <div>
                     <h4 className="font-medium text-gray-800 text-sm">{quiz.name}</h4>
-                    <p className="text-xs text-gray-500 capitalize">{quiz.subcategory.replace('-', ' ')}</p>
+                    <p className={`text-xs font-medium ${getCategoryColor(quiz.subcategory)}`}>
+                      {getSubcategoryName(quiz.subcategory)}
+                    </p>
                   </div>
                 </div>
                 {isCompleted && result && (
                   <div className="text-right">
-                    <div className="text-sm font-bold text-gray-800">{result.percentage}%</div>
+                    <div className={`text-sm font-bold ${getCategoryColor(quiz.subcategory)}`}>
+                      {result.percentage}%
+                    </div>
                     <div className="text-xs text-gray-500">
-                      {result.score}/{result.totalQuestions}
+                      Performance: {result.percentage >= 90 ? 'Excellent' : result.percentage >= 75 ? 'Good' : result.percentage >= 60 ? 'Developing' : 'Needs Support'}
                     </div>
                   </div>
                 )}

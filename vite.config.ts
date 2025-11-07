@@ -12,4 +12,14 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  resolve: {
+    alias: {
+      src: "/src",
+    },
+  },
+  server: {
+    fs: {
+      allow: ['..']
+    }
+  }
 });
