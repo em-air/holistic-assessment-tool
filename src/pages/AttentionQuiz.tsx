@@ -328,7 +328,7 @@ const AttentionQuiz: React.FC = () => {
               <div className="text-center text-white">
                 <div className="mb-6">
                   <Brain className="w-16 h-16 mx-auto mb-4 group-hover:scale-110 transition-transform duration-300" />
-                  <h2 className="text-2xl font-bold mb-2">Memory Quiz</h2>
+                  <h2 className="text-2xl font-bold mb-2">Number Tiles</h2>
                   <p className="text-purple-100 text-sm">
                     Remember the order and tap tiles in sequence
                   </p>
@@ -345,7 +345,42 @@ const AttentionQuiz: React.FC = () => {
                 </div>
 
                 <div className="bg-purple-600 text-white px-6 py-3 rounded-full font-bold group-hover:bg-purple-700 transition-colors duration-300">
-                  Start Memory Quiz
+                  Start Number Tiles
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Flash Word Quiz Card */}
+          <div className="max-w-4xl mx-auto mt-8">
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="group bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl p-8 shadow-xl border border-orange-300 cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-2xl"
+              onClick={() => navigate('/flash-word-quiz')}
+            >
+              <div className="text-center text-white">
+                <div className="mb-6">
+                  <Eye className="w-16 h-16 mx-auto mb-4 group-hover:scale-110 transition-transform duration-300" />
+                  <h2 className="text-2xl font-bold mb-2">Flash Word Memory</h2>
+                  <p className="text-orange-100 text-sm">
+                    See words flash for 1 second, then spell them from memory
+                  </p>
+                </div>
+                
+                <div className="bg-white/20 rounded-lg p-4 mb-6">
+                  <h3 className="font-semibold mb-2">Features:</h3>
+                  <ul className="text-sm space-y-1 text-orange-100">
+                    <li>• Visual memory training</li>
+                    <li>• Sight-word recognition</li>
+                    <li>• Grade-based difficulty</li>
+                    <li>• Virtual keyboard spelling</li>
+                  </ul>
+                </div>
+
+                <div className="bg-orange-600 text-white px-6 py-3 rounded-full font-bold group-hover:bg-orange-700 transition-colors duration-300">
+                  Start Flash Words
                 </div>
               </div>
             </motion.div>

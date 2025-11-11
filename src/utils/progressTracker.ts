@@ -46,6 +46,12 @@ export const MIND_QUIZZES = [
     route: '/memory-quiz'
   },
   {
+    id: 'flash-word-quiz',
+    name: 'Flash Word Quiz',
+    subcategory: 'memory',
+    route: '/flash-word-quiz'
+  },
+  {
     id: 'learning-styles',
     name: 'Learning Style Quiz',
     subcategory: 'learning-style',

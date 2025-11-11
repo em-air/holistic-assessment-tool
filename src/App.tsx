@@ -25,6 +25,7 @@ import AuthPage from './pages/AuthPage';
 import CriticalThinkingPage from './pages/CriticalThinkingPage';
 import AnalogyQuiz from './pages/AnalogyQuiz';
 import CategoryQuiz from './pages/CategoryQuiz';
+import FlashWordQuiz from './pages/FlashWordQuiz';
 import { AuthProvider } from './contexts/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -370,6 +371,19 @@ function AnimatedRoutes() {
               transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <CategoryQuiz />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/flash-word-quiz"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <FlashWordQuiz />
             </motion.div>
           }
         />
