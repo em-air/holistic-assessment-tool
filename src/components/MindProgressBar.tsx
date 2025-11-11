@@ -37,14 +37,39 @@ const MindProgressBar: React.FC<MindProgressBarProps> = ({ onShowReport, classNa
   };
 
   useEffect(() => {
+    // Refresh progress data on component mount and visibility change
+    const refreshProgress = () => {
+      const currentProgress = ProgressTracker.getProgress();
+      setProgress(currentProgress);
+    };
+
+    // Initial refresh
+    refreshProgress();
+
     const handleProgressUpdate = (event: CustomEvent) => {
       setProgress(event.detail);
     };
 
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Refresh when tab becomes visible again
+        refreshProgress();
+      }
+    };
+
+    const handleWindowFocus = () => {
+      // Refresh when window regains focus
+      refreshProgress();
+    };
+
     window.addEventListener('mindProgressUpdated', handleProgressUpdate as EventListener);
+    window.addEventListener('focus', handleWindowFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     
     return () => {
       window.removeEventListener('mindProgressUpdated', handleProgressUpdate as EventListener);
+      window.removeEventListener('focus', handleWindowFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
