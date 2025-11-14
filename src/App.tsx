@@ -14,6 +14,8 @@ import AttentionMemorySelection from './pages/AttentionMemorySelection';
 import AttentionAssessment from './pages/AttentionAssessment';
 import MemoryAssessment from './pages/MemoryAssessment';
 import PerceptionQuiz from './pages/PerceptionQuiz';
+import MissingObjectQuizPage from './pages/MissingObjectQuizPage';
+import SentenceDifferenceQuiz from './pages/SentenceDifferenceQuiz';
 import OralLanguageQuiz from './pages/OralLanguageQuiz';
 import SpellingGradeSelector from './pages/SpellingGradeSelector';
 import SpellingTest from './pages/SpellingTest';
@@ -175,7 +177,20 @@ function AnimatedRoutes() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.1, ease: "easeOut" }}
             >
-              <PerceptionQuiz />
+              <MissingObjectQuizPage />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/sentence-difference-quiz"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <SentenceDifferenceQuiz />
             </motion.div>
           }
         />

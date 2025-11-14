@@ -70,10 +70,16 @@ export const MIND_QUIZZES = [
     route: '/category-quiz'
   },
   {
-    id: 'perception-quiz',
-    name: 'Perception Quiz',
+    id: 'missing-object-quiz',
+    name: 'Missing Object Quiz',
     subcategory: 'perception',
-    route: '/perception-quiz'
+    route: '/missing-object-quiz'
+  },
+  {
+    id: 'sentence-difference-quiz',
+    name: 'Sentence Difference Quiz',
+    subcategory: 'perception',
+    route: '/sentence-difference-quiz'
   }
 ];
 
