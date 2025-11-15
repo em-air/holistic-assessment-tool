@@ -80,6 +80,18 @@ export const MIND_QUIZZES = [
     name: 'Sentence Difference Quiz',
     subcategory: 'perception',
     route: '/sentence-difference-quiz'
+  },
+  {
+    id: 'starting-ending-sound-quiz',
+    name: 'Beginning & Ending Sounds',
+    subcategory: 'phonics-awareness',
+    route: '/starting-ending-sound-quiz'
+  },
+  {
+    id: 'logical-sequencing-quiz',
+    name: 'Logical Sequencing',
+    subcategory: 'perception',
+    route: '/logical-sequencing-quiz'
   }
 ];
 

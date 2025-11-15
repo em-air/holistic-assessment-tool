@@ -38,7 +38,7 @@ const CategoryPage: React.FC = () => {
     } else if (subcategoryId === 'reading') {
       navigate(`/reading-assessment/${categoryId}`);
     } else if (subcategoryId === 'phonics-awareness') {
-      navigate(`/phonics-quiz/${categoryId}`);
+      navigate(`/phonics-quiz-selection/${categoryId}`);
     } else if (subcategoryId === 'blending') {
       navigate(`/blending-quiz/${categoryId}`);
     } else if (subcategoryId === 'sentence-formation') {
@@ -46,7 +46,7 @@ const CategoryPage: React.FC = () => {
     } else if (subcategoryId === 'learning-style') {
       navigate('/learning-styles-quiz');
     } else if (subcategoryId === 'perception') {
-      navigate('/perception-quiz');
+      navigate(`/perception-quiz-selection/${categoryId}`);
     } else if (subcategoryId === 'spelling') {
       navigate('/spelling-grades');
     } else if (subcategoryId === 'writing') {

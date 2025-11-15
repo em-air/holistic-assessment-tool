@@ -5,6 +5,12 @@ import CategoriesPage from './pages/CategoriesPage';
 import CategoryPage from './pages/CategoryPage';
 import QuizPage from './pages/QuizPage';
 import PhonicsQuiz from './pages/PhonicsQuizNew';
+import PhonicsQuizSelection from './pages/PhonicsQuizSelection';
+import StartingEndingSoundQuiz from './pages/StartingEndingSoundQuiz';
+import StartingEndingSoundGradeSelector from './pages/StartingEndingSoundGradeSelector';
+import LogicalSequencingQuiz from './pages/LogicalSequencingQuiz';
+import LogicalSequencingGradeSelector from './pages/LogicalSequencingGradeSelector';
+import PerceptionQuizSelection from './pages/PerceptionQuizSelection';
 import BlendingQuiz from './pages/BlendingQuiz';
 import VocabularyMatching from './pages/VocabularyMatching';
 import LearningStylesQuiz from './pages/LearningStylesQuiz';
@@ -104,6 +110,19 @@ function AnimatedRoutes() {
           }
         />
         <Route
+          path="/phonics-quiz-selection/:categoryId"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <PhonicsQuizSelection />
+            </motion.div>
+          }
+        />
+        <Route
           path="/phonics-quiz/:categoryId"
           element={
             <motion.div
@@ -113,6 +132,32 @@ function AnimatedRoutes() {
               transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <PhonicsQuiz />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/starting-ending-sound-quiz"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <StartingEndingSoundGradeSelector />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/starting-ending-sound-quiz/:grade"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <StartingEndingSoundQuiz />
             </motion.div>
           }
         />
@@ -191,6 +236,45 @@ function AnimatedRoutes() {
               transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <SentenceDifferenceQuiz />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/logical-sequencing-quiz"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <LogicalSequencingGradeSelector />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/logical-sequencing-quiz/:grade"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <LogicalSequencingQuiz />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/perception-quiz-selection/:categoryId"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <PerceptionQuizSelection />
             </motion.div>
           }
         />
