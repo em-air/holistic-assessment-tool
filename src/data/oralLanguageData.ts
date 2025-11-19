@@ -15,7 +15,7 @@ export interface SequenceImage {
 
 export interface OralLanguageQuestion {
   id: string;
-  type: 'vocabulary' | 'sentence-building' | 'storytelling' | 'comprehension';
+  type: 'vocabulary' | 'sentence-building' | 'storytelling' | 'story-retell';
   level: number;
   question: string;
   image: string;
@@ -29,7 +29,7 @@ export interface OralLanguageQuestion {
 }
 
 export interface QuizCategory {
-  id: 'vocabulary' | 'sentence-building' | 'storytelling' | 'comprehension';
+  id: 'vocabulary' | 'sentence-building' | 'storytelling' | 'story-retell';
   title: {
     en: string;
     ar: string;
@@ -380,66 +380,17 @@ export const oralLanguageCategories: QuizCategory[] = [
     ]
   },
   {
-    id: 'comprehension',
+    id: 'story-retell',
     title: {
-      en: 'Question Comprehension (Answer Me!)',
-      ar: 'فهم الأسئلة (أجبني!)'
+      en: 'Story Retell',
+      ar: 'إعادة سرد القصة'
     },
     description: {
-      en: 'Test understanding of WH-questions with pictures',
-      ar: 'اختبار فهم أسئلة ماذا ومن وأين بالصور'
+      en: 'Read a story and retell it using Beginning, Middle, and End',
+      ar: 'اقرأ قصة وأعد سردها باستخدام البداية والوسط والنهاية'
     },
-    icon: '❓',
-    color: 'bg-orange-500',
-    questions: [
-      {
-        id: 'comp_1_1',
-        type: 'comprehension',
-        level: 1,
-        question: 'WHO is eating in the picture?',
-        image:"https://cdn.pixabay.com/photo/2023/07/21/03/38/girl-8140691_1280.jpg",
-        options: [
-          { id: 'a', text: 'The girl', isCorrect: true },
-          { id: 'b', text: 'The boy', isCorrect: false },
-          { id: 'c', text: 'The dog', isCorrect: false }
-        ],
-        feedback: {
-          correct: 'Correct! The girl is eating.',
-          incorrect: 'Look carefully at who has the food!'
-        }
-      },
-      {
-        id: 'comp_2_1',
-        type: 'comprehension',
-        level: 1,
-        question: 'WHERE is the cat in the picture?',
-        image: 'https://cdn.pixabay.com/photo/2024/01/04/09/34/plant-8486960_1280.png',
-        options: [
-          { id: 'a', text: 'On the floor', isCorrect: false },
-          { id: 'b', text: 'On the table', isCorrect: true },
-          { id: 'c', text: 'Under the chair', isCorrect: false }
-        ],
-        feedback: {
-          correct: 'Great! The cat is on the table.',
-          incorrect: 'Look at where the cat is sitting!'
-        }
-      },
-      {
-        id: 'comp_3_1',
-        type: 'comprehension',
-        level: 2,
-        question: 'WHY is the boy sad in the picture?',
-        image: 'https://www.shutterstock.com/image-vector/child-broken-toy-600nw-190716437.jpg',
-        options: [  
-          { id: 'a', text: 'His toy is broken', isCorrect: true },
-          { id: 'b', text: 'He is hungry', isCorrect: false },
-          { id: 'c', text: 'He is tired', isCorrect: false }
-        ],
-        feedback: {
-          correct: 'Right! He is sad because his toy is broken.',
-          incorrect: 'Look at what happened to his toy!'
-        }
-      }
-    ]
+    icon: '📚',
+    color: 'bg-indigo-500',
+    questions: [] // This will navigate to the separate Story Retell quiz
   }
 ];

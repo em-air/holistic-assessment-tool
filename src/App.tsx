@@ -23,6 +23,8 @@ import PerceptionQuiz from './pages/PerceptionQuiz';
 import MissingObjectQuizPage from './pages/MissingObjectQuizPage';
 import SentenceDifferenceQuiz from './pages/SentenceDifferenceQuiz';
 import OralLanguageQuiz from './pages/OralLanguageQuiz';
+import StoryRetellQuiz from './pages/StoryRetellQuiz';
+import StoryRetellGradeSelector from './pages/StoryRetellGradeSelector';
 import SpellingGradeSelector from './pages/SpellingGradeSelector';
 import SpellingTest from './pages/SpellingTest';
 import WritingGradeSelector from './pages/WritingGradeSelector';
@@ -288,6 +290,32 @@ function AnimatedRoutes() {
               transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <OralLanguageQuiz />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/story-retell-quiz"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <StoryRetellGradeSelector />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/story-retell-quiz/:grade"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <StoryRetellQuiz />
             </motion.div>
           }
         />

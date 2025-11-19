@@ -92,6 +92,12 @@ export const MIND_QUIZZES = [
     name: 'Logical Sequencing',
     subcategory: 'perception',
     route: '/logical-sequencing-quiz'
+  },
+  {
+    id: 'story-retell-quiz',
+    name: 'Story Retell',
+    subcategory: 'oral-language',
+    route: '/story-retell-quiz'
   }
 ];
 

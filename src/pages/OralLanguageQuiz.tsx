@@ -8,7 +8,7 @@ interface QuizScores {
   vocabulary: { correct: number; total: number };
   'sentence-building': { correct: number; total: number };
   storytelling: { correct: number; total: number };
-  comprehension: { correct: number; total: number };
+  'story-retell': { correct: number; total: number };
 }
 
 const OralLanguageQuiz: React.FC = () => {
@@ -22,13 +22,12 @@ const OralLanguageQuiz: React.FC = () => {
     vocabulary: { correct: 0, total: 0 },
     'sentence-building': { correct: 0, total: 0 },
     storytelling: { correct: 0, total: 0 },
-    comprehension: { correct: 0, total: 0 }
+    'story-retell': { correct: 0, total: 0 }
   });
   const [showResults, setShowResults] = useState(false);
   const [language, setLanguage] = useState<'en' | 'ar'>('en');
   const [showSparkle, setShowSparkle] = useState(false);
   const [sequenceOrder, setSequenceOrder] = useState<{[key: string]: number}>({});
-  const [selectedSequenceItem, setSelectedSequenceItem] = useState<string | null>(null);
 
   const t = oralLanguageTranslations[language];
   const isRTL = language === 'ar';
@@ -36,44 +35,7 @@ const OralLanguageQuiz: React.FC = () => {
   const currentQuestion = selectedCategory?.questions[currentQuestionIndex];
   const isLastQuestion = selectedCategory && currentQuestionIndex === selectedCategory.questions.length - 1;
 
-  // Handle story sequence ordering
-  const handleSequenceSelect = (imageId: string, order: number) => {
-    setSequenceOrder(prev => ({...prev, [imageId]: order}));
-  };
 
-  // Check if story sequence is complete and correct
-  const checkSequenceAnswer = () => {
-    if (!currentQuestion?.sequenceImages || !currentQuestion?.correctSequence) return;
-    
-    const userSequence = currentQuestion.correctSequence.map(correctId => {
-      const imageWithOrder = Object.entries(sequenceOrder).find(([id, order]) => {
-        return currentQuestion.sequenceImages?.find(img => img.id === id && img.correctOrder === order);
-      });
-      return imageWithOrder ? imageWithOrder[0] : null;
-    }).filter(Boolean);
-
-    const isSequenceCorrect = userSequence.length === currentQuestion.correctSequence.length &&
-      userSequence.every((id, index) => id === currentQuestion.correctSequence![index]);
-
-    setIsCorrect(isSequenceCorrect);
-    setShowFeedback(true);
-    
-    if (isSequenceCorrect) {
-      setShowSparkle(true);
-      setTimeout(() => setShowSparkle(false), 2000);
-    }
-
-    // Update scores
-    if (selectedCategory) {
-      setQuizScores(prev => ({
-        ...prev,
-        [selectedCategory.id]: {
-          correct: prev[selectedCategory.id].correct + (isSequenceCorrect ? 1 : 0),
-          total: prev[selectedCategory.id].total + 1
-        }
-      }));
-    }
-  };
 
   // Handle answer selection for regular questions
   const handleAnswerSelect = (optionId: string) => {
@@ -115,12 +77,17 @@ const OralLanguageQuiz: React.FC = () => {
       setShowFeedback(false);
       setIsCorrect(false);
       setSequenceOrder({});
-      setSelectedSequenceItem(null);
     }
   };
 
   // Start a specific quiz category
   const startQuiz = (category: QuizCategory) => {
+    // If story-retell is selected, navigate to the separate Story Retell quiz
+    if (category.id === 'story-retell') {
+      navigate('/story-retell-quiz');
+      return;
+    }
+    
     setSelectedCategory(category);
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
@@ -128,7 +95,6 @@ const OralLanguageQuiz: React.FC = () => {
     setIsCorrect(false);
     setShowResults(false);
     setSequenceOrder({});
-    setSelectedSequenceItem(null);
   };
 
   // Reset quiz
@@ -140,12 +106,11 @@ const OralLanguageQuiz: React.FC = () => {
     setIsCorrect(false);
     setShowResults(false);
     setSequenceOrder({});
-    setSelectedSequenceItem(null);
     setQuizScores({
       vocabulary: { correct: 0, total: 0 },
       'sentence-building': { correct: 0, total: 0 },
       storytelling: { correct: 0, total: 0 },
-      comprehension: { correct: 0, total: 0 }
+      'story-retell': { correct: 0, total: 0 }
     });
   };
 
