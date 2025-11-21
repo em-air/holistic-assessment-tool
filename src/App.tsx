@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Homepage from './pages/Homepage';
 import CategoriesPage from './pages/CategoriesPage';
@@ -12,6 +11,8 @@ import LogicalSequencingQuiz from './pages/LogicalSequencingQuiz';
 import LogicalSequencingGradeSelector from './pages/LogicalSequencingGradeSelector';
 import PerceptionQuizSelection from './pages/PerceptionQuizSelection';
 import BlendingQuiz from './pages/BlendingQuiz';
+import SegmentingQuiz from './pages/SegmentingQuiz';
+import BlendingSegmentingSelection from './pages/BlendingSegmentingSelection';
 import VocabularyMatching from './pages/VocabularyMatching';
 import LearningStylesQuiz from './pages/LearningStylesQuiz';
 import AttentionQuiz from './pages/AttentionQuiz';
@@ -164,6 +165,19 @@ function AnimatedRoutes() {
           }
         />
         <Route
+          path="/blending-segmenting-selection/:categoryId"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <BlendingSegmentingSelection />
+            </motion.div>
+          }
+        />
+        <Route
           path="/blending-quiz/:categoryId"
           element={
             <motion.div
@@ -173,6 +187,19 @@ function AnimatedRoutes() {
               transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <BlendingQuiz />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/segmenting-quiz/:categoryId"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <SegmentingQuiz />
             </motion.div>
           }
         />

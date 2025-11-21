@@ -4,7 +4,6 @@ import { ArrowLeft, RotateCcw, CheckCircle, XCircle, GripVertical, Lightbulb } f
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   SequencingQuestion, 
-  SequencingQuizResult, 
   getQuestionsByGradeAndCount 
 } from '../data/logicalSequencingData';
 import { ProgressTracker } from '../utils/progressTracker';
@@ -166,27 +165,18 @@ const LogicalSequencingQuiz: React.FC = () => {
     // Calculate results
     const totalTime = timePerQuestion.reduce((sum, time) => sum + time, 0);
     const percentage = Math.round((score / questions.length) * 100);
-    
-    const result: SequencingQuizResult = {
-      totalQuestions: questions.length,
-      correctAnswers: score,
-      incorrectAnswers: questions.length - score,
-      timePerQuestion,
-      totalTime,
-      percentage,
-      grade
-    };
 
     // Save progress
-    ProgressTracker.updateQuizProgress({
+    ProgressTracker.saveQuizResult({
       quizId: 'logical-sequencing-quiz',
       quizName: 'Logical Sequencing',
-      score: percentage,
+      subcategory: 'logical-reasoning',
+      score: score,
       totalQuestions: questions.length,
-      correctAnswers: score,
-      completedAt: new Date().toISOString(),
+      percentage: percentage,
       timeSpent: totalTime,
-      grade
+      completedAt: new Date().toISOString(),
+      gradeLevel: `Grade ${grade}`
     });
 
     setShowResult(true);
@@ -340,7 +330,7 @@ const LogicalSequencingQuiz: React.FC = () => {
                   key={item.id}
                   layout
                   draggable={!isSubmitted}
-                  onDragStart={(e) => handleDragStart(e, item.id)}
+                  onDragStart={(e) => handleDragStart(e as unknown as React.DragEvent, item.id)}
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDrop(e, item.id)}
                   onDragEnd={handleDragEnd}

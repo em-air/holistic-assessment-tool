@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, CheckCircle, Brain, Target, TrendingUp, AlertCircle, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { attentionControlQuestions, calculateAttentionScores, interpretScores, getRecommendations } from '../data/attentionControlData';
+import { attentionControlQuestions, calculateAttentionScores, interpretScores } from '../data/attentionControlData';
 import { ProgressTracker } from '../utils/progressTracker';
 import MindProgressBar from '../components/MindProgressBar';
 import MindSectionReport from '../components/MindSectionReport';

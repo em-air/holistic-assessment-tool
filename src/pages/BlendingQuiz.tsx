@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Volume2, Mic } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FloatingBackground from '../components/FloatingBackground';
+import { enhancedTTS, phoneticSoundMap } from '../utils/enhancedTTS';
 
 interface BlendingQuestion {
   id: number;
@@ -66,6 +67,16 @@ const BlendingQuiz: React.FC = () => {
   const [speechResult, setSpeechResult] = useState<'correct' | 'incorrect' | null>(null);
 
   useEffect(() => {
+    enhancedTTS.preloadVoices().then(() => {
+      console.log('TTS voices loaded for Blending Quiz');
+    });
+    
+    return () => {
+      enhancedTTS.cancel();
+    };
+  }, []);
+
+  useEffect(() => {
     if (selectedGrade) {
       const questionsForGrade = blendingQuestions.filter(q => q.grade === selectedGrade);
       setCurrentQuestions(questionsForGrade);
@@ -104,66 +115,28 @@ const BlendingQuiz: React.FC = () => {
     setCurrentSoundIndex(-1);
   };
 
-  const playSound = (sound: string): Promise<void> => {
-    return new Promise((resolve) => {
-      if ('speechSynthesis' in window) {
-        speechSynthesis.cancel();
-        
-        let textToSpeak = sound;
-        if (sound === 'equals') {
-          textToSpeak = 'equals';
-        } else {
-          // Remove the slashes for pronunciation
-          textToSpeak = sound.replace(/\//g, '');
-          
-          // Special phonetic mappings
-          const soundMap: { [key: string]: string } = {
-            'c': 'kuh',
-            'ck': 'k',
-            'th': 'thuh',
-            'sh': 'shuh',
-            'ch': 'chuh',
-            'wh': 'whuh',
-            'ng': 'ng',
-            'qu': 'kwuh',
-            'ough': 'uff',
-            'ight': 'ite',
-            'ai': 'ay',
-            'ou': 'ow',
-            'ong': 'ong',
-            'tch': 'ch',
-            'ion': 'shun'
-          };
-          
-          textToSpeak = soundMap[textToSpeak] || textToSpeak;
-        }
-        
-        const utterance = new SpeechSynthesisUtterance(textToSpeak);
-        utterance.rate = 0.6;
-        utterance.pitch = 1.0;
-        utterance.volume = 1;
-        
-        // Try to use female voice
-        const voices = speechSynthesis.getVoices();
-        const femaleVoice = voices.find(voice => 
-          voice.lang.startsWith('en') && 
-          (voice.name.toLowerCase().includes('female') || 
-           voice.name.toLowerCase().includes('zira') ||
-           voice.name.toLowerCase().includes('hazel'))
-        );
-        
-        if (femaleVoice) {
-          utterance.voice = femaleVoice;
-        }
-        
-        utterance.onend = () => resolve();
-        utterance.onerror = () => resolve();
-        
-        speechSynthesis.speak(utterance);
-      } else {
-        resolve();
-      }
-    });
+  const playSound = async (sound: string): Promise<void> => {
+    let textToSpeak = sound;
+    
+    if (sound === 'equals') {
+      textToSpeak = 'equals';
+    } else {
+      // Remove the slashes for pronunciation
+      textToSpeak = sound.replace(/\//g, '');
+      
+      // Use phonetic mapping from enhanced TTS
+      textToSpeak = phoneticSoundMap[textToSpeak] || textToSpeak;
+    }
+    
+    try {
+      await enhancedTTS.speak(textToSpeak, {
+        rate: 0.75,
+        pitch: 1.15,
+        volume: 1.0
+      });
+    } catch (error) {
+      console.error('Error playing sound:', error);
+    }
   };
 
   const handleShowAnswer = () => {

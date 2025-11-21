@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Volume2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FloatingBackground from '../components/FloatingBackground';
+import { enhancedTTS, phoneticSoundMap } from '../utils/enhancedTTS';
 
 interface PhonicsQuestion {
   id: number;
@@ -31,29 +32,28 @@ const phonicsQuestions: PhonicsQuestion[] = [
   { id: 15, letter: 'w', options: ['/w/', '/v/', '/y/'], correctAnswer: '/w/', grade: 1 },
 
   // Grade 2 Questions - Digraphs and blends
-  { id: 16, letter: 'ch', options: ['/ch/', '/sh/', '/th/'], correctAnswer: '/ch/', grade: 2 },
-  { id: 17, letter: 'sh', options: ['/sh/', '/ch/', '/s/'], correctAnswer: '/sh/', grade: 2 },
+  { id: 16, letter: 'ch', options: ['/ch/', '/c/', '/th/'], correctAnswer: '/ch/', grade: 2 },
+  { id: 17, letter: 'sh', options: ['/sh/', '/c/', '/s/'], correctAnswer: '/sh/', grade: 2 },
   { id: 18, letter: 'th', options: ['/th/', '/f/', '/s/'], correctAnswer: '/th/', grade: 2 },
-  { id: 19, letter: 'wh', options: ['/wh/', '/w/', '/h/'], correctAnswer: '/wh/', grade: 2 },
-  { id: 20, letter: 'ck', options: ['/k/', '/ch/', '/c/'], correctAnswer: '/k/', grade: 2 },
+  { id: 19, letter: 'wh', options: ['/wh/', '/v/', '/h/'], correctAnswer: '/wh/', grade: 2 },
+  { id: 20, letter: 'ck', options: ['/k/', '/ch/', '/sh/'], correctAnswer: '/k/', grade: 2 },
   { id: 21, letter: 'ng', options: ['/ng/', '/n/', '/g/'], correctAnswer: '/ng/', grade: 2 },
   { id: 22, letter: 'qu', options: ['/kw/', '/k/', '/w/'], correctAnswer: '/kw/', grade: 2 },
-  { id: 23, letter: 'ph', options: ['/f/', '/p/', '/ph/'], correctAnswer: '/f/', grade: 2 },
+  { id: 23, letter: 'ph', options: ['/f/', '/p/', '/h/'], correctAnswer: '/f/', grade: 2 },
   { id: 24, letter: 'y', options: ['/y/', '/i/', '/j/'], correctAnswer: '/y/', grade: 2 },
-  { id: 25, letter: 'z', options: ['/z/', '/s/', '/sh/'], correctAnswer: '/z/', grade: 2 },
+  { id: 25, letter: 'z', options: ['/z/', '/c/', '/sh/'], correctAnswer: '/z/', grade: 2 },
   { id: 26, letter: 'j', options: ['/j/', '/g/', '/y/'], correctAnswer: '/j/', grade: 2 },
   { id: 27, letter: 'c', options: ['/k/', '/s/', '/ch/'], correctAnswer: '/k/', grade: 2 },
   { id: 28, letter: 'x', options: ['/ks/', '/z/', '/s/'], correctAnswer: '/ks/', grade: 2 },
 
   // Grade 3 Questions - Complex patterns
-  { id: 29, letter: 'ough', options: ['/uf/', '/ow/', '/o/'], correctAnswer: '/uf/', grade: 3 },
+  { id: 29, letter: 'ough', options: ['/uf/', '/ough/', '/og/'], correctAnswer: '/ough/', grade: 3 },
   { id: 30, letter: 'eigh', options: ['/ay/', '/ee/', '/i/'], correctAnswer: '/ay/', grade: 3 },
-  { id: 31, letter: 'tion', options: ['/shun/', '/tion/', '/shon/'], correctAnswer: '/shun/', grade: 3 },
-  { id: 32, letter: 'sion', options: ['/zhun/', '/shun/', '/sion/'], correctAnswer: '/zhun/', grade: 3 },
-  { id: 33, letter: 'ight', options: ['/it/', '/ight/', '/yt/'], correctAnswer: '/it/', grade: 3 },
+  { id: 31, letter: 'tion', options: ['/shun/', '/tion/', '/shon/'], correctAnswer: '/tion/', grade: 3 },
+  { id: 32, letter: 'sion', options: ['/zhun/', '/shun/', '/sion/'], correctAnswer: '/sion/', grade: 3 },
+  { id: 33, letter: 'ight', options: ['/it/', '/ight/', '/yt/'], correctAnswer: '/ight/', grade: 3 },
   { id: 34, letter: 'aught', options: ['/awt/', '/aut/', '/aught/'], correctAnswer: '/awt/', grade: 3 },
-  { id: 35, letter: 'ought', options: ['/awt/', '/owt/', '/ought/'], correctAnswer: '/awt/', grade: 3 },
-  { id: 36, letter: 'dge', options: ['/j/', '/dg/', '/g/'], correctAnswer: '/j/', grade: 3 }
+  { id: 35, letter: 'dge', options: ['/j/', '/d/', '/g/'], correctAnswer: '/j/', grade: 3 }
 ];
 
 const PhonicsQuiz: React.FC = () => {
@@ -75,26 +75,15 @@ const PhonicsQuiz: React.FC = () => {
     }
   }, [selectedGrade]);
 
-  // Function to list available voices (for debugging)
-  const listAvailableVoices = () => {
-    if ('speechSynthesis' in window) {
-      const voices = speechSynthesis.getVoices();
-      console.log('Available voices:');
-      voices.forEach((voice, index) => {
-        console.log(`${index}: ${voice.name} (${voice.lang})`);
-      });
-    }
-  };
-
   // Load voices when component mounts
   useEffect(() => {
-    // Voices might not be loaded immediately, so we wait a bit
-    setTimeout(listAvailableVoices, 1000);
+    enhancedTTS.preloadVoices().then(() => {
+      console.log('Available voices:', enhancedTTS.listVoices());
+    });
     
-    // Also listen for voice changes
-    if ('speechSynthesis' in window) {
-      speechSynthesis.onvoiceschanged = listAvailableVoices;
-    }
+    return () => {
+      enhancedTTS.cancel();
+    };
   }, []);
 
   const handleGradeSelection = (grade: number) => {
@@ -139,115 +128,26 @@ const PhonicsQuiz: React.FC = () => {
       setCurrentQuestionIndex(prev => prev - 1);
       setSelectedAnswer(null);
       setShowFeedback(false);
-      // Cancel any ongoing speech
-      if ('speechSynthesis' in window) {
-        speechSynthesis.cancel();
-        setIsPlayingSound(false);
-      }
+      enhancedTTS.cancel();
+      setIsPlayingSound(false);
     }
   };
 
-  const playLetterSound = (letter: string) => {
-    // Map letters to their phonetic sounds using spellings that speech synthesis pronounces correctly
-    const soundMap: { [key: string]: string } = {
-      // Basic consonants with phonetic spellings that sound right
-      'm': 'mah',
-  'p': 'puh',
-  't': 'tuh',
-  's': 'sssuh',   
-  'b': 'bah',
-  'r': 'raah',
-  'n': 'nah',    
-  'f': 'fuh',   
-  'd': 'dah',
-  'g': 'gah',
-  'h': 'hah',
-  'k': 'kuh',
-  'l': 'luh',    
-  'v': 'vuh',    
-  'w': 'wuh',
-  'y': 'yah',
-  'z': 'zah',   
-  'j': 'jah',
-  'c': 'kuh',   
-  'x': 'ksuh',
-  // Digraphs and blends
-  'ch': 'chuh',
-  'sh': 'shuh',
-  'th': 'thuh',
-  'wh': 'wuh',
-  'ck': 'kuh',
-  'qu': 'kwuh',
-  'ph': 'fffuh',
-  // Complex patterns
-  'ough': 'uff',
-  'eigh': 'ay',
-  'tion': 'shun',
-  'sion': 'zhun',
-  'ight': 'ite',
-  'aught': 'ought',
-  'ought': 'ought',
-  'dge': 'juh'
-    };
-
-    const soundToSpeak = soundMap[letter] || letter;
+  const playLetterSound = async (letter: string) => {
+    const soundToSpeak = phoneticSoundMap[letter] || letter;
     
-    if ('speechSynthesis' in window) {
-      // Cancel any previous speech
-      speechSynthesis.cancel();
-      setIsPlayingSound(true);
-      
-      const utterance = new SpeechSynthesisUtterance(soundToSpeak);
-      utterance.rate = 0.5; // Very slow for clarity
-      utterance.pitch = 1.0; // Normal pitch
-      utterance.volume = 1;
-      
-      // Handle speech end
-      utterance.onend = () => {
-        setIsPlayingSound(false);
-      };
-      
-      utterance.onerror = () => {
-        setIsPlayingSound(false);
-      };
-      
-      const voices = speechSynthesis.getVoices();
-      
-      // Priority order for female voices
-      const femaleVoiceNames = [
-        'Microsoft Zira - English (United States)',
-        'Google UK English Female',
-        'Microsoft Hazel - English (Great Britain)',
-        'Samantha',
-        'Karen',
-        'Moira',
-        'Tessa',
-        'Veena',
-        'Fiona'
-      ];
-      
-      let preferredVoice = voices.find(voice => 
-        femaleVoiceNames.some(femaleName => voice.name.includes(femaleName.split(' ')[1]))
-      );
-      
-      if (!preferredVoice) {
-        preferredVoice = voices.find(voice => 
-          voice.lang.startsWith('en') && 
-          (voice.name.toLowerCase().includes('female') || 
-           voice.name.toLowerCase().includes('woman'))
-        );
-      }
-      
-      if (!preferredVoice) {
-        preferredVoice = voices.find(voice => voice.lang.startsWith('en'));
-      }
-      
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
-        console.log('Using voice:', preferredVoice.name); // For debugging
-      }
-      
-      speechSynthesis.speak(utterance);
+    setIsPlayingSound(true);
+    
+    try {
+      await enhancedTTS.speak(soundToSpeak, {
+        rate: 0.75,
+        pitch: 1.15,
+        volume: 1.0
+      });
+    } catch (error) {
+      console.error('Error playing sound:', error);
+    } finally {
+      setIsPlayingSound(false);
     }
   };
 
@@ -260,9 +160,7 @@ const PhonicsQuiz: React.FC = () => {
     setShowResults(false);
     setCurrentQuestions([]);
     setIsPlayingSound(false);
-    if ('speechSynthesis' in window) {
-      speechSynthesis.cancel();
-    }
+    enhancedTTS.cancel();
   };
 
   const currentQuestion = currentQuestions[currentQuestionIndex];

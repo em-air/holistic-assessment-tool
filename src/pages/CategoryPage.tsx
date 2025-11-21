@@ -40,7 +40,7 @@ const CategoryPage: React.FC = () => {
     } else if (subcategoryId === 'phonics-awareness') {
       navigate(`/phonics-quiz-selection/${categoryId}`);
     } else if (subcategoryId === 'blending') {
-      navigate(`/blending-quiz/${categoryId}`);
+      navigate(`/blending-segmenting-selection/${categoryId}`);
     } else if (subcategoryId === 'sentence-formation') {
       navigate('/vocabulary-matching');
     } else if (subcategoryId === 'learning-style') {

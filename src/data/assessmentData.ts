@@ -169,7 +169,7 @@ export const assessmentCategories: AssessmentCategory[] = [
       },
       {
         id: 'blending',
-        title: 'Blending',
+        title: 'Blending and Segmenting',
         color: 'bg-green-500',
         questions: []
       }
