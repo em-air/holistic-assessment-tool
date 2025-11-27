@@ -13,6 +13,7 @@ const CriticalThinkingPage: React.FC = () => {
     {
       id: 'analogy',
       title: 'Analogy Quiz',
+      subtitle: 'Logical Reasoning',
       description: 'Train logical reasoning through comparison and relationship questions',
       icon: Brain,
       color: 'from-purple-400 to-pink-500',
@@ -28,6 +29,7 @@ const CriticalThinkingPage: React.FC = () => {
     {
       id: 'category',
       title: 'Category Quiz',
+      subtitle: 'Classification',
       description: 'Develop classification skills through drag-and-drop sorting challenges',
       icon: Target,
       color: 'from-green-400 to-teal-500',
@@ -104,9 +106,12 @@ const CriticalThinkingPage: React.FC = () => {
                 <div className={`w-20 h-20 bg-gradient-to-r ${quiz.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg`}>
                   <span className="text-3xl">{quiz.emoji}</span>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                <h3 className="text-2xl font-bold text-gray-800 mb-1">
                   {quiz.title}
                 </h3>
+                <p className="text-xs text-gray-500 font-medium bg-gray-100 inline-block px-2 py-0.5 rounded mb-2">
+                  ({quiz.subtitle})
+                </p>
                 <p className="text-gray-600">
                   {quiz.description}
                 </p>

@@ -24,6 +24,7 @@ import PerceptionQuiz from './pages/PerceptionQuiz';
 import MissingObjectQuizPage from './pages/MissingObjectQuizPage';
 import SentenceDifferenceQuiz from './pages/SentenceDifferenceQuiz';
 import OralLanguageQuiz from './pages/OralLanguageQuiz';
+import OralLanguageSelection from './pages/OralLanguageSelection';
 import StoryRetellQuiz from './pages/StoryRetellQuiz';
 import StoryRetellGradeSelector from './pages/StoryRetellGradeSelector';
 import SpellingGradeSelector from './pages/SpellingGradeSelector';
@@ -304,6 +305,19 @@ function AnimatedRoutes() {
               transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <PerceptionQuizSelection />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/oral-language-selection/:categoryId"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <OralLanguageSelection />
             </motion.div>
           }
         />

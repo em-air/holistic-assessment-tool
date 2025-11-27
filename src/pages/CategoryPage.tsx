@@ -54,7 +54,7 @@ const CategoryPage: React.FC = () => {
     } else if (subcategoryId === 'attention') {
       navigate('/attention-memory-selection');
     } else if (subcategoryId === 'oral-language') {
-      navigate('/oral-language-quiz');
+      navigate(`/oral-language-selection/${categoryId}`);
     } else if (subcategoryId === 'critical-thinking') {
       navigate('/critical-thinking');
     } else {

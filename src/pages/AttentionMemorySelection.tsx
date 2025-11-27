@@ -11,9 +11,9 @@ const AttentionMemorySelection: React.FC = () => {
 
   const assessmentOptions = [
     {
-      id: 'attention',
-      title: 'Attention Assessment',
-      subtitle: 'Focus & Attention Control',
+      id: 'attention-assessment',
+      title: 'Attention Control Questionnaire',
+      subtitle: 'Attention',
       description: 'Evaluate your ability to focus and shift attention using a research-based questionnaire.',
       icon: Focus,
       color: 'from-blue-400 to-purple-500',
@@ -28,20 +28,54 @@ const AttentionMemorySelection: React.FC = () => {
       duration: '10-15 minutes'
     },
     {
-      id: 'memory',
-      title: 'Memory Games',
-      subtitle: 'Memory & Cognitive Tasks',
-      description: 'Test your memory skills with interactive games and challenges.',
+      id: 'attention-quiz',
+      title: 'Attention Quiz',
+      subtitle: 'Attention',
+      description: 'Interactive attention-based challenges and memory tasks.',
+      icon: Target,
+      color: 'from-purple-400 to-indigo-500',
+      borderColor: 'border-purple-200 hover:border-purple-400',
+      features: [
+        'Focus exercises',
+        'Attention switching tasks',
+        'Timed challenges',
+        'Progressive difficulty'
+      ],
+      route: '/attention-quiz',
+      duration: '10 minutes'
+    },
+    {
+      id: 'memory-quiz',
+      title: 'Memory Quiz',
+      subtitle: 'Memory',
+      description: 'Challenge your memory with sequence and recall exercises.',
+      icon: Brain,
+      color: 'from-pink-400 to-rose-500',
+      borderColor: 'border-pink-200 hover:border-pink-400',
+      features: [
+        'Sequence memory',
+        'Visual recall',
+        'Working memory tasks',
+        'Instant feedback'
+      ],
+      route: '/memory-quiz',
+      duration: '10 minutes'
+    },
+    {
+      id: 'memory-assessment',
+      title: 'Memory Assessment',
+      subtitle: 'Memory',
+      description: 'Comprehensive memory evaluation with visual and cognitive challenges.',
       icon: Brain,
       color: 'from-emerald-400 to-teal-500',
       borderColor: 'border-emerald-200 hover:border-emerald-400',
       features: [
         'Visual memory challenges',
-        'Sequence memory games',
-        'Progressive difficulty levels',
-        'Interactive gameplay'
+        'Pattern recognition',
+        'Multi-stage assessment',
+        'Detailed results'
       ],
-      route: '/attention-quiz',
+      route: '/memory-assessment',
       duration: '15-20 minutes'
     }
   ];
@@ -83,45 +117,42 @@ const AttentionMemorySelection: React.FC = () => {
         </motion.div>
 
         {/* Assessment Options */}
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-6">
           {assessmentOptions.map((option, index) => (
             <motion.div
               key={option.id}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.2 }}
-              className={`bg-white/95 backdrop-blur-sm rounded-2xl border-2 ${option.borderColor} p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 cursor-pointer`}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className={`bg-white/95 backdrop-blur-sm rounded-2xl border-2 ${option.borderColor} p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 cursor-pointer`}
               onClick={() => navigate(option.route)}
             >
               {/* Icon and Title */}
-              <div className="flex items-center mb-6">
-                <div className={`w-16 h-16 bg-gradient-to-r ${option.color} rounded-2xl flex items-center justify-center mr-4 shadow-lg`}>
-                  <option.icon size={28} className="text-white" />
+              <div className="flex items-center mb-4">
+                <div className={`w-14 h-14 bg-gradient-to-r ${option.color} rounded-xl flex items-center justify-center mr-3 shadow-lg`}>
+                  <option.icon size={24} className="text-white" />
                 </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-1">
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-gray-800 mb-0.5">
                     {option.title}
                   </h3>
-                  <p className="text-sm text-gray-500 font-medium">
-                    {option.subtitle}
+                  <p className="text-xs text-gray-500 font-medium bg-gray-100 inline-block px-2 py-0.5 rounded">
+                    ({option.subtitle})
                   </p>
                 </div>
               </div>
 
               {/* Description */}
-              <p className="text-gray-600 mb-6 leading-relaxed">
+              <p className="text-gray-600 mb-4 leading-relaxed text-sm">
                 {option.description}
               </p>
 
               {/* Features */}
-              <div className="mb-6">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
-                  What's Included:
-                </h4>
-                <ul className="space-y-2">
+              <div className="mb-4">
+                <ul className="grid grid-cols-2 gap-2">
                   {option.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center text-sm text-gray-600">
-                      <Eye size={16} className="text-gray-400 mr-2 flex-shrink-0" />
+                    <li key={idx} className="flex items-center text-xs text-gray-600">
+                      <Eye size={14} className="text-gray-400 mr-1.5 flex-shrink-0" />
                       {feature}
                     </li>
                   ))}
@@ -129,13 +160,13 @@ const AttentionMemorySelection: React.FC = () => {
               </div>
 
               {/* Duration and CTA */}
-              <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                <div className="flex items-center text-sm text-gray-500">
-                  <Target size={16} className="mr-1" />
+              <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+                <div className="flex items-center text-xs text-gray-500">
+                  <Target size={14} className="mr-1" />
                   {option.duration}
                 </div>
-                <div className={`px-4 py-2 bg-gradient-to-r ${option.color} text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200`}>
-                  Start Assessment
+                <div className={`px-3 py-1.5 bg-gradient-to-r ${option.color} text-white text-xs font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200`}>
+                  Start Quiz
                 </div>
               </div>
             </motion.div>

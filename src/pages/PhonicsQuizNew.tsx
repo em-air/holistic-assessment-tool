@@ -57,7 +57,7 @@ const phonicsQuestions: PhonicsQuestion[] = [
 ];
 
 const PhonicsQuiz: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); 
   const { categoryId } = useParams();
   const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);

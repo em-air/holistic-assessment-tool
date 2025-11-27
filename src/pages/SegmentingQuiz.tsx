@@ -109,9 +109,8 @@ const SegmentingQuiz: React.FC = () => {
   const handleSegmentSelect = async (segment: string) => {
     if (showFeedback) return;
     
-    // Play the sound of the phoneme when clicked
-    const soundToPlay = segment.replace(/\//g, '');
-    await playPhonemeSound(soundToPlay);
+    // Play the actual sound of the phoneme when clicked (not the letter name)
+    await playPhonemeSound(segment);
     
     const newSegments = [...userSegments, segment];
     setUserSegments(newSegments);
@@ -119,7 +118,9 @@ const SegmentingQuiz: React.FC = () => {
 
   const playPhonemeSound = async (phoneme: string) => {
     try {
-      await enhancedTTS.speak(phoneme, {
+      // Get the actual sound representation instead of the letter name
+      const soundToPlay = phonemeToSound[phoneme] || phoneme.replace(/\//g, '');
+      await enhancedTTS.speak(soundToPlay, {
         rate: 0.75,
         pitch: 1.15,
         volume: 1.0
@@ -139,28 +140,12 @@ const SegmentingQuiz: React.FC = () => {
   const checkAnswer = () => {
     if (!currentQuestion || showFeedback || userSegments.length === 0) return;
     
-    // Check if lengths match first
-    if (userSegments.length !== currentQuestion.segments.length) {
-      setIsCorrect(false);
-      setShowFeedback(true);
-      return;
-    }
+    // Convert both arrays to strings for comparison, handling compounds
+    const normalizedUserSegments = normalizeSegments(userSegments);
+    const normalizedCorrectSegments = normalizeSegments(currentQuestion.segments);
     
-    // Check each segment, allowing for alternatives
-    const correct = userSegments.every((userSegment, index) => {
-      const correctSegment = currentQuestion.segments[index];
-      
-      // Direct match
-      if (userSegment === correctSegment) return true;
-      
-      // Check if user's segment is an alternative for the correct one
-      if (soundAlternatives[correctSegment]?.includes(userSegment)) return true;
-      
-      // Check if correct segment is an alternative for the user's one
-      if (soundAlternatives[userSegment]?.includes(correctSegment)) return true;
-      
-      return false;
-    });
+    // Check if the normalized versions match
+    const correct = normalizedUserSegments === normalizedCorrectSegments;
     
     setIsCorrect(correct);
     setShowFeedback(true);
@@ -168,6 +153,29 @@ const SegmentingQuiz: React.FC = () => {
     if (correct) {
       setScore(score + 1);
     }
+  };
+
+  // Normalize segments to handle compounds like /ng/ and alternative representations
+  const normalizeSegments = (segments: string[]): string => {
+    return segments.map(segment => {
+      // Check for alternatives
+      const normalized = segment;
+      
+      // Handle compounds - break down multi-letter phonemes if needed
+      // For example, if user uses /ng/ it should match /n/ + /g/ and vice versa
+      if (normalized === '/ng/') return 'ng';
+      if (normalized === '/ch/') return 'ch';
+      if (normalized === '/sh/') return 'sh';
+      if (normalized === '/th/') return 'th';
+      if (normalized === '/igh/') return 'igh';
+      
+      // Handle alternatives
+      if (soundAlternatives[normalized]) {
+        return soundAlternatives[normalized][0].replace(/\//g, '');
+      }
+      
+      return normalized.replace(/\//g, '');
+    }).join('');
   };
 
   const nextQuestion = () => {
@@ -196,11 +204,11 @@ const SegmentingQuiz: React.FC = () => {
 
   const currentQuestion = currentQuestions[currentQuestionIndex];
 
-  // Essential phoneme options (minimal set)
+  // Minimal phoneme options (no similar sounds)
   const allPhonemes = [
-    '/a/', '/b/', '/c/', '/d/', '/e/', '/f/', '/g/', '/h/', '/i/',
+    '/a/', '/b/', '/c/', '/d/', '/e/', '/f/', '/h/', '/i/',
     '/l/', '/m/', '/n/', '/o/', '/p/', '/r/', '/s/', '/t/', '/u/',
-    '/ch/', '/sh/', '/th/', '/ng/'
+    '/ch/', '/sh/', '/th/', '/ng/', '/igh/'
   ];
 
   // Alternative sounds that should be accepted as correct
@@ -219,6 +227,32 @@ const SegmentingQuiz: React.FC = () => {
     '/kw/': ['/qu/'],
     '/igh/': ['/i/'],
     '/i/': ['/igh/']
+  };
+
+  // Map phonemes to their actual sounds for TTS
+  const phonemeToSound: { [key: string]: string } = {
+    '/a/': 'ah',
+    '/b/': 'buh',
+    '/c/': 'kuh',
+    '/d/': 'duh',
+    '/e/': 'eh',
+    '/f/': 'fff',
+    '/h/': 'huh',
+    '/i/': 'ih',
+    '/l/': 'lll',
+    '/m/': 'mmm',
+    '/n/': 'nnn',
+    '/o/': 'oh',
+    '/p/': 'puh',
+    '/r/': 'rrr',
+    '/s/': 'sss',
+    '/t/': 'tuh',
+    '/u/': 'uh',
+    '/ch/': 'chuh',
+    '/sh/': 'shh',
+    '/th/': 'thh',
+    '/ng/': 'ng',
+    '/igh/': 'eye'
   };
 
   // Grade Selection Screen
@@ -493,7 +527,7 @@ const SegmentingQuiz: React.FC = () => {
           {/* Phoneme Options */}
           <div>
             <p className="text-sm text-gray-600 mb-3 text-center">
-              Select the sounds in order:
+              Click sounds to hear them, then select in order:
             </p>
             <div className="grid grid-cols-6 gap-3">
               {allPhonemes.map((phoneme) => (
@@ -501,7 +535,7 @@ const SegmentingQuiz: React.FC = () => {
                   key={phoneme}
                   onClick={() => handleSegmentSelect(phoneme)}
                   disabled={showFeedback}
-                  className="bg-white hover:bg-purple-100 disabled:bg-gray-200 disabled:cursor-not-allowed border-2 border-purple-300 text-purple-700 py-3 px-2 rounded-lg font-bold text-base transition-colors duration-200 hover:scale-105"
+                  className="bg-white hover:bg-purple-100 disabled:bg-gray-200 disabled:cursor-not-allowed border-2 border-purple-300 text-purple-700 py-4 px-2 rounded-lg font-bold text-lg transition-colors duration-200 hover:scale-105"
                 >
                   {phoneme}
                 </button>

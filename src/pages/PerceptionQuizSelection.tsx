@@ -12,6 +12,7 @@ const PerceptionQuizSelection: React.FC = () => {
     {
       id: 'spot-difference',
       title: 'Spot the Difference',
+      subtitle: 'Visual Perception',
       description: 'Find differences between two similar images',
       icon: Eye,
       route: '/perception-quiz',
@@ -21,6 +22,7 @@ const PerceptionQuizSelection: React.FC = () => {
     {
       id: 'sentence-difference',
       title: 'Find Sentence Differences',
+      subtitle: 'Text Perception',
       description: 'Identify differences between similar sentences',
       icon: Search,
       route: '/sentence-difference-quiz',
@@ -30,6 +32,7 @@ const PerceptionQuizSelection: React.FC = () => {
     {
       id: 'logical-sequencing',
       title: 'Logical Sequencing',
+      subtitle: 'Sequential Processing',
       description: 'Arrange sentences in the correct logical order',
       icon: List,
       route: '/logical-sequencing-quiz',
@@ -100,9 +103,14 @@ const PerceptionQuizSelection: React.FC = () => {
                       </div>
                       
                       {/* Title */}
-                      <h3 className="text-xl font-bold text-gray-800 mb-3">
+                      <h3 className="text-xl font-bold text-gray-800 mb-1">
                         {quiz.title}
                       </h3>
+                      
+                      {/* Subtitle */}
+                      <p className="text-xs text-gray-500 font-medium bg-gray-100 inline-block px-2 py-0.5 rounded mb-3">
+                        ({quiz.subtitle})
+                      </p>
                       
                       {/* Description */}
                       <p className="text-gray-600 text-sm mb-4 min-h-[2.5rem]">
