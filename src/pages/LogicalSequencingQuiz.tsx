@@ -245,7 +245,7 @@ const LogicalSequencingQuiz: React.FC = () => {
               </button>
               
               <button
-                onClick={() => navigate('/category/perception')}
+                onClick={() => navigate('/perception-quiz-selection/mind')}
                 className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
               >
                 Back to Perception

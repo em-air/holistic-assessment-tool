@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { X, Download, Share2, Brain, Award } from 'lucide-react';
+import { X, Download, Share2, Brain, Award, Mail } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { ProgressTracker, MIND_QUIZZES, QuizResult } from '../utils/progressTracker';
 import ReportPDF from './ReportPDF';
+import EmailReportModal from './EmailReportModal';
 
 interface MindSectionReportProps {
   onClose: () => void;
@@ -11,6 +12,7 @@ interface MindSectionReportProps {
 
 const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = React.useState(false);
+  const [showEmailModal, setShowEmailModal] = React.useState(false);
   
   const progress = ProgressTracker.getProgress();
   const results = progress.mindSectionResults;
@@ -278,6 +280,13 @@ Assessment Results:
             </div>
             <div className="flex items-center space-x-2">
               <button
+                onClick={() => setShowEmailModal(true)}
+                className="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors duration-200"
+                title="Email Report"
+              >
+                <Mail size={20} />
+              </button>
+              <button
                 onClick={exportReport}
                 disabled={isGeneratingPDF}
                 className={`p-2 rounded-lg transition-colors duration-200 ${
@@ -521,6 +530,14 @@ Assessment Results:
           </div>
         </div>
       </motion.div>
+
+      {/* Email Report Modal */}
+      {showEmailModal && (
+        <EmailReportModal
+          onClose={() => setShowEmailModal(false)}
+          progress={progress}
+        />
+      )}
     </motion.div>
   );
 };

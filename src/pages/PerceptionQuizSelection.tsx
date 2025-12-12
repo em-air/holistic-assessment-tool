@@ -10,13 +10,13 @@ const PerceptionQuizSelection: React.FC = () => {
 
   const perceptionQuizzes = [
     {
-      id: 'spot-difference',
-      title: 'Spot the Difference',
-      subtitle: 'Visual Perception',
-      description: 'Find differences between two similar images',
-      icon: Eye,
-      route: '/perception-quiz',
-      color: 'from-blue-500 to-indigo-600',
+      id: 'missing-object',
+      title: 'Missing Object',
+      subtitle: 'Visual Memory',
+      description: 'Identify which object was removed from a set of pictures',
+      icon: Search,
+      route: '/missing-object-quiz',
+      color: 'from-pink-500 to-rose-600',
       difficulty: 'All Ages'
     },
     {

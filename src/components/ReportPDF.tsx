@@ -185,9 +185,10 @@ const styles = StyleSheet.create({
 
 interface ReportPDFProps {
   progress: ProgressData;
+  studentName?: string;
 }
 
-const ReportPDF: React.FC<ReportPDFProps> = ({ progress }) => {
+const ReportPDF: React.FC<ReportPDFProps> = ({ progress, studentName }) => {
   const results = progress.mindSectionResults;
   const averageScore = results.length > 0 
     ? Math.round(results.reduce((sum, r) => sum + r.percentage, 0) / results.length)
@@ -289,6 +290,11 @@ const ReportPDF: React.FC<ReportPDFProps> = ({ progress }) => {
             Cognitive Skills Assessment Report
             {!isCompleteReport && ' (Partial)'}
           </Text>
+          {studentName && (
+            <Text style={styles.subtitle}>
+              Student: {studentName}
+            </Text>
+          )}
           <Text style={styles.subtitle}>
             Generated: {new Date().toLocaleDateString()}
           </Text>

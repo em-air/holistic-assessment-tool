@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Brain, Target, Eye, Focus } from 'lucide-react';
+import { ArrowLeft, Brain, Target, Eye, Focus, Hash, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MindProgressBar from '../components/MindProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
@@ -11,72 +11,45 @@ const AttentionMemorySelection: React.FC = () => {
 
   const assessmentOptions = [
     {
-      id: 'attention-assessment',
-      title: 'Attention Control Questionnaire',
+      id: 'attention-questionnaire',
+      title: 'Attention Questionnaire',
       subtitle: 'Attention',
       description: 'Evaluate your ability to focus and shift attention using a research-based questionnaire.',
       icon: Focus,
       color: 'from-blue-400 to-purple-500',
-      borderColor: 'border-blue-200 hover:border-blue-400',
-      features: [
-        'Measures attentional focusing ability',
-        'Assesses attention shifting skills', 
-        'Based on validated research',
-        'Provides detailed feedback'
-      ],
       route: '/attention-assessment',
       duration: '10-15 minutes'
     },
     {
-      id: 'attention-quiz',
-      title: 'Attention Quiz',
-      subtitle: 'Attention',
-      description: 'Interactive attention-based challenges and memory tasks.',
-      icon: Target,
+      id: 'picture-sequence',
+      title: 'Picture Sequence',
+      subtitle: 'Memory',
+      description: 'Remember the order of 3-5 pictures and recall the sequence.',
+      icon: Eye,
       color: 'from-purple-400 to-indigo-500',
-      borderColor: 'border-purple-200 hover:border-purple-400',
-      features: [
-        'Focus exercises',
-        'Attention switching tasks',
-        'Timed challenges',
-        'Progressive difficulty'
-      ],
-      route: '/attention-quiz',
+      route: '/memory-assessment',
+      startType: 'sequence_recall',
       duration: '10 minutes'
     },
     {
-      id: 'memory-quiz',
-      title: 'Memory Quiz',
+      id: 'number-tiles',
+      title: 'Number Tiles',
       subtitle: 'Memory',
-      description: 'Challenge your memory with sequence and recall exercises.',
-      icon: Brain,
-      color: 'from-pink-400 to-rose-500',
-      borderColor: 'border-pink-200 hover:border-pink-400',
-      features: [
-        'Sequence memory',
-        'Visual recall',
-        'Working memory tasks',
-        'Instant feedback'
-      ],
+      description: 'Memorize the positions of numbered tiles and recall them in order.',
+      icon: Hash,
+      color: 'from-emerald-400 to-teal-500',
       route: '/memory-quiz',
       duration: '10 minutes'
     },
     {
-      id: 'memory-assessment',
-      title: 'Memory Assessment',
+      id: 'flash-word-quiz',
+      title: 'Flash Word Quiz',
       subtitle: 'Memory',
-      description: 'Comprehensive memory evaluation with visual and cognitive challenges.',
-      icon: Brain,
-      color: 'from-emerald-400 to-teal-500',
-      borderColor: 'border-emerald-200 hover:border-emerald-400',
-      features: [
-        'Visual memory challenges',
-        'Pattern recognition',
-        'Multi-stage assessment',
-        'Detailed results'
-      ],
-      route: '/memory-assessment',
-      duration: '15-20 minutes'
+      description: 'Quickly memorize and recall words shown briefly on screen.',
+      icon: Zap,
+      color: 'from-orange-400 to-red-500',
+      route: '/flash-word-quiz',
+      duration: '10 minutes'
     }
   ];
 
@@ -117,58 +90,48 @@ const AttentionMemorySelection: React.FC = () => {
         </motion.div>
 
         {/* Assessment Options */}
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-6">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {assessmentOptions.map((option, index) => (
             <motion.div
               key={option.id}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className={`bg-white/95 backdrop-blur-sm rounded-2xl border-2 ${option.borderColor} p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 cursor-pointer`}
-              onClick={() => navigate(option.route)}
+              className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
             >
               {/* Icon and Title */}
-              <div className="flex items-center mb-4">
-                <div className={`w-14 h-14 bg-gradient-to-r ${option.color} rounded-xl flex items-center justify-center mr-3 shadow-lg`}>
-                  <option.icon size={24} className="text-white" />
+              <div className="text-center mb-4">
+                <div className={`w-16 h-16 bg-gradient-to-r ${option.color} rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg`}>
+                  <option.icon size={28} className="text-white" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-800 mb-0.5">
-                    {option.title}
-                  </h3>
-                  <p className="text-xs text-gray-500 font-medium bg-gray-100 inline-block px-2 py-0.5 rounded">
-                    ({option.subtitle})
-                  </p>
-                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-1">
+                  {option.title}
+                </h3>
+                <p className="text-xs text-gray-500 font-medium bg-gray-100 inline-block px-2 py-0.5 rounded mb-2">
+                  ({option.subtitle})
+                </p>
               </div>
 
               {/* Description */}
-              <p className="text-gray-600 mb-4 leading-relaxed text-sm">
+              <p className="text-gray-600 mb-4 leading-relaxed text-sm text-center">
                 {option.description}
               </p>
 
-              {/* Features */}
-              <div className="mb-4">
-                <ul className="grid grid-cols-2 gap-2">
-                  {option.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center text-xs text-gray-600">
-                      <Eye size={14} className="text-gray-400 mr-1.5 flex-shrink-0" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
+              {/* Duration */}
+              <div className="flex items-center justify-center text-xs text-gray-500 mb-4">
+                <Target size={14} className="mr-1" />
+                {option.duration}
               </div>
 
-              {/* Duration and CTA */}
-              <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                <div className="flex items-center text-xs text-gray-500">
-                  <Target size={14} className="mr-1" />
-                  {option.duration}
-                </div>
-                <div className={`px-3 py-1.5 bg-gradient-to-r ${option.color} text-white text-xs font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200`}>
-                  Start Quiz
-                </div>
-              </div>
+              {/* Start Button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate(option.route)}
+                className={`w-full px-4 py-3 bg-gradient-to-r ${option.color} text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200`}
+              >
+                Start Quiz
+              </motion.button>
             </motion.div>
           ))}
         </div>

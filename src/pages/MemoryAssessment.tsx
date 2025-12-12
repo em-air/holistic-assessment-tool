@@ -26,9 +26,9 @@ const MemoryAssessment: React.FC = () => {
   const navigate = useNavigate();
   
   // Game state
-  const [gamePhase, setGamePhase] = useState<GamePhase>('menu');
+  const [gamePhase, setGamePhase] = useState<GamePhase>('showing');
   const [currentQuestion, setCurrentQuestion] = useState<SequenceQuestion | null>(null);
-  const [selectedType, setSelectedType] = useState<AssessmentType | null>(null);
+  const [selectedType, setSelectedType] = useState<AssessmentType | null>('sequence_recall');
   const [difficulty, setDifficulty] = useState(1);
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
@@ -45,6 +45,14 @@ const MemoryAssessment: React.FC = () => {
   const [finalResults, setFinalResults] = useState<AssessmentResults | null>(null);
   const [startTime] = useState<Date>(new Date());
   const [showReport, setShowReport] = useState(false);
+
+  // Initialize first question on mount
+  useEffect(() => {
+    if (!currentQuestion && selectedType === 'sequence_recall') {
+      const question = generateSequenceQuestion('sequence_recall', difficulty);
+      setCurrentQuestion(question);
+    }
+  }, [currentQuestion, selectedType, difficulty]);
 
   // Timer effect for showing phase
   useEffect(() => {

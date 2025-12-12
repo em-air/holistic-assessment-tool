@@ -19,25 +19,19 @@ export interface ProgressData {
   lastUpdated: string;
 }
 
-// Mind section quiz configurations
+// Mind section quiz configurations - Only Mind category quizzes
 export const MIND_QUIZZES = [
   {
-    id: 'attention-quiz',
-    name: 'Attention Quiz',
+    id: 'attention-assessment',
+    name: 'Attention Questionnaire',
     subcategory: 'attention',
-    route: '/attention-quiz'
+    route: '/attention-assessment'
   },
   {
     id: 'picture-sequence',
     name: 'Picture Sequence',
     subcategory: 'memory',
-    route: '/memory-assessment?type=sequence'
-  },
-  {
-    id: 'missing-object',
-    name: 'Missing Object',
-    subcategory: 'memory',
-    route: '/memory-assessment?type=missing'
+    route: '/memory-assessment'
   },
   {
     id: 'number-tiles',
@@ -71,33 +65,21 @@ export const MIND_QUIZZES = [
   },
   {
     id: 'missing-object-quiz',
-    name: 'Missing Object Quiz',
+    name: 'Missing Object',
     subcategory: 'perception',
     route: '/missing-object-quiz'
   },
   {
     id: 'sentence-difference-quiz',
-    name: 'Sentence Difference Quiz',
+    name: 'Sentence Differences',
     subcategory: 'perception',
     route: '/sentence-difference-quiz'
-  },
-  {
-    id: 'starting-ending-sound-quiz',
-    name: 'Beginning & Ending Sounds',
-    subcategory: 'phonics-awareness',
-    route: '/starting-ending-sound-quiz'
   },
   {
     id: 'logical-sequencing-quiz',
     name: 'Logical Sequencing',
     subcategory: 'perception',
     route: '/logical-sequencing-quiz'
-  },
-  {
-    id: 'story-retell-quiz',
-    name: 'Story Retell',
-    subcategory: 'oral-language',
-    route: '/story-retell-quiz'
   }
 ];
 
