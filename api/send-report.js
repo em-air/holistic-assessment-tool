@@ -65,6 +65,7 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Error sending email:', error);
+    res.setHeader('Content-Type', 'application/json');
     res.status(500).json({ 
       success: false, 
       message: 'Failed to send email',
