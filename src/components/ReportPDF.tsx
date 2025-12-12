@@ -267,6 +267,14 @@ const ReportPDF: React.FC<ReportPDFProps> = ({ progress, studentName }) => {
         return result.percentage >= 75 ? 'Shows strong memory and recall abilities.' : 'Developing memory skills - memory games and exercises recommended.';
       }
     } else if (category === 'learning-style') {
+      if (result.additionalData?.dominantStyle) {
+        const styleMap: { [key: string]: string } = {
+          'visual': 'Visual Learner - learns best through seeing and visualizing',
+          'auditory': 'Auditory Learner - learns best through listening and discussion',
+          'reading-writing': 'Reading/Writing Learner - learns best through reading and writing'
+        };
+        return styleMap[result.additionalData.dominantStyle] || 'Has good awareness of learning preferences.';
+      }
       return result.percentage >= 75 ? 'Has good awareness of learning preferences.' : 'Still discovering optimal learning style.';
     } else if (category === 'critical-thinking') {
       return result.percentage >= 75 ? 'Demonstrates solid critical thinking abilities.' : 'Developing reasoning and problem-solving skills.';
@@ -377,9 +385,17 @@ const ReportPDF: React.FC<ReportPDFProps> = ({ progress, studentName }) => {
                         <Text style={{ fontSize: 10, color: '#6b7280' }}>
                           Performance: {performance}
                         </Text>
-                        <Text style={[styles.scoreText, { color: getCategoryColor(remapQuizCategory(result)) }]}>
-                          {result.percentage}%
-                        </Text>
+                        {result.quizId === 'learning-styles' && result.additionalData?.dominantStyle ? (
+                          <Text style={[styles.scoreText, { color: getCategoryColor(remapQuizCategory(result)), fontSize: 10, fontWeight: 'bold' }]}>
+                            {result.additionalData.dominantStyle === 'visual' ? 'Visual Learner' :
+                             result.additionalData.dominantStyle === 'auditory' ? 'Auditory Learner' :
+                             'Reading/Writing Learner'}
+                          </Text>
+                        ) : (
+                          <Text style={[styles.scoreText, { color: getCategoryColor(remapQuizCategory(result)) }]}>
+                            {result.percentage}%
+                          </Text>
+                        )}
                       </View>
 
                       {/* Memory Quiz Additional Details */}
