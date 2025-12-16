@@ -186,9 +186,18 @@ const styles = StyleSheet.create({
 interface ReportPDFProps {
   progress: ProgressData;
   studentName?: string;
+  showWatermark?: boolean;
+  watermarkText?: string;
+  watermarkOpacity?: number; // 0 to 1
 }
 
-const ReportPDF: React.FC<ReportPDFProps> = ({ progress, studentName }) => {
+const ReportPDF: React.FC<ReportPDFProps> = ({ 
+  progress, 
+  studentName,
+  showWatermark = true,
+  watermarkText = 'Bloom Tutoring',
+  watermarkOpacity = 0.08
+}) => {
   const results = progress.mindSectionResults;
   const averageScore = results.length > 0 
     ? Math.round(results.reduce((sum, r) => sum + r.percentage, 0) / results.length)
@@ -292,6 +301,34 @@ const ReportPDF: React.FC<ReportPDFProps> = ({ progress, studentName }) => {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
+        {/* Watermark overlay - diagonal background from top-left to bottom-right */}
+        {showWatermark && (
+          <View
+            fixed
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              opacity: watermarkOpacity,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              transform: 'rotate(-45deg)',
+              zIndex: -1
+            }}
+          >
+            <Text style={{
+              fontSize: 120,
+              color: '#000000',
+              letterSpacing: 5,
+              fontWeight: 'bold'
+            }}>
+              {watermarkText}
+            </Text>
+          </View>
+        )}
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>

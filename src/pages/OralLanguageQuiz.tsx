@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Star, Brain, Check, X, RotateCcw } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { oralLanguageCategories, oralLanguageTranslations, type QuizCategory } from '../data/oralLanguageData';
 
 interface QuizScores {
@@ -13,6 +13,7 @@ interface QuizScores {
 
 const OralLanguageQuiz: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedCategory, setSelectedCategory] = useState<QuizCategory | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -35,7 +36,18 @@ const OralLanguageQuiz: React.FC = () => {
   const currentQuestion = selectedCategory?.questions[currentQuestionIndex];
   const isLastQuestion = selectedCategory && currentQuestionIndex === selectedCategory.questions.length - 1;
 
-
+  // Auto-select category from navigation state
+  useEffect(() => {
+    const state = location.state as { categoryId?: string } | null;
+    if (state?.categoryId && !selectedCategory) {
+      // Map story-sequencing to storytelling (the actual category ID in the data)
+      const categoryId = state.categoryId === 'story-sequencing' ? 'storytelling' : state.categoryId;
+      const category = oralLanguageCategories.find(c => c.id === categoryId);
+      if (category) {
+        startQuiz(category);
+      }
+    }
+  }, [location.state, selectedCategory]);
 
   // Handle answer selection for regular questions
   const handleAnswerSelect = (optionId: string) => {
@@ -134,7 +146,7 @@ const OralLanguageQuiz: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <button
-              onClick={() => navigate('/category/oral-skills')}
+              onClick={() => navigate('/oral-language-selection/oral-skills')}
               className="group flex items-center space-x-2 px-4 py-2 text-stone-600 rounded-lg transition-all duration-300 ease-out hover:text-purple-700 hover:bg-white/50 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
             >
               <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />

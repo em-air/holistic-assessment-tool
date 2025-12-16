@@ -31,7 +31,7 @@ const OralLanguageSelection: React.FC = () => {
       subtitle: 'Sentence Formation',
       description: 'Understand sentence structure and meaning from pictures',
       icon: '💬',
-      route: '/vocabulary-matching',
+      route: '/oral-language-quiz',
       color: 'from-green-400 to-green-600'
     },
     {
@@ -40,7 +40,7 @@ const OralLanguageSelection: React.FC = () => {
       subtitle: 'Narrative Sequencing',
       description: 'Arrange pictures in the correct story sequence',
       icon: '📖',
-      route: '/logical-sequencing-grades',
+      route: '/oral-language-quiz',
       color: 'from-purple-400 to-purple-600'
     },
     {
@@ -49,13 +49,18 @@ const OralLanguageSelection: React.FC = () => {
       subtitle: 'Narrative Skills',
       description: 'Read a story and retell it using Beginning, Middle, and End',
       icon: '📚',
-      route: '/story-retell-grades',
+      route: '/story-retell-quiz',
       color: 'from-indigo-400 to-indigo-600'
     }
   ];
 
-  const handleOptionClick = (route: string) => {
-    navigate(route);
+  const handleOptionClick = (option: OralLanguageOption) => {
+    if (option.route === '/oral-language-quiz') {
+      // Pass category ID in navigation state
+      navigate(option.route, { state: { categoryId: option.id } });
+    } else {
+      navigate(option.route);
+    }
   };
 
   return (
@@ -85,7 +90,7 @@ const OralLanguageSelection: React.FC = () => {
               transition={{ delay: index * 0.1 }}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => handleOptionClick(option.route)}
+              onClick={() => handleOptionClick(option)}
               className="bg-white rounded-2xl shadow-xl p-8 cursor-pointer hover:shadow-2xl transition-all duration-300 border-2 border-gray-100"
             >
               {/* Icon & Title */}
