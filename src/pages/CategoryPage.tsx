@@ -33,6 +33,30 @@ const CategoryPage: React.FC = () => {
   }
 
   const handleSubcategoryClick = (subcategoryId: string) => {
+    // Redirect to Coming Soon page for these quizzes
+    const comingSoonQuizzes = [
+      'oral-language',
+      'phonics-awareness',
+      'blending',
+      'assessment-generator',
+      'sentence-formation', // vocabulary
+      'spelling'
+    ];
+
+    const quizNames: { [key: string]: string } = {
+      'oral-language': 'Oral Language',
+      'phonics-awareness': 'Phonics Awareness',
+      'blending': 'Blending and Segmenting',
+      'assessment-generator': 'AI Assessment Generator',
+      'sentence-formation': 'Vocabulary',
+      'spelling': 'Spelling'
+    };
+
+    if (comingSoonQuizzes.includes(subcategoryId)) {
+      navigate('/coming-soon', { state: { quizName: quizNames[subcategoryId] } });
+      return;
+    }
+
     if (subcategoryId === 'assessment-generator') {
       navigate('/assessment-generator');
     } else if (subcategoryId === 'reading') {

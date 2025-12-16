@@ -38,6 +38,7 @@ import CriticalThinkingPage from './pages/CriticalThinkingPage';
 import AnalogyQuiz from './pages/AnalogyQuiz';
 import CategoryQuiz from './pages/CategoryQuiz';
 import FlashWordQuiz from './pages/FlashWordQuiz';
+import ComingSoon from './pages/ComingSoon';
 import { AuthProvider } from './contexts/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -555,6 +556,19 @@ function AnimatedRoutes() {
             </motion.div>
           }
         />
+        <Route
+          path="/coming-soon"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <ComingSoon />
+            </motion.div>
+          }
+        />
       </Routes>
     </AnimatePresence>
   );
@@ -564,7 +578,7 @@ function App() {
   return (
     <AuthProvider>
       <Router basename={base}>
-        <div className="App" data-theme="grow360">
+        <div className="App" data-theme="bloom">
           <AnimatedRoutes />
         </div>
       </Router>

@@ -59,11 +59,14 @@ const PhonicsQuizSelection: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
             {quizzes.map((quiz, index) => {
               const Icon = quiz.icon;
+              const isDisabled = true; // All phonics quizzes are disabled
               return (
                 <div
                   key={quiz.id}
-                  className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
-                  onClick={() => navigate(quiz.route)}
+                  className={`group transform transition-all duration-300 ${
+                    isDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:scale-105'
+                  }`}
+                  onClick={() => !isDisabled && navigate(quiz.route)}
                 >
                   <div className="bg-white rounded-3xl shadow-lg p-8 h-full border-2 border-transparent group-hover:border-blue-300 transition-all duration-300">
                     {/* Quiz Icon */}
@@ -94,9 +97,13 @@ const PhonicsQuizSelection: React.FC = () => {
 
                     {/* Hover Arrow */}
                     <div className="flex justify-end mt-6">
-                      <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300">
-                        <ArrowLeft size={20} className="rotate-180" />
-                      </div>
+                      {isDisabled ? (
+                        <div className="text-gray-500 font-semibold">Coming Soon</div>
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+                          <ArrowLeft size={20} className="rotate-180" />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
