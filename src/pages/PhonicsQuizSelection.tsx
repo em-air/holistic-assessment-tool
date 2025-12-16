@@ -10,8 +10,8 @@ const PhonicsQuizSelection: React.FC = () => {
   const quizzes = [
     {
       id: 'phonics-awareness',
-      title: 'Phonics Awareness',
-      description: 'Match letters with their sounds',
+      title: 'XXXXXXX XXXXXXXXX',
+      description: 'XXXXX XXXXXXX XXXX XXXXX XXXXXX',
       icon: BookOpen,
       route: `/phonics-quiz/${categoryId}`,
       color: 'from-blue-500 to-purple-600',
@@ -19,8 +19,8 @@ const PhonicsQuizSelection: React.FC = () => {
     },
     {
       id: 'starting-ending-sounds',
-      title: 'Beginning & Ending Sounds',
-      description: 'Identify beginning and ending sounds in words',
+      title: 'XXXXXXXXX X XXXXXX XXXXXX',
+      description: 'XXXXXXXX XXXXXXXXX XXX XXXXXX XXXXXX XX XXXXX',
       icon: Volume2,
       route: '/starting-ending-sound-quiz',
       color: 'from-green-500 to-blue-600',

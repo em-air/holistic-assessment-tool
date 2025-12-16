@@ -11,16 +11,16 @@ const BlendingSegmentingSelection: React.FC = () => {
   const quizOptions = [
     {
       id: 'blending',
-      title: 'Blending Quiz',
-      description: 'Combine sounds to form words',
+      title: 'XXXXXXXX XXXX',
+      description: 'XXXXXXX XXXXXX XX XXXX XXXXX',
       icon: Volume2,
       color: 'from-green-400 to-emerald-500',
       route: `/blending-quiz/${categoryId}`
     },
     {
       id: 'segmenting',
-      title: 'Segmenting Quiz',
-      description: 'Break words into individual sounds',
+      title: 'XXXXXXXXXX XXXX',
+      description: 'XXXXX XXXXX XXXX XXXXXXXXXX XXXXXX',
       icon: Zap,
       color: 'from-purple-400 to-pink-500',
       route: `/segmenting-quiz/${categoryId}`

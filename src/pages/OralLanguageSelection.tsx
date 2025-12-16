@@ -18,36 +18,36 @@ const OralLanguageSelection: React.FC = () => {
   const oralLanguageOptions: OralLanguageOption[] = [
     {
       id: 'vocabulary-naming',
-      title: 'Vocabulary & Naming (Name It!)',
-      subtitle: 'Vocabulary',
-      description: 'Identify and name objects, actions, and categories',
+      title: 'XXXXXXXXXX X XXXXXX (XXXX XX!)',
+      subtitle: 'XXXXXXXXXX',
+      description: 'XXXXXXXX XXX XXXX XXXXXXX, XXXXXXX, XXX XXXXXXXXXX',
       icon: '🏷️',
       route: '/vocabulary-matching',
       color: 'from-blue-400 to-blue-600'
     },
     {
       id: 'sentence-building',
-      title: 'Sentence Building (Picture Talk)',
-      subtitle: 'Sentence Formation',
-      description: 'Understand sentence structure and meaning from pictures',
+      title: 'XXXXXXXX XXXXXXXX (XXXXXXX XXXX)',
+      subtitle: 'XXXXXXXX XXXXXXXXX',
+      description: 'XXXXXXXXXX XXXXXXXX XXXXXXXXX XXX XXXXXXX XXXX XXXXXXXX',
       icon: '💬',
       route: '/oral-language-quiz',
       color: 'from-green-400 to-green-600'
     },
     {
       id: 'story-sequencing',
-      title: 'Story Sequencing (Put in Order)',
-      subtitle: 'Narrative Sequencing',
-      description: 'Arrange pictures in the correct story sequence',
+      title: 'XXXXX XXXXXXXXXX (XXX XX XXXXX)',
+      subtitle: 'XXXXXXXXX XXXXXXXXXX',
+      description: 'XXXXXXX XXXXXXXX XX XXX XXXXXXX XXXXX XXXXXXXX',
       icon: '📖',
       route: '/oral-language-quiz',
       color: 'from-purple-400 to-purple-600'
     },
     {
       id: 'story-retell',
-      title: 'Story Retell',
-      subtitle: 'Narrative Skills',
-      description: 'Read a story and retell it using Beginning, Middle, and End',
+      title: 'XXXXX XXXXXX',
+      subtitle: 'XXXXXXXXX XXXXXX',
+      description: 'XXXX X XXXXX XXX XXXXXX XX XXXXX XXXXXXXXX, XXXXXX, XXX XXX',
       icon: '📚',
       route: '/story-retell-quiz',
       color: 'from-indigo-400 to-indigo-600'
@@ -82,16 +82,20 @@ const OralLanguageSelection: React.FC = () => {
 
         {/* Assessment Options Grid */}
         <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-          {oralLanguageOptions.map((option, index) => (
-            <motion.div
+          {oralLanguageOptions.map((option, index) => {
+            const isDisabled = true; // All oral language quizzes are disabled
+            return (
+              <motion.div
               key={option.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleOptionClick(option)}
-              className="bg-white rounded-2xl shadow-xl p-8 cursor-pointer hover:shadow-2xl transition-all duration-300 border-2 border-gray-100"
+              whileHover={!isDisabled ? { scale: 1.02 } : {}}
+              whileTap={!isDisabled ? { scale: 0.98 } : {}}
+              onClick={() => !isDisabled && handleOptionClick(option)}
+              className={`bg-white rounded-2xl shadow-xl p-8 transition-all duration-300 border-2 border-gray-100 ${
+                isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-2xl'
+              }`}
             >
               {/* Icon & Title */}
               <div className="text-center mb-6">
@@ -111,14 +115,18 @@ const OralLanguageSelection: React.FC = () => {
 
               {/* Start Button */}
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`w-full bg-gradient-to-r ${option.color} text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300`}
+                whileHover={isDisabled ? {} : { scale: 1.05 }}
+                whileTap={isDisabled ? {} : { scale: 0.95 }}
+                className={`w-full bg-gradient-to-r ${option.color} text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 ${
+                  isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                disabled={isDisabled}
               >
-                Start Assessment
+                {isDisabled ? 'Coming Soon' : 'Start Assessment'}
               </motion.button>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Back Button */}
