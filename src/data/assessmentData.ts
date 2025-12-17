@@ -131,13 +131,13 @@ export const assessmentCategories: AssessmentCategory[] = [
     
       {
         id: 'critical-thinking',
-        title: 'Critical Thinking',
+        title: 'XXXXX XXXXXXX',
         color: 'bg-green-500',
         questions: []
       },
       {
         id: 'perception',
-        title: 'Perception',
+        title: 'XXXXXXXXX',
         color: 'bg-blue-500',
         questions: []
       }
@@ -151,7 +151,7 @@ export const assessmentCategories: AssessmentCategory[] = [
     subcategories: [
       {
         id: 'oral-language',
-        title: 'Oral Language',
+        title: 'XXXX XXXXXXXX',
         color: 'bg-blue-500',
         questions: []
       },
@@ -163,13 +163,13 @@ export const assessmentCategories: AssessmentCategory[] = [
       },
       {
         id: 'phonics-awareness',
-        title: 'Phonics Awareness',
+        title: 'XXXXXXX XXXXXXXXX',
         color: 'bg-yellow-500',
         questions: []
       },
       {
         id: 'blending',
-        title: 'Blending and Segmenting',
+        title: 'XXXXXXXX XXX XXXXXXXXXX',
         color: 'bg-green-500',
         questions: []
       }
@@ -189,19 +189,19 @@ export const assessmentCategories: AssessmentCategory[] = [
       },
       {
         id: 'sentence-formation',
-  title: 'Vocabulary',
+  title: 'XXXXXXXXXX',
         color: 'bg-pink-500',
         questions: []
       },
       {
         id: 'spelling',
-        title: 'Spelling',
+        title: 'XXXXXXXX',
         color: 'bg-purple-500',
         questions: []
       },
       {
        id: 'assessment-generator',
-      title: 'AI Assessment Generator',
+      title: 'XX XXXXXXXXXX XXXXXXXXX',
       color: 'bg-green-500',
       questions: []
 

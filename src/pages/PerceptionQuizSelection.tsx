@@ -11,9 +11,9 @@ const PerceptionQuizSelection: React.FC = () => {
   const perceptionQuizzes = [
     {
       id: 'missing-object',
-      title: 'Missing Object',
-      subtitle: 'Visual Memory',
-      description: 'Identify which object was removed from a set of pictures',
+      title: 'XXXXXXX XXXXXX',
+      subtitle: 'XXXXXX XXXXXX',
+      description: 'XXXXXXXX XXXXX XXXXXX XXX XXXXXXX XXXX X XXX XX XXXXXXXX',
       icon: Search,
       route: '/missing-object-quiz',
       color: 'from-pink-500 to-rose-600',
@@ -21,9 +21,9 @@ const PerceptionQuizSelection: React.FC = () => {
     },
     {
       id: 'sentence-difference',
-      title: 'Find Sentence Differences',
-      subtitle: 'Text Perception',
-      description: 'Identify differences between similar sentences',
+      title: 'XXXX XXXXXXXX XXXXXXXXXXX',
+      subtitle: 'XXXX XXXXXXXXXX',
+      description: 'XXXXXXXX XXXXXXXXXXX XXXXXXX XXXXXXX XXXXXXXXX',
       icon: Search,
       route: '/sentence-difference-quiz',
       color: 'from-green-500 to-emerald-600',
@@ -31,9 +31,9 @@ const PerceptionQuizSelection: React.FC = () => {
     },
     {
       id: 'logical-sequencing',
-      title: 'Logical Sequencing',
-      subtitle: 'Sequential Processing',
-      description: 'Arrange sentences in the correct logical order',
+      title: 'XXXXXXX XXXXXXXXXX',
+      subtitle: 'XXXXXXXXXX XXXXXXXXXX',
+      description: 'XXXXXXX XXXXXXXXX XX XXX XXXXXXX XXXXXXX XXXXX',
       icon: List,
       route: '/logical-sequencing-quiz',
       color: 'from-purple-500 to-pink-600',
@@ -81,6 +81,7 @@ const PerceptionQuizSelection: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {perceptionQuizzes.map((quiz, index) => {
               const IconComponent = quiz.icon;
+              const isDisabled = true; // All perception quizzes are disabled
               
               return (
                 <motion.div
@@ -88,8 +89,10 @@ const PerceptionQuizSelection: React.FC = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
-                  onClick={() => navigate(quiz.route)}
+                  className={`group transform transition-all duration-300 ${
+                    isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-105'
+                  }`}
+                  onClick={() => !isDisabled && navigate(quiz.route)}
                 >
                   <div className="bg-white rounded-3xl shadow-lg p-8 h-full border-2 border-transparent group-hover:border-blue-300 transition-all duration-300 relative overflow-hidden">
                     {/* Background gradient */}
@@ -128,9 +131,9 @@ const PerceptionQuizSelection: React.FC = () => {
                           inline-flex items-center px-6 py-3 rounded-xl font-semibold text-white
                           bg-gradient-to-r ${quiz.color} 
                           transform transition-all duration-200 
-                          group-hover:shadow-lg group-hover:scale-105
+                          ${isDisabled ? 'opacity-60 cursor-not-allowed' : 'group-hover:shadow-lg group-hover:scale-105'}
                         `}>
-                          Start Quiz
+                          {isDisabled ? 'Coming Soon' : 'Start Quiz'}
                         </div>
                       </div>
                     </div>

@@ -43,7 +43,7 @@ const CategoriesPage: React.FC = () => {
             {/* Logo */}
             <div className="flex items-center">
               <div className="text-xl font-bold text-black">
-                Grow360°
+                Bloom
               </div>
             </div>
 

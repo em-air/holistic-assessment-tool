@@ -10,10 +10,10 @@ const Header: React.FC = () => {
           </div>
         </div>
         <p className="text-gray-600 text-sm font-medium tracking-wider uppercase mb-2">
-          GROW360°
+          BLOOM
         </p>
         <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
-          Grow360° Holistic Assessment
+          Bloom Holistic Assessment
         </h1>
       </div>
     </header>

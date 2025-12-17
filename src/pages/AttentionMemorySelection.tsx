@@ -22,9 +22,9 @@ const AttentionMemorySelection: React.FC = () => {
     },
     {
       id: 'picture-sequence',
-      title: 'Picture Sequence',
-      subtitle: 'Memory',
-      description: 'Remember the order of 3-5 pictures and recall the sequence.',
+      title: 'XXXXXXX XXXXXXXX',
+      subtitle: 'XXXXXX',
+      description: 'XXXXXXXX XXX XXXXX XX XXX XXXXXXXX XXX XXXXXX XXX XXXXXXXX.',
       icon: Eye,
       color: 'from-purple-400 to-indigo-500',
       route: '/memory-assessment',
@@ -33,9 +33,9 @@ const AttentionMemorySelection: React.FC = () => {
     },
     {
       id: 'number-tiles',
-      title: 'Number Tiles',
-      subtitle: 'Memory',
-      description: 'Memorize the positions of numbered tiles and recall them in order.',
+      title: 'XXXXXX XXXXX',
+      subtitle: 'XXXXXX',
+      description: 'XXXXXXXX XXX XXXXXXXXX XX XXXXXXXX XXXXX XXX XXXXXX XXXX XX XXXXX.',
       icon: Hash,
       color: 'from-emerald-400 to-teal-500',
       route: '/memory-quiz',
@@ -43,9 +43,9 @@ const AttentionMemorySelection: React.FC = () => {
     },
     {
       id: 'flash-word-quiz',
-      title: 'Flash Word Quiz',
-      subtitle: 'Memory',
-      description: 'Quickly memorize and recall words shown briefly on screen.',
+      title: 'XXXXX XXXX XXXX',
+      subtitle: 'XXXXXX',
+      description: 'XXXXXXX XXXXXXXX XXX XXXXXX XXXXX XXXXX XXXXXXX XX XXXXXX.',
       icon: Zap,
       color: 'from-orange-400 to-red-500',
       route: '/flash-word-quiz',
@@ -91,13 +91,17 @@ const AttentionMemorySelection: React.FC = () => {
 
         {/* Assessment Options */}
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {assessmentOptions.map((option, index) => (
+          {assessmentOptions.map((option, index) => {
+            const isDisabled = option.id !== 'attention-questionnaire';
+            return (
             <motion.div
               key={option.id}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+              className={`bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl transition-all duration-300 ${
+                isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-2xl transform hover:scale-105'
+              }`}
             >
               {/* Icon and Title */}
               <div className="text-center mb-4">
@@ -125,15 +129,18 @@ const AttentionMemorySelection: React.FC = () => {
 
               {/* Start Button */}
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => navigate(option.route)}
-                className={`w-full px-4 py-3 bg-gradient-to-r ${option.color} text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200`}
+                whileHover={!isDisabled ? { scale: 1.05 } : {}}
+                whileTap={!isDisabled ? { scale: 0.95 } : {}}
+                onClick={() => !isDisabled && navigate(option.route)}
+                disabled={isDisabled}
+                className={`w-full px-4 py-3 bg-gradient-to-r ${option.color} text-white font-semibold rounded-xl shadow-lg transition-all duration-200 ${
+                  isDisabled ? 'cursor-not-allowed opacity-60' : 'hover:shadow-xl'
+                }`}
               >
-                Start Quiz
+                {isDisabled ? 'Coming Soon' : 'Start Quiz'}
               </motion.button>
             </motion.div>
-          ))}
+          );})}
         </div>
 
         {/* Info Section */}

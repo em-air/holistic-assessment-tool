@@ -11,16 +11,16 @@ const BlendingSegmentingSelection: React.FC = () => {
   const quizOptions = [
     {
       id: 'blending',
-      title: 'Blending Quiz',
-      description: 'Combine sounds to form words',
+      title: 'XXXXXXXX XXXX',
+      description: 'XXXXXXX XXXXXX XX XXXX XXXXX',
       icon: Volume2,
       color: 'from-green-400 to-emerald-500',
       route: `/blending-quiz/${categoryId}`
     },
     {
       id: 'segmenting',
-      title: 'Segmenting Quiz',
-      description: 'Break words into individual sounds',
+      title: 'XXXXXXXXXX XXXX',
+      description: 'XXXXX XXXXX XXXX XXXXXXXXXX XXXXXX',
       icon: Zap,
       color: 'from-purple-400 to-pink-500',
       route: `/segmenting-quiz/${categoryId}`
@@ -59,14 +59,18 @@ const BlendingSegmentingSelection: React.FC = () => {
           <div className="grid md:grid-cols-2 gap-6">
             {quizOptions.map((option, index) => {
               const Icon = option.icon;
+              const isDisabled = true; // All blending/segmenting quizzes are disabled
               return (
                 <motion.button
                   key={option.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  onClick={() => navigate(option.route)}
-                  className="group relative bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/50 hover:shadow-2xl transition-all duration-300 hover:scale-105 text-left overflow-hidden"
+                  onClick={() => !isDisabled && navigate(option.route)}
+                  disabled={isDisabled}
+                  className={`group relative bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/50 transition-all duration-300 text-left overflow-hidden ${
+                    isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-2xl hover:scale-105'
+                  }`}
                 >
                   {/* Gradient Background */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${option.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
@@ -87,15 +91,17 @@ const BlendingSegmentingSelection: React.FC = () => {
 
                     {/* Arrow indicator */}
                     <div className="mt-4 flex items-center text-indigo-600 group-hover:text-indigo-700 font-semibold">
-                      <span>Start Quiz</span>
-                      <svg 
-                        className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform duration-300" 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
-                        stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
+                      <span>{isDisabled ? 'Coming Soon' : 'Start Quiz'}</span>
+                      {!isDisabled && (
+                        <svg 
+                          className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform duration-300" 
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      )}
                     </div>
                   </div>
                 </motion.button>

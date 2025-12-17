@@ -12,33 +12,33 @@ const CriticalThinkingPage: React.FC = () => {
   const quizTypes = [
     {
       id: 'analogy',
-      title: 'Analogy Quiz',
-      subtitle: 'Logical Reasoning',
-      description: 'Train logical reasoning through comparison and relationship questions',
+      title: 'XXXXXXX XXXX',
+      subtitle: 'XXXXXXX XXXXXXXXX',
+      description: 'XXXXX XXXXXXX XXXXXXXXX XXXXXXX XXXXXXXXXX XXX XXXXXXXXXXXX XXXXXXXXX',
       icon: Brain,
       color: 'from-purple-400 to-pink-500',
       route: '/analogy-quiz',
       features: [
-        'If-then relationships',
-        'Comparative logic',
-        'Abstract reasoning',
-        '4 grade levels'
+        'XX-XXXX XXXXXXXXXXXX',
+        'XXXXXXXXXXX XXXXX',
+        'XXXXXXXX XXXXXXXXX',
+        'X XXXXX XXXXXX'
       ],
       emoji: '🧩'
     },
     {
       id: 'category',
-      title: 'Category Quiz',
-      subtitle: 'Classification',
-      description: 'Develop classification skills through drag-and-drop sorting challenges',
+      title: 'XXXXXXXX XXXX',
+      subtitle: 'XXXXXXXXXXXXXX',
+      description: 'XXXXXXX XXXXXXXXXXXXXX XXXXXX XXXXXXX XXXX-XXX-XXXX XXXXXXX XXXXXXXXXX',
       icon: Target,
       color: 'from-green-400 to-teal-500',
       route: '/category-quiz',
       features: [
-        'Drag & drop sorting',
-        'Classification skills',
-        'Visual feedback',
-        '4 grade levels'
+        'XXXX X XXXX XXXXXXX',
+        'XXXXXXXXXXXXXX XXXXXX',
+        'XXXXXX XXXXXXXX',
+        'X XXXXX XXXXXX'
       ],
       emoji: '🧺'
     }
@@ -92,14 +92,18 @@ const CriticalThinkingPage: React.FC = () => {
 
         {/* Quiz Type Cards */}
         <div className="grid md:grid-cols-2 gap-8">
-          {quizTypes.map((quiz, index) => (
-            <motion.div
+          {quizTypes.map((quiz, index) => {
+            const isDisabled = true; // All critical thinking quizzes are disabled
+            return (
+              <motion.div
               key={quiz.id}
               initial={{ opacity: 0, x: index === 0 ? -20 : 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.2 }}
-              whileHover={{ y: -5 }}
-              className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-300"
+              whileHover={!isDisabled ? { y: -5 } : {}}
+              className={`bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl transition-all duration-300 ${
+                isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-3xl'
+              }`}
             >
               {/* Quiz Icon & Title */}
               <div className="text-center mb-6">
@@ -149,15 +153,19 @@ const CriticalThinkingPage: React.FC = () => {
 
               {/* Start Button */}
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => navigate(quiz.route)}
-                className={`w-full py-4 bg-gradient-to-r ${quiz.color} text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300`}
+                whileHover={!isDisabled ? { scale: 1.05 } : {}}
+                whileTap={!isDisabled ? { scale: 0.95 } : {}}
+                onClick={() => !isDisabled && navigate(quiz.route)}
+                disabled={isDisabled}
+                className={`w-full py-4 bg-gradient-to-r ${quiz.color} text-white rounded-2xl font-bold text-lg shadow-lg transition-all duration-300 ${
+                  isDisabled ? 'cursor-not-allowed opacity-60' : 'hover:shadow-xl'
+                }`}
               >
-                Start {quiz.title}
+                {isDisabled ? 'Coming Soon' : `Start ${quiz.title}`}
               </motion.button>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Additional Info */}
