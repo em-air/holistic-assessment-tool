@@ -32,16 +32,6 @@ const AttentionMemorySelection: React.FC = () => {
       duration: '10 minutes'
     },
     {
-      id: 'number-tiles',
-      title: 'Number Tiles',
-      subtitle: 'Memory',
-      description: 'Memorize the positions of numbered tiles and recall them in order.',
-      icon: Hash,
-      color: 'from-emerald-400 to-teal-500',
-      route: '/memory-quiz',
-      duration: '10 minutes'
-    },
-    {
       id: 'flash-word-quiz',
       title: 'Flash Word Quiz',
       subtitle: 'Memory',

@@ -17,15 +17,6 @@ const OralLanguageSelection: React.FC = () => {
 
   const oralLanguageOptions: OralLanguageOption[] = [
     {
-      id: 'vocabulary-naming',
-      title: 'Vocabulary & Naming (Name It!)',
-      subtitle: 'Vocabulary',
-      description: 'Identify and name objects, actions, and categories',
-      icon: '🏷️',
-      route: '/vocabulary-matching',
-      color: 'from-blue-400 to-blue-600'
-    },
-    {
       id: 'sentence-building',
       title: 'Sentence Building (Picture Talk)',
       subtitle: 'Sentence Formation',
