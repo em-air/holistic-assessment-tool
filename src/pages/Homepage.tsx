@@ -31,7 +31,7 @@ const HomePage: React.FC = () => {
                   damping: 17 
                 }}
               >
-                Grow360&deg;
+                Bloom&deg;
               </motion.span>
             </div>
 
