@@ -218,8 +218,8 @@ const AttentionQuiz: React.FC = () => {
       const percentage = Math.round((score / maxPossibleScore) * 100);
       
       ProgressTracker.saveQuizResult({
-        quizId: 'attention-quiz',
-        quizName: 'Attention Quiz',
+        quizId: 'attention-tiles',
+        quizName: 'Attention Tiles',
         subcategory: 'attention',
         score: score,
         totalQuestions: maxLevel,

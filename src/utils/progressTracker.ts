@@ -32,8 +32,20 @@ export const MIND_QUIZZES = [
     route: '/attention-assessment'
   },
   {
+    id: 'attention-tiles',
+    name: 'Attention Tiles',
+    subcategory: 'attention',
+    route: '/attention-quiz'
+  },
+  {
     id: 'picture-sequence',
     name: 'Picture Sequence',
+    subcategory: 'memory',
+    route: '/memory-assessment'
+  },
+  {
+    id: 'missing-object',
+    name: 'Missing Object (Memory)',
     subcategory: 'memory',
     route: '/memory-assessment'
   },

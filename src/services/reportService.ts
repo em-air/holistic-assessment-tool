@@ -1,13 +1,18 @@
 import { supabase } from '../supabase-client';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 interface GenerateReportResponse {
   success: boolean;
   report?: {
     id: string;
     user_id: string;
     report_type: string;
+    pdf_url: string;
     created_at: string;
   };
+  downloadUrl?: string;
+  emailSent?: boolean;
   error?: string;
 }
 
@@ -18,16 +23,15 @@ interface SendEmailResponse {
 }
 
 /**
- * Get the current user
+ * Get the current user's access token for API calls
  */
-async function getCurrentUser(): Promise<{ id: string; email?: string } | null> {
+async function getAccessToken(): Promise<string | null> {
   const { data: { session } } = await supabase.auth.getSession();
-  return session?.user || null;
+  return session?.access_token || null;
 }
 
 /**
- * Save a report record to Supabase (PDF is generated in browser)
- * This just creates a record in the database for tracking
+ * Generate a report via the backend API
  */
 export async function generateReport(options: {
   reportType?: 'mind' | 'oral' | 'academic' | 'full';
@@ -35,47 +39,46 @@ export async function generateReport(options: {
   emailRecipients?: string[];
 }): Promise<GenerateReportResponse> {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
+    const token = await getAccessToken();
+    if (!token) {
       return { success: false, error: 'Not authenticated. Please sign in.' };
     }
 
-    // Create a report record in Supabase
-    const { data, error } = await supabase
-      .from('reports')
-      .insert({
-        user_id: user.id,
+    const response = await fetch(`${API_BASE_URL}/api/reports/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
         report_type: options.reportType || 'full',
-        created_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
+        send_email: options.sendEmail || false,
+        email_recipients: options.emailRecipients || [],
+      }),
+    });
 
-    if (error) {
-      // If table doesn't exist or there's an error, just log it but don't fail
-      // The PDF is generated in browser anyway
-      console.log('Report record creation skipped:', error.message);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
       return { 
-        success: true, 
-        report: {
-          id: crypto.randomUUID(),
-          user_id: user.id,
-          report_type: options.reportType || 'full',
-          created_at: new Date().toISOString(),
-        }
+        success: false, 
+        error: errorData.error || `Server error: ${response.status}` 
       };
     }
 
-    return { success: true, report: data };
+    const data = await response.json();
+    return data;
   } catch (error: any) {
     console.error('Generate report error:', error);
-    // Don't fail - PDF generation happens in browser
-    return { success: true };
+    return { 
+      success: false, 
+      error: error.message || 'Failed to connect to server' 
+    };
   }
 }
 
 /**
- * Send a text-only email report using Vercel serverless function
+ * Send a text-only email report (no PDF attachment)
+ * This calls the backend which sends a formatted email with report summary
  */
 export async function sendTextReport(options: {
   studentName: string;
@@ -88,45 +91,21 @@ export async function sendTextReport(options: {
   };
 }): Promise<SendEmailResponse> {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
+    const token = await getAccessToken();
+    if (!token) {
       return { success: false, error: 'Not authenticated. Please sign in.' };
     }
 
-    // Build HTML email content
-    const summary = options.reportSummary || {};
-    const htmlContent = `
-      <h2>Cognitive Skills Assessment Report</h2>
-      <p>Hello,</p>
-      <p>Here is the assessment summary for <strong>${options.studentName}</strong>:</p>
-      
-      <table style="border-collapse: collapse; margin: 20px 0;">
-        <tr style="background: #f4f4f4;">
-          <th style="padding: 10px; border: 1px solid #ddd;">Category</th>
-          <th style="padding: 10px; border: 1px solid #ddd;">Score</th>
-        </tr>
-        ${summary.mindScore !== undefined ? `<tr><td style="padding: 10px; border: 1px solid #ddd;">Mind Skills</td><td style="padding: 10px; border: 1px solid #ddd;">${summary.mindScore}%</td></tr>` : ''}
-        ${summary.oralScore !== undefined ? `<tr><td style="padding: 10px; border: 1px solid #ddd;">Oral Language</td><td style="padding: 10px; border: 1px solid #ddd;">${summary.oralScore}%</td></tr>` : ''}
-        ${summary.academicScore !== undefined ? `<tr><td style="padding: 10px; border: 1px solid #ddd;">Academic Skills</td><td style="padding: 10px; border: 1px solid #ddd;">${summary.academicScore}%</td></tr>` : ''}
-      </table>
-      
-      <p>Total Quizzes Completed: ${summary.totalQuizzes || 0}</p>
-      <p>Date: ${new Date().toLocaleDateString()}</p>
-      
-      <p style="margin-top: 20px;">Best regards,<br>Assessment System</p>
-    `;
-
-    // Use Vercel serverless function (or Supabase Edge Function if configured)
-    // For now, we'll call the existing /api/send-report endpoint
-    const response = await fetch('/api/send-report', {
+    const response = await fetch(`${API_BASE_URL}/api/reports/send-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({
-        studentName: options.studentName,
-        recipientEmail: options.recipientEmail,
-        htmlContent,
+        student_name: options.studentName,
+        recipient_email: options.recipientEmail,
+        report_summary: options.reportSummary,
       }),
     });
 
@@ -134,23 +113,23 @@ export async function sendTextReport(options: {
       const errorData = await response.json().catch(() => ({}));
       return { 
         success: false, 
-        error: errorData.message || `Server error: ${response.status}` 
+        error: errorData.error || `Server error: ${response.status}` 
       };
     }
 
     const data = await response.json();
-    return { success: true, message: data.message || 'Email sent successfully' };
+    return data;
   } catch (error: any) {
     console.error('Send email error:', error);
     return { 
       success: false, 
-      error: error.message || 'Failed to send email' 
+      error: error.message || 'Failed to connect to server' 
     };
   }
 }
 
 /**
- * Get list of user's previous reports from Supabase
+ * Get list of user's previous reports
  */
 export async function getReportHistory(): Promise<{
   success: boolean;
@@ -158,24 +137,67 @@ export async function getReportHistory(): Promise<{
   error?: string;
 }> {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
+    const token = await getAccessToken();
+    if (!token) {
       return { success: false, error: 'Not authenticated' };
     }
 
-    const { data, error } = await supabase
-      .from('reports')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+    const response = await fetch(`${API_BASE_URL}/api/reports`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
 
-    if (error) {
-      return { success: false, error: error.message };
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { 
+        success: false, 
+        error: errorData.error || 'Failed to fetch reports' 
+      };
     }
 
-    return { success: true, reports: data || [] };
+    const data = await response.json();
+    return { success: true, reports: data.reports };
   } catch (error: any) {
     console.error('Get reports error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Download a specific report
+ */
+export async function downloadReport(reportId: string): Promise<{
+  success: boolean;
+  downloadUrl?: string;
+  error?: string;
+}> {
+  try {
+    const token = await getAccessToken();
+    if (!token) {
+      return { success: false, error: 'Not authenticated' };
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/reports/${reportId}/download`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { 
+        success: false, 
+        error: errorData.error || 'Failed to get download link' 
+      };
+    }
+
+    const data = await response.json();
+    return { success: true, downloadUrl: data.downloadUrl };
+  } catch (error: any) {
+    console.error('Download report error:', error);
     return { success: false, error: error.message };
   }
 }

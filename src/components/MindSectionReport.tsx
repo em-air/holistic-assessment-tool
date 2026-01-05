@@ -165,12 +165,18 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
         }
       }
     } else if (category === 'learning-style') {
-      if (result.percentage >= 90) {
-        analysis = 'Your child has a clear understanding of how they learn best. This self-awareness will help them succeed across different learning situations.';
-      } else if (result.percentage >= 75) {
-        analysis = 'Your child shows good awareness of their learning preferences. Encourage them to use their preferred learning methods when studying.';
+      // For learning style, provide specific guidance based on the identified style
+      if (result.additionalData?.dominantStyle) {
+        const style = result.additionalData.dominantStyle;
+        const styleDescriptions: Record<string, string> = {
+          'visual': 'Your child is a Visual Learner. They learn best through seeing and visualizing information. Use diagrams, charts, color-coded notes, videos, and visual aids to help them understand and remember concepts. Mind maps and flashcards are particularly effective.',
+          'auditory': 'Your child is an Auditory Learner. They learn best through listening and discussion. Encourage reading aloud, verbal explanations, group discussions, and audio resources. They may benefit from recording lessons to listen to later.',
+          'reading-writing': 'Your child is a Reading/Writing Learner. They learn best through written words. Encourage note-taking, reading textbooks, writing summaries, and making lists. Written exercises and journaling can enhance their learning.',
+          'kinesthetic': 'Your child is a Kinesthetic Learner. They learn best through hands-on activities and movement. Use physical activities, experiments, role-playing, and real-world applications. Short study sessions with movement breaks work well.'
+        };
+        analysis = styleDescriptions[style] || `Your child shows a preference for ${style} learning. Adapt teaching methods to match this style for optimal results.`;
       } else {
-        analysis = 'Your child is still discovering their optimal learning style. Try different approaches to see what works best for them.';
+        analysis = 'Your child is still discovering their optimal learning style. Exposing them to different learning methods will help identify what works best for them.';
       }
     } else if (category === 'critical-thinking') {
       if (result.percentage >= 90) {
@@ -296,7 +302,7 @@ Assessment Results:
       categoryResults.forEach(result => {
         const performance = ProgressTracker.getPerformanceLevel(result.percentage);
         reportText += `
-• ${result.quizName}
+• ${result.quizName} (${getSubcategoryName(category)})
   Score: ${result.score}/${result.totalQuestions} (${result.percentage}%)
   Performance Level: ${performance.level}
   Analysis: ${getDetailedAnalysis(result)}
@@ -493,11 +499,21 @@ Assessment Results:
                                             result.percentage >= 75 ? 'Good' : 
                                             result.percentage >= 60 ? 'Developing' : 'Needs Support';
                       
+                      // For learning style, show the dominant style type instead of percentage
+                      const isLearningStyle = result.quizId === 'learning-styles';
+                      const learnerType = isLearningStyle && result.additionalData?.dominantStyle
+                        ? result.additionalData.dominantStyle === 'visual' ? 'Visual Learner'
+                          : result.additionalData.dominantStyle === 'auditory' ? 'Auditory Learner'
+                          : result.additionalData.dominantStyle === 'reading-writing' ? 'Reading/Writing Learner'
+                          : result.additionalData.dominantStyle === 'kinesthetic' ? 'Kinesthetic Learner'
+                          : result.additionalData.dominantStyle.charAt(0).toUpperCase() + result.additionalData.dominantStyle.slice(1) + ' Learner'
+                        : null;
+                      
                       return (
                         <div key={result.quizId} className={`border-l-4 pl-4 ${getCategoryColor(category).replace('text-', 'border-')}`}>
                           <div className="flex items-start justify-between mb-3">
                             <div>
-                              <h5 className="font-semibold text-gray-800">{result.quizName}</h5>
+                              <h5 className="font-semibold text-gray-800">{result.quizName} <span className="text-gray-500 font-normal">({getSubcategoryName(category)})</span></h5>
                               {result.gradeLevel && (
                                 <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded mt-1 inline-block">
                                   Grade {result.gradeLevel}
@@ -505,10 +521,21 @@ Assessment Results:
                               )}
                             </div>
                             <div className="text-right">
-                              <div className={`text-xl font-bold ${getCategoryColor(category)} flex items-center space-x-1`}>
-                                <span>{result.percentage}%</span>
-                              </div>
-                              <div className="text-sm text-gray-500">Performance: {performanceText}</div>
+                              {isLearningStyle && learnerType ? (
+                                <>
+                                  <div className={`text-lg font-bold ${getCategoryColor(category)}`}>
+                                    {learnerType}
+                                  </div>
+                                  <div className="text-sm text-gray-500">Learning Style Identified</div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className={`text-xl font-bold ${getCategoryColor(category)} flex items-center space-x-1`}>
+                                    <span>{result.percentage}%</span>
+                                  </div>
+                                  <div className="text-sm text-gray-500">Performance: {performanceText}</div>
+                                </>
+                              )}
                             </div>
                           </div>
                           

@@ -45,7 +45,7 @@ interface Pagination {
 
 const AdminReports: React.FC = () => {
   const navigate = useNavigate();
-  const { user, role } = useAuth();
+  const { user } = useAuth();
   
   const [reports, setReports] = useState<Report[]>([]);
   const [pagination, setPagination] = useState<Pagination>({
@@ -64,14 +64,7 @@ const AdminReports: React.FC = () => {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
-  // Check if user is admin - removed redirect since backend handles auth
-  // useEffect(() => {
-  //   if (role && role !== 'admin') {
-  //     navigate('/categories');
-  //   }
-  // }, [role, navigate]);
-
-  // Fetch reports
+  // Fetch reports from backend API
   const fetchReports = async (page: number = 1) => {
     try {
       setLoading(true);
@@ -267,7 +260,7 @@ const AdminReports: React.FC = () => {
               />
             </div>
 
-            {/* Report Type */}
+            {/* Report Type Filter */}
             <select
               value={reportTypeFilter}
               onChange={(e) => setReportTypeFilter(e.target.value)}

@@ -276,15 +276,18 @@ const ReportPDF: React.FC<ReportPDFProps> = ({
         return result.percentage >= 75 ? 'Shows strong memory and recall abilities.' : 'Developing memory skills - memory games and exercises recommended.';
       }
     } else if (category === 'learning-style') {
+      // For learning style, show the identified style with description
       if (result.additionalData?.dominantStyle) {
-        const styleMap: { [key: string]: string } = {
-          'visual': 'Visual Learner - learns best through seeing and visualizing',
-          'auditory': 'Auditory Learner - learns best through listening and discussion',
-          'reading-writing': 'Reading/Writing Learner - learns best through reading and writing'
+        const style = result.additionalData.dominantStyle;
+        const styleDescriptions: { [key: string]: string } = {
+          'visual': 'Visual Learner - learns best through seeing, diagrams, charts, and visual aids.',
+          'auditory': 'Auditory Learner - learns best through listening, discussion, and verbal instruction.',
+          'reading-writing': 'Reading/Writing Learner - learns best through written words, note-taking, and reading.',
+          'kinesthetic': 'Kinesthetic Learner - learns best through hands-on activities and physical engagement.'
         };
-        return styleMap[result.additionalData.dominantStyle] || 'Has good awareness of learning preferences.';
+        return styleDescriptions[style] || `${style.charAt(0).toUpperCase() + style.slice(1)} Learner - adapt teaching methods to match this preference.`;
       }
-      return result.percentage >= 75 ? 'Has good awareness of learning preferences.' : 'Still discovering optimal learning style.';
+      return 'Still discovering optimal learning style - try different approaches.';
     } else if (category === 'critical-thinking') {
       return result.percentage >= 75 ? 'Demonstrates solid critical thinking abilities.' : 'Developing reasoning and problem-solving skills.';
     } else if (category === 'perception') {
@@ -416,16 +419,17 @@ const ReportPDF: React.FC<ReportPDFProps> = ({
                   
                   return (
                     <View key={result.quizId} style={styles.quizResult}>
-                      <Text style={styles.quizTitle}>{result.quizName}</Text>
+                      <Text style={styles.quizTitle}>{result.quizName} ({getSubcategoryName(category)})</Text>
                       
                       <View style={styles.quizDetails}>
                         <Text style={{ fontSize: 10, color: '#6b7280' }}>
                           Performance: {performance}
                         </Text>
-                        {result.quizId === 'learning-styles' && result.additionalData?.dominantStyle ? (
+                      {result.quizId === 'learning-styles' && result.additionalData?.dominantStyle ? (
                           <Text style={[styles.scoreText, { color: getCategoryColor(remapQuizCategory(result)), fontSize: 10, fontWeight: 'bold' }]}>
                             {result.additionalData.dominantStyle === 'visual' ? 'Visual Learner' :
                              result.additionalData.dominantStyle === 'auditory' ? 'Auditory Learner' :
+                             result.additionalData.dominantStyle === 'kinesthetic' ? 'Kinesthetic Learner' :
                              'Reading/Writing Learner'}
                           </Text>
                         ) : (

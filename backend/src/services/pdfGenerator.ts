@@ -51,75 +51,58 @@ function generateRecommendations(
   const improvements: string[] = [];
   const activities: string[] = [];
 
-  // Analyze mind results
-  const attentionResults = mindResults.filter(r => r.subcategory === 'attention');
-  const memoryResults = mindResults.filter(r => r.subcategory === 'memory');
-  const criticalResults = mindResults.filter(r => r.subcategory === 'critical-thinking');
+  const allResults = [...mindResults, ...oralResults, ...academicResults];
 
-  if (attentionResults.length > 0) {
-    const avgAttention = attentionResults.reduce((sum, r) => sum + r.percentage, 0) / attentionResults.length;
-    if (avgAttention >= 75) {
-      strengths.push('Strong attention and focus skills');
-    } else if (avgAttention < 60) {
-      improvements.push('Attention and focus skills need development');
-      activities.push('Practice mindfulness exercises for 5-10 minutes daily');
-    }
+  // Strengths: Results with >= 85%
+  const highPerformers = allResults.filter(r => r.percentage >= 85);
+  for (const result of highPerformers) {
+    strengths.push(`${result.quiz_name}: Excellent performance showing mastery in this area`);
   }
 
-  if (memoryResults.length > 0) {
-    const avgMemory = memoryResults.reduce((sum, r) => sum + r.percentage, 0) / memoryResults.length;
-    if (avgMemory >= 75) {
-      strengths.push('Excellent memory and recall abilities');
-    } else if (avgMemory < 60) {
-      improvements.push('Memory skills could use strengthening');
-      activities.push('Use memory games and flashcards for daily practice');
-    }
+  if (highPerformers.length === 0 && allResults.length > 0) {
+    strengths.push('Your child is developing their skills across all areas assessed');
   }
 
-  if (criticalResults.length > 0) {
-    const avgCritical = criticalResults.reduce((sum, r) => sum + r.percentage, 0) / criticalResults.length;
-    if (avgCritical >= 75) {
-      strengths.push('Strong critical thinking and problem-solving');
-    } else if (avgCritical < 60) {
-      improvements.push('Critical thinking skills need more practice');
-      activities.push('Engage in puzzles, brain teasers, and logic games');
-    }
+  // Areas for Improvement: Results with < 75%
+  const needsSupport = allResults.filter(r => r.percentage < 75);
+  for (const result of needsSupport) {
+    const subcategoryName = getSubcategoryDisplayName(result.subcategory);
+    improvements.push(`${subcategoryName}: Consider additional practice and support`);
   }
 
-  // Analyze oral results
-  if (oralResults.length > 0) {
-    const avgOral = oralResults.reduce((sum, r) => sum + r.percentage, 0) / oralResults.length;
-    if (avgOral >= 75) {
-      strengths.push('Good oral language and communication skills');
-    } else if (avgOral < 60) {
-      improvements.push('Oral language skills need development');
-      activities.push('Practice reading aloud and storytelling daily');
-    }
+  if (needsSupport.length === 0 && allResults.length > 0) {
+    improvements.push('Your child shows consistent performance across all assessed areas');
   }
 
-  // Analyze academic results
-  if (academicResults.length > 0) {
-    const avgAcademic = academicResults.reduce((sum, r) => sum + r.percentage, 0) / academicResults.length;
-    if (avgAcademic >= 75) {
-      strengths.push('Strong academic foundation');
-    } else if (avgAcademic < 60) {
-      improvements.push('Academic skills need reinforcement');
-      activities.push('Regular reading and writing practice recommended');
-    }
-  }
-
-  // Default recommendations if none generated
-  if (strengths.length === 0) {
-    strengths.push('Assessment in progress - complete more quizzes for detailed analysis');
-  }
-  if (improvements.length === 0 && (mindResults.length + oralResults.length + academicResults.length) > 0) {
-    improvements.push('Continue practicing to maintain and improve skills');
-  }
-  if (activities.length === 0) {
-    activities.push('Complete remaining assessments for personalized recommendations');
-  }
+  // General Recommendations (matching frontend)
+  activities.push('Encourage regular practice in areas where scores were below 75%');
+  activities.push('Celebrate successes and maintain motivation for continued learning');
+  activities.push('Consider educational games and activities that target specific skill areas');
+  activities.push("Discuss results with your child's teacher for additional classroom support");
+  activities.push('Re-assess periodically to track improvement over time');
 
   return { strengths, improvements, activities };
+}
+
+/**
+ * Get display name for subcategory
+ */
+function getSubcategoryDisplayName(subcategory: string): string {
+  const names: Record<string, string> = {
+    'attention': 'Attention & Focus',
+    'memory': 'Memory & Recall',
+    'learning-style': 'Learning Style',
+    'critical-thinking': 'Critical Thinking',
+    'perception': 'Visual Perception',
+    'oral-language': 'Oral Language',
+    'reading': 'Reading Skills',
+    'phonics': 'Phonics Awareness',
+    'blending-segmenting': 'Blending & Segmenting',
+    'writing': 'Writing Skills',
+    'vocabulary': 'Vocabulary',
+    'spelling': 'Spelling',
+  };
+  return names[subcategory] || subcategory;
 }
 
 /**
@@ -257,17 +240,69 @@ export async function generateReportPDF(data: ReportData): Promise<Buffer> {
           subcategoryNames[subcategory] || subcategory, 
           60, yPos + 8
         );
-        doc.fontSize(14).fillColor(perfLevel.color).text(`${avgScore}%`, pageWidth - 20, yPos + 8, { align: 'right' });
+        
+        // For learning-style, show learner type instead of percentage
+        if (subcategory === 'learning-style' && results.length > 0) {
+          const learningResult = results[0];
+          const additionalData = learningResult.additional_data 
+            ? (typeof learningResult.additional_data === 'string' 
+                ? JSON.parse(learningResult.additional_data) 
+                : learningResult.additional_data)
+            : null;
+          if (additionalData?.dominantStyle) {
+            const styleNames: Record<string, string> = {
+              'visual': 'Visual Learner',
+              'auditory': 'Auditory Learner',
+              'reading-writing': 'Reading/Writing Learner',
+              'kinesthetic': 'Kinesthetic Learner',
+            };
+            const styleName = styleNames[additionalData.dominantStyle] || 
+              `${additionalData.dominantStyle.charAt(0).toUpperCase() + additionalData.dominantStyle.slice(1)} Learner`;
+            doc.fontSize(14).fillColor(perfLevel.color).text(styleName, pageWidth - 20, yPos + 8, { align: 'right' });
+          } else {
+            doc.fontSize(14).fillColor(perfLevel.color).text(`${avgScore}%`, pageWidth - 20, yPos + 8, { align: 'right' });
+          }
+        } else {
+          doc.fontSize(14).fillColor(perfLevel.color).text(`${avgScore}%`, pageWidth - 20, yPos + 8, { align: 'right' });
+        }
         yPos += 40;
 
         // Individual quiz results
         for (const result of results) {
           const quizPerf = getPerformanceLevel(result.percentage);
-          doc.fontSize(11).fillColor(colors.dark).text(`• ${result.quiz_name}`, 70, yPos);
-          doc.fontSize(11).fillColor(quizPerf.color).text(
-            `${result.score}/${result.total_questions} (${result.percentage}%)`,
-            pageWidth - 50, yPos, { align: 'right' }
-          );
+          const categoryLabel = subcategoryNames[subcategory] || subcategory;
+          doc.fontSize(11).fillColor(colors.dark).text(`• ${result.quiz_name} (${categoryLabel})`, 70, yPos);
+          
+          // Special handling for learning-style quiz - show learner type instead of percentage
+          if (subcategory === 'learning-style' && result.additional_data) {
+            const additionalData = typeof result.additional_data === 'string' 
+              ? JSON.parse(result.additional_data) 
+              : result.additional_data;
+            if (additionalData.dominantStyle) {
+              const styleNames: Record<string, string> = {
+                'visual': 'Visual Learner',
+                'auditory': 'Auditory Learner',
+                'reading-writing': 'Reading/Writing Learner',
+                'kinesthetic': 'Kinesthetic Learner',
+              };
+              const styleName = styleNames[additionalData.dominantStyle] || 
+                `${additionalData.dominantStyle.charAt(0).toUpperCase() + additionalData.dominantStyle.slice(1)} Learner`;
+              doc.fontSize(11).fillColor(quizPerf.color).text(
+                styleName,
+                pageWidth - 50, yPos, { align: 'right' }
+              );
+            } else {
+              doc.fontSize(11).fillColor(quizPerf.color).text(
+                `${result.score}/${result.total_questions} (${result.percentage}%)`,
+                pageWidth - 50, yPos, { align: 'right' }
+              );
+            }
+          } else {
+            doc.fontSize(11).fillColor(quizPerf.color).text(
+              `${result.score}/${result.total_questions} (${result.percentage}%)`,
+              pageWidth - 50, yPos, { align: 'right' }
+            );
+          }
           yPos += 20;
         }
         yPos += 15;
@@ -312,7 +347,8 @@ export async function generateReportPDF(data: ReportData): Promise<Buffer> {
 
           for (const result of results) {
             const quizPerf = getPerformanceLevel(result.percentage);
-            doc.fontSize(11).fillColor(colors.dark).text(`• ${result.quiz_name}`, 70, yPos);
+            const categoryLabel = oralNames[subcategory] || subcategory;
+            doc.fontSize(11).fillColor(colors.dark).text(`• ${result.quiz_name} (${categoryLabel})`, 70, yPos);
             doc.fontSize(11).fillColor(quizPerf.color).text(
               `${result.score}/${result.total_questions} (${result.percentage}%)`,
               pageWidth - 50, yPos, { align: 'right' }
@@ -361,7 +397,8 @@ export async function generateReportPDF(data: ReportData): Promise<Buffer> {
 
           for (const result of results) {
             const quizPerf = getPerformanceLevel(result.percentage);
-            doc.fontSize(11).fillColor(colors.dark).text(`• ${result.quiz_name}`, 70, yPos);
+            const categoryLabel = academicNames[subcategory] || subcategory;
+            doc.fontSize(11).fillColor(colors.dark).text(`• ${result.quiz_name} (${categoryLabel})`, 70, yPos);
             doc.fontSize(11).fillColor(quizPerf.color).text(
               `${result.score}/${result.total_questions} (${result.percentage}%)`,
               pageWidth - 50, yPos, { align: 'right' }
