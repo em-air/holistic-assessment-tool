@@ -1,13 +1,29 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { Lock } from 'lucide-react';
 import { spellingData } from '../data/spellingData';
+import { useAuth } from '../contexts/AuthContext';
+import { getNumericGrade, canAccessGrade } from '../utils/gradeUtils';
 
 const SpellingGradeSelector: React.FC = () => {
   const navigate = useNavigate();
+  const { grade: userGrade, isAdmin, user } = useAuth();
+  const userNumericGrade = getNumericGrade(userGrade);
 
   const handleGradeSelect = (grade: number) => {
-    navigate(`/spelling-test/${grade}`);
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    if (canAccessGrade(userGrade, grade, isAdmin)) {
+      navigate(`/spelling-test/${grade}`);
+    }
+  };
+
+  const isGradeLocked = (grade: number): boolean => {
+    if (!user) return true;
+    return !canAccessGrade(userGrade, grade, isAdmin);
   };
 
   return (
@@ -33,25 +49,54 @@ const SpellingGradeSelector: React.FC = () => {
           </p>
         </motion.div>
 
+        {/* Grade Restriction Notice */}
+        {user && userGrade && !isAdmin && (
+          <motion.div
+            className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl text-center"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <p className="text-blue-700 font-medium">
+              📚 You are signed in as a <span className="font-bold">{userGrade}</span> student. 
+              Only Grade {userNumericGrade} content is available.
+            </p>
+          </motion.div>
+        )}
+
         {/* Grade Selection Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {spellingData.map((gradeData, index) => (
+          {spellingData.map((gradeData, index) => {
+            const locked = isGradeLocked(gradeData.grade);
+            return (
             <motion.div
               key={gradeData.grade}
-              className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer border-2 hover:border-purple-300"
+              className={`bg-white rounded-2xl p-6 shadow-lg transition-shadow duration-300 border-2 ${
+                locked 
+                  ? 'opacity-50 cursor-not-allowed border-gray-200' 
+                  : 'hover:shadow-xl cursor-pointer hover:border-purple-300'
+              }`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              whileHover={{ 
+              whileHover={locked ? {} : { 
                 scale: 1.05,
                 boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
               }}
-              whileTap={{ scale: 0.95 }}
+              whileTap={locked ? {} : { scale: 0.95 }}
               onClick={() => handleGradeSelect(gradeData.grade)}
             >
-              <div className="text-center">
+              <div className="text-center relative">
+                {/* Lock Icon for restricted grades */}
+                {locked && (
+                  <div className="absolute -top-2 -right-2 bg-gray-500 text-white p-1.5 rounded-full">
+                    <Lock size={14} />
+                  </div>
+                )}
+                
                 {/* Grade Number */}
-                <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white text-2xl font-bold w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <div className={`text-white text-2xl font-bold w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg ${
+                  locked ? 'bg-gray-400' : 'bg-gradient-to-r from-blue-500 to-purple-600'
+                }`}>
                   {gradeData.grade}
                 </div>
                 
@@ -66,12 +111,13 @@ const SpellingGradeSelector: React.FC = () => {
                 </p>
                 
                 {/* Word Count */}
-                <div className="mt-3 text-xs text-purple-600 font-medium">
+                <div className={`mt-3 text-xs font-medium ${locked ? 'text-gray-400' : 'text-purple-600'}`}>
                   {gradeData.words.length} words
                 </div>
               </div>
               
               {/* Hover Arrow */}
+              {!locked && (
               <motion.div
                 className="text-center mt-3 text-purple-500 opacity-0"
                 whileHover={{ opacity: 1 }}
@@ -79,8 +125,10 @@ const SpellingGradeSelector: React.FC = () => {
               >
                 <div className="text-lg">→</div>
               </motion.div>
+              )}
             </motion.div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Back Button */}

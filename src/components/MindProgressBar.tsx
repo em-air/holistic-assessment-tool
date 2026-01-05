@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, Circle, FileText, Trash2 } from 'lucide-react';
+import { CheckCircle, Circle, FileText, Trash2, Database, Loader, LogIn } from 'lucide-react';
 import { ProgressTracker, MIND_QUIZZES, type ProgressData } from '../utils/progressTracker';
+import { generateReport } from '../services/reportService';
+import { useNavigate } from 'react-router-dom';
 
 interface MindProgressBarProps {
   onShowReport?: () => void;
@@ -9,10 +11,15 @@ interface MindProgressBarProps {
 }
 
 const MindProgressBar: React.FC<MindProgressBarProps> = ({ onShowReport, className = '' }) => {
+  const navigate = useNavigate();
   const [progress, setProgress] = useState<ProgressData>(() => ProgressTracker.getProgress());
   const [showDetails, setShowDetails] = useState(false);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [showClearSuccess, setShowClearSuccess] = useState(false);
+  const [isSavingReport, setIsSavingReport] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const getSubcategoryName = (subcategory: string): string => {
     const names: Record<string, string> = {
@@ -37,29 +44,46 @@ const MindProgressBar: React.FC<MindProgressBarProps> = ({ onShowReport, classNa
   };
 
   useEffect(() => {
-    // Refresh progress data on component mount and visibility change
-    const refreshProgress = () => {
-      const currentProgress = ProgressTracker.getProgress();
-      setProgress(currentProgress);
+    // Load progress from database on mount
+    const loadProgress = async () => {
+      setIsLoading(true);
+      
+      // Wait for auth to be initialized
+      const { supabase } = await import('../supabase-client');
+      const { data: { session } } = await supabase.auth.getSession();
+      const authenticated = !!session?.user;
+      setIsAuthenticated(authenticated);
+      
+      if (authenticated) {
+        // Load from database
+        await ProgressTracker.loadFromDatabase();
+      }
+      
+      setProgress(ProgressTracker.getProgress());
+      setIsLoading(false);
     };
 
-    // Initial refresh
-    refreshProgress();
+    loadProgress();
 
     const handleProgressUpdate = (event: CustomEvent) => {
       setProgress(event.detail);
+      setIsAuthenticated(ProgressTracker.isAuthenticated());
     };
 
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         // Refresh when tab becomes visible again
-        refreshProgress();
+        const currentProgress = ProgressTracker.getProgress();
+        setProgress(currentProgress);
+        setIsAuthenticated(ProgressTracker.isAuthenticated());
       }
     };
 
     const handleWindowFocus = () => {
       // Refresh when window regains focus
-      refreshProgress();
+      const currentProgress = ProgressTracker.getProgress();
+      setProgress(currentProgress);
+      setIsAuthenticated(ProgressTracker.isAuthenticated());
     };
 
     window.addEventListener('mindProgressUpdated', handleProgressUpdate as EventListener);
@@ -89,6 +113,73 @@ const MindProgressBar: React.FC<MindProgressBarProps> = ({ onShowReport, classNa
 
   const isComplete = progress.overallProgress === 100;
   const hasAnyProgress = progress.mindSectionResults.length > 0;
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className={`bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50 ${className}`}>
+        <div className="flex items-center justify-center py-8">
+          <Loader size={24} className="animate-spin text-purple-500 mr-3" />
+          <span className="text-gray-600">Loading progress...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login prompt if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className={`bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50 ${className}`}>
+        <div className="text-center py-6">
+          <LogIn size={48} className="mx-auto mb-4 text-purple-500" />
+          <h3 className="text-lg font-bold text-gray-800 mb-2">Sign In to Track Progress</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Your quiz progress is saved to your account. Sign in to view and save your progress.
+          </p>
+          <button
+            onClick={() => navigate('/auth')}
+            className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg"
+          >
+            Sign In / Register
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle generate report button - saves to database and shows report
+  const handleGenerateReport = async () => {
+    // Save to database in background
+    setIsSavingReport(true);
+    setSaveStatus('idle');
+    
+    try {
+      const result = await generateReport({
+        reportType: 'full',
+        sendEmail: false,
+      });
+      
+      if (result.success) {
+        setSaveStatus('success');
+        console.log('Report saved to database:', result.report?.id);
+      } else {
+        setSaveStatus('error');
+        console.error('Failed to save report:', result.error);
+      }
+    } catch (error) {
+      setSaveStatus('error');
+      console.error('Error saving report:', error);
+    } finally {
+      setIsSavingReport(false);
+      // Reset status after 3 seconds
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    }
+    
+    // Also show the report modal
+    if (onShowReport) {
+      onShowReport();
+    }
+  };
 
   return (
     <div className={`bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50 ${className}`}>
@@ -172,15 +263,30 @@ const MindProgressBar: React.FC<MindProgressBarProps> = ({ onShowReport, classNa
         <motion.button
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          onClick={onShowReport}
-          className={`w-full py-3 px-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl mb-4 ${
+          onClick={handleGenerateReport}
+          disabled={isSavingReport}
+          className={`w-full py-3 px-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl mb-4 disabled:opacity-70 disabled:cursor-not-allowed ${
             isComplete 
               ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700' 
               : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700'
           }`}
         >
-          <FileText size={20} />
-          <span>{isComplete ? 'Generate Complete Report' : 'Generate Progress Report'}</span>
+          {isSavingReport ? (
+            <>
+              <Loader size={20} className="animate-spin" />
+              <span>Saving & Generating...</span>
+            </>
+          ) : saveStatus === 'success' ? (
+            <>
+              <CheckCircle size={20} />
+              <span>Saved! {isComplete ? 'Complete Report' : 'Progress Report'}</span>
+            </>
+          ) : (
+            <>
+              <FileText size={20} />
+              <span>{isComplete ? 'Generate Complete Report' : 'Generate Progress Report'}</span>
+            </>
+          )}
         </motion.button>
       )}
 

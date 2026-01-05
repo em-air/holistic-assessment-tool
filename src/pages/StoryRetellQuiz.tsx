@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Book, CheckCircle, Lightbulb, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -7,6 +7,7 @@ import {
   getStoriesForGrade
 } from '../data/storyRetellData';
 import { ProgressTracker } from '../utils/progressTracker';
+import { saveQuizResult } from '../services/quizResultsService';
 import FloatingBackground from '../components/FloatingBackground';
 
 const StoryRetellQuiz: React.FC = () => {
@@ -29,6 +30,7 @@ const StoryRetellQuiz: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState({ correct: 0, total: 0 });
+  const startTimeRef = useRef<number>(Date.now());
 
   const totalStories = 3; // Number of stories per grade
   const currentStory = stories[currentStoryIndex];
@@ -39,6 +41,7 @@ const StoryRetellQuiz: React.FC = () => {
 
     try {
       const gradeStories = getStoriesForGrade(grade, totalStories);
+      startTimeRef.current = Date.now();  // Reset timer when quiz loads
       console.log('Loaded stories for grade:', grade, gradeStories);
       setStories(gradeStories);
       setCurrentStoryIndex(0);
@@ -105,6 +108,7 @@ const StoryRetellQuiz: React.FC = () => {
   const finishQuiz = () => {
     // Save progress
     const percentage = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
+    const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
     
     ProgressTracker.saveQuizResult({
       quizId: 'story-retell',
@@ -113,9 +117,27 @@ const StoryRetellQuiz: React.FC = () => {
       score: score.correct,
       totalQuestions: score.total,
       percentage: percentage,
-      timeSpent: 0,
+      timeSpent: timeSpent,
       completedAt: new Date().toISOString(),
       gradeLevel: `Grade ${grade}`,
+    });
+
+    // Also save directly to database with oral category
+    saveQuizResult({
+      quiz_id: 'story-retell',
+      quiz_name: `Story Retelling - Grade ${grade}`,
+      category: 'oral',
+      subcategory: 'oral-language',
+      score: score.correct,
+      total_questions: score.total,
+      time_spent: timeSpent,
+      grade_level: `Grade ${grade}`,
+    }).then(result => {
+      if (result.success) {
+        console.log('Story Retell result saved to database');
+      }
+    }).catch(err => {
+      console.error('Failed to save Story Retell result:', err);
     });
 
     setShowResult(true);

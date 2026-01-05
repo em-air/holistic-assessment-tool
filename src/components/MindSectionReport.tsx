@@ -1,21 +1,69 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { X, Download, Share2, Brain, Award, Mail } from 'lucide-react';
+import { X, Download, Share2, Brain, Award, Mail, Database, CheckCircle, LogIn } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { ProgressTracker, MIND_QUIZZES, QuizResult } from '../utils/progressTracker';
 import ReportPDF from './ReportPDF';
 import EmailReportModal from './EmailReportModal';
+import { generateReport } from '../services/reportService';
+import { useNavigate } from 'react-router-dom';
 
 interface MindSectionReportProps {
   onClose: () => void;
 }
 
 const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
+  const navigate = useNavigate();
   const [isGeneratingPDF, setIsGeneratingPDF] = React.useState(false);
+  const [isSavingToDatabase, setIsSavingToDatabase] = React.useState(false);
+  const [savedToDatabase, setSavedToDatabase] = React.useState(false);
+  const [saveError, setSaveError] = React.useState<string | null>(null);
   const [showEmailModal, setShowEmailModal] = React.useState(false);
   
+  const isAuthenticated = ProgressTracker.isAuthenticated();
   const progress = ProgressTracker.getProgress();
   const results = progress.mindSectionResults;
+
+  // Show login prompt if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl text-center"
+          onClick={e => e.stopPropagation()}
+        >
+          <LogIn size={48} className="mx-auto mb-4 text-purple-500" />
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Sign In Required</h2>
+          <p className="text-gray-600 mb-6">
+            You need to sign in to view your assessment report. Your progress is saved to your account.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => navigate('/auth')}
+              className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg"
+            >
+              Sign In
+            </button>
+          </div>
+        </motion.div>
+      </motion.div>
+    );
+  }
 
   // Calculate statistics
   const averageScore = results.length > 0 
@@ -149,11 +197,37 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
     return analysis;
   };
 
-
+  // Save report to database via backend API
+  const saveReportToDatabase = async (): Promise<void> => {
+    try {
+      setIsSavingToDatabase(true);
+      setSaveError(null);
+      
+      const result = await generateReport({
+        reportType: 'full',
+        sendEmail: false,
+      });
+      
+      if (result.success) {
+        setSavedToDatabase(true);
+        console.log('Report saved to database:', result.report?.id);
+      } else {
+        setSaveError(result.error || 'Failed to save report');
+      }
+    } catch (error: any) {
+      console.error('Error saving report to database:', error);
+      setSaveError(error.message || 'Failed to save report');
+    } finally {
+      setIsSavingToDatabase(false);
+    }
+  };
 
   const exportReport = async (): Promise<void> => {
     try {
       setIsGeneratingPDF(true);
+      
+      // Also save to database when exporting
+      saveReportToDatabase();
       
       // Generate PDF blob
       const blob = await pdf(<ReportPDF progress={progress} />).toBlob();
@@ -285,6 +359,26 @@ Assessment Results:
                 title="Email Report"
               >
                 <Mail size={20} />
+              </button>
+              <button
+                onClick={saveReportToDatabase}
+                disabled={isSavingToDatabase || savedToDatabase}
+                className={`p-2 rounded-lg transition-colors duration-200 ${
+                  savedToDatabase
+                    ? 'bg-green-500/30 cursor-default'
+                    : isSavingToDatabase 
+                      ? 'bg-white/10 cursor-not-allowed' 
+                      : 'bg-white/20 hover:bg-white/30'
+                }`}
+                title={savedToDatabase ? "Saved to Database" : isSavingToDatabase ? "Saving..." : "Save Report to Database"}
+              >
+                {savedToDatabase ? (
+                  <CheckCircle size={20} className="text-green-200" />
+                ) : isSavingToDatabase ? (
+                  <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
+                ) : (
+                  <Database size={20} />
+                )}
               </button>
               <button
                 onClick={exportReport}

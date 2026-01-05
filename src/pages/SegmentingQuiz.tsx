@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Volume2, CheckCircle, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import FloatingBackground from '../components/FloatingBackground';
 import { enhancedTTS } from '../utils/enhancedTTS';
+import { saveQuizResult } from '../services/quizResultsService';
 
 interface SegmentingQuestion {
   id: number;
@@ -63,6 +64,31 @@ const SegmentingQuiz: React.FC = () => {
   const [showResults, setShowResults] = useState(false);
   const [currentQuestions, setCurrentQuestions] = useState<SegmentingQuestion[]>([]);
   const [isPlayingSound, setIsPlayingSound] = useState(false);
+  const startTimeRef = useRef<number>(Date.now());
+
+  // Save quiz results to database when quiz is completed
+  useEffect(() => {
+    if (showResults && currentQuestions.length > 0 && selectedGrade) {
+      const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
+      
+      saveQuizResult({
+        quiz_id: 'segmenting-quiz',
+        quiz_name: `Segmenting Quiz - Grade ${selectedGrade}`,
+        category: 'oral',
+        subcategory: 'blending-segmenting',
+        score,
+        total_questions: currentQuestions.length,
+        time_spent: timeSpent,
+        grade_level: `Grade ${selectedGrade}`,
+      }).then(result => {
+        if (result.success) {
+          console.log('Segmenting Quiz result saved to database');
+        }
+      }).catch(err => {
+        console.error('Failed to save Segmenting Quiz result:', err);
+      });
+    }
+  }, [showResults, score, currentQuestions.length, selectedGrade]);
 
   useEffect(() => {
     if (selectedGrade) {
@@ -88,6 +114,7 @@ const SegmentingQuiz: React.FC = () => {
     setShowResults(false);
     setUserSegments([]);
     setShowFeedback(false);
+    startTimeRef.current = Date.now();  // Reset timer on grade selection
   };
 
   const playWord = async (word: string) => {

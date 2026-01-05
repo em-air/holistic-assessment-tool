@@ -1,10 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BookOpen } from 'lucide-react';
+import { ArrowLeft, BookOpen, Lock } from 'lucide-react';
 import FloatingBackground from '../components/FloatingBackground';
+import { useAuth } from '../contexts/AuthContext';
+import { getNumericGrade, canAccessGrade } from '../utils/gradeUtils';
 
 const StartingEndingSoundGradeSelector: React.FC = () => {
   const navigate = useNavigate();
+  const { grade: userGrade, isAdmin, user } = useAuth();
+  const userNumericGrade = getNumericGrade(userGrade);
 
   const grades = [
     { 
@@ -38,7 +42,18 @@ const StartingEndingSoundGradeSelector: React.FC = () => {
   ];
 
   const handleGradeSelect = (grade: number) => {
-    navigate(`/starting-ending-sound-quiz/${grade}`);
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    if (canAccessGrade(userGrade, grade, isAdmin)) {
+      navigate(`/starting-ending-sound-quiz/${grade}`);
+    }
+  };
+
+  const isGradeLocked = (grade: number): boolean => {
+    if (!user) return true;
+    return !canAccessGrade(userGrade, grade, isAdmin);
   };
 
   return (
@@ -71,52 +86,72 @@ const StartingEndingSoundGradeSelector: React.FC = () => {
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Choose your grade level to begin
             </p>
+            
+            {/* Grade Restriction Notice */}
+            {user && userGrade && !isAdmin && (
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl inline-block">
+                <p className="text-blue-700 font-medium text-sm">
+                  📚 You can only access <span className="font-bold">Grade {userNumericGrade}</span> content.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Grade Selection Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {grades.map((gradeInfo) => (
+            {grades.map((gradeInfo) => {
+              const locked = isGradeLocked(gradeInfo.grade);
+              return (
               <div
                 key={gradeInfo.grade}
-                className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
+                className={`group transform transition-all duration-300 ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-105'}`}
                 onClick={() => handleGradeSelect(gradeInfo.grade)}
               >
-                <div className="bg-white rounded-3xl shadow-lg p-6 h-full border-2 border-transparent group-hover:border-blue-300 transition-all duration-300 relative overflow-hidden">
+                <div className={`bg-white rounded-3xl shadow-lg p-6 h-full border-2 transition-all duration-300 relative overflow-hidden ${locked ? 'border-gray-200' : 'border-transparent group-hover:border-blue-300'}`}>
+                  {/* Lock Icon */}
+                  {locked && (
+                    <div className="absolute top-3 right-3 bg-gray-500 text-white p-1.5 rounded-full z-20">
+                      <Lock size={14} />
+                    </div>
+                  )}
                   {/* Background gradient */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${gradeInfo.color} opacity-5 group-hover:opacity-10 transition-opacity duration-300`}></div>
+                  <div className={`absolute inset-0 ${locked ? 'bg-gray-300' : `bg-gradient-to-br ${gradeInfo.color}`} opacity-5 ${locked ? '' : 'group-hover:opacity-10'} transition-opacity duration-300`}></div>
                   
                   {/* Content */}
                   <div className="relative z-10">
                     {/* Grade number */}
                     <div className="text-center mb-4">
-                      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${gradeInfo.color} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300`}>
+                      <div className={`w-16 h-16 rounded-2xl ${locked ? 'bg-gray-400' : `bg-gradient-to-r ${gradeInfo.color}`} flex items-center justify-center mx-auto mb-3 ${locked ? '' : 'group-hover:scale-110'} transition-transform duration-300`}>
                         <span className="text-2xl font-bold text-white">{gradeInfo.grade}</span>
                       </div>
-                      <h3 className="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
+                      <h3 className={`text-xl font-bold transition-colors ${locked ? 'text-gray-500' : 'text-gray-800 group-hover:text-blue-600'}`}>
                         {gradeInfo.title}
                       </h3>
                     </div>
 
                     {/* Description */}
                     <div className="text-center space-y-2">
-                      <div className="inline-block bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">
+                      <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${locked ? 'bg-gray-100 text-gray-400' : 'bg-gray-100 text-gray-600'}`}>
                         {gradeInfo.difficulty}
                       </div>
-                      <p className="text-gray-600 text-sm leading-relaxed">
+                      <p className={`text-sm leading-relaxed ${locked ? 'text-gray-400' : 'text-gray-600'}`}>
                         {gradeInfo.description}
                       </p>
                     </div>
 
                     {/* Hover Arrow */}
+                    {!locked && (
                     <div className="flex justify-center mt-4">
                       <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                         <ArrowLeft size={16} className="rotate-180" />
                       </div>
                     </div>
+                    )}
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Footer Info */}

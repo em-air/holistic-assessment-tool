@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getWritingDataByGrade, WritingTopic, GradeWritingData } from '../data/writingData';
 import { evaluateWritingWithGemini, WritingEvaluation } from '../services/geminiService';
+import { saveQuizResult } from '../services/quizResultsService';
 import { ArrowLeft, Clock, Target, BookOpen, Lightbulb, CheckCircle, Star, RefreshCw, Sparkles, Brain } from 'lucide-react';
 
 const WritingTest: React.FC = () => {
@@ -16,6 +17,36 @@ const WritingTest: React.FC = () => {
   const [showTopicSelection, setShowTopicSelection] = useState(true);
   const [timeStarted, setTimeStarted] = useState<Date | null>(null);
   const [wordCount, setWordCount] = useState(0);
+  const startTimeRef = useRef<number>(Date.now());
+
+  // Save results to database when evaluation is complete
+  useEffect(() => {
+    if (evaluation && selectedTopic && grade) {
+      const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
+      
+      saveQuizResult({
+        quiz_id: 'writing-test',
+        quiz_name: `Writing Test - Grade ${grade}`,
+        category: 'academic',
+        subcategory: 'writing',
+        score: Math.round(evaluation.overallScore),
+        total_questions: evaluation.maxScore,
+        time_spent: timeSpent,
+        grade_level: `Grade ${grade}`,
+        additional_data: {
+          topic: selectedTopic.title,
+          scores: evaluation.scores,
+          wordCount,
+        },
+      }).then(result => {
+        if (result.success) {
+          console.log('Writing Test result saved to database');
+        }
+      }).catch(err => {
+        console.error('Failed to save Writing Test result:', err);
+      });
+    }
+  }, [evaluation, selectedTopic, grade, wordCount]);
 
   useEffect(() => {
     if (grade) {
@@ -34,6 +65,7 @@ const WritingTest: React.FC = () => {
     setSelectedTopic(topic);
     setShowTopicSelection(false);
     setTimeStarted(new Date());
+    startTimeRef.current = Date.now();  // Reset timer when topic is selected
   };
 
   const evaluateWriting = async () => {

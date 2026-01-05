@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getWordsByGrade, getGradeDescription, SpellingWord } from '../data/spellingData';
+import { saveQuizResult } from '../services/quizResultsService';
 
 interface SpellingTestState {
   currentWordIndex: number;
@@ -28,10 +29,39 @@ const SpellingTest: React.FC = () => {
   });
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
+  const startTimeRef = useRef<number>(Date.now());
+
+  // Save quiz results to database when quiz is completed
+  useEffect(() => {
+    if (testState.showResults && words.length > 0 && grade) {
+      const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
+      const correctCount = words.filter(word => 
+        (testState.answers[word.id] || '').toLowerCase().trim() === word.word.toLowerCase().trim()
+      ).length;
+      
+      saveQuizResult({
+        quiz_id: 'spelling-test',
+        quiz_name: `Spelling Test - Grade ${grade}`,
+        category: 'academic',
+        subcategory: 'spelling',
+        score: correctCount,
+        total_questions: words.length,
+        time_spent: timeSpent,
+        grade_level: `Grade ${grade}`,
+      }).then(result => {
+        if (result.success) {
+          console.log('Spelling Test result saved to database');
+        }
+      }).catch(err => {
+        console.error('Failed to save Spelling Test result:', err);
+      });
+    }
+  }, [testState.showResults, testState.answers, words, grade]);
 
   useEffect(() => {
     if (grade) {
       const gradeWords = getWordsByGrade(parseInt(grade));
+      startTimeRef.current = Date.now();  // Reset timer when grade loads
       setWords(gradeWords);
     }
   }, [grade]);

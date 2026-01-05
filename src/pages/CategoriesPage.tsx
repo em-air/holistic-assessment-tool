@@ -1,35 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUser, signOut } from '../supabase-client';
+import { LogOut, Shield } from 'lucide-react';
 import CategoryCard from '../components/CategoryCard';
 import { assessmentCategories } from '../data/assessmentData';
 import FloatingBackground from '../components/FloatingBackground';
-
-// custom hook for authentication
-const useAuth = () => {
-  const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    checkUser();
-  }, []);
-
-  const checkUser = async () => {
-    const userResponse = await getCurrentUser();
-    setUser(userResponse?.data?.user ?? null);
-  };
-
-  const handleSignOut = async () => {
-    await signOut();
-    setUser(null);
-  };
-
-  return { user, signOut: handleSignOut };
-};
+import { useAuth } from '../contexts/AuthContext';
 
 const CategoriesPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, signOut: handleSignOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
+
+  const handleSignOut = async () => {
+    await signOut();
+    setShowSignOutConfirm(false);
+    // Force page reload to clear all state
+    window.location.href = '/';
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 relative overflow-hidden">
@@ -67,12 +55,29 @@ const CategoriesPage: React.FC = () => {
               >
                 Contact
               </button>
-              {user && (
+              {isAdmin && (
                 <button
-                  onClick={handleSignOut}
-                  className="bg-red-600 text-white px-4 py-2 rounded-md font-medium hover:bg-red-700 transition-colors duration-200"
+                  onClick={() => navigate('/admin/reports')}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-md font-medium hover:bg-purple-700 transition-colors duration-200 flex items-center gap-2"
                 >
-                  Sign Out
+                  <Shield size={18} />
+                  Admin
+                </button>
+              )}
+              {user ? (
+                <button
+                  onClick={() => setShowSignOutConfirm(true)}
+                  className="bg-red-600 text-white px-4 py-2 rounded-md font-medium hover:bg-red-700 transition-colors duration-200 flex items-center gap-2"
+                >
+                  <LogOut size={18} />
+                  Log Out
+                </button>
+              ) : (
+                <button
+                  onClick={() => navigate('/auth')}
+                  className="bg-black text-white px-6 py-2 rounded-md font-medium hover:bg-gray-800 transition-colors duration-200"
+                >
+                  Register
                 </button>
               )}
             </div>
@@ -246,16 +251,26 @@ const CategoriesPage: React.FC = () => {
             <span className="text-xs font-medium">Categories</span>
           </button>
 
-          {/* Profile Button */}
-          <button
-            onClick={() => navigate('/auth')}
-            className="flex flex-col items-center justify-center py-2 px-1 text-gray-500 hover:text-emerald-600 transition-colors duration-200"
-          >
-            <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            <span className="text-xs font-medium">Profile</span>
-          </button>
+          {/* Profile/Auth Button */}
+          {user ? (
+            <button
+              onClick={() => setShowSignOutConfirm(true)}
+              className="flex flex-col items-center justify-center py-2 px-1 text-red-500 hover:text-red-600 transition-colors duration-200"
+            >
+              <LogOut className="w-6 h-6 mb-1" />
+              <span className="text-xs font-medium">Log Out</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate('/auth')}
+              className="flex flex-col items-center justify-center py-2 px-1 text-gray-500 hover:text-emerald-600 transition-colors duration-200"
+            >
+              <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <span className="text-xs font-medium">Register</span>
+            </button>
+          )}
 
           {/* Help Button */}
           <button
@@ -269,6 +284,45 @@ const CategoriesPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Sign Out Confirmation Modal */}
+      {showSignOutConfirm && (
+        <motion.div
+          className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-gray-100"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+          >
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <LogOut className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Sign Out</h3>
+              <p className="text-gray-600">Are you sure you want to sign out?</p>
+            </div>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowSignOutConfirm(false)}
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-2xl text-gray-700 hover:bg-gray-50 transition-all duration-300 font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSignOut}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl hover:from-red-600 hover:to-red-700 transition-all duration-300 font-semibold shadow-lg"
+              >
+                Sign Out
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 };
