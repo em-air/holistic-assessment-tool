@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Star, Brain, Check, X, RotateCcw } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { oralLanguageCategories, oralLanguageTranslations, type QuizCategory } from '../data/oralLanguageData';
+import { saveQuizResult } from '../services/quizResultsService';
 
 interface QuizScores {
   vocabulary: { correct: number; total: number };
@@ -29,6 +30,32 @@ const OralLanguageQuiz: React.FC = () => {
   const [language, setLanguage] = useState<'en' | 'ar'>('en');
   const [showSparkle, setShowSparkle] = useState(false);
   const [sequenceOrder, setSequenceOrder] = useState<{[key: string]: number}>({});
+  const startTimeRef = useRef<number>(Date.now());
+
+  // Save quiz results to database when quiz is completed
+  useEffect(() => {
+    if (showResults && selectedCategory) {
+      const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
+      const categoryScore = quizScores[selectedCategory.id as keyof QuizScores];
+      const percentage = Math.round((categoryScore.correct / categoryScore.total) * 100);
+      
+      saveQuizResult({
+        quiz_id: `oral-language-${selectedCategory.id}`,
+        quiz_name: `Oral Language - ${selectedCategory.title}`,
+        category: 'oral',
+        subcategory: 'oral-language',
+        score: categoryScore.correct,
+        total_questions: categoryScore.total,
+        time_spent: timeSpent,
+      }).then(result => {
+        if (result.success) {
+          console.log(`Oral Language ${selectedCategory.id} result saved to database`);
+        }
+      }).catch(err => {
+        console.error(`Failed to save Oral Language ${selectedCategory.id} result:`, err);
+      });
+    }
+  }, [showResults, selectedCategory, quizScores]);
 
   const t = oralLanguageTranslations[language];
   const isRTL = language === 'ar';
@@ -107,6 +134,7 @@ const OralLanguageQuiz: React.FC = () => {
     setIsCorrect(false);
     setShowResults(false);
     setSequenceOrder({});
+    startTimeRef.current = Date.now();  // Reset timer when starting a quiz
   };
 
   // Reset quiz

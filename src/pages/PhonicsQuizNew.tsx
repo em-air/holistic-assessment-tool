@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Volume2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FloatingBackground from '../components/FloatingBackground';
 import { enhancedTTS, phoneticSoundMap } from '../utils/enhancedTTS';
+import { saveQuizResult } from '../services/quizResultsService';
 
 interface PhonicsQuestion {
   id: number;
@@ -67,6 +68,31 @@ const PhonicsQuiz: React.FC = () => {
   const [showResults, setShowResults] = useState(false);
   const [currentQuestions, setCurrentQuestions] = useState<PhonicsQuestion[]>([]);
   const [isPlayingSound, setIsPlayingSound] = useState(false);
+  const startTimeRef = useRef<number>(Date.now());
+
+  // Save quiz results to database when quiz is completed
+  useEffect(() => {
+    if (showResults && currentQuestions.length > 0 && selectedGrade) {
+      const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
+      
+      saveQuizResult({
+        quiz_id: 'phonics-quiz',
+        quiz_name: `Phonics Awareness - Grade ${selectedGrade}`,
+        category: 'oral',
+        subcategory: 'phonics',
+        score,
+        total_questions: currentQuestions.length,
+        time_spent: timeSpent,
+        grade_level: `Grade ${selectedGrade}`,
+      }).then(result => {
+        if (result.success) {
+          console.log('Phonics Quiz result saved to database');
+        }
+      }).catch(err => {
+        console.error('Failed to save Phonics Quiz result:', err);
+      });
+    }
+  }, [showResults, score, currentQuestions.length, selectedGrade]);
 
   useEffect(() => {
     if (selectedGrade) {
@@ -91,6 +117,7 @@ const PhonicsQuiz: React.FC = () => {
     setCurrentQuestionIndex(0);
     setScore(0);
     setShowResults(false);
+    startTimeRef.current = Date.now();  // Reset timer on grade selection
   };
 
   const handleAnswerSelect = (answer: string) => {

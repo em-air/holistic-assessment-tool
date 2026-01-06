@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { X, Mail, Send, Loader } from 'lucide-react';
-import { pdf } from '@react-pdf/renderer';
-import ReportPDF from './ReportPDF';
 import { ProgressData } from '../utils/progressTracker';
+import { sendTextReport } from '../services/reportService';
+import { useAuth } from '../contexts/AuthContext';
 
 interface EmailReportModalProps {
   onClose: () => void;
@@ -11,10 +11,45 @@ interface EmailReportModalProps {
 }
 
 const EmailReportModal: React.FC<EmailReportModalProps> = ({ onClose, progress }) => {
-  const [studentName, setStudentName] = useState('');
+  const { studentName: authStudentName } = useAuth();
+  const [studentName, setStudentName] = useState(authStudentName || '');
+  const [recipientEmail, setRecipientEmail] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  // Calculate summary scores from progress
+  const calculateSummary = () => {
+    const quizResults = Object.values(progress.quizResults || {});
+    
+    const mindResults = quizResults.filter(q => 
+      ['attention', 'memory', 'critical-thinking', 'perception', 'learning-style'].some(cat => 
+        q.quizId?.toLowerCase().includes(cat)
+      )
+    );
+    const oralResults = quizResults.filter(q => 
+      ['oral', 'phonics', 'reading', 'blending', 'story'].some(cat => 
+        q.quizId?.toLowerCase().includes(cat)
+      )
+    );
+    const academicResults = quizResults.filter(q => 
+      ['writing', 'spelling', 'vocabulary'].some(cat => 
+        q.quizId?.toLowerCase().includes(cat)
+      )
+    );
+
+    const calcAvg = (results: typeof quizResults) => 
+      results.length > 0 
+        ? Math.round(results.reduce((sum, r) => sum + (r.percentage || 0), 0) / results.length) 
+        : 0;
+
+    return {
+      mindScore: calcAvg(mindResults),
+      oralScore: calcAvg(oralResults),
+      academicScore: calcAvg(academicResults),
+      totalQuizzes: quizResults.length,
+    };
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,64 +59,41 @@ const EmailReportModal: React.FC<EmailReportModalProps> = ({ onClose, progress }
       return;
     }
 
+    if (!recipientEmail.trim()) {
+      setError('Please enter the recipient email');
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(recipientEmail)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
     setIsSending(true);
     setError('');
 
     try {
-      // Generate PDF blob
-      const blob = await pdf(<ReportPDF progress={progress} studentName={studentName} />).toBlob();
+      const summary = calculateSummary();
       
-      // Convert blob to base64
-      const reader = new FileReader();
-      reader.readAsDataURL(blob);
-      
-      await new Promise<void>((resolve, reject) => {
-        reader.onloadend = async () => {
-          try {
-            const base64data = reader.result as string;
-            const base64Content = base64data.split(',')[1];
-
-            // Send to Vercel serverless function (works both locally and in production)
-            const response = await fetch('/api/send-report', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                studentName: studentName,
-                pdfBase64: base64Content,
-                reportDate: new Date().toLocaleDateString()
-              }),
-            });
-
-            // Check if response is JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-              const text = await response.text();
-              console.error('Non-JSON response:', text);
-              throw new Error('Server error. Please check that RESEND_API_KEY is configured in Vercel.');
-            }
-
-            const result = await response.json();
-
-            if (!response.ok || !result.success) {
-              throw new Error(result.message || 'Failed to send email');
-            }
-
-            setSuccess(true);
-            setTimeout(() => {
-              onClose();
-            }, 3000);
-            resolve();
-          } catch (error) {
-            reject(error);
-          }
-        };
-        reader.onerror = reject;
+      const result = await sendTextReport({
+        studentName: studentName.trim(),
+        recipientEmail: recipientEmail.trim(),
+        reportSummary: summary,
       });
-    } catch (error) {
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to send email');
+      }
+
+      setSuccess(true);
+      setTimeout(() => {
+        onClose();
+      }, 3000);
+    } catch (error: any) {
       console.error('Error sending email:', error);
-      setError('Failed to send report. Please try again later.');
+      setError(error.message || 'Failed to send report. Please try again later.');
     } finally {
       setIsSending(false);
     }
@@ -121,7 +133,7 @@ const EmailReportModal: React.FC<EmailReportModalProps> = ({ onClose, progress }
             </motion.div>
             <h3 className="text-2xl font-bold text-gray-800 mb-2">Report Sent!</h3>
             <p className="text-gray-600">
-              The report for {studentName} has been successfully sent to smumair2003@gmail.com
+              The report for {studentName} has been successfully sent to {recipientEmail}
             </p>
           </div>
         ) : (
@@ -132,7 +144,7 @@ const EmailReportModal: React.FC<EmailReportModalProps> = ({ onClose, progress }
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">Email Report</h2>
               <p className="text-gray-600 text-sm">
-                Enter the student's name to generate and email the report
+                Enter the details to send the assessment report via email
               </p>
             </div>
 
@@ -147,6 +159,21 @@ const EmailReportModal: React.FC<EmailReportModalProps> = ({ onClose, progress }
                   value={studentName}
                   onChange={(e) => setStudentName(e.target.value)}
                   placeholder="Enter student's full name"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  disabled={isSending}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="recipientEmail" className="block text-sm font-medium text-gray-700 mb-2">
+                  Recipient Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="recipientEmail"
+                  value={recipientEmail}
+                  onChange={(e) => setRecipientEmail(e.target.value)}
+                  placeholder="Enter recipient's email address"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   disabled={isSending}
                 />

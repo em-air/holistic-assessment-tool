@@ -121,7 +121,7 @@ const MissingObjectQuiz: React.FC = () => {
     // Save quiz result to progress tracker
     const percentage = Math.round((score / questions.length) * 100);
     ProgressTracker.saveQuizResult({
-      quizId: 'perception-quiz',
+      quizId: 'missing-object-quiz',
       quizName: 'Perception Quiz',
       subcategory: 'perception',
       score: score,

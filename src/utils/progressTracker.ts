@@ -1,4 +1,7 @@
 // Progress tracking utilities for mind section quizzes
+// User-specific progress tracking - requires authentication
+
+import { supabase } from '../supabase-client';
 
 export interface QuizResult {
   quizId: string;
@@ -17,6 +20,7 @@ export interface ProgressData {
   mindSectionResults: QuizResult[];
   overallProgress: number; // 0-100
   lastUpdated: string;
+  userId?: string;
 }
 
 // Mind section quiz configurations - Only Mind category quizzes
@@ -28,8 +32,20 @@ export const MIND_QUIZZES = [
     route: '/attention-assessment'
   },
   {
+    id: 'attention-tiles',
+    name: 'Attention Tiles',
+    subcategory: 'attention',
+    route: '/attention-quiz'
+  },
+  {
     id: 'picture-sequence',
     name: 'Picture Sequence',
+    subcategory: 'memory',
+    route: '/memory-assessment'
+  },
+  {
+    id: 'missing-object',
+    name: 'Missing Object (Memory)',
     subcategory: 'memory',
     route: '/memory-assessment'
   },
@@ -83,14 +99,90 @@ export const MIND_QUIZZES = [
   }
 ];
 
-const PROGRESS_STORAGE_KEY = 'mind-section-progress';
+// Get user-specific storage key
+function getStorageKey(userId: string): string {
+  return `mind-section-progress-${userId}`;
+}
+
+// Get current user ID synchronously from cached session
+let cachedUserId: string | null = null;
+let initPromise: Promise<string | null> | null = null;
+
+// Initialize user ID from session
+async function initUserId(): Promise<string | null> {
+  const { data: { session } } = await supabase.auth.getSession();
+  cachedUserId = session?.user?.id || null;
+  console.log('ProgressTracker: Initialized userId:', cachedUserId);
+  return cachedUserId;
+}
+
+// Ensure user ID is initialized (call this before operations that need user ID)
+async function ensureUserId(): Promise<string | null> {
+  if (cachedUserId) return cachedUserId;
+  if (!initPromise) {
+    initPromise = initUserId();
+  }
+  return initPromise;
+}
+
+// Listen for auth changes
+supabase.auth.onAuthStateChange((event, session) => {
+  const newUserId = session?.user?.id || null;
+  console.log('ProgressTracker: Auth state changed:', event, newUserId);
+  
+  // Update cached user ID for any auth event
+  cachedUserId = newUserId;
+  
+  if (event === 'SIGNED_OUT') {
+    // Dispatch event to update UI
+    window.dispatchEvent(new CustomEvent('mindProgressUpdated', { 
+      detail: {
+        mindSectionResults: [],
+        overallProgress: 0,
+        lastUpdated: new Date().toISOString()
+      }
+    }));
+  } else if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && newUserId) {
+    // Load progress for this user
+    ProgressTracker.loadFromDatabase().then(() => {
+      console.log('Loaded progress for user:', newUserId);
+    });
+  }
+});
+
+// Initialize on load
+initUserId();
 
 export class ProgressTracker {
+  // Get current user ID (synchronous, uses cache)
+  static getCurrentUserId(): string | null {
+    return cachedUserId;
+  }
+
+  // Check if user is authenticated
+  static isAuthenticated(): boolean {
+    return cachedUserId !== null;
+  }
+
   static getProgress(): ProgressData {
-    const stored = localStorage.getItem(PROGRESS_STORAGE_KEY);
+    const userId = this.getCurrentUserId();
+    
+    // Return empty progress if not authenticated
+    if (!userId) {
+      return {
+        mindSectionResults: [],
+        overallProgress: 0,
+        lastUpdated: new Date().toISOString()
+      };
+    }
+
+    const storageKey = getStorageKey(userId);
+    const stored = localStorage.getItem(storageKey);
+    
     if (stored) {
       try {
-        return JSON.parse(stored);
+        const data = JSON.parse(stored);
+        return { ...data, userId };
       } catch (error) {
         console.error('Error parsing progress data:', error);
       }
@@ -99,11 +191,26 @@ export class ProgressTracker {
     return {
       mindSectionResults: [],
       overallProgress: 0,
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
+      userId
     };
   }
 
   static saveQuizResult(result: QuizResult): void {
+    // Try to get user ID, or wait for it if not ready
+    this.saveQuizResultAsync(result);
+  }
+
+  // Async version that ensures user ID is available
+  private static async saveQuizResultAsync(result: QuizResult): Promise<void> {
+    // Ensure user ID is initialized
+    const userId = await ensureUserId();
+    
+    if (!userId) {
+      console.warn('Cannot save quiz result: User not authenticated');
+      return;
+    }
+
     const progress = this.getProgress();
     
     // Remove any existing result for the same quiz
@@ -118,13 +225,93 @@ export class ProgressTracker {
     progress.overallProgress = this.calculateOverallProgress(progress.mindSectionResults);
     progress.lastUpdated = new Date().toISOString();
     
-    // Save to localStorage
-    localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(progress));
+    // Save to user-specific localStorage
+    const storageKey = getStorageKey(userId);
+    localStorage.setItem(storageKey, JSON.stringify(progress));
     
     // Dispatch custom event for UI updates
     window.dispatchEvent(new CustomEvent('mindProgressUpdated', { 
       detail: progress 
     }));
+
+    // Also save to database (async, don't block)
+    this.saveToDatabase(result);
+  }
+
+  // Save quiz result to database in background
+  private static async saveToDatabase(result: QuizResult): Promise<void> {
+    try {
+      const { saveQuizResult } = await import('../services/quizResultsService');
+      await saveQuizResult({
+        quiz_id: result.quizId,
+        quiz_name: result.quizName,
+        category: 'mind',
+        subcategory: result.subcategory,
+        score: result.score,
+        total_questions: result.totalQuestions,
+        time_spent: result.timeSpent,
+        grade_level: result.gradeLevel,
+        additional_data: result.additionalData,
+      });
+    } catch (error) {
+      console.error('Failed to save to database:', error);
+    }
+  }
+
+  // Load progress from database (for initial load after login)
+  static async loadFromDatabase(): Promise<ProgressData> {
+    const userId = this.getCurrentUserId();
+    
+    if (!userId) {
+      return {
+        mindSectionResults: [],
+        overallProgress: 0,
+        lastUpdated: new Date().toISOString()
+      };
+    }
+
+    try {
+      const { getQuizResults } = await import('../services/quizResultsService');
+      const response = await getQuizResults('mind');
+      
+      if (response.success && response.results) {
+        // Convert database results to local format
+        const mindResults: QuizResult[] = response.results.map(r => ({
+          quizId: r.quiz_id,
+          quizName: r.quiz_name,
+          subcategory: r.subcategory,
+          score: r.score,
+          totalQuestions: r.total_questions,
+          percentage: r.percentage,
+          timeSpent: r.time_spent || 0,
+          completedAt: r.completed_at,
+          gradeLevel: r.grade_level,
+          additionalData: r.additional_data,
+        }));
+
+        const progress: ProgressData = {
+          mindSectionResults: mindResults,
+          overallProgress: this.calculateOverallProgress(mindResults),
+          lastUpdated: new Date().toISOString(),
+          userId
+        };
+
+        // Save to localStorage for faster access
+        const storageKey = getStorageKey(userId);
+        localStorage.setItem(storageKey, JSON.stringify(progress));
+
+        // Dispatch event to update UI
+        window.dispatchEvent(new CustomEvent('mindProgressUpdated', { 
+          detail: progress 
+        }));
+
+        return progress;
+      }
+    } catch (error) {
+      console.error('Failed to load from database:', error);
+    }
+
+    return this.getProgress();
   }
 
   static calculateOverallProgress(results: QuizResult[]): number {
@@ -153,7 +340,13 @@ export class ProgressTracker {
   }
 
   static clearProgress(): void {
-    localStorage.removeItem(PROGRESS_STORAGE_KEY);
+    const userId = this.getCurrentUserId();
+    
+    if (userId) {
+      const storageKey = getStorageKey(userId);
+      localStorage.removeItem(storageKey);
+    }
+    
     window.dispatchEvent(new CustomEvent('mindProgressUpdated', { 
       detail: {
         mindSectionResults: [],

@@ -1,28 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Home, BookOpen, User, LogOut, LogIn } from 'lucide-react';
-import { getCurrentUser, signOut } from '../supabase-client';
+import { useAuth } from '../contexts/AuthContext';
 
 const NavigationBar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [user, setUser] = useState<any>(null);
+  const { user, signOut: authSignOut } = useAuth();
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
-
-  useEffect(() => {
-    checkUser();
-  }, []);
-
-  const checkUser = async () => {
-    const userResponse = await getCurrentUser();
-    setUser(userResponse?.data?.user ?? null);
-  };
 
   const handleSignOut = async () => {
     try {
-      await signOut();
-      setUser(null);
+      await authSignOut();
       setShowSignOutConfirm(false);
       navigate('/');
     } catch (error) {
@@ -120,18 +110,20 @@ const NavigationBar: React.FC = () => {
                 onClick={() => navigate('/categories')}
                 isActiveBtn={isActive('/categories') || isActive('/category') || isActive('/quiz')}
               />
-              <NavButton
-                icon={user ? LogOut : LogIn}
-                label={user ? "Sign Out" : "Login"}
-                onClick={() => {
-                  if (user) {
-                    setShowSignOutConfirm(true);
-                  } else {
-                    navigate('/auth');
-                  }
-                }}
-                isActiveBtn={isActive('/auth')}
-              />
+              {user ? (
+                <NavButton
+                  icon={LogOut}
+                  label="Log Out"
+                  onClick={() => setShowSignOutConfirm(true)}
+                />
+              ) : (
+                <NavButton
+                  icon={LogIn}
+                  label="Register"
+                  onClick={() => navigate('/auth')}
+                  isActiveBtn={isActive('/auth')}
+                />
+              )}
               <NavButton
                 icon={User}
                 label="Profile"

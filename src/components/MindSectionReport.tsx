@@ -1,21 +1,69 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { X, Download, Share2, Brain, Award, Mail } from 'lucide-react';
+import { X, Download, Share2, Brain, Award, Mail, Database, CheckCircle, LogIn } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { ProgressTracker, MIND_QUIZZES, QuizResult } from '../utils/progressTracker';
 import ReportPDF from './ReportPDF';
 import EmailReportModal from './EmailReportModal';
+import { generateReport } from '../services/reportService';
+import { useNavigate } from 'react-router-dom';
 
 interface MindSectionReportProps {
   onClose: () => void;
 }
 
 const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
+  const navigate = useNavigate();
   const [isGeneratingPDF, setIsGeneratingPDF] = React.useState(false);
+  const [isSavingToDatabase, setIsSavingToDatabase] = React.useState(false);
+  const [savedToDatabase, setSavedToDatabase] = React.useState(false);
+  const [saveError, setSaveError] = React.useState<string | null>(null);
   const [showEmailModal, setShowEmailModal] = React.useState(false);
   
+  const isAuthenticated = ProgressTracker.isAuthenticated();
   const progress = ProgressTracker.getProgress();
   const results = progress.mindSectionResults;
+
+  // Show login prompt if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl text-center"
+          onClick={e => e.stopPropagation()}
+        >
+          <LogIn size={48} className="mx-auto mb-4 text-purple-500" />
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Sign In Required</h2>
+          <p className="text-gray-600 mb-6">
+            You need to sign in to view your assessment report. Your progress is saved to your account.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => navigate('/auth')}
+              className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg"
+            >
+              Sign In
+            </button>
+          </div>
+        </motion.div>
+      </motion.div>
+    );
+  }
 
   // Calculate statistics
   const averageScore = results.length > 0 
@@ -117,12 +165,18 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
         }
       }
     } else if (category === 'learning-style') {
-      if (result.percentage >= 90) {
-        analysis = 'Your child has a clear understanding of how they learn best. This self-awareness will help them succeed across different learning situations.';
-      } else if (result.percentage >= 75) {
-        analysis = 'Your child shows good awareness of their learning preferences. Encourage them to use their preferred learning methods when studying.';
+      // For learning style, provide specific guidance based on the identified style
+      if (result.additionalData?.dominantStyle) {
+        const style = result.additionalData.dominantStyle;
+        const styleDescriptions: Record<string, string> = {
+          'visual': 'Your child is a Visual Learner. They learn best through seeing and visualizing information. Use diagrams, charts, color-coded notes, videos, and visual aids to help them understand and remember concepts. Mind maps and flashcards are particularly effective.',
+          'auditory': 'Your child is an Auditory Learner. They learn best through listening and discussion. Encourage reading aloud, verbal explanations, group discussions, and audio resources. They may benefit from recording lessons to listen to later.',
+          'reading-writing': 'Your child is a Reading/Writing Learner. They learn best through written words. Encourage note-taking, reading textbooks, writing summaries, and making lists. Written exercises and journaling can enhance their learning.',
+          'kinesthetic': 'Your child is a Kinesthetic Learner. They learn best through hands-on activities and movement. Use physical activities, experiments, role-playing, and real-world applications. Short study sessions with movement breaks work well.'
+        };
+        analysis = styleDescriptions[style] || `Your child shows a preference for ${style} learning. Adapt teaching methods to match this style for optimal results.`;
       } else {
-        analysis = 'Your child is still discovering their optimal learning style. Try different approaches to see what works best for them.';
+        analysis = 'Your child is still discovering their optimal learning style. Exposing them to different learning methods will help identify what works best for them.';
       }
     } else if (category === 'critical-thinking') {
       if (result.percentage >= 90) {
@@ -149,11 +203,37 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
     return analysis;
   };
 
-
+  // Save report to database via backend API
+  const saveReportToDatabase = async (): Promise<void> => {
+    try {
+      setIsSavingToDatabase(true);
+      setSaveError(null);
+      
+      const result = await generateReport({
+        reportType: 'full',
+        sendEmail: false,
+      });
+      
+      if (result.success) {
+        setSavedToDatabase(true);
+        console.log('Report saved to database:', result.report?.id);
+      } else {
+        setSaveError(result.error || 'Failed to save report');
+      }
+    } catch (error: any) {
+      console.error('Error saving report to database:', error);
+      setSaveError(error.message || 'Failed to save report');
+    } finally {
+      setIsSavingToDatabase(false);
+    }
+  };
 
   const exportReport = async (): Promise<void> => {
     try {
       setIsGeneratingPDF(true);
+      
+      // Also save to database when exporting
+      saveReportToDatabase();
       
       // Generate PDF blob
       const blob = await pdf(<ReportPDF progress={progress} />).toBlob();
@@ -222,7 +302,7 @@ Assessment Results:
       categoryResults.forEach(result => {
         const performance = ProgressTracker.getPerformanceLevel(result.percentage);
         reportText += `
-• ${result.quizName}
+• ${result.quizName} (${getSubcategoryName(category)})
   Score: ${result.score}/${result.totalQuestions} (${result.percentage}%)
   Performance Level: ${performance.level}
   Analysis: ${getDetailedAnalysis(result)}
@@ -285,6 +365,26 @@ Assessment Results:
                 title="Email Report"
               >
                 <Mail size={20} />
+              </button>
+              <button
+                onClick={saveReportToDatabase}
+                disabled={isSavingToDatabase || savedToDatabase}
+                className={`p-2 rounded-lg transition-colors duration-200 ${
+                  savedToDatabase
+                    ? 'bg-green-500/30 cursor-default'
+                    : isSavingToDatabase 
+                      ? 'bg-white/10 cursor-not-allowed' 
+                      : 'bg-white/20 hover:bg-white/30'
+                }`}
+                title={savedToDatabase ? "Saved to Database" : isSavingToDatabase ? "Saving..." : "Save Report to Database"}
+              >
+                {savedToDatabase ? (
+                  <CheckCircle size={20} className="text-green-200" />
+                ) : isSavingToDatabase ? (
+                  <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
+                ) : (
+                  <Database size={20} />
+                )}
               </button>
               <button
                 onClick={exportReport}
@@ -399,11 +499,21 @@ Assessment Results:
                                             result.percentage >= 75 ? 'Good' : 
                                             result.percentage >= 60 ? 'Developing' : 'Needs Support';
                       
+                      // For learning style, show the dominant style type instead of percentage
+                      const isLearningStyle = result.quizId === 'learning-styles';
+                      const learnerType = isLearningStyle && result.additionalData?.dominantStyle
+                        ? result.additionalData.dominantStyle === 'visual' ? 'Visual Learner'
+                          : result.additionalData.dominantStyle === 'auditory' ? 'Auditory Learner'
+                          : result.additionalData.dominantStyle === 'reading-writing' ? 'Reading/Writing Learner'
+                          : result.additionalData.dominantStyle === 'kinesthetic' ? 'Kinesthetic Learner'
+                          : result.additionalData.dominantStyle.charAt(0).toUpperCase() + result.additionalData.dominantStyle.slice(1) + ' Learner'
+                        : null;
+                      
                       return (
                         <div key={result.quizId} className={`border-l-4 pl-4 ${getCategoryColor(category).replace('text-', 'border-')}`}>
                           <div className="flex items-start justify-between mb-3">
                             <div>
-                              <h5 className="font-semibold text-gray-800">{result.quizName}</h5>
+                              <h5 className="font-semibold text-gray-800">{result.quizName} <span className="text-gray-500 font-normal">({getSubcategoryName(category)})</span></h5>
                               {result.gradeLevel && (
                                 <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded mt-1 inline-block">
                                   Grade {result.gradeLevel}
@@ -411,10 +521,21 @@ Assessment Results:
                               )}
                             </div>
                             <div className="text-right">
-                              <div className={`text-xl font-bold ${getCategoryColor(category)} flex items-center space-x-1`}>
-                                <span>{result.percentage}%</span>
-                              </div>
-                              <div className="text-sm text-gray-500">Performance: {performanceText}</div>
+                              {isLearningStyle && learnerType ? (
+                                <>
+                                  <div className={`text-lg font-bold ${getCategoryColor(category)}`}>
+                                    {learnerType}
+                                  </div>
+                                  <div className="text-sm text-gray-500">Learning Style Identified</div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className={`text-xl font-bold ${getCategoryColor(category)} flex items-center space-x-1`}>
+                                    <span>{result.percentage}%</span>
+                                  </div>
+                                  <div className="text-sm text-gray-500">Performance: {performanceText}</div>
+                                </>
+                              )}
                             </div>
                           </div>
                           
