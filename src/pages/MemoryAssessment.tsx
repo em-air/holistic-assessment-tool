@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Eye, Star, CheckCircle, XCircle, Clock, Brain } from 'lucide-react';
+import { ArrowLeft, Star, CheckCircle, XCircle, Clock, Brain } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
   SequenceQuestion, 
@@ -12,7 +12,7 @@ import { ProgressTracker } from '../utils/progressTracker';
 import MindProgressBar from '../components/MindProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 
-type GamePhase = 'menu' | 'showing' | 'hidden' | 'testing' | 'feedback' | 'results';
+type GamePhase = 'showing' | 'hidden' | 'testing' | 'feedback' | 'results';
 type AssessmentType = 'sequence_recall' | 'missing_object';
 
 interface AssessmentResults {
@@ -63,15 +63,6 @@ const MemoryAssessment: React.FC = () => {
       handleShowingComplete();
     }
   }, [gamePhase, timeLeft]);
-
-  // Start assessment of specific type
-  const startAssessment = (type: AssessmentType) => {
-    setSelectedType(type);
-    setQuestionsAnswered(0);
-    setCorrectAnswers(0);
-    setDifficulty(1);
-    generateNewQuestion(type, 1);
-  };
 
   // Generate new question
   const generateNewQuestion = useCallback((type: AssessmentType, currentDifficulty: number) => {
@@ -197,133 +188,6 @@ const MemoryAssessment: React.FC = () => {
     });
   };
 
-  // Reset to menu
-  const resetToMenu = () => {
-    setGamePhase('menu');
-    setCurrentQuestion(null);
-    setSelectedType(null);
-    setUserSequence([]);
-    setSelectedItems([]);
-    setFinalResults(null);
-    setShuffledItems([]);
-  };
-
-  // Assessment type selection menu
-  if (gamePhase === 'menu') {
-    const assessmentTypes = [
-      {
-        type: 'sequence_recall' as AssessmentType,
-        title: 'Picture Sequence',
-        description: 'Remember the order of 3-5 pictures',
-        icon: Eye,
-        color: 'from-blue-400 to-purple-500',
-        features: ['Visual sequence memory', 'Order recall', 'Progressive difficulty']
-      },
-
-      {
-        type: 'missing_object' as AssessmentType,
-        title: 'Missing Object',
-        description: 'Identify which object was removed',
-        icon: Brain,
-        color: 'from-purple-400 to-pink-500', 
-        features: ['Object recognition', 'Visual memory', 'Attention to detail']
-      }
-    ];
-
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 py-8">
-        <div className="container mx-auto px-4 relative z-10">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <button
-              onClick={() => navigate('/attention-memory-selection')}
-              className="group flex items-center space-x-2 px-4 py-2 text-white rounded-lg transition-all duration-300 ease-out hover:text-purple-100 hover:bg-white/20 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
-            >
-              <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
-              <span className="font-medium">Back to Selection</span>
-            </button>
-          </div>
-
-          {/* Mind Section Progress Bar */}
-          <div className="mb-6">
-            <MindProgressBar 
-              onShowReport={() => setShowReport(true)} 
-            />
-          </div>
-
-          {/* Title */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
-          >
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg">
-              Memory Assessment
-            </h1>
-            <p className="text-xl text-white/90 max-w-3xl mx-auto drop-shadow-md">
-              Choose a memory challenge to test your cognitive abilities
-            </p>
-          </motion.div>
-
-          {/* Assessment Types */}
-          <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
-            {assessmentTypes.map((assessment, index) => (
-              <motion.div
-                key={assessment.type}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.2 }}
-                className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 cursor-pointer"
-                onClick={() => startAssessment(assessment.type)}
-              >
-                <div className="flex items-center mb-6">
-                  <div className={`w-16 h-16 bg-gradient-to-r ${assessment.color} rounded-2xl flex items-center justify-center mr-4 shadow-lg`}>
-                    <assessment.icon size={28} className="text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-800 mb-1">
-                      {assessment.title}
-                    </h3>
-                    <p className="text-sm text-gray-500 font-medium">
-                      Memory Challenge
-                    </p>
-                  </div>
-                </div>
-
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  {assessment.description}
-                </p>
-
-                <div className="mb-6">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
-                    Skills Tested:
-                  </h4>
-                  <ul className="space-y-2">
-                    {assessment.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-center text-sm text-gray-600">
-                        <CheckCircle size={16} className="text-gray-400 mr-2 flex-shrink-0" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className={`px-4 py-2 bg-gradient-to-r ${assessment.color} text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 text-center`}>
-                  Start Assessment
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Report Modal */}
-          {showReport && (
-            <MindSectionReport onClose={() => setShowReport(false)} />
-          )}
-        </div>
-      </div>
-    );
-  }
-
   // Results screen
   if (gamePhase === 'results' && finalResults) {
     return (
@@ -404,10 +268,17 @@ const MemoryAssessment: React.FC = () => {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
-                onClick={resetToMenu}
+                onClick={() => {
+                  // Reset and restart the quiz
+                  setQuestionsAnswered(0);
+                  setCorrectAnswers(0);
+                  setDifficulty(1);
+                  setFinalResults(null);
+                  generateNewQuestion('sequence_recall', 1);
+                }}
                 className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200 transform hover:scale-105"
               >
-                Try Another Assessment
+                Try Again
               </button>
               <button
                 onClick={() => navigate('/attention-memory-selection')}
@@ -434,11 +305,11 @@ const MemoryAssessment: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={resetToMenu}
+            onClick={() => navigate('/attention-memory-selection')}
             className="group flex items-center space-x-2 px-4 py-2 text-white rounded-lg transition-all duration-300 ease-out hover:text-emerald-100 hover:bg-white/20 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
           >
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
-            <span className="font-medium">Back to Menu</span>
+            <span className="font-medium">Back to Selection</span>
           </button>
           
           <div className="text-center text-white">
@@ -516,6 +387,12 @@ const MemoryAssessment: React.FC = () => {
                       src={item.image}
                       alt={item.name}
                       className="w-24 h-24 object-cover rounded-xl mb-2"
+                      referrerPolicy="no-referrer"
+                      crossOrigin="anonymous"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = `https://via.placeholder.com/150/4F46E5/FFFFFF?text=${encodeURIComponent(item.name)}`;
+                      }}
                     />
                     <p className="text-center text-sm font-medium text-gray-700">
                       {item.name}
@@ -562,6 +439,12 @@ const MemoryAssessment: React.FC = () => {
                         src={item.image}
                         alt={item.name}
                         className="w-24 h-24 object-cover rounded-xl mb-2"
+                        referrerPolicy="no-referrer"
+                        crossOrigin="anonymous"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = `https://via.placeholder.com/150/4F46E5/FFFFFF?text=${encodeURIComponent(item.name)}`;
+                        }}
                       />
                       <p className="text-center text-sm font-medium text-gray-700 mb-1">
                         {item.name}

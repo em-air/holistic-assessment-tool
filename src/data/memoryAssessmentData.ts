@@ -18,21 +18,21 @@ export interface SequenceQuestion {
   difficulty: 1 | 2 | 3 | 4 | 5;
 }
 
-// Sample memory items - REPLACE THESE IMAGE PATHS WITH YOUR ACTUAL IMAGES
+// Sample memory items with reliable image URLs
 export const memoryItems: MemoryItem[] = [
   // Objects for sequence recall and missing object tasks
-  { id: 'apple', name: 'Apple', image: 'https://plus.unsplash.com/premium_photo-1724249990837-f6dfcb7f3eaa?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YXBwbGV8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&q=60&w=600', category: 'object' },
-  { id: 'dog', name: 'Dog', image: 'https://images.unsplash.com/photo-1560807707-8cc77767d783?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=880', category: 'object' },
-  { id: 'ball', name: 'Ball', image: 'https://images.unsplash.com/vector-1751489957370-ff0280bb54d1?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=880', category: 'object' },
-  { id: 'car', name: 'Car', image: 'https://images.unsplash.com/vector-1743702228669-15c868db27e6?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=880', category: 'object' },
-  { id: 'house', name: 'House', image: 'https://plus.unsplash.com/premium_photo-1689609950112-d66095626efb?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1974', category: 'object' },
-  { id: 'tree', name: 'Tree', image: 'https://plus.unsplash.com/premium_photo-1666900816782-202bbcd67f42?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8dHJlZXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=600', category: 'object' },
-  { id: 'book', name: 'Book', image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1000', category: 'object' },
-  { id: 'chair', name: 'Chair', image: 'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1000', category: 'object' },
-  { id: 'cat', name: 'Cat', image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1000', category: 'object' },
-  { id: 'flower', name: 'Flower', image: 'https://images.unsplash.com/photo-1606041008023-472dfb5e530f?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=688', category: 'object' },
-  { id: 'bicycle', name: 'Bicycle', image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170', category: 'object' },
-  { id: 'cup', name: 'Cup', image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1000', category: 'object' }
+  { id: 'apple', name: 'Apple', image: 'https://images.unsplash.com/photo-1568702846914-96b305d2uj8b?auto=format&fit=crop&w=400&q=80', category: 'object' },
+  { id: 'dog', name: 'Dog', image: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&w=400&q=80', category: 'object' },
+  { id: 'ball', name: 'Ball', image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=400&q=80', category: 'object' },
+  { id: 'car', name: 'Car', image: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=400&q=80', category: 'object' },
+  { id: 'house', name: 'House', image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=400&q=80', category: 'object' },
+  { id: 'tree', name: 'Tree', image: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=400&q=80', category: 'object' },
+  { id: 'book', name: 'Book', image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=400&q=80', category: 'object' },
+  { id: 'chair', name: 'Chair', image: 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=400&q=80', category: 'object' },
+  { id: 'cat', name: 'Cat', image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=400&q=80', category: 'object' },
+  { id: 'flower', name: 'Flower', image: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=400&q=80', category: 'object' },
+  { id: 'bicycle', name: 'Bicycle', image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=400&q=80', category: 'object' },
+  { id: 'cup', name: 'Cup', image: 'https://images.unsplash.com/photo-1517256673644-36ad11246d21?auto=format&fit=crop&w=400&q=80', category: 'object' }
 ];
 
 // Generate random sequence questions
