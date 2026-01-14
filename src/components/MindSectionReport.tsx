@@ -7,6 +7,7 @@ import ReportPDF from './ReportPDF';
 import EmailReportModal from './EmailReportModal';
 import { generateReport } from '../services/reportService';
 import { useNavigate } from 'react-router-dom';
+import { logger } from '../utils/logger';
 
 interface MindSectionReportProps {
   onClose: () => void;
@@ -216,12 +217,12 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       
       if (result.success) {
         setSavedToDatabase(true);
-        console.log('Report saved to database:', result.report?.id);
+        logger.log('Report saved to database:', result.report?.id);
       } else {
         setSaveError(result.error || 'Failed to save report');
       }
     } catch (error: any) {
-      console.error('Error saving report to database:', error);
+      logger.error('Error saving report to database:', error);
       setSaveError(error.message || 'Failed to save report');
     } finally {
       setIsSavingToDatabase(false);
@@ -253,7 +254,7 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       // Clean up
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      logger.error('Error generating PDF:', error);
       // Fallback to text export if PDF generation fails
       exportTextReport();
     } finally {

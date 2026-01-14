@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Home, BookOpen, User, LogOut, LogIn } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { logger } from '../utils/logger';
 
 const NavigationBar: React.FC = () => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ const NavigationBar: React.FC = () => {
       setShowSignOutConfirm(false);
       navigate('/');
     } catch (error) {
-      console.error('Error signing out:', error);
+      logger.error('Error signing out:', error);
     }
   };
 

@@ -8,6 +8,7 @@ import {
 } from '../data/logicalSequencingData';
 import { ProgressTracker } from '../utils/progressTracker';
 import FloatingBackground from '../components/FloatingBackground';
+import { logger } from '../utils/logger';
 
 interface DragItem {
   id: string;
@@ -42,7 +43,7 @@ const LogicalSequencingQuiz: React.FC = () => {
     
     try {
       const gradeQuestions = getQuestionsByGradeAndCount(grade, totalQuestions);
-      console.log('Loaded questions for grade:', grade, gradeQuestions);
+      logger.log('Loaded questions for grade:', grade, gradeQuestions);
       setQuestions(gradeQuestions);
       setCurrentQuestionIndex(0);
       setScore(0);
@@ -50,7 +51,7 @@ const LogicalSequencingQuiz: React.FC = () => {
       setTimePerQuestion([]);
       setQuestionStartTime(new Date());
     } catch (error) {
-      console.error('Error loading sequencing questions:', error);
+      logger.error('Error loading sequencing questions:', error);
     }
   }, [grade]);
 

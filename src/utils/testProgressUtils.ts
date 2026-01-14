@@ -1,5 +1,6 @@
 // Testing utilities for progress tracking
 import { ProgressTracker } from './progressTracker';
+import { logger } from './logger';
 
 export const addTestResults = () => {
   // Add some sample results
@@ -45,12 +46,12 @@ export const addTestResults = () => {
     completedAt: new Date().toISOString()
   });
 
-  console.log('Test results added!');
+  logger.log('Test results added!');
 };
 
 export const clearTestResults = () => {
   ProgressTracker.clearProgress();
-  console.log('All progress cleared!');
+  logger.log('All progress cleared!');
 };
 
 // Add to window for easy console access

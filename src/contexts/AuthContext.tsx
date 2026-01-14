@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { User } from '@supabase/supabase-js';
 import { supabase, getProfile } from '../supabase-client';
 import type { Profile, GradeLevel } from '../types/database';
+import { logger } from '../utils/logger';
 
 interface AuthContextType {
   user: User | null;
@@ -39,8 +40,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Fetch profile when user changes
   const fetchProfile = async (userId: string) => {
     const profileData = await getProfile(userId);
-    console.log('Fetched profile:', profileData); // Debug log
-    console.log('User role:', profileData?.role); // Debug log
+    logger.log('Fetched profile:', profileData); // Debug log
+    logger.log('User role:', profileData?.role); // Debug log
     setProfile(profileData);
     return profileData;
   };

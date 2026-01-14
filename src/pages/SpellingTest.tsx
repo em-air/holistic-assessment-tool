@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getWordsByGrade, getGradeDescription, SpellingWord } from '../data/spellingData';
 import { saveQuizResult } from '../services/quizResultsService';
+import { logger } from '../utils/logger';
 
 interface SpellingTestState {
   currentWordIndex: number;
@@ -50,10 +51,10 @@ const SpellingTest: React.FC = () => {
         grade_level: `Grade ${grade}`,
       }).then(result => {
         if (result.success) {
-          console.log('Spelling Test result saved to database');
+          logger.log('Spelling Test result saved to database');
         }
       }).catch(err => {
-        console.error('Failed to save Spelling Test result:', err);
+        logger.error('Failed to save Spelling Test result:', err);
       });
     }
   }, [testState.showResults, testState.answers, words, grade]);

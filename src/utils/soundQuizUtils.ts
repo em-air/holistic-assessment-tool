@@ -1,4 +1,5 @@
 import { SoundQuestion, QuestionData, commonSounds } from '../data/startingEndingSoundData';
+import { logger } from './logger';
 
 /**
  * Extracts beginning sound from a word
@@ -167,7 +168,7 @@ export class AudioPlayer {
   static async playAudio(audioUrl: string, word?: string): Promise<void> {
     // Prevent multiple simultaneous playback attempts
     if (this.isPlaying) {
-      console.log('Audio already playing, ignoring request');
+      logger.log('Audio already playing, ignoring request');
       return;
     }
 
@@ -202,7 +203,7 @@ export class AudioPlayer {
         const handleSuccess = () => {
           if (!resolved) {
             resolved = true;
-            console.log('Audio played successfully');
+            logger.log('Audio played successfully');
             this.isPlaying = false;
             resolve();
           }
@@ -211,7 +212,7 @@ export class AudioPlayer {
         const handleError = () => {
           if (!resolved) {
             resolved = true;
-            console.warn(`Audio failed to load: ${audioUrl}. Using speech synthesis.`);
+            logger.warn(`Audio failed to load: ${audioUrl}. Using speech synthesis.`);
             this.fallbackToSpeech(word);
             resolve();
           }
@@ -242,7 +243,7 @@ export class AudioPlayer {
         }, 1000); // Reduced timeout for faster fallback
       });
     } catch (error) {
-      console.warn('Audio playback failed:', error);
+      logger.warn('Audio playback failed:', error);
       this.fallbackToSpeech(word);
     }
   }
@@ -252,7 +253,7 @@ export class AudioPlayer {
    */
   private static fallbackToSpeech(word?: string): void {
     if (!word || !('speechSynthesis' in window)) {
-      console.warn('No word provided or speech synthesis not available');
+      logger.warn('No word provided or speech synthesis not available');
       this.isPlaying = false;
       return;
     }
@@ -270,16 +271,16 @@ export class AudioPlayer {
       
       // Handle speech events
       utterance.onstart = () => {
-        console.log(`Started speaking: ${word}`);
+        logger.log(`Started speaking: ${word}`);
       };
       
       utterance.onend = () => {
-        console.log(`Finished speaking: ${word}`);
+        logger.log(`Finished speaking: ${word}`);
         this.isPlaying = false;
       };
       
       utterance.onerror = () => {
-        console.warn('Speech synthesis error');
+        logger.warn('Speech synthesis error');
         this.isPlaying = false;
       };
       
@@ -298,7 +299,7 @@ export class AudioPlayer {
       
       if (femaleVoice) {
         utterance.voice = femaleVoice;
-        console.log(`Using female voice: ${femaleVoice.name}`);
+        logger.log(`Using female voice: ${femaleVoice.name}`);
       } else {
         // Fallback to any English voice
         const englishVoice = voices.find(voice => voice.lang.includes('en'));
@@ -308,9 +309,9 @@ export class AudioPlayer {
       }
       
       speechSynthesis.speak(utterance);
-      console.log(`Speaking word: ${word}`);
+      logger.log(`Speaking word: ${word}`);
     } catch (error) {
-      console.warn('Speech synthesis failed:', error);
+      logger.warn('Speech synthesis failed:', error);
       this.isPlaying = false;
     }
   }

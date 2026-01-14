@@ -2,6 +2,7 @@
 // User-specific progress tracking - requires authentication
 
 import { supabase } from '../supabase-client';
+import { logger } from './logger';
 
 export interface QuizResult {
   quizId: string;
@@ -112,7 +113,7 @@ let initPromise: Promise<string | null> | null = null;
 async function initUserId(): Promise<string | null> {
   const { data: { session } } = await supabase.auth.getSession();
   cachedUserId = session?.user?.id || null;
-  console.log('ProgressTracker: Initialized userId:', cachedUserId);
+  logger.log('ProgressTracker: Initialized userId:', cachedUserId);
   return cachedUserId;
 }
 
@@ -128,7 +129,7 @@ async function ensureUserId(): Promise<string | null> {
 // Listen for auth changes
 supabase.auth.onAuthStateChange((event, session) => {
   const newUserId = session?.user?.id || null;
-  console.log('ProgressTracker: Auth state changed:', event, newUserId);
+  logger.log('ProgressTracker: Auth state changed:', event, newUserId);
   
   // Update cached user ID for any auth event
   cachedUserId = newUserId;
@@ -145,7 +146,7 @@ supabase.auth.onAuthStateChange((event, session) => {
   } else if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && newUserId) {
     // Load progress for this user
     ProgressTracker.loadFromDatabase().then(() => {
-      console.log('Loaded progress for user:', newUserId);
+      logger.log('Loaded progress for user:', newUserId);
     });
   }
 });
@@ -184,7 +185,7 @@ export class ProgressTracker {
         const data = JSON.parse(stored);
         return { ...data, userId };
       } catch (error) {
-        console.error('Error parsing progress data:', error);
+        logger.error('Error parsing progress data:', error);
       }
     }
     
@@ -207,7 +208,7 @@ export class ProgressTracker {
     const userId = await ensureUserId();
     
     if (!userId) {
-      console.warn('Cannot save quiz result: User not authenticated');
+      logger.warn('Cannot save quiz result: User not authenticated');
       return;
     }
 
@@ -254,7 +255,7 @@ export class ProgressTracker {
         additional_data: result.additionalData,
       });
     } catch (error) {
-      console.error('Failed to save to database:', error);
+      logger.error('Failed to save to database:', error);
     }
   }
 
@@ -308,7 +309,7 @@ export class ProgressTracker {
         return progress;
       }
     } catch (error) {
-      console.error('Failed to load from database:', error);
+      logger.error('Failed to load from database:', error);
     }
 
     return this.getProgress();

@@ -4,6 +4,7 @@ import { ArrowLeft, RotateCcw, Volume2, VolumeX, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { spotTheDifferenceData, type GameLevelWithScene } from '../data/spotTheDifferenceData';
 import SimpleCartoonScene from '../components/SimpleCartoonScene';
+import { logger } from '../utils/logger';
 
 // Translations
 const translations = {
@@ -64,7 +65,7 @@ export default function SpotTheDifferenceGame() {
       setShowCelebration(true);
       setGameComplete(true);
       if (soundEnabled) {
-        console.log('🎉 Level complete sound');
+        logger.log('🎉 Level complete sound');
       }
     }
   }, [foundDifferences, currentGameLevel, soundEnabled]);
@@ -103,7 +104,7 @@ export default function SpotTheDifferenceGame() {
           setTimeout(() => setShowSparkle(null), 1000);
 
           if (soundEnabled) {
-            console.log('✨ Found difference sound');
+            logger.log('✨ Found difference sound');
           }
         }
       }
@@ -115,7 +116,7 @@ export default function SpotTheDifferenceGame() {
       setTimeout(() => setWrongClick(null), 500);
       
       if (soundEnabled) {
-        console.log('❌ Wrong click sound');
+        logger.log('❌ Wrong click sound');
       }
     }
   }, [currentGameLevel, foundDifferences, soundEnabled]);

@@ -15,6 +15,7 @@ import type {
   AssessmentCategory,
   SaveQuizResultParams
 } from './types/database'
+import { logger } from './utils/logger'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -65,7 +66,7 @@ export const getProfile = async (userId: string): Promise<Profile | null> => {
     .single();
   
   if (error) {
-    console.error('Error fetching profile:', error);
+    logger.error('Error fetching profile:', error);
     return null;
   }
   return data;
@@ -80,7 +81,7 @@ export const updateProfile = async (userId: string, updates: ProfileUpdate): Pro
     .single();
   
   if (error) {
-    console.error('Error updating profile:', error);
+    logger.error('Error updating profile:', error);
     return null;
   }
   return data;
@@ -92,7 +93,7 @@ export const updateProfile = async (userId: string, updates: ProfileUpdate): Pro
 export const saveQuizResult = async (params: SaveQuizResultParams): Promise<QuizResult | null> => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    console.error('No authenticated user');
+    logger.error('No authenticated user');
     return null;
   }
 
@@ -121,7 +122,7 @@ export const saveQuizResult = async (params: SaveQuizResultParams): Promise<Quiz
     .single();
 
   if (error) {
-    console.error('Error saving quiz result:', error);
+    logger.error('Error saving quiz result:', error);
     return null;
   }
   
@@ -142,7 +143,7 @@ export const getQuizResults = async (userId: string, category?: AssessmentCatego
   const { data, error } = await query;
 
   if (error) {
-    console.error('Error fetching quiz results:', error);
+    logger.error('Error fetching quiz results:', error);
     return [];
   }
   return data || [];
@@ -157,7 +158,7 @@ export const getQuizResultByQuizId = async (userId: string, quizId: string): Pro
     .single();
 
   if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-    console.error('Error fetching quiz result:', error);
+    logger.error('Error fetching quiz result:', error);
   }
   return data || null;
 };
@@ -172,7 +173,7 @@ export const getQuizMetadata = async (): Promise<QuizMetadata[]> => {
     .eq('is_active', true);
 
   if (error) {
-    console.error('Error fetching quiz metadata:', error);
+    logger.error('Error fetching quiz metadata:', error);
     return [];
   }
   return data || [];
@@ -186,7 +187,7 @@ export const getAllowedQuizzes = async (userGrade: GradeLevel): Promise<QuizMeta
     .contains('allowed_grades', [userGrade]);
 
   if (error) {
-    console.error('Error fetching allowed quizzes:', error);
+    logger.error('Error fetching allowed quizzes:', error);
     return [];
   }
   return data || [];
@@ -201,7 +202,7 @@ export const canAccessQuiz = async (quizId: string, userGrade: GradeLevel): Prom
     .single();
 
   if (error || !data) {
-    console.error('Error checking quiz access:', error);
+    logger.error('Error checking quiz access:', error);
     return false;
   }
 
@@ -227,7 +228,7 @@ export const createSession = async (sessionType: 'mind' | 'oral' | 'academic' | 
     .single();
 
   if (error) {
-    console.error('Error creating session:', error);
+    logger.error('Error creating session:', error);
     return null;
   }
   return data;
@@ -250,7 +251,7 @@ export const updateSession = async (sessionId: string, progress: number, status?
     .single();
 
   if (error) {
-    console.error('Error updating session:', error);
+    logger.error('Error updating session:', error);
     return null;
   }
   return data;
@@ -267,7 +268,7 @@ export const getActiveSession = async (userId: string): Promise<AssessmentSessio
     .single();
 
   if (error && error.code !== 'PGRST116') {
-    console.error('Error fetching active session:', error);
+    logger.error('Error fetching active session:', error);
   }
   return data || null;
 };
@@ -280,7 +281,7 @@ export const getUserProgress = async (userId: string): Promise<CategoryProgress[
     .rpc('get_user_progress', { target_user_id: userId });
 
   if (error) {
-    console.error('Error fetching user progress:', error);
+    logger.error('Error fetching user progress:', error);
     return [];
   }
   return data || [];
@@ -330,7 +331,7 @@ export const saveReport = async (report: ReportInsert): Promise<Report | null> =
     .single();
 
   if (error) {
-    console.error('Error saving report:', error);
+    logger.error('Error saving report:', error);
     return null;
   }
   return data;
@@ -344,7 +345,7 @@ export const getReports = async (userId: string): Promise<Report[]> => {
     .order('generated_at', { ascending: false });
 
   if (error) {
-    console.error('Error fetching reports:', error);
+    logger.error('Error fetching reports:', error);
     return [];
   }
   return data || [];
@@ -365,7 +366,7 @@ export const getLatestReport = async (userId: string, reportType?: 'mind' | 'ora
   const { data, error } = await query.single();
 
   if (error && error.code !== 'PGRST116') {
-    console.error('Error fetching latest report:', error);
+    logger.error('Error fetching latest report:', error);
   }
   return data || null;
 };

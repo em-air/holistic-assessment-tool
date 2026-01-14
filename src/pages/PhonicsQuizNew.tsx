@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import FloatingBackground from '../components/FloatingBackground';
 import { enhancedTTS, phoneticSoundMap } from '../utils/enhancedTTS';
 import { saveQuizResult } from '../services/quizResultsService';
+import { logger } from '../utils/logger';
 
 interface PhonicsQuestion {
   id: number;
@@ -86,10 +87,10 @@ const PhonicsQuiz: React.FC = () => {
         grade_level: `Grade ${selectedGrade}`,
       }).then(result => {
         if (result.success) {
-          console.log('Phonics Quiz result saved to database');
+          logger.log('Phonics Quiz result saved to database');
         }
       }).catch(err => {
-        console.error('Failed to save Phonics Quiz result:', err);
+        logger.error('Failed to save Phonics Quiz result:', err);
       });
     }
   }, [showResults, score, currentQuestions.length, selectedGrade]);
@@ -104,7 +105,7 @@ const PhonicsQuiz: React.FC = () => {
   // Load voices when component mounts
   useEffect(() => {
     enhancedTTS.preloadVoices().then(() => {
-      console.log('Available voices:', enhancedTTS.listVoices());
+      logger.log('Available voices:', enhancedTTS.listVoices());
     });
     
     return () => {
@@ -132,10 +133,10 @@ const PhonicsQuiz: React.FC = () => {
     if (isCorrect) {
       setScore(prev => prev + 1);
       // Play success sound (you can add actual audio here)
-      console.log('Correct answer! Playing success sound...');
+      logger.log('Correct answer! Playing success sound...');
     } else {
       // Play error sound (you can add actual audio here)
-      console.log('Incorrect answer! Playing error sound...');
+      logger.log('Incorrect answer! Playing error sound...');
     }
 
     // Auto-advance to next question after delay
@@ -172,7 +173,7 @@ const PhonicsQuiz: React.FC = () => {
         volume: 1.0
       });
     } catch (error) {
-      console.error('Error playing sound:', error);
+      logger.error('Error playing sound:', error);
     } finally {
       setIsPlayingSound(false);
     }

@@ -1,4 +1,5 @@
 import { supabase } from '../supabase-client';
+import { logger } from '../utils/logger';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -68,7 +69,7 @@ export async function generateReport(options: {
     const data = await response.json();
     return data;
   } catch (error: any) {
-    console.error('Generate report error:', error);
+    logger.error('Generate report error:', error);
     return { 
       success: false, 
       error: error.message || 'Failed to connect to server' 
@@ -120,7 +121,7 @@ export async function sendTextReport(options: {
     const data = await response.json();
     return data;
   } catch (error: any) {
-    console.error('Send email error:', error);
+    logger.error('Send email error:', error);
     return { 
       success: false, 
       error: error.message || 'Failed to connect to server' 
@@ -160,7 +161,7 @@ export async function getReportHistory(): Promise<{
     const data = await response.json();
     return { success: true, reports: data.reports };
   } catch (error: any) {
-    console.error('Get reports error:', error);
+    logger.error('Get reports error:', error);
     return { success: false, error: error.message };
   }
 }
@@ -197,7 +198,7 @@ export async function downloadReport(reportId: string): Promise<{
     const data = await response.json();
     return { success: true, downloadUrl: data.downloadUrl };
   } catch (error: any) {
-    console.error('Download report error:', error);
+    logger.error('Download report error:', error);
     return { success: false, error: error.message };
   }
 }

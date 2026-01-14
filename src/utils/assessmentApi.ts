@@ -1,3 +1,15 @@
+/**
+ * Assessment API - Frontend client for assessment generation
+ * 
+ * SECURITY: All Gemini API calls are now routed through the backend
+ * to keep API keys secure and not exposed in client-side code.
+ */
+
+import { supabase } from '../supabase-client';
+import logger from './logger';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 interface AssessmentRequest {
   grade: number;
   curriculum: string;
@@ -14,71 +26,63 @@ interface AssessmentResponse {
   error?: string;
 }
 
-// Gemini API integration
+/**
+ * Get the current user's access token for API calls
+ */
+async function getAccessToken(): Promise<string | null> {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token || null;
+}
+
+/**
+ * Generate an assessment using Gemini AI via the backend
+ */
 export const generateAssessmentWithGemini = async (request: AssessmentRequest): Promise<AssessmentResponse> => {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  
-  if (!apiKey) {
-    return {
-      success: false,
-      assessment: '',
-      error: 'Gemini API key not found. Please check your environment variables.',
-    };
-  }
-
   try {
-    const prompt = `Create a ${request.difficulty} test for grade ${request.grade} (${request.curriculum} curriculum) for ${request.subject}.
-Duration: ${request.duration} minutes
-Topics: ${request.topics.length ? request.topics.join(', ') : 'All grade-level topics'}
+    const token = await getAccessToken();
+    if (!token) {
+      return {
+        success: false,
+        assessment: '',
+        error: 'Please sign in to generate assessments.',
+      };
+    }
 
-Please create a comprehensive assessment with the following structure:
-- Multiple choice questions (3-5 questions)
-- Short answer questions (2-4 questions) 
-- Problem solving questions (2-3 questions)
-- Clear section headers
-- Appropriate difficulty for grade ${request.grade}
-- Professional formatting
-
-${request.includeAnswerKey ? 'Include a complete answer key with explanations at the end.' : 'Do not include an answer key.'}
-
-Format the response as markdown with clear section headers.`;
-
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
+    const response = await fetch(`${API_BASE_URL}/api/ai/generate-assessment`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 2048,
-        }
-      }),
+      body: JSON.stringify(request),
     });
 
     if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      logger.error('Assessment generation API error:', errorData);
+      return {
+        success: false,
+        assessment: '',
+        error: errorData.error || `Server error: ${response.status}`,
+      };
     }
 
     const data = await response.json();
     
-    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+    if (data.success && data.assessment) {
       return {
         success: true,
-        assessment: data.candidates[0].content.parts[0].text,
+        assessment: data.assessment,
       };
-    } else {
-      throw new Error('Invalid response format from Gemini API');
     }
+
+    return {
+      success: false,
+      assessment: '',
+      error: data.error || 'Failed to generate assessment',
+    };
   } catch (error) {
-    console.error('Error generating assessment with Gemini:', error);
+    logger.error('Error generating assessment:', error);
     return {
       success: false,
       assessment: '',
@@ -87,7 +91,9 @@ Format the response as markdown with clear section headers.`;
   }
 };
 
-// Keep the mock function as fallback
+/**
+ * Mock function as fallback for testing without backend
+ */
 export const generateMockAssessment = (request: AssessmentRequest): Promise<AssessmentResponse> => {
   return new Promise((resolve) => {
     setTimeout(() => {

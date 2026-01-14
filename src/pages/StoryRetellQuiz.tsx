@@ -9,6 +9,7 @@ import {
 import { ProgressTracker } from '../utils/progressTracker';
 import { saveQuizResult } from '../services/quizResultsService';
 import FloatingBackground from '../components/FloatingBackground';
+import { logger } from '../utils/logger';
 
 const StoryRetellQuiz: React.FC = () => {
   const navigate = useNavigate();
@@ -42,13 +43,13 @@ const StoryRetellQuiz: React.FC = () => {
     try {
       const gradeStories = getStoriesForGrade(grade, totalStories);
       startTimeRef.current = Date.now();  // Reset timer when quiz loads
-      console.log('Loaded stories for grade:', grade, gradeStories);
+      logger.log('Loaded stories for grade:', grade, gradeStories);
       setStories(gradeStories);
       setCurrentStoryIndex(0);
       setScore({ correct: 0, total: 0 });
       setShowResult(false);
     } catch (error) {
-      console.error('Error loading story retell questions:', error);
+      logger.error('Error loading story retell questions:', error);
     }
   }, [grade]);
 
@@ -134,10 +135,10 @@ const StoryRetellQuiz: React.FC = () => {
       grade_level: `Grade ${grade}`,
     }).then(result => {
       if (result.success) {
-        console.log('Story Retell result saved to database');
+        logger.log('Story Retell result saved to database');
       }
     }).catch(err => {
-      console.error('Failed to save Story Retell result:', err);
+      logger.error('Failed to save Story Retell result:', err);
     });
 
     setShowResult(true);

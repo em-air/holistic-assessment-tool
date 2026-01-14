@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { logger } from '../utils/logger';
 import { 
   FileText, 
   Download, 
@@ -104,7 +105,7 @@ const AdminReports: React.FC = () => {
       setReports(data.reports);
       setPagination(data.pagination);
     } catch (err: any) {
-      console.error('Fetch reports error:', err);
+      logger.error('Fetch reports error:', err);
       setError(err.message || 'Failed to load reports');
     } finally {
       setLoading(false);
@@ -158,7 +159,7 @@ const AdminReports: React.FC = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      console.error('Download error:', err);
+      logger.error('Download error:', err);
       alert('Failed to download report');
     } finally {
       setDownloadingId(null);

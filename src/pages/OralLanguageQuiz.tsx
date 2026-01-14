@@ -4,6 +4,7 @@ import { ArrowLeft, Star, Brain, Check, X, RotateCcw } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { oralLanguageCategories, oralLanguageTranslations, type QuizCategory } from '../data/oralLanguageData';
 import { saveQuizResult } from '../services/quizResultsService';
+import { logger } from '../utils/logger';
 
 interface QuizScores {
   vocabulary: { correct: number; total: number };
@@ -49,10 +50,10 @@ const OralLanguageQuiz: React.FC = () => {
         time_spent: timeSpent,
       }).then(result => {
         if (result.success) {
-          console.log(`Oral Language ${selectedCategory.id} result saved to database`);
+          logger.log(`Oral Language ${selectedCategory.id} result saved to database`);
         }
       }).catch(err => {
-        console.error(`Failed to save Oral Language ${selectedCategory.id} result:`, err);
+        logger.error(`Failed to save Oral Language ${selectedCategory.id} result:`, err);
       });
     }
   }, [showResults, selectedCategory, quizScores]);

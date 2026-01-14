@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, MicOff, Clock, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FloatingBackground from '../components/FloatingBackground';
+import { logger } from '../utils/logger';
 
 interface ReadingResult {
   wordsPerMinute: number;
@@ -146,12 +147,12 @@ const ReadingAssessment: React.FC = () => {
       };
 
       recognition.onstart = () => {
-        console.log('Speech recognition started');
+        logger.log('Speech recognition started');
         setInterimTranscript('');
       };
 
       recognition.onend = () => {
-        console.log('Speech recognition ended');
+        logger.log('Speech recognition ended');
         // Move any remaining interim transcript to final transcript
         if (interimTranscript.trim()) {
           setTranscript(prev => prev + ' ' + interimTranscript);
@@ -160,7 +161,7 @@ const ReadingAssessment: React.FC = () => {
       };
 
       recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-        console.error('Speech recognition error:', event.error);
+        logger.log('Speech recognition error:', event.error);
         setInterimTranscript('');
       };
 
@@ -258,8 +259,8 @@ const ReadingAssessment: React.FC = () => {
   };
 
   const stopAssessment = (forceCalculate = false) => {
-    console.log('stopAssessment called with forceCalculate:', forceCalculate);
-    console.log('Current state at stop:', {
+    logger.log('stopAssessment called with forceCalculate:', forceCalculate);
+    logger.log('Current state at stop:', {
       transcript: currentTranscriptRef.current,
       interim: currentInterimRef.current,
       timeLeft: currentTimeLeftRef.current
@@ -308,7 +309,7 @@ const ReadingAssessment: React.FC = () => {
     const timeElapsed = 60 - timeLeft;
     const wordsPerMinute = timeElapsed > 0 ? Math.round((wordCount / timeElapsed) * 60) : 0;
 
-    console.log('Calculating results with refs:', {
+    logger.log('Calculating results with refs:', {
       finalTranscript,
       interim,
       fullTranscript,

@@ -5,6 +5,7 @@ import { getWritingDataByGrade, WritingTopic, GradeWritingData } from '../data/w
 import { evaluateWritingWithGemini, WritingEvaluation } from '../services/geminiService';
 import { saveQuizResult } from '../services/quizResultsService';
 import { ArrowLeft, Clock, Target, BookOpen, Lightbulb, CheckCircle, Star, RefreshCw, Sparkles, Brain } from 'lucide-react';
+import { logger } from '../utils/logger';
 
 const WritingTest: React.FC = () => {
   const { grade } = useParams<{ grade: string }>();
@@ -40,10 +41,10 @@ const WritingTest: React.FC = () => {
         },
       }).then(result => {
         if (result.success) {
-          console.log('Writing Test result saved to database');
+          logger.log('Writing Test result saved to database');
         }
       }).catch(err => {
-        console.error('Failed to save Writing Test result:', err);
+        logger.error('Failed to save Writing Test result:', err);
       });
     }
   }, [evaluation, selectedTopic, grade, wordCount]);
@@ -82,7 +83,7 @@ const WritingTest: React.FC = () => {
       
       setEvaluation(evaluation);
     } catch (error) {
-      console.error('Error evaluating writing:', error);
+      logger.error('Error evaluating writing:', error);
       
       // Fallback to simple evaluation if Gemini fails
       const words = studentText.trim().split(/\s+/).filter(word => word.length > 0);

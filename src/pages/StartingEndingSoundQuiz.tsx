@@ -8,6 +8,7 @@ import { ProgressTracker } from '../utils/progressTracker';
 import SoundQuestionDisplay from '../components/SoundQuestionDisplay';
 import SoundOptionButtons from '../components/SoundOptionButtons';
 import FeedbackMessage from '../components/FeedbackMessage';
+import { logger } from '../utils/logger';
 
 const StartingEndingSoundQuiz: React.FC = () => {
   const navigate = useNavigate();
@@ -30,21 +31,21 @@ const StartingEndingSoundQuiz: React.FC = () => {
 
   // Initialize quiz questions
   useEffect(() => {
-    console.log('Initializing quiz for grade:', grade);
-    console.log('Grade param from URL:', gradeParam);
+    logger.log('Initializing quiz for grade:', grade);
+    logger.log('Grade param from URL:', gradeParam);
     try {
       const words = getWordsByGrade(grade);
-      console.log('Words for grade:', words.length, words);
+      logger.log('Words for grade:', words.length, words);
       if (words.length === 0) {
-        console.error('No words found for grade:', grade);
+        logger.error('No words found for grade:', grade);
         return;
       }
       const quizQuestions = generateQuizQuestions(words, totalQuestions);
-      console.log('Generated questions:', quizQuestions.length, quizQuestions);
+      logger.log('Generated questions:', quizQuestions.length, quizQuestions);
       setQuestions(quizQuestions);
       setQuestionStartTime(new Date());
     } catch (error) {
-      console.error('Error initializing quiz:', error);
+      logger.error('Error initializing quiz:', error);
     }
   }, [grade, gradeParam]);
 
@@ -57,7 +58,7 @@ const StartingEndingSoundQuiz: React.FC = () => {
     try {
       await AudioPlayer.playAudio(currentQuestion.question.audioUrl, currentQuestion.question.word);
     } catch (error) {
-      console.warn('Audio playback failed:', error);
+      logger.warn('Audio playback failed:', error);
     } finally {
       setIsAudioLoading(false);
     }

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import FloatingBackground from '../components/FloatingBackground';
 import { enhancedTTS, phoneticSoundMap } from '../utils/enhancedTTS';
 import { saveQuizResult } from '../services/quizResultsService';
+import { logger } from '../utils/logger';
 
 interface BlendingQuestion {
   id: number;
@@ -85,17 +86,17 @@ const BlendingQuiz: React.FC = () => {
         grade_level: `Grade ${selectedGrade}`,
       }).then(result => {
         if (result.success) {
-          console.log('Blending Quiz result saved to database');
+          logger.log('Blending Quiz result saved to database');
         }
       }).catch(err => {
-        console.error('Failed to save Blending Quiz result:', err);
+        logger.error('Failed to save Blending Quiz result:', err);
       });
     }
   }, [showResults, score, currentQuestions.length, selectedGrade]);
 
   useEffect(() => {
     enhancedTTS.preloadVoices().then(() => {
-      console.log('TTS voices loaded for Blending Quiz');
+      logger.log('TTS voices loaded for Blending Quiz');
     });
     
     return () => {
@@ -163,7 +164,7 @@ const BlendingQuiz: React.FC = () => {
         volume: 1.0
       });
     } catch (error) {
-      console.error('Error playing sound:', error);
+      logger.error('Error playing sound:', error);
     }
   };
 
@@ -191,7 +192,7 @@ const BlendingQuiz: React.FC = () => {
     setSpokenWord('');
 
     recognition.onstart = () => {
-      console.log('Speech recognition started');
+      logger.log('Speech recognition started');
     };
 
     recognition.onresult = (event: any) => {
@@ -217,7 +218,7 @@ const BlendingQuiz: React.FC = () => {
     };
 
     recognition.onerror = (event: any) => {
-      console.error('Speech recognition error:', event.error);
+      logger.error('Speech recognition error:', event.error);
       setIsListening(false);
       
       let errorMessage = 'Speech recognition failed. ';

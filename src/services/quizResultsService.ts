@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '../supabase-client';
+import { logger } from '../utils/logger';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -41,7 +42,7 @@ export async function saveQuizResult(result: QuizResultData): Promise<{ success:
   try {
     const token = await getAccessToken();
     if (!token) {
-      console.log('Not authenticated - skipping database save');
+      logger.log('Not authenticated - skipping database save');
       return { success: false, error: 'Not authenticated' };
     }
 
@@ -56,15 +57,15 @@ export async function saveQuizResult(result: QuizResultData): Promise<{ success:
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('Failed to save quiz result:', errorData);
+      logger.error('Failed to save quiz result:', errorData);
       return { success: false, error: errorData.error || 'Failed to save result' };
     }
 
     const data = await response.json();
-    console.log('Quiz result saved to database:', data.result?.id);
+    logger.log('Quiz result saved to database:', data.result?.id);
     return { success: true, result: data.result };
   } catch (error: any) {
-    console.error('Error saving quiz result:', error);
+    logger.error('Error saving quiz result:', error);
     return { success: false, error: error.message };
   }
 }
@@ -97,7 +98,7 @@ export async function getQuizResults(category?: 'mind' | 'oral' | 'academic'): P
     const data = await response.json();
     return { success: true, results: data.results };
   } catch (error: any) {
-    console.error('Error fetching quiz results:', error);
+    logger.error('Error fetching quiz results:', error);
     return { success: false, error: error.message };
   }
 }
@@ -144,10 +145,10 @@ export async function syncLocalToDatabase(): Promise<{ synced: number; errors: n
       }
     }
 
-    console.log(`Synced ${synced} results to database, ${errors} errors`);
+    logger.log(`Synced ${synced} results to database, ${errors} errors`);
     return { synced, errors };
   } catch (error) {
-    console.error('Error syncing to database:', error);
+    logger.error('Error syncing to database:', error);
     return { synced: 0, errors: 1 };
   }
 }

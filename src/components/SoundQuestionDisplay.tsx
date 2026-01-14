@@ -1,6 +1,7 @@
 import React from 'react';
 import { Volume2, RotateCcw } from 'lucide-react';
 import { QuestionData } from '../data/startingEndingSoundData';
+import { logger } from '../utils/logger';
 
 interface SoundQuestionDisplayProps {
   question: QuestionData;
@@ -25,16 +26,16 @@ const SoundQuestionDisplay: React.FC<SoundQuestionDisplayProps> = ({
             alt="Picture for word - listen to hear what it is"
             className="w-48 h-48 md:w-64 md:h-64 object-contain rounded-xl"
             onLoad={() => {
-              console.log('Image loaded successfully:', question.question.imageUrl);
+              logger.log('Image loaded successfully:', question.question.imageUrl);
             }}
             onError={(e) => {
               // Log the error for debugging
-              console.error('Image failed to load:', question.question.imageUrl);
+              logger.error('Image failed to load:', question.question.imageUrl);
               
               // Keep the placeholder URL as fallback
               const target = e.target as HTMLImageElement;
               if (!target.src.includes('placeholder')) {
-                console.log('Using fallback placeholder image');
+                logger.log('Using fallback placeholder image');
                 target.src = 'https://via.placeholder.com/300x300/6B7280/FFFFFF?text=' + 
                             encodeURIComponent(question.question.word.toUpperCase());
               }

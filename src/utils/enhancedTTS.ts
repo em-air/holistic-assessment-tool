@@ -3,6 +3,8 @@
  * Applies filters to reduce muffled sound and improve clarity
  */
 
+import { logger } from './logger';
+
 interface TTSOptions {
   rate?: number;
   pitch?: number;
@@ -50,7 +52,7 @@ class EnhancedTTS {
     for (const priorityName of priorityVoices) {
       const voice = voices.find(v => v.name === priorityName);
       if (voice) {
-        console.log('Using high-quality voice:', voice.name);
+        logger.log('Using high-quality voice:', voice.name);
         return voice;
       }
     }
@@ -62,7 +64,7 @@ class EnhancedTTS {
     );
     
     if (enhancedVoice) {
-      console.log('Using enhanced voice:', enhancedVoice.name);
+      logger.log('Using enhanced voice:', enhancedVoice.name);
       return enhancedVoice;
     }
 
@@ -72,14 +74,14 @@ class EnhancedTTS {
     );
     
     if (googleVoice) {
-      console.log('Using Google voice:', googleVoice.name);
+      logger.log('Using Google voice:', googleVoice.name);
       return googleVoice;
     }
 
     // Fallback to any English voice
     const fallbackVoice = voices.find(v => v.lang.startsWith('en'));
     if (fallbackVoice) {
-      console.log('Using fallback voice:', fallbackVoice.name);
+      logger.log('Using fallback voice:', fallbackVoice.name);
     }
     
     return fallbackVoice || null;
@@ -91,7 +93,7 @@ class EnhancedTTS {
   async speak(text: string, options: TTSOptions = {}): Promise<void> {
     return new Promise((resolve, reject) => {
       if (!('speechSynthesis' in window)) {
-        console.error('Speech synthesis not supported');
+        logger.error('Speech synthesis not supported');
         reject(new Error('Speech synthesis not supported'));
         return;
       }
@@ -117,7 +119,7 @@ class EnhancedTTS {
       };
 
       utterance.onerror = (event) => {
-        console.error('Speech synthesis error:', event);
+        logger.error('Speech synthesis error:', event);
         resolve(); // Resolve anyway to not block
       };
 
@@ -163,7 +165,7 @@ class EnhancedTTS {
       // Wait for voices to load
       speechSynthesis.onvoiceschanged = () => {
         const loadedVoices = speechSynthesis.getVoices();
-        console.log(`Loaded ${loadedVoices.length} voices`);
+        logger.log(`Loaded ${loadedVoices.length} voices`);
         resolve();
       };
 

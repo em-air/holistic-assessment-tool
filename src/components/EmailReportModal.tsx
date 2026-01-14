@@ -4,6 +4,7 @@ import { X, Mail, Send, Loader } from 'lucide-react';
 import { ProgressData } from '../utils/progressTracker';
 import { sendTextReport } from '../services/reportService';
 import { useAuth } from '../contexts/AuthContext';
+import { logger } from '../utils/logger';
 
 interface EmailReportModalProps {
   onClose: () => void;
@@ -92,7 +93,7 @@ const EmailReportModal: React.FC<EmailReportModalProps> = ({ onClose, progress }
         onClose();
       }, 3000);
     } catch (error: any) {
-      console.error('Error sending email:', error);
+      logger.error('Error sending email:', error);
       setError(error.message || 'Failed to send report. Please try again later.');
     } finally {
       setIsSending(false);

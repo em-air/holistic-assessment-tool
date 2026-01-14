@@ -4,6 +4,7 @@ import { CheckCircle, Circle, FileText, Trash2, Database, Loader, LogIn } from '
 import { ProgressTracker, MIND_QUIZZES, type ProgressData } from '../utils/progressTracker';
 import { generateReport } from '../services/reportService';
 import { useNavigate } from 'react-router-dom';
+import { logger } from '../utils/logger';
 
 interface MindProgressBarProps {
   onShowReport?: () => void;
@@ -161,14 +162,14 @@ const MindProgressBar: React.FC<MindProgressBarProps> = ({ onShowReport, classNa
       
       if (result.success) {
         setSaveStatus('success');
-        console.log('Report saved to database:', result.report?.id);
+        logger.log('Report saved to database:', result.report?.id);
       } else {
         setSaveStatus('error');
-        console.error('Failed to save report:', result.error);
+        logger.error('Failed to save report:', result.error);
       }
     } catch (error) {
       setSaveStatus('error');
-      console.error('Error saving report:', error);
+      logger.error('Error saving report:', error);
     } finally {
       setIsSavingReport(false);
       // Reset status after 3 seconds

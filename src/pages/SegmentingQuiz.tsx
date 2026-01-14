@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import FloatingBackground from '../components/FloatingBackground';
 import { enhancedTTS } from '../utils/enhancedTTS';
 import { saveQuizResult } from '../services/quizResultsService';
+import { logger } from '../utils/logger';
 
 interface SegmentingQuestion {
   id: number;
@@ -82,10 +83,10 @@ const SegmentingQuiz: React.FC = () => {
         grade_level: `Grade ${selectedGrade}`,
       }).then(result => {
         if (result.success) {
-          console.log('Segmenting Quiz result saved to database');
+          logger.log('Segmenting Quiz result saved to database');
         }
       }).catch(err => {
-        console.error('Failed to save Segmenting Quiz result:', err);
+        logger.error('Failed to save Segmenting Quiz result:', err);
       });
     }
   }, [showResults, score, currentQuestions.length, selectedGrade]);
@@ -99,7 +100,7 @@ const SegmentingQuiz: React.FC = () => {
 
   useEffect(() => {
     enhancedTTS.preloadVoices().then(() => {
-      console.log('TTS voices loaded for Segmenting Quiz');
+      logger.log('TTS voices loaded for Segmenting Quiz');
     });
     
     return () => {
@@ -127,7 +128,7 @@ const SegmentingQuiz: React.FC = () => {
         volume: 1.0
       });
     } catch (error) {
-      console.error('Error playing word:', error);
+      logger.error('Error playing word:', error);
     } finally {
       setIsPlayingSound(false);
     }
@@ -153,7 +154,7 @@ const SegmentingQuiz: React.FC = () => {
         volume: 1.0
       });
     } catch (error) {
-      console.error('Error playing phoneme sound:', error);
+      logger.error('Error playing phoneme sound:', error);
     }
   };
 
