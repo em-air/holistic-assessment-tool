@@ -48,18 +48,18 @@ const MindProgressBar: React.FC<MindProgressBarProps> = ({ onShowReport, classNa
     // Load progress from database on mount
     const loadProgress = async () => {
       setIsLoading(true);
-      
+
       // Wait for auth to be initialized
       const { supabase } = await import('../supabase-client');
       const { data: { session } } = await supabase.auth.getSession();
       const authenticated = !!session?.user;
       setIsAuthenticated(authenticated);
-      
+
       if (authenticated) {
         // Load from database
         await ProgressTracker.loadFromDatabase();
       }
-      
+
       setProgress(ProgressTracker.getProgress());
       setIsLoading(false);
     };
@@ -90,7 +90,7 @@ const MindProgressBar: React.FC<MindProgressBarProps> = ({ onShowReport, classNa
     window.addEventListener('mindProgressUpdated', handleProgressUpdate as EventListener);
     window.addEventListener('focus', handleWindowFocus);
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
     return () => {
       window.removeEventListener('mindProgressUpdated', handleProgressUpdate as EventListener);
       window.removeEventListener('focus', handleWindowFocus);
@@ -153,13 +153,13 @@ const MindProgressBar: React.FC<MindProgressBarProps> = ({ onShowReport, classNa
     // Save to database in background
     setIsSavingReport(true);
     setSaveStatus('idle');
-    
+
     try {
       const result = await generateReport({
         reportType: 'full',
         sendEmail: false,
       });
-      
+
       if (result.success) {
         setSaveStatus('success');
         logger.log('Report saved to database:', result.report?.id);
@@ -175,7 +175,7 @@ const MindProgressBar: React.FC<MindProgressBarProps> = ({ onShowReport, classNa
       // Reset status after 3 seconds
       setTimeout(() => setSaveStatus('idle'), 3000);
     }
-    
+
     // Also show the report modal
     if (onShowReport) {
       onShowReport();
@@ -266,11 +266,10 @@ const MindProgressBar: React.FC<MindProgressBarProps> = ({ onShowReport, classNa
           animate={{ opacity: 1, y: 0 }}
           onClick={handleGenerateReport}
           disabled={isSavingReport}
-          className={`w-full py-3 px-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl mb-4 disabled:opacity-70 disabled:cursor-not-allowed ${
-            isComplete 
-              ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700' 
+          className={`w-full py-3 px-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl mb-4 disabled:opacity-70 disabled:cursor-not-allowed ${isComplete
+              ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700'
               : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700'
-          }`}
+            }`}
         >
           {isSavingReport ? (
             <>

@@ -1,5 +1,7 @@
-// Attentional Control Scale for Children (ACS-C) - Based on research by van Son et al. (2021)
-// Using the revised two-factor model with best fit
+/**
+ * Attentional Control Scale for Children (ACS-C)
+ * Based on research by van Son et al. (2021) using the revised two-factor model.
+ */
 
 export interface AttentionControlQuestion {
   id: number;
@@ -12,7 +14,7 @@ export interface AttentionControlQuestion {
 }
 
 export const attentionControlQuestions: AttentionControlQuestion[] = [
-  // ATTENTIONAL FOCUSING SUBSCALE (Items from best-fitting model)
+  // ATTENTIONAL FOCUSING SUBSCALE
   {
     id: 1,
     subscale: 'focusing',
@@ -94,8 +96,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     options: [1, 2, 3, 4],
     reverse: false
   },
-
-  // ATTENTIONAL SHIFTING SUBSCALE (Items from best-fitting model)
+  // ATTENTIONAL SHIFTING SUBSCALE
   {
     id: 10,
     subscale: 'shifting',
@@ -103,7 +104,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     kidFriendlyQuestion: "I can easily stop what I'm doing and switch to something else",
     type: 'rating',
     options: [1, 2, 3, 4],
-    reverse: true // Reverse scored
+    reverse: true
   },
   {
     id: 13,
@@ -112,7 +113,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     kidFriendlyQuestion: "I can quickly get interested in new things when I need to",
     type: 'rating',
     options: [1, 2, 3, 4],
-    reverse: true // Reverse scored
+    reverse: true
   },
   {
     id: 14,
@@ -121,7 +122,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     kidFriendlyQuestion: "I can easily do homework while talking to someone",
     type: 'rating',
     options: [1, 2, 3, 4],
-    reverse: true // Reverse scored
+    reverse: true
   },
   {
     id: 17,
@@ -130,7 +131,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     kidFriendlyQuestion: "When something interrupts me, I can easily go back to what I was doing",
     type: 'rating',
     options: [1, 2, 3, 4],
-    reverse: true // Reverse scored
+    reverse: true
   },
   {
     id: 18,
@@ -139,7 +140,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     kidFriendlyQuestion: "When my mind wanders, I can easily get back to my work",
     type: 'rating',
     options: [1, 2, 3, 4],
-    reverse: true // Reverse scored
+    reverse: true
   },
   {
     id: 19,
@@ -148,11 +149,10 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     kidFriendlyQuestion: "I can easily switch between doing different activities",
     type: 'rating',
     options: [1, 2, 3, 4],
-    reverse: true // Reverse scored
+    reverse: true
   }
 ];
 
-// Rating scale labels
 export const ratingLabels = {
   1: "Almost Never",
   2: "Sometimes", 
@@ -160,7 +160,6 @@ export const ratingLabels = {
   4: "Always"
 };
 
-// Kid-friendly rating labels
 export const kidFriendlyRatingLabels = {
   1: "Never",
   2: "Sometimes", 
@@ -168,7 +167,9 @@ export const kidFriendlyRatingLabels = {
   4: "Always"
 };
 
-// Scoring algorithm based on the research
+/**
+ * Calculate attention scores from responses
+ */
 export const calculateAttentionScores = (responses: Record<number, number>) => {
   let focusingScore = 0;
   let shiftingScore = 0;
@@ -178,7 +179,6 @@ export const calculateAttentionScores = (responses: Record<number, number>) => {
   attentionControlQuestions.forEach(question => {
     const response = responses[question.id];
     if (response !== undefined) {
-      // Reverse score if needed (higher scores = better attention control)
       const score = question.reverse ? (5 - response) : response;
       
       if (question.subscale === 'focusing') {
@@ -198,25 +198,15 @@ export const calculateAttentionScores = (responses: Record<number, number>) => {
   const percentageScore = totalPossible > 0 ? (totalScore / totalPossible) * 100 : 0;
 
   return {
-    focusing: {
-      raw: focusingScore,
-      average: focusingAverage,
-      count: focusingCount
-    },
-    shifting: {
-      raw: shiftingScore,
-      average: shiftingAverage,
-      count: shiftingCount
-    },
-    total: {
-      raw: totalScore,
-      percentage: percentageScore,
-      possible: totalPossible
-    }
+    focusing: { raw: focusingScore, average: focusingAverage, count: focusingCount },
+    shifting: { raw: shiftingScore, average: shiftingAverage, count: shiftingCount },
+    total: { raw: totalScore, percentage: percentageScore, possible: totalPossible }
   };
 };
 
-// Interpretation guidelines based on research
+/**
+ * Interpret scores based on research
+ */
 export const interpretScores = (scores: ReturnType<typeof calculateAttentionScores>) => {
   const { focusing, shifting, total } = scores;
   
@@ -252,7 +242,9 @@ export const interpretScores = (scores: ReturnType<typeof calculateAttentionScor
   };
 };
 
-// Recommendations based on scores
+/**
+ * Get recommendations based on interpretation
+ */
 export const getRecommendations = (interpretation: ReturnType<typeof interpretScores>) => {
   const recommendations: string[] = [];
 

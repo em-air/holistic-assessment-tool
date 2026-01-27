@@ -24,7 +24,26 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables')
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
+/**
+ * Supabase Client Configuration
+ * 
+ * IMPORTANT: Using sessionStorage instead of localStorage for auth storage.
+ * This allows multiple users to be logged in on different browser tabs
+ * simultaneously without sessions overwriting each other.
+ * 
+ * Trade-offs:
+ * - Each browser tab maintains its own independent session
+ * - Closing a tab ends that session (user needs to log in again)
+ * - Users can be logged into different accounts in different tabs
+ */
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storage: typeof window !== 'undefined' ? window.sessionStorage : undefined,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  }
+})
 
 // ============================================
 // AUTH FUNCTIONS

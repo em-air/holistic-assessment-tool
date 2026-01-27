@@ -4,7 +4,10 @@ import { ArrowLeft, BookOpen, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FloatingBackground from '../components/FloatingBackground';
 import { useAuth } from '../contexts/AuthContext';
-import { getNumericGrade, canAccessGrade } from '../utils/gradeUtils';
+import {
+  getNumericGrade,
+  canAccessQuizGrade
+} from '../utils/gradeUtils';
 
 const StoryRetellGradeSelector: React.FC = () => {
   const navigate = useNavigate();
@@ -55,20 +58,20 @@ const StoryRetellGradeSelector: React.FC = () => {
       navigate('/auth');
       return;
     }
-    if (canAccessGrade(userGrade, grade, isAdmin)) {
+    if (canAccessQuizGrade(userNumericGrade, 'oral', 'story-retell', grade, isAdmin)) {
       navigate(`/story-retell-quiz/${grade}`);
     }
   };
 
   const isGradeLocked = (grade: number): boolean => {
     if (!user) return true;
-    return !canAccessGrade(userGrade, grade, isAdmin);
+    return !canAccessQuizGrade(userNumericGrade, 'oral', 'story-retell', grade, isAdmin);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-indigo-100 relative overflow-hidden">
       <FloatingBackground />
-      
+
       {/* Header with back button */}
       <div className="absolute top-4 left-4 z-20">
         <button
@@ -97,10 +100,10 @@ const StoryRetellGradeSelector: React.FC = () => {
               Story Retell
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Read short stories and retell them using Beginning, Middle, and End structure. 
+              Read short stories and retell them using Beginning, Middle, and End structure.
               Practice identifying key characters and main events.
             </p>
-            
+
             {/* Grade Restriction Notice */}
             {user && userGrade && !isAdmin && (
               <motion.div
@@ -120,88 +123,88 @@ const StoryRetellGradeSelector: React.FC = () => {
             {grades.map((gradeInfo, index) => {
               const locked = isGradeLocked(gradeInfo.grade);
               return (
-              <motion.div
-                key={gradeInfo.grade}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className={`group transform transition-all duration-300 ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-105'}`}
-                onClick={() => handleGradeSelect(gradeInfo.grade)}
-              >
-                <div className={`bg-white rounded-3xl shadow-lg p-8 h-full border-2 transition-all duration-300 relative overflow-hidden ${locked ? 'border-gray-200' : 'border-transparent group-hover:border-blue-300'}`}>
-                  {/* Lock Icon */}
-                  {locked && (
-                    <div className="absolute top-4 right-4 bg-gray-500 text-white p-2 rounded-full z-20">
-                      <Lock size={16} />
-                    </div>
-                  )}
-                  
-                  {/* Background gradient */}
-                  <div className={`absolute inset-0 ${locked ? 'bg-gray-300' : `bg-gradient-to-br ${gradeInfo.color}`} opacity-5 ${locked ? '' : 'group-hover:opacity-10'} transition-opacity duration-300`}></div>
-                  
-                  {/* Content */}
-                  <div className="relative z-10">
-                    {/* Grade number and difficulty */}
-                    <div className="flex justify-between items-start mb-6">
-                      <div className={`text-4xl font-bold ${locked ? 'text-gray-400' : `bg-gradient-to-r ${gradeInfo.color} bg-clip-text text-transparent`}`}>
-                        {gradeInfo.title}
+                <motion.div
+                  key={gradeInfo.grade}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`group transform transition-all duration-300 ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-105'}`}
+                  onClick={() => handleGradeSelect(gradeInfo.grade)}
+                >
+                  <div className={`bg-white rounded-3xl shadow-lg p-8 h-full border-2 transition-all duration-300 relative overflow-hidden ${locked ? 'border-gray-200' : 'border-transparent group-hover:border-blue-300'}`}>
+                    {/* Lock Icon */}
+                    {locked && (
+                      <div className="absolute top-4 right-4 bg-gray-500 text-white p-2 rounded-full z-20">
+                        <Lock size={16} />
                       </div>
-                      <span className={`
+                    )}
+
+                    {/* Background gradient */}
+                    <div className={`absolute inset-0 ${locked ? 'bg-gray-300' : `bg-gradient-to-br ${gradeInfo.color}`} opacity-5 ${locked ? '' : 'group-hover:opacity-10'} transition-opacity duration-300`}></div>
+
+                    {/* Content */}
+                    <div className="relative z-10">
+                      {/* Grade number and difficulty */}
+                      <div className="flex justify-between items-start mb-6">
+                        <div className={`text-4xl font-bold ${locked ? 'text-gray-400' : `bg-gradient-to-r ${gradeInfo.color} bg-clip-text text-transparent`}`}>
+                          {gradeInfo.title}
+                        </div>
+                        <span className={`
                         px-3 py-1 rounded-full text-sm font-semibold text-white
                         ${locked ? 'bg-gray-400' :
-                          gradeInfo.grade === 1 ? 'bg-green-500' : 
-                          gradeInfo.grade === 2 ? 'bg-blue-500' :
-                          gradeInfo.grade === 3 ? 'bg-purple-500' : 'bg-red-500'}
+                            gradeInfo.grade === 1 ? 'bg-green-500' :
+                              gradeInfo.grade === 2 ? 'bg-blue-500' :
+                                gradeInfo.grade === 3 ? 'bg-purple-500' : 'bg-red-500'}
                       `}>
-                        {gradeInfo.difficulty}
-                      </span>
-                    </div>
-                    
-                    {/* Description */}
-                    <p className={`text-lg mb-4 font-medium ${locked ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {gradeInfo.description}
-                    </p>
+                          {gradeInfo.difficulty}
+                        </span>
+                      </div>
 
-                    {/* Word Range */}
-                    <div className={`rounded-lg p-3 mb-6 ${locked ? 'bg-gray-100' : 'bg-blue-50'}`}>
-                      <p className={`text-sm font-semibold text-center ${locked ? 'text-gray-400' : 'text-blue-700'}`}>
-                        📖 {gradeInfo.wordRange}
+                      {/* Description */}
+                      <p className={`text-lg mb-4 font-medium ${locked ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {gradeInfo.description}
                       </p>
-                    </div>
-                    
-                    {/* Story Examples */}
-                    <div className="space-y-3">
-                      <h3 className={`font-semibold text-sm uppercase tracking-wide ${locked ? 'text-gray-400' : 'text-gray-700'}`}>
-                        Sample Stories:
-                      </h3>
-                      <div className="space-y-2">
-                        {gradeInfo.examples.map((example, i) => (
-                          <div key={i} className="flex items-center space-x-2">
-                            <div className={`w-2 h-2 rounded-full ${locked ? 'bg-gray-300' : 'bg-blue-400'}`}></div>
-                            <span className={`text-sm ${locked ? 'text-gray-400' : 'text-gray-600'}`}>{example}</span>
-                          </div>
-                        ))}
+
+                      {/* Word Range */}
+                      <div className={`rounded-lg p-3 mb-6 ${locked ? 'bg-gray-100' : 'bg-blue-50'}`}>
+                        <p className={`text-sm font-semibold text-center ${locked ? 'text-gray-400' : 'text-blue-700'}`}>
+                          📖 {gradeInfo.wordRange}
+                        </p>
                       </div>
-                    </div>
-                    
-                    {/* Stats */}
-                    <div className="flex justify-between items-center pt-6 mt-6 border-t border-gray-100">
-                      <div className="text-center">
-                        <div className={`text-2xl font-bold ${locked ? 'text-gray-400' : 'text-gray-700'}`}>3</div>
-                        <div className="text-xs text-gray-500 uppercase tracking-wide">Stories</div>
+
+                      {/* Story Examples */}
+                      <div className="space-y-3">
+                        <h3 className={`font-semibold text-sm uppercase tracking-wide ${locked ? 'text-gray-400' : 'text-gray-700'}`}>
+                          Sample Stories:
+                        </h3>
+                        <div className="space-y-2">
+                          {gradeInfo.examples.map((example, i) => (
+                            <div key={i} className="flex items-center space-x-2">
+                              <div className={`w-2 h-2 rounded-full ${locked ? 'bg-gray-300' : 'bg-blue-400'}`}></div>
+                              <span className={`text-sm ${locked ? 'text-gray-400' : 'text-gray-600'}`}>{example}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <div className="text-center">
-                        <div className={`text-2xl font-bold ${locked ? 'text-gray-400' : 'text-gray-700'}`}>3</div>
-                        <div className="text-xs text-gray-500 uppercase tracking-wide">Sections</div>
-                      </div>
-                      <div className="text-center">
-                        <div className={`text-2xl font-bold ${locked ? 'text-gray-400' : 'text-gray-700'}`}>~{gradeInfo.grade + 9}</div>
-                        <div className="text-xs text-gray-500 uppercase tracking-wide">Minutes</div>
+
+                      {/* Stats */}
+                      <div className="flex justify-between items-center pt-6 mt-6 border-t border-gray-100">
+                        <div className="text-center">
+                          <div className={`text-2xl font-bold ${locked ? 'text-gray-400' : 'text-gray-700'}`}>3</div>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide">Stories</div>
+                        </div>
+                        <div className="text-center">
+                          <div className={`text-2xl font-bold ${locked ? 'text-gray-400' : 'text-gray-700'}`}>3</div>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide">Sections</div>
+                        </div>
+                        <div className="text-center">
+                          <div className={`text-2xl font-bold ${locked ? 'text-gray-400' : 'text-gray-700'}`}>~{gradeInfo.grade + 9}</div>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide">Minutes</div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
+                </motion.div>
               );
             })}
           </div>

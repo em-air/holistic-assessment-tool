@@ -1,22 +1,19 @@
+/**
+ * Logical Sequencing Quiz Data
+ * Sentences must be arranged in correct order to tell a complete story.
+ * 
+ * IMPORTANT: correctOrder is server-side only - never expose to frontend!
+ */
+
 export interface SequencingQuestion {
   id: number;
   title: string;
   sentences: string[];
-  correctOrder: number[]; // Array of indices representing correct order
+  correctOrder: number[]; // Array of indices representing correct order (SERVER-SIDE ONLY)
   grade: number;
   difficulty: 'easy' | 'medium' | 'hard';
   topic: string;
   hint?: string;
-}
-
-export interface SequencingQuizResult {
-  totalQuestions: number;
-  correctAnswers: number;
-  incorrectAnswers: number;
-  timePerQuestion: number[];
-  totalTime: number;
-  percentage: number;
-  grade: number;
 }
 
 // Grade 1: 3-sentence stories
@@ -29,7 +26,7 @@ export const grade1Questions: SequencingQuestion[] = [
       "I get bread and peanut butter.",
       "I spread peanut butter on the bread."
     ],
-    correctOrder: [1, 2, 0], // Get bread -> Spread -> Eat
+    correctOrder: [1, 2, 0],
     grade: 1,
     difficulty: 'easy',
     topic: 'daily-activities',
@@ -43,7 +40,7 @@ export const grade1Questions: SequencingQuestion[] = [
       "I wake up in the morning.",
       "I put on my clothes and backpack."
     ],
-    correctOrder: [1, 2, 0], // Wake up -> Get dressed -> Walk to school
+    correctOrder: [1, 2, 0],
     grade: 1,
     difficulty: 'easy',
     topic: 'daily-activities',
@@ -57,7 +54,7 @@ export const grade1Questions: SequencingQuestion[] = [
       "I put the seed in the dirt.",
       "I water the seed every day."
     ],
-    correctOrder: [1, 2, 0], // Plant seed -> Water -> Grows
+    correctOrder: [1, 2, 0],
     grade: 1,
     difficulty: 'easy',
     topic: 'nature',
@@ -71,7 +68,7 @@ export const grade1Questions: SequencingQuestion[] = [
       "I put toothpaste on my toothbrush.",
       "I brush my teeth for two minutes."
     ],
-    correctOrder: [1, 2, 0], // Put toothpaste -> Brush -> Rinse
+    correctOrder: [1, 2, 0],
     grade: 1,
     difficulty: 'easy',
     topic: 'daily-activities',
@@ -85,7 +82,7 @@ export const grade1Questions: SequencingQuestion[] = [
       "I get my blocks from the toy box.",
       "I stack the blocks to make a tower."
     ],
-    correctOrder: [1, 2, 0], // Get blocks -> Stack -> Play
+    correctOrder: [1, 2, 0],
     grade: 1,
     difficulty: 'medium',
     topic: 'play',
@@ -104,7 +101,7 @@ export const grade2Questions: SequencingQuestion[] = [
       "We put the cookies in the oven to bake.",
       "We gather flour, sugar, and eggs."
     ],
-    correctOrder: [3, 0, 2, 1], // Gather -> Mix -> Bake -> Eat
+    correctOrder: [3, 0, 2, 1],
     grade: 2,
     difficulty: 'easy',
     topic: 'cooking',
@@ -119,7 +116,7 @@ export const grade2Questions: SequencingQuestion[] = [
       "I check out books with my library card.",
       "I choose books I want to read."
     ],
-    correctOrder: [1, 3, 2, 0], // Walk -> Choose -> Check out -> Read at home
+    correctOrder: [1, 3, 2, 0],
     grade: 2,
     difficulty: 'easy',
     topic: 'community',
@@ -134,7 +131,7 @@ export const grade2Questions: SequencingQuestion[] = [
       "The dog is clean and fluffy.",
       "I wash the dog with soap and water."
     ],
-    correctOrder: [1, 3, 0, 2], // Get ready -> Wash -> Dry -> Clean result
+    correctOrder: [1, 3, 0, 2],
     grade: 2,
     difficulty: 'medium',
     topic: 'pet-care',
@@ -149,7 +146,7 @@ export const grade2Questions: SequencingQuestion[] = [
       "I water the plants and pull weeds.",
       "I prepare the soil by digging."
     ],
-    correctOrder: [3, 0, 2, 1], // Prepare soil -> Plant -> Care -> Harvest
+    correctOrder: [3, 0, 2, 1],
     grade: 2,
     difficulty: 'medium',
     topic: 'gardening',
@@ -164,7 +161,7 @@ export const grade2Questions: SequencingQuestion[] = [
       "I get a piece of paper.",
       "I fold the corners to make wings."
     ],
-    correctOrder: [2, 1, 3, 0], // Get paper -> Fold half -> Make wings -> Fly
+    correctOrder: [2, 1, 3, 0],
     grade: 2,
     difficulty: 'hard',
     topic: 'crafts',
@@ -184,7 +181,7 @@ export const grade3Questions: SequencingQuestion[] = [
       "I send invitations to my friends.",
       "I decorate the house with balloons."
     ],
-    correctOrder: [1, 3, 4, 0, 2], // List -> Invite -> Decorate -> Party -> Cake
+    correctOrder: [1, 3, 4, 0, 2],
     grade: 3,
     difficulty: 'easy',
     topic: 'social-events',
@@ -200,7 +197,7 @@ export const grade3Questions: SequencingQuestion[] = [
       "Finally, I can ride all by myself!",
       "I get on the bike and put my feet on the pedals."
     ],
-    correctOrder: [2, 4, 0, 1, 3], // Helmet -> Get on -> Practice -> Fall/try -> Success
+    correctOrder: [2, 4, 0, 1, 3],
     grade: 3,
     difficulty: 'medium',
     topic: 'learning',
@@ -216,7 +213,7 @@ export const grade3Questions: SequencingQuestion[] = [
       "I make a prediction about what will happen.",
       "I carefully mix the vinegar and baking soda."
     ],
-    correctOrder: [1, 3, 4, 2, 0], // Gather -> Predict -> Mix -> Result -> Record
+    correctOrder: [1, 3, 4, 2, 0],
     grade: 3,
     difficulty: 'medium',
     topic: 'science',
@@ -232,7 +229,7 @@ export const grade3Questions: SequencingQuestion[] = [
       "We drive to the campground in the mountains.",
       "We roast marshmallows around the campfire."
     ],
-    correctOrder: [2, 0, 3, 1, 4], // Checklist -> Pack -> Drive -> Setup -> Enjoy
+    correctOrder: [2, 0, 3, 1, 4],
     grade: 3,
     difficulty: 'hard',
     topic: 'outdoor-activities',
@@ -248,7 +245,7 @@ export const grade3Questions: SequencingQuestion[] = [
       "I share my finished story with friends.",
       "I make an outline of the main events."
     ],
-    correctOrder: [0, 4, 2, 1, 3], // Brainstorm -> Outline -> Draft -> Edit -> Share
+    correctOrder: [0, 4, 2, 1, 3],
     grade: 3,
     difficulty: 'hard',
     topic: 'writing',
@@ -269,7 +266,7 @@ export const grade4Questions: SequencingQuestion[] = [
       "We gather supplies like soap, sponges, and buckets.",
       "We set up stations for washing, rinsing, and drying cars."
     ],
-    correctOrder: [1, 4, 5, 3, 2, 0], // Brainstorm -> Gather -> Setup -> Advertise -> Event -> Results
+    correctOrder: [1, 4, 5, 3, 2, 0],
     grade: 4,
     difficulty: 'medium',
     topic: 'community-service',
@@ -286,7 +283,7 @@ export const grade4Questions: SequencingQuestion[] = [
       "I research information about soil types and plant growth.",
       "I create charts and graphs to display my results."
     ],
-    correctOrder: [1, 4, 3, 2, 5, 0], // Question -> Research -> Experiment -> Analyze -> Display -> Present
+    correctOrder: [1, 4, 3, 2, 5, 0],
     grade: 4,
     difficulty: 'hard',
     topic: 'science-fair',
@@ -303,7 +300,7 @@ export const grade4Questions: SequencingQuestion[] = [
       "I cook each dish carefully, following the recipes.",
       "I shop for ingredients at the grocery store."
     ],
-    correctOrder: [1, 3, 5, 4, 2, 0], // Menu -> List -> Shop -> Cook -> Serve -> Enjoy
+    correctOrder: [1, 3, 5, 4, 2, 0],
     grade: 4,
     difficulty: 'medium',
     topic: 'cooking',
@@ -320,7 +317,7 @@ export const grade4Questions: SequencingQuestion[] = [
       "I register for the marathon and mark the date on my calendar.",
       "I prepare for race day by eating well and getting enough sleep."
     ],
-    correctOrder: [1, 3, 4, 2, 5, 0], // Decide -> Plan -> Register -> Train -> Prepare -> Complete
+    correctOrder: [1, 3, 4, 2, 5, 0],
     grade: 4,
     difficulty: 'hard',
     topic: 'athletics',
@@ -337,7 +334,7 @@ export const grade4Questions: SequencingQuestion[] = [
       "We carefully construct the floor, walls, and roof of the treehouse.",
       "We choose a strong, healthy tree in our backyard."
     ],
-    correctOrder: [5, 1, 2, 4, 3, 0], // Choose tree -> Design -> Gather -> Build -> Finish -> Enjoy
+    correctOrder: [5, 1, 2, 4, 3, 0],
     grade: 4,
     difficulty: 'hard',
     topic: 'construction',
@@ -345,26 +342,44 @@ export const grade4Questions: SequencingQuestion[] = [
   }
 ];
 
+// Helper functions
 export const getAllQuestions = (): SequencingQuestion[] => {
   return [...grade1Questions, ...grade2Questions, ...grade3Questions, ...grade4Questions];
 };
 
 export const getQuestionsByGrade = (grade: number): SequencingQuestion[] => {
   switch (grade) {
-    case 1:
-      return grade1Questions;
-    case 2:
-      return grade2Questions;
-    case 3:
-      return grade3Questions;
-    case 4:
-      return grade4Questions;
-    default:
-      return grade1Questions;
+    case 1: return grade1Questions;
+    case 2: return grade2Questions;
+    case 3: return grade3Questions;
+    case 4: return grade4Questions;
+    default: return grade1Questions;
   }
 };
 
-export const getQuestionsByGradeAndCount = (grade: number, count: number): SequencingQuestion[] => {
-  const questions = getQuestionsByGrade(grade);
-  return questions.slice(0, count);
+/**
+ * Get questions without answers (for frontend display)
+ */
+export const getQuestionsWithoutAnswers = (grade: number): Omit<SequencingQuestion, 'correctOrder'>[] => {
+  return getQuestionsByGrade(grade).map(({ correctOrder: _, ...question }) => question);
+};
+
+/**
+ * Check if a submitted order is correct
+ */
+export const checkAnswer = (questionId: number, submittedOrder: number[]): boolean => {
+  const allQuestions = getAllQuestions();
+  const question = allQuestions.find(q => q.id === questionId);
+  if (!question) return false;
+  
+  return JSON.stringify(submittedOrder) === JSON.stringify(question.correctOrder);
+};
+
+/**
+ * Get correct order for a question (server-side validation only)
+ */
+export const getCorrectOrder = (questionId: number): number[] | null => {
+  const allQuestions = getAllQuestions();
+  const question = allQuestions.find(q => q.id === questionId);
+  return question?.correctOrder || null;
 };

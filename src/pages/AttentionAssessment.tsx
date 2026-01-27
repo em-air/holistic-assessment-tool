@@ -1,11 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, CheckCircle, Brain, Target, TrendingUp, AlertCircle, Star } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle, Brain, Target, TrendingUp, AlertCircle, Star, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { attentionControlQuestions, calculateAttentionScores, interpretScores } from '../data/attentionControlData';
 import { ProgressTracker } from '../utils/progressTracker';
 import MindProgressBar from '../components/MindProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
+import { supabase } from '../supabase-client';
+import { logger } from '../utils/logger';
+
+// API types for attention control
+interface AttentionControlQuestion {
+  id: number;
+  subscale: 'focusing' | 'shifting';
+  kidFriendlyQuestion: string;
+  type: 'rating';
+  options: number[];
+}
 
 interface AttentionResults {
   focusingScore: number;
@@ -22,17 +32,51 @@ interface AttentionResults {
   };
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 const AttentionAssessment: React.FC = () => {
   const navigate = useNavigate();
+  const [questions, setQuestions] = useState<AttentionControlQuestion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [responses, setResponses] = useState<number[]>(new Array(attentionControlQuestions.length).fill(0));
+  const [responses, setResponses] = useState<number[]>([]);
   const [isCompleted, setIsCompleted] = useState(false);
   const [results, setResults] = useState<AttentionResults | null>(null);
   const [startTime] = useState<Date>(new Date());
   const [showReport, setShowReport] = useState(false);
 
-  const question = attentionControlQuestions[currentQuestion];
-  const progress = ((currentQuestion + 1) / attentionControlQuestions.length) * 100;
+  const question = questions[currentQuestion];
+  const progress = questions.length > 0 ? ((currentQuestion + 1) / questions.length) * 100 : 0;
+
+  // Fetch questions from API
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/quiz-content/attention-control/questions`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch questions');
+        }
+
+        const data = await response.json();
+        if (data.success && data.questions) {
+          setQuestions(data.questions);
+          setResponses(new Array(data.questions.length).fill(0));
+        } else {
+          throw new Error(data.error || 'Invalid response');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load questions');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuestions();
+  }, []);
 
   const handleResponse = (value: number) => {
     const newResponses = [...responses];
@@ -41,7 +85,7 @@ const AttentionAssessment: React.FC = () => {
   };
 
   const handleNext = () => {
-    if (currentQuestion < attentionControlQuestions.length - 1) {
+    if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
       completeAssessment();
@@ -54,76 +98,73 @@ const AttentionAssessment: React.FC = () => {
     }
   };
 
-  const completeAssessment = () => {
-    // Convert responses array to the format expected by calculateAttentionScores
+  const completeAssessment = async () => {
+    // Build response map for API
     const responseMap: Record<number, number> = {};
-    attentionControlQuestions.forEach((question, index) => {
-      responseMap[question.id] = responses[index];
+    questions.forEach((q, index) => {
+      responseMap[q.id] = responses[index];
     });
-    
-    const scores = calculateAttentionScores(responseMap);
-    const interpretation = interpretScores(scores);
-    
-    // Generate recommendations based on the interpretation
-    const recommendations: string[] = [];
-    
-    if (interpretation.focusing.level !== 'Good') {
-      recommendations.push(
-        'Practice mindfulness exercises to improve focus',
-        'Create a quiet, distraction-free study environment',
-        'Break tasks into smaller, manageable chunks'
-      );
-    }
 
-    if (interpretation.shifting.level !== 'Good') {
-      recommendations.push(
-        'Practice switching between different types of activities',
-        'Use transition cues when changing tasks',
-        'Work on cognitive flexibility exercises'
-      );
-    }
-
-    if (interpretation.overall.level === 'Developing') {
-      recommendations.push(
-        'Consider discussing attention strategies with teachers',
-        'Establish consistent routines and structure'
-      );
-    }
-
-    const assessmentResults: AttentionResults = {
-      focusingScore: scores.focusing.raw,
-      shiftingScore: scores.shifting.raw,
-      totalScore: scores.total.raw,
-      focusingPercentage: Math.round((scores.focusing.raw / (scores.focusing.count * 4)) * 100),
-      shiftingPercentage: Math.round((scores.shifting.raw / (scores.shifting.count * 4)) * 100),
-      totalPercentage: Math.round(scores.total.percentage),
-      interpretation: {
-        focusing: interpretation.focusing,
-        shifting: interpretation.shifting,
-        overall: interpretation.overall,
-        recommendations: recommendations
+    try {
+      // Get auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        logger.error('No session found for calculate API call');
+        return;
       }
-    };
 
-    setResults(assessmentResults);
-    setIsCompleted(true);
+      const response = await fetch(`${API_BASE_URL}/api/quiz-content/attention-control/calculate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ responses: responseMap }),
+      });
 
-    // Save progress to tracker
-    ProgressTracker.saveQuizResult({
-      quizId: 'attention-assessment',
-      quizName: 'Attention Control Assessment',
-      subcategory: 'attention',
-      score: assessmentResults.totalScore,
-      totalQuestions: attentionControlQuestions.length,
-      percentage: assessmentResults.totalPercentage,
-      timeSpent: Math.round((new Date().getTime() - startTime.getTime()) / 1000),
-      completedAt: new Date().toISOString()
-    });
+      const data = await response.json();
+
+      if (data.success) {
+        const { scores, interpretation, recommendations } = data;
+
+        const assessmentResults: AttentionResults = {
+          focusingScore: scores.focusing.raw,
+          shiftingScore: scores.shifting.raw,
+          totalScore: scores.total.raw,
+          focusingPercentage: Math.round((scores.focusing.raw / (scores.focusing.count * 4)) * 100),
+          shiftingPercentage: Math.round((scores.shifting.raw / (scores.shifting.count * 4)) * 100),
+          totalPercentage: Math.round(scores.total.percentage),
+          interpretation: {
+            focusing: interpretation.focusing,
+            shifting: interpretation.shifting,
+            overall: interpretation.overall,
+            recommendations: recommendations
+          }
+        };
+
+        setResults(assessmentResults);
+        setIsCompleted(true);
+
+        // Save progress
+        ProgressTracker.saveQuizResult({
+          quizId: 'attention-assessment',
+          quizName: 'Attention Control Assessment',
+          subcategory: 'attention',
+          score: assessmentResults.totalScore,
+          totalQuestions: questions.length,
+          percentage: assessmentResults.totalPercentage,
+          timeSpent: Math.round((new Date().getTime() - startTime.getTime()) / 1000),
+          completedAt: new Date().toISOString()
+        });
+      }
+    } catch (err) {
+      console.error('Error calculating scores:', err);
+    }
   };
 
   const resetAssessment = () => {
     setCurrentQuestion(0);
-    setResponses(new Array(attentionControlQuestions.length).fill(0));
+    setResponses(new Array(questions.length).fill(0));
     setIsCompleted(false);
     setResults(null);
   };
@@ -148,8 +189,8 @@ const AttentionAssessment: React.FC = () => {
         <div className="container mx-auto px-4 max-w-4xl">
           {/* Mind Section Progress Bar */}
           <div className="mb-6">
-            <MindProgressBar 
-              onShowReport={() => setShowReport(true)} 
+            <MindProgressBar
+              onShowReport={() => setShowReport(true)}
             />
           </div>
 
@@ -249,7 +290,7 @@ const AttentionAssessment: React.FC = () => {
                 <p className="text-green-700 leading-relaxed mb-4">
                   {results.interpretation.overall.description}
                 </p>
-                
+
                 <h4 className="font-semibold text-green-800 mb-3">Recommendations:</h4>
                 <ul className="space-y-2">
                   {results.interpretation.recommendations.map((rec, index) => (
@@ -294,6 +335,49 @@ const AttentionAssessment: React.FC = () => {
     );
   }
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mx-auto mb-4"></div>
+          <p className="text-white">Loading questions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 flex items-center justify-center">
+        <div className="text-center bg-white rounded-2xl p-8 shadow-xl max-w-md">
+          <XCircle size={48} className="text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Failed to Load</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={() => navigate('/attention-memory-selection')}
+            className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-xl"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // No questions loaded
+  if (questions.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mx-auto mb-4"></div>
+          <p className="text-white">Loading questions...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
@@ -307,14 +391,14 @@ const AttentionAssessment: React.FC = () => {
             <span>Back</span>
           </button>
           <div className="text-white text-sm font-medium">
-            Question {currentQuestion + 1} of {attentionControlQuestions.length}
+            Question {currentQuestion + 1} of {questions.length}
           </div>
         </div>
 
         {/* Mind Section Progress Bar */}
         <div className="mb-6">
-          <MindProgressBar 
-            onShowReport={() => setShowReport(true)} 
+          <MindProgressBar
+            onShowReport={() => setShowReport(true)}
           />
         </div>
 
@@ -346,11 +430,11 @@ const AttentionAssessment: React.FC = () => {
                   {question.subscale === 'focusing' ? 'Focusing Ability' : 'Attention Shifting'}
                 </div>
               </div>
-              
+
               <h2 className="text-2xl font-bold text-gray-800 mb-4 leading-relaxed">
                 {question.kidFriendlyQuestion}
               </h2>
-              
+
               <p className="text-gray-600 text-sm">
                 Choose the option that best describes how often this applies to you:
               </p>
@@ -364,18 +448,16 @@ const AttentionAssessment: React.FC = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleResponse(index + 1)}
-                  className={`w-full p-4 text-left rounded-2xl border-2 transition-all duration-200 ${
-                    responses[currentQuestion] === index + 1
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 text-gray-800 hover:text-gray-900'
-                  }`}
+                  className={`w-full p-4 text-left rounded-2xl border-2 transition-all duration-200 ${responses[currentQuestion] === index + 1
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 text-gray-800 hover:text-gray-900'
+                    }`}
                 >
                   <div className="flex items-center">
-                    <div className={`w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center ${
-                      responses[currentQuestion] === index + 1
-                        ? 'border-blue-500 bg-blue-500'
-                        : 'border-gray-300'
-                    }`}>
+                    <div className={`w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center ${responses[currentQuestion] === index + 1
+                      ? 'border-blue-500 bg-blue-500'
+                      : 'border-gray-300'
+                      }`}>
                       {responses[currentQuestion] === index + 1 && (
                         <CheckCircle className="w-4 h-4 text-white" fill="currentColor" />
                       )}
@@ -393,11 +475,10 @@ const AttentionAssessment: React.FC = () => {
           <button
             onClick={handlePrevious}
             disabled={currentQuestion === 0}
-            className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
-              currentQuestion === 0
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-md transform hover:scale-105'
-            }`}
+            className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${currentQuestion === 0
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-md transform hover:scale-105'
+              }`}
           >
             <ArrowLeft size={20} />
             <span>Previous</span>
@@ -406,13 +487,12 @@ const AttentionAssessment: React.FC = () => {
           <button
             onClick={handleNext}
             disabled={responses[currentQuestion] === 0}
-            className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
-              responses[currentQuestion] === 0
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg transform hover:scale-105'
-            }`}
+            className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${responses[currentQuestion] === 0
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg transform hover:scale-105'
+              }`}
           >
-            <span>{currentQuestion === attentionControlQuestions.length - 1 ? 'Complete' : 'Next'}</span>
+            <span>{currentQuestion === questions.length - 1 ? 'Complete' : 'Next'}</span>
             <ArrowRight size={20} />
           </button>
         </div>

@@ -1,9 +1,16 @@
+/**
+ * Sentence Difference Quiz Data
+ * Auditory processing assessment for identifying differences between sentences.
+ * 
+ * IMPORTANT: correctAnswer is server-side only for validation.
+ */
+
 export interface SentenceDifferenceQuestion {
   id: number;
   sentenceA: string;
   sentenceB: string;
-  correctAnswer: string;
-  difficulty?: 'easy' | 'medium' | 'hard';
+  correctAnswer: string; // Server-side only
+  difficulty: 'easy' | 'medium' | 'hard';
 }
 
 export const sentenceDifferenceQuestions: SentenceDifferenceQuestion[] = [
@@ -113,3 +120,38 @@ export const sentenceDifferenceQuestions: SentenceDifferenceQuestion[] = [
     difficulty: 'hard'
   }
 ];
+
+/**
+ * Get questions without answers for frontend display
+ */
+export const getQuestionsWithoutAnswers = (): Omit<SentenceDifferenceQuestion, 'correctAnswer'>[] => {
+  return sentenceDifferenceQuestions.map(({ correctAnswer: _, ...question }) => question);
+};
+
+/**
+ * Get questions by difficulty
+ */
+export const getQuestionsByDifficulty = (difficulty: 'easy' | 'medium' | 'hard') => {
+  return sentenceDifferenceQuestions.filter(q => q.difficulty === difficulty);
+};
+
+/**
+ * Check answer (server-side validation)
+ */
+export const checkAnswer = (questionId: number, submittedAnswer: string): boolean => {
+  const question = sentenceDifferenceQuestions.find(q => q.id === questionId);
+  if (!question) return false;
+  return submittedAnswer.toLowerCase().trim() === question.correctAnswer.toLowerCase().trim();
+};
+
+/**
+ * Get a random selection of questions
+ */
+export const getRandomQuestions = (count: number): SentenceDifferenceQuestion[] => {
+  const shuffled = [...sentenceDifferenceQuestions];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, count);
+};

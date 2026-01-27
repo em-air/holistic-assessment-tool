@@ -2,15 +2,39 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Star, CheckCircle, XCircle, Clock, Brain } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  SequenceQuestion, 
-  MemoryItem,
-  generateSequenceQuestion, 
-  evaluatePerformance
-} from '../data/memoryAssessmentData';
 import { ProgressTracker } from '../utils/progressTracker';
 import MindProgressBar from '../components/MindProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
+import { supabase } from '../supabase-client';
+import { logger } from '../utils/logger';
+
+// API types for memory assessment (no answers exposed)
+interface MemoryItem {
+  id: string;
+  name: string;
+  image: string;
+  category: 'object';
+}
+
+interface SequenceQuestion {
+  id: string;
+  type: 'sequence_recall' | 'missing_object';
+  title: string;
+  instruction: string;
+  items: MemoryItem[];
+  allChoices?: MemoryItem[];
+  difficulty: 1 | 2 | 3 | 4 | 5;
+  // Answers stored server-side only
+  correctSequence?: string[];
+  missingItemId?: string;
+}
+
+interface PerformanceResult {
+  percentage: number;
+  finalScore: number;
+  level: string;
+  recommendations: string[];
+}
 
 type GamePhase = 'showing' | 'hidden' | 'testing' | 'feedback' | 'results';
 type AssessmentType = 'sequence_recall' | 'missing_object';
@@ -19,12 +43,14 @@ interface AssessmentResults {
   questionsAnswered: number;
   correctAnswers: number;
   difficulty: number;
-  performance: ReturnType<typeof evaluatePerformance>;
+  performance: PerformanceResult;
 }
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const MemoryAssessment: React.FC = () => {
   const navigate = useNavigate();
-  
+
   // Game state
   const [gamePhase, setGamePhase] = useState<GamePhase>('showing');
   const [currentQuestion, setCurrentQuestion] = useState<SequenceQuestion | null>(null);
@@ -32,7 +58,8 @@ const MemoryAssessment: React.FC = () => {
   const [difficulty, setDifficulty] = useState(1);
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
-  
+  const [currentCorrectAnswer, setCurrentCorrectAnswer] = useState<string[] | string | null>(null);
+
   // User interaction state
   const [userSequence, setUserSequence] = useState<string[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -40,50 +67,87 @@ const MemoryAssessment: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [isCorrect, setIsCorrect] = useState(false);
   const [shuffledItems, setShuffledItems] = useState<MemoryItem[]>([]);
-  
+
   // Results
   const [finalResults, setFinalResults] = useState<AssessmentResults | null>(null);
   const [startTime] = useState<Date>(new Date());
   const [showReport, setShowReport] = useState(false);
 
+  // Fetch question from API
+  const fetchQuestion = useCallback(async (type: AssessmentType, diff: number) => {
+    try {
+      // Get auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        logger.error('No session found for API call');
+        return null;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/quiz-content/memory-assessment/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ type, difficulty: diff }),
+      });
+
+      const data = await response.json();
+      if (data.success && data.question) {
+        setCurrentQuestion(data.question);
+        // Store the correct answer from _internal (only available on this session)
+        if (data._internal) {
+          setCurrentCorrectAnswer(data._internal.correctSequence || data._internal.missingItemId);
+        }
+        return data.question;
+      }
+    } catch (err) {
+      console.error('Error fetching question:', err);
+    }
+    return null;
+  }, []);
+
   // Initialize first question on mount
   useEffect(() => {
     if (!currentQuestion && selectedType === 'sequence_recall') {
-      const question = generateSequenceQuestion('sequence_recall', difficulty);
-      setCurrentQuestion(question);
+      fetchQuestion('sequence_recall', difficulty).then(q => {
+        if (q) {
+          setGamePhase('showing');
+          setTimeLeft(6);
+          setShowTimer(true);
+        }
+      });
     }
-  }, [currentQuestion, selectedType, difficulty]);
+  }, [currentQuestion, selectedType, difficulty, fetchQuestion]);
 
   // Timer effect for showing phase
   useEffect(() => {
     if (gamePhase === 'showing' && timeLeft > 0) {
       const timer = setTimeout(() => setTimeLeft(prev => prev - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (gamePhase === 'showing' && timeLeft === 0) {
+    } else if (gamePhase === 'showing' && timeLeft === 0 && showTimer) {
       handleShowingComplete();
     }
-  }, [gamePhase, timeLeft]);
+  }, [gamePhase, timeLeft, showTimer]);
 
-  // Generate new question
-  const generateNewQuestion = useCallback((type: AssessmentType, currentDifficulty: number) => {
-    const question = generateSequenceQuestion(type, currentDifficulty);
-    setCurrentQuestion(question);
-    setUserSequence([]);
-    setSelectedItems([]);
-    setIsCorrect(false);
-    setShuffledItems([]); // Reset shuffled items
-    
-    // Start showing phase
-    setGamePhase('showing');
-    const showTime = 6; // 5 seconds for both picture sequence and missing object
-    setTimeLeft(showTime);
-    setShowTimer(true);
-  }, []);
+  // Generate new question wrapper
+  const generateNewQuestion = useCallback(async (type: AssessmentType, currentDifficulty: number) => {
+    const question = await fetchQuestion(type, currentDifficulty);
+    if (question) {
+      setUserSequence([]);
+      setSelectedItems([]);
+      setIsCorrect(false);
+      setShuffledItems([]);
+      setGamePhase('showing');
+      setTimeLeft(6);
+      setShowTimer(true);
+    }
+  }, [fetchQuestion]);
 
   // Handle end of showing phase
   const handleShowingComplete = () => {
     setShowTimer(false);
-    
+
     // Prepare items for testing phase
     if (currentQuestion?.items) {
       if (currentQuestion.type === 'missing_object' && currentQuestion.allChoices) {
@@ -96,7 +160,7 @@ const MemoryAssessment: React.FC = () => {
         setShuffledItems(shuffled);
       }
     }
-    
+
     if (currentQuestion?.type === 'missing_object') {
       // For missing object, go to hidden phase then testing
       setGamePhase('hidden');
@@ -119,9 +183,10 @@ const MemoryAssessment: React.FC = () => {
       // For sequences, build up the sequence
       const newSequence = [...userSequence, itemId];
       setUserSequence(newSequence);
-      
+
       // Check if sequence is complete
-      if (newSequence.length === currentQuestion?.correctSequence?.length) {
+      // Check if sequence is complete
+      if (newSequence.length === currentQuestion?.items?.length) {
         checkAnswer(newSequence);
       }
     }
@@ -130,20 +195,20 @@ const MemoryAssessment: React.FC = () => {
   // Check if answer is correct
   const checkAnswer = (answer: string[]) => {
     if (!currentQuestion) return;
-    
+
     let correct = false;
-    
+
     if (currentQuestion.type === 'missing_object') {
-      correct = answer[0] === currentQuestion.missingItemId;
+      correct = answer[0] === currentCorrectAnswer;
     } else {
-      correct = JSON.stringify(answer) === JSON.stringify(currentQuestion.correctSequence);
+      correct = JSON.stringify(answer) === JSON.stringify(currentCorrectAnswer);
     }
-    
+
     setIsCorrect(correct);
     if (correct) setCorrectAnswers(prev => prev + 1);
     setQuestionsAnswered(prev => prev + 1);
     setGamePhase('feedback');
-    
+
     // Auto-advance after feedback
     setTimeout(() => {
       if (questionsAnswered + 1 >= 5) {
@@ -159,33 +224,58 @@ const MemoryAssessment: React.FC = () => {
   };
 
   // Complete assessment
-  const completeAssessment = () => {
-    const performance = evaluatePerformance(correctAnswers, questionsAnswered + 1, difficulty);
+  const completeAssessment = async () => {
     const finalCorrect = correctAnswers + (isCorrect ? 1 : 0);
     const finalTotal = questionsAnswered + 1;
-    
-    setFinalResults({
-      questionsAnswered: finalTotal,
-      correctAnswers: finalCorrect,
-      difficulty,
-      performance
-    });
-    setGamePhase('results');
 
-    // Save progress to tracker based on assessment type
-    const quizId = selectedType === 'sequence_recall' ? 'picture-sequence' : 'missing-object';
-    const quizName = selectedType === 'sequence_recall' ? 'Picture Sequence' : 'Missing Object';
-    
-    ProgressTracker.saveQuizResult({
-      quizId: quizId,
-      quizName: quizName,
-      subcategory: 'memory',
-      score: finalCorrect,
-      totalQuestions: finalTotal,
-      percentage: Math.round((finalCorrect / finalTotal) * 100),
-      timeSpent: Math.round((new Date().getTime() - startTime.getTime()) / 1000),
-      completedAt: new Date().toISOString()
-    });
+    try {
+      // Get auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        logger.error('No session found for evaluation API call');
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/quiz-content/memory-assessment/evaluate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          correctAnswers: finalCorrect,
+          totalQuestions: finalTotal,
+          difficulty,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success && data.evaluation) {
+        setFinalResults({
+          questionsAnswered: finalTotal,
+          correctAnswers: finalCorrect,
+          difficulty,
+          performance: data.evaluation
+        });
+        setGamePhase('results');
+
+        const quizId = selectedType === 'sequence_recall' ? 'picture-sequence' : 'missing-object';
+        const quizName = selectedType === 'sequence_recall' ? 'Picture Sequence' : 'Missing Object';
+
+        ProgressTracker.saveQuizResult({
+          quizId: quizId,
+          quizName: quizName,
+          subcategory: 'memory',
+          score: finalCorrect,
+          totalQuestions: finalTotal,
+          percentage: Math.round((finalCorrect / finalTotal) * 100),
+          timeSpent: Math.round((new Date().getTime() - startTime.getTime()) / 1000),
+          completedAt: new Date().toISOString()
+        });
+      }
+    } catch (err) {
+      console.error('Error evaluating performance:', err);
+    }
   };
 
   // Results screen
@@ -195,8 +285,8 @@ const MemoryAssessment: React.FC = () => {
         <div className="container mx-auto px-4 max-w-4xl">
           {/* Mind Section Progress Bar */}
           <div className="mb-6">
-            <MindProgressBar 
-              onShowReport={() => setShowReport(true)} 
+            <MindProgressBar
+              onShowReport={() => setShowReport(true)}
             />
           </div>
 
@@ -311,7 +401,7 @@ const MemoryAssessment: React.FC = () => {
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
             <span className="font-medium">Back to Selection</span>
           </button>
-          
+
           <div className="text-center text-white">
             <h1 className="text-2xl font-bold mb-1">{currentQuestion?.title}</h1>
             <div className="flex items-center justify-center gap-4 text-sm">
@@ -322,14 +412,14 @@ const MemoryAssessment: React.FC = () => {
               <span>Score: {correctAnswers}/{questionsAnswered}</span>
             </div>
           </div>
-          
+
           <div className="w-20"></div> {/* Spacer for centering */}
         </div>
 
         {/* Mind Section Progress Bar */}
         <div className="mb-6">
-          <MindProgressBar 
-            onShowReport={() => setShowReport(true)} 
+          <MindProgressBar
+            onShowReport={() => setShowReport(true)}
           />
         </div>
 
@@ -347,7 +437,7 @@ const MemoryAssessment: React.FC = () => {
               <h2 className="text-2xl font-bold text-gray-800 mb-4">
                 {currentQuestion?.instruction}
               </h2>
-              
+
               {/* Timer */}
               {showTimer && (
                 <div className="flex items-center justify-center gap-2 text-blue-600 text-lg font-bold">
@@ -355,7 +445,7 @@ const MemoryAssessment: React.FC = () => {
                   <span>{timeLeft} seconds</span>
                 </div>
               )}
-              
+
               {/* Phase indicators */}
               {gamePhase === 'showing' && (
                 <p className="text-gray-600">🔍 Look carefully and remember!</p>
@@ -365,8 +455,8 @@ const MemoryAssessment: React.FC = () => {
               )}
               {gamePhase === 'testing' && (
                 <p className="text-gray-600">
-                  {currentQuestion?.type === 'missing_object' 
-                    ? '❓ Which object is missing?' 
+                  {currentQuestion?.type === 'missing_object'
+                    ? '❓ Which object is missing?'
                     : '🎯 Select items in the correct order'}
                 </p>
               )}
@@ -418,7 +508,7 @@ const MemoryAssessment: React.FC = () => {
                 {shuffledItems.map((item, index) => {
                   const isSelected = userSequence.includes(item.id) || selectedItems.includes(item.id);
                   const selectionOrder = userSequence.indexOf(item.id) + 1;
-                  
+
                   return (
                     <motion.button
                       key={item.id}
@@ -429,11 +519,10 @@ const MemoryAssessment: React.FC = () => {
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleItemSelect(item.id)}
                       disabled={isSelected && currentQuestion.type !== 'missing_object'}
-                      className={`bg-white rounded-2xl p-4 shadow-lg border-2 transition-all duration-200 ${
-                        isSelected
-                          ? 'border-blue-500 bg-blue-50 scale-105'
-                          : 'border-gray-200 hover:border-blue-300 hover:shadow-xl'
-                      }`}
+                      className={`bg-white rounded-2xl p-4 shadow-lg border-2 transition-all duration-200 ${isSelected
+                        ? 'border-blue-500 bg-blue-50 scale-105'
+                        : 'border-gray-200 hover:border-blue-300 hover:shadow-xl'
+                        }`}
                     >
                       <img
                         src={item.image}
@@ -465,9 +554,8 @@ const MemoryAssessment: React.FC = () => {
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${
-                    isCorrect ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                  }`}
+                  className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${isCorrect ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                    }`}
                 >
                   {isCorrect ? <CheckCircle size={40} /> : <XCircle size={40} />}
                 </motion.div>
@@ -475,8 +563,8 @@ const MemoryAssessment: React.FC = () => {
                   {isCorrect ? '🎉 Correct!' : '❌ Not quite right'}
                 </h3>
                 <p className="text-gray-600">
-                  {isCorrect 
-                    ? 'Great job! Moving to the next challenge...' 
+                  {isCorrect
+                    ? 'Great job! Moving to the next challenge...'
                     : 'Don\'t worry, let\'s try another one...'
                   }
                 </p>

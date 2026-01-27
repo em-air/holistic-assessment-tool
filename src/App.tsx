@@ -1,46 +1,69 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import Homepage from './pages/Homepage';
-import CategoriesPage from './pages/CategoriesPage';
-import CategoryPage from './pages/CategoryPage';
-import QuizPage from './pages/QuizPage';
-import PhonicsQuiz from './pages/PhonicsQuizNew';
-import PhonicsQuizSelection from './pages/PhonicsQuizSelection';
-import StartingEndingSoundQuiz from './pages/StartingEndingSoundQuiz';
-import StartingEndingSoundGradeSelector from './pages/StartingEndingSoundGradeSelector';
-import LogicalSequencingQuiz from './pages/LogicalSequencingQuiz';
-import LogicalSequencingGradeSelector from './pages/LogicalSequencingGradeSelector';
-import PerceptionQuizSelection from './pages/PerceptionQuizSelection';
-import BlendingQuiz from './pages/BlendingQuiz';
-import SegmentingQuiz from './pages/SegmentingQuiz';
-import BlendingSegmentingSelection from './pages/BlendingSegmentingSelection';
-import VocabularyMatching from './pages/VocabularyMatching';
-import LearningStylesQuiz from './pages/LearningStylesQuiz';
-import AttentionQuiz from './pages/AttentionQuiz';
-import MemoryQuiz from './pages/MemoryQuiz';
-import AttentionMemorySelection from './pages/AttentionMemorySelection';
-import AttentionAssessment from './pages/AttentionAssessment';
-import MemoryAssessment from './pages/MemoryAssessment';
-import PerceptionQuiz from './pages/PerceptionQuiz';
-import MissingObjectQuizPage from './pages/MissingObjectQuizPage';
-import SentenceDifferenceQuiz from './pages/SentenceDifferenceQuiz';
-import OralLanguageQuiz from './pages/OralLanguageQuiz';
-import OralLanguageSelection from './pages/OralLanguageSelection';
-import StoryRetellQuiz from './pages/StoryRetellQuiz';
-import StoryRetellGradeSelector from './pages/StoryRetellGradeSelector';
-import SpellingGradeSelector from './pages/SpellingGradeSelector';
-import SpellingTest from './pages/SpellingTest';
-import WritingGradeSelector from './pages/WritingGradeSelector';
-import WritingTest from './pages/WritingTest';
-import AssessmentGenerator from './pages/AssessmentGenerator';
-import ReadingAssessment from './pages/ReadingAssessment';
-import AuthPage from './pages/AuthPage';
-import CriticalThinkingPage from './pages/CriticalThinkingPage';
-import AnalogyQuiz from './pages/AnalogyQuiz';
-import CategoryQuiz from './pages/CategoryQuiz';
-import FlashWordQuiz from './pages/FlashWordQuiz';
-import AdminReports from './pages/AdminReports';
+import { lazy, Suspense } from 'react';
 import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
+import LoadingSpinner from './components/LoadingSpinner';
 import { AnimatePresence, motion } from 'framer-motion';
+
+// ============================================
+// LAZY LOADED PAGES - Code splitting for better performance
+// Pages are loaded on-demand when navigated to
+// ============================================
+
+// Core pages (load first as most likely to be visited)
+const Homepage = lazy(() => import('./pages/Homepage'));
+const AuthPage = lazy(() => import('./pages/AuthPage'));
+const CategoriesPage = lazy(() => import('./pages/CategoriesPage'));
+const CategoryPage = lazy(() => import('./pages/CategoryPage'));
+const QuizPage = lazy(() => import('./pages/QuizPage'));
+
+// Admin pages
+const AdminReports = lazy(() => import('./pages/AdminReports'));
+
+// Phonics & Sound quizzes
+const PhonicsQuiz = lazy(() => import('./pages/PhonicsQuizNew'));
+const PhonicsQuizSelection = lazy(() => import('./pages/PhonicsQuizSelection'));
+const StartingEndingSoundQuiz = lazy(() => import('./pages/StartingEndingSoundQuiz'));
+const StartingEndingSoundGradeSelector = lazy(() => import('./pages/StartingEndingSoundGradeSelector'));
+const BlendingQuiz = lazy(() => import('./pages/BlendingQuiz'));
+const SegmentingQuiz = lazy(() => import('./pages/SegmentingQuiz'));
+const BlendingSegmentingSelection = lazy(() => import('./pages/BlendingSegmentingSelection'));
+
+// Perception quizzes
+const PerceptionQuiz = lazy(() => import('./pages/PerceptionQuiz'));
+const PerceptionQuizSelection = lazy(() => import('./pages/PerceptionQuizSelection'));
+const MissingObjectQuizPage = lazy(() => import('./pages/MissingObjectQuizPage'));
+const SentenceDifferenceQuiz = lazy(() => import('./pages/SentenceDifferenceQuiz'));
+
+// Cognitive assessments
+const LogicalSequencingQuiz = lazy(() => import('./pages/LogicalSequencingQuiz'));
+const LogicalSequencingGradeSelector = lazy(() => import('./pages/LogicalSequencingGradeSelector'));
+const AttentionQuiz = lazy(() => import('./pages/AttentionQuiz'));
+const MemoryQuiz = lazy(() => import('./pages/MemoryQuiz'));
+const AttentionMemorySelection = lazy(() => import('./pages/AttentionMemorySelection'));
+const AttentionAssessment = lazy(() => import('./pages/AttentionAssessment'));
+const MemoryAssessment = lazy(() => import('./pages/MemoryAssessment'));
+const LearningStylesQuiz = lazy(() => import('./pages/LearningStylesQuiz'));
+const CriticalThinkingPage = lazy(() => import('./pages/CriticalThinkingPage'));
+const AnalogyQuiz = lazy(() => import('./pages/AnalogyQuiz'));
+const CategoryQuiz = lazy(() => import('./pages/CategoryQuiz'));
+
+// Oral language quizzes
+const OralLanguageQuiz = lazy(() => import('./pages/OralLanguageQuiz'));
+const OralLanguageSelection = lazy(() => import('./pages/OralLanguageSelection'));
+const StoryRetellQuiz = lazy(() => import('./pages/StoryRetellQuiz'));
+const StoryRetellGradeSelector = lazy(() => import('./pages/StoryRetellGradeSelector'));
+const VocabularyMatching = lazy(() => import('./pages/VocabularyMatching'));
+const FlashWordQuiz = lazy(() => import('./pages/FlashWordQuiz'));
+
+// Academic assessments
+const SpellingGradeSelector = lazy(() => import('./pages/SpellingGradeSelector'));
+const SpellingTest = lazy(() => import('./pages/SpellingTest'));
+const WritingGradeSelector = lazy(() => import('./pages/WritingGradeSelector'));
+const WritingTest = lazy(() => import('./pages/WritingTest'));
+const ReadingAssessment = lazy(() => import('./pages/ReadingAssessment'));
+const AssessmentGenerator = lazy(() => import('./pages/AssessmentGenerator'));
 
 const base = import.meta.env.VITE_BASE_PATH || '/holistic-assessment-tool';
 
@@ -78,14 +101,16 @@ function AnimatedRoutes() {
         <Route
           path="/admin/reports"
           element={
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.1, ease: "easeOut" }}
-            >
-              <AdminReports />
-            </motion.div>
+            <ProtectedRoute allowedRoles={['admin']}>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.1, ease: "easeOut" }}
+              >
+                <AdminReports />
+              </motion.div>
+            </ProtectedRoute>
           }
         />
         <Route
@@ -576,13 +601,17 @@ function AnimatedRoutes() {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router basename={base}>
-        <div className="App" data-theme="grow360">
-          <AnimatedRoutes />
-        </div>
-      </Router>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router basename={base}>
+          <Suspense fallback={<LoadingSpinner message="Loading..." />}>
+            <div className="App" data-theme="grow360">
+              <AnimatedRoutes />
+            </div>
+          </Suspense>
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

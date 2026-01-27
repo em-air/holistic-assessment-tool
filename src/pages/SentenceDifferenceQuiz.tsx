@@ -1,11 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
-import { sentenceDifferenceQuestions, SentenceDifferenceQuestion } from '../data/sentenceDifferenceData';
+import { ArrowLeft, XCircle } from 'lucide-react';
 import { ProgressTracker } from '../utils/progressTracker';
+
+// API types (no correctAnswer exposed)
+interface SentenceDifferenceQuestion {
+  id: number;
+  sentenceA: string;
+  sentenceB: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+}
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const SentenceDifferenceQuiz: React.FC = () => {
   const navigate = useNavigate();
+  const [questions, setQuestions] = useState<SentenceDifferenceQuestion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedWordsA, setSelectedWordsA] = useState<number[]>([]);
   const [selectedWordsB, setSelectedWordsB] = useState<number[]>([]);
@@ -15,28 +27,58 @@ const SentenceDifferenceQuiz: React.FC = () => {
   const [isQuizComplete, setIsQuizComplete] = useState(false);
   const [startTime] = useState<Date>(new Date());
 
-  const currentQuestion = sentenceDifferenceQuestions[currentQuestionIndex];
+  const currentQuestion = questions[currentQuestionIndex];
+
+  // Fetch questions from API
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/quiz-content/sentence-difference/questions`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch questions');
+        }
+
+        const data = await response.json();
+        if (data.success && data.questions) {
+          // Shuffle and take a subset for the quiz
+          const shuffled = [...data.questions].sort(() => Math.random() - 0.5);
+          setQuestions(shuffled.slice(0, 10)); // Limit to 10 questions
+        } else {
+          throw new Error(data.error || 'Invalid response');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load questions');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuestions();
+  }, []);
 
   // Find the indices of different words between sentences
   const getDifferentWordIndices = (question: SentenceDifferenceQuestion): { indicesA: number[], indicesB: number[] } => {
     const wordsA = question.sentenceA.toLowerCase().replace(/[.,!?]/g, '').split(' ');
     const wordsB = question.sentenceB.toLowerCase().replace(/[.,!?]/g, '').split(' ');
-    
+
     const indicesA: number[] = [];
     const indicesB: number[] = [];
-    
+
     for (let i = 0; i < Math.max(wordsA.length, wordsB.length); i++) {
       if (wordsA[i] !== wordsB[i]) {
         if (wordsA[i]) indicesA.push(i);
         if (wordsB[i]) indicesB.push(i);
       }
     }
-    
+
     return { indicesA, indicesB };
   };
 
   const handleWordClick = (sentenceType: 'A' | 'B', wordIndex: number) => {
-    if (showNext) return; // Prevent clicking after correct answer
+    if (showNext || !currentQuestion) return;
 
     if (sentenceType === 'A') {
       if (selectedWordsA.includes(wordIndex)) {
@@ -54,19 +96,19 @@ const SentenceDifferenceQuiz: React.FC = () => {
   };
 
   const checkAnswer = () => {
+    if (!currentQuestion) return;
+
     const { indicesA, indicesB } = getDifferentWordIndices(currentQuestion);
-    
-    // Check if user selected all the different words
+
     const selectedCorrectA = indicesA.every(index => selectedWordsA.includes(index));
     const selectedCorrectB = indicesB.every(index => selectedWordsB.includes(index));
     const noExtraSelections = selectedWordsA.length === indicesA.length && selectedWordsB.length === indicesB.length;
-    
+
     if (selectedCorrectA && selectedCorrectB && noExtraSelections) {
       setFeedbackMessage("excellent! you found all the differences.");
       setScore(score + 1);
       setShowNext(true);
 
-      // Auto-advance after 2 seconds
       setTimeout(() => {
         handleNext();
       }, 2000);
@@ -75,14 +117,14 @@ const SentenceDifferenceQuiz: React.FC = () => {
     }
   };
 
-
-
   useEffect(() => {
-    checkAnswer();
+    if (currentQuestion) {
+      checkAnswer();
+    }
   }, [selectedWordsA, selectedWordsB]);
 
   const handleNext = () => {
-    if (currentQuestionIndex < sentenceDifferenceQuestions.length - 1) {
+    if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedWordsA([]);
       setSelectedWordsB([]);
@@ -94,24 +136,51 @@ const SentenceDifferenceQuiz: React.FC = () => {
   };
 
   const handleFinish = () => {
-    // Save quiz result to progress tracker
-    const percentage = Math.round((score / sentenceDifferenceQuestions.length) * 100);
+    const percentage = Math.round((score / questions.length) * 100);
     ProgressTracker.saveQuizResult({
       quizId: 'sentence-difference-quiz',
       quizName: 'Sentence Difference Quiz',
       subcategory: 'perception',
       score: score,
-      totalQuestions: sentenceDifferenceQuestions.length,
+      totalQuestions: questions.length,
       percentage: percentage,
       timeSpent: Math.round((new Date().getTime() - startTime.getTime()) / 1000),
       completedAt: new Date().toISOString()
     });
 
-    // Route back to perception quiz selection
     navigate('/perception-quiz-selection/mind');
   };
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading questions...</p>
+        </div>
+      </div>
+    );
+  }
 
+  // Error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100">
+        <div className="text-center bg-white rounded-2xl p-8 shadow-xl max-w-md">
+          <XCircle size={48} className="text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Failed to Load</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={() => navigate('/perception-quiz-selection/mind')}
+            className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-xl"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (isQuizComplete) {
     return (
@@ -121,11 +190,11 @@ const SentenceDifferenceQuiz: React.FC = () => {
           <div className="text-6xl mb-4">🎯</div>
           <p className="text-xl text-gray-700 mb-6">
             you identified <span className="font-bold text-green-600">{score}</span> out of{" "}
-            <span className="font-bold">{sentenceDifferenceQuestions.length}</span> differences correctly!
+            <span className="font-bold">{questions.length}</span> differences correctly!
           </p>
           <div className="mb-6">
             <div className="text-lg text-gray-600">
-              accuracy: <span className="font-bold text-blue-600">{Math.round((score / sentenceDifferenceQuestions.length) * 100)}%</span>
+              accuracy: <span className="font-bold text-blue-600">{Math.round((score / questions.length) * 100)}%</span>
             </div>
           </div>
           <button
@@ -134,6 +203,17 @@ const SentenceDifferenceQuiz: React.FC = () => {
           >
             continue
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentQuestion) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading questions...</p>
         </div>
       </div>
     );
@@ -158,7 +238,7 @@ const SentenceDifferenceQuiz: React.FC = () => {
           <div className="mb-6">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-gray-600 font-medium">
-                question {currentQuestionIndex + 1} of {sentenceDifferenceQuestions.length}
+                question {currentQuestionIndex + 1} of {questions.length}
               </span>
               <span className="text-sm text-gray-600 font-medium">
                 score: {score}
@@ -168,7 +248,7 @@ const SentenceDifferenceQuiz: React.FC = () => {
               <div
                 className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-300"
                 style={{
-                  width: `${((currentQuestionIndex + 1) / sentenceDifferenceQuestions.length) * 100}%`,
+                  width: `${((currentQuestionIndex + 1) / questions.length) * 100}%`,
                 }}
               ></div>
             </div>
@@ -191,16 +271,15 @@ const SentenceDifferenceQuiz: React.FC = () => {
                   <span
                     key={index}
                     onClick={() => handleWordClick('A', index)}
-                    className={`cursor-pointer hover:bg-yellow-200 px-1 rounded transition-colors ${
-                      selectedWordsA.includes(index) ? 'bg-blue-300 text-blue-800' : ''
-                    }`}
+                    className={`cursor-pointer hover:bg-yellow-200 px-1 rounded transition-colors ${selectedWordsA.includes(index) ? 'bg-blue-300 text-blue-800' : ''
+                      }`}
                   >
                     {word}{index < currentQuestion.sentenceA.split(' ').length - 1 ? ' ' : ''}
                   </span>
                 ))}
               </div>
             </div>
-            
+
             <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-lg">
               <div className="text-sm text-blue-700 font-medium mb-2">sentence b:</div>
               <div className="text-xl text-gray-800 leading-relaxed">
@@ -208,9 +287,8 @@ const SentenceDifferenceQuiz: React.FC = () => {
                   <span
                     key={index}
                     onClick={() => handleWordClick('B', index)}
-                    className={`cursor-pointer hover:bg-blue-200 px-1 rounded transition-colors ${
-                      selectedWordsB.includes(index) ? 'bg-blue-300 text-blue-800' : ''
-                    }`}
+                    className={`cursor-pointer hover:bg-blue-200 px-1 rounded transition-colors ${selectedWordsB.includes(index) ? 'bg-blue-300 text-blue-800' : ''
+                      }`}
                   >
                     {word}{index < currentQuestion.sentenceB.split(' ').length - 1 ? ' ' : ''}
                   </span>
@@ -230,11 +308,10 @@ const SentenceDifferenceQuiz: React.FC = () => {
           {feedbackMessage && (
             <div className="text-center mb-4">
               <p
-                className={`text-xl font-bold ${
-                  feedbackMessage.includes("excellent")
-                    ? "text-green-600"
-                    : "text-red-600"
-                }`}
+                className={`text-xl font-bold ${feedbackMessage.includes("excellent")
+                  ? "text-green-600"
+                  : "text-red-600"
+                  }`}
               >
                 {feedbackMessage}
               </p>
@@ -248,7 +325,7 @@ const SentenceDifferenceQuiz: React.FC = () => {
                 onClick={handleNext}
                 className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full text-lg transition-colors shadow-lg"
               >
-                {currentQuestionIndex < sentenceDifferenceQuestions.length - 1 ? "next question" : "finish quiz"}
+                {currentQuestionIndex < questions.length - 1 ? "next question" : "finish quiz"}
               </button>
             </div>
           )}

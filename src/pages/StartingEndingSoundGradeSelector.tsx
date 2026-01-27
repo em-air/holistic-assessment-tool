@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Lock } from 'lucide-react';
 import FloatingBackground from '../components/FloatingBackground';
 import { useAuth } from '../contexts/AuthContext';
-import { getNumericGrade, canAccessGrade } from '../utils/gradeUtils';
+import { getNumericGrade, canAccessQuizGrade } from '../utils/gradeUtils';
 
 const StartingEndingSoundGradeSelector: React.FC = () => {
   const navigate = useNavigate();
@@ -11,31 +11,31 @@ const StartingEndingSoundGradeSelector: React.FC = () => {
   const userNumericGrade = getNumericGrade(userGrade);
 
   const grades = [
-    { 
-      grade: 1, 
-      title: 'Grade 1', 
-      description: 'Simple sounds - cat, dog, sun', 
+    {
+      grade: 1,
+      title: 'Grade 1',
+      description: 'Simple sounds - cat, dog, sun',
       color: 'from-green-400 to-blue-500',
       difficulty: 'Beginner'
     },
-    { 
-      grade: 2, 
-      title: 'Grade 2', 
-      description: 'Basic blends - ring, shell, lamp', 
+    {
+      grade: 2,
+      title: 'Grade 2',
+      description: 'Basic blends - ring, shell, lamp',
       color: 'from-blue-400 to-purple-500',
       difficulty: 'Easy'
     },
-    { 
-      grade: 3, 
-      title: 'Grade 3', 
-      description: 'Complex words - elephant, shadow', 
+    {
+      grade: 3,
+      title: 'Grade 3',
+      description: 'Complex words - elephant, shadow',
       color: 'from-purple-400 to-pink-500',
       difficulty: 'Medium'
     },
-    { 
-      grade: 4, 
-      title: 'Grade 4', 
-      description: 'Advanced blends - tractor, butterfly', 
+    {
+      grade: 4,
+      title: 'Grade 4',
+      description: 'Advanced blends - tractor, butterfly',
       color: 'from-pink-400 to-red-500',
       difficulty: 'Hard'
     }
@@ -46,20 +46,20 @@ const StartingEndingSoundGradeSelector: React.FC = () => {
       navigate('/auth');
       return;
     }
-    if (canAccessGrade(userGrade, grade, isAdmin)) {
+    if (canAccessQuizGrade(userNumericGrade, 'academic', 'starting-ending-sounds', grade, isAdmin || false)) {
       navigate(`/starting-ending-sound-quiz/${grade}`);
     }
   };
 
   const isGradeLocked = (grade: number): boolean => {
     if (!user) return true;
-    return !canAccessGrade(userGrade, grade, isAdmin);
+    return !canAccessQuizGrade(userNumericGrade, 'academic', 'starting-ending-sounds', grade, isAdmin || false);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-purple-100 relative overflow-hidden">
       <FloatingBackground />
-      
+
       {/* Header with back button */}
       <div className="absolute top-4 left-4 z-20">
         <button
@@ -86,7 +86,7 @@ const StartingEndingSoundGradeSelector: React.FC = () => {
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Choose your grade level to begin
             </p>
-            
+
             {/* Grade Restriction Notice */}
             {user && userGrade && !isAdmin && (
               <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl inline-block">
@@ -102,54 +102,54 @@ const StartingEndingSoundGradeSelector: React.FC = () => {
             {grades.map((gradeInfo) => {
               const locked = isGradeLocked(gradeInfo.grade);
               return (
-              <div
-                key={gradeInfo.grade}
-                className={`group transform transition-all duration-300 ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-105'}`}
-                onClick={() => handleGradeSelect(gradeInfo.grade)}
-              >
-                <div className={`bg-white rounded-3xl shadow-lg p-6 h-full border-2 transition-all duration-300 relative overflow-hidden ${locked ? 'border-gray-200' : 'border-transparent group-hover:border-blue-300'}`}>
-                  {/* Lock Icon */}
-                  {locked && (
-                    <div className="absolute top-3 right-3 bg-gray-500 text-white p-1.5 rounded-full z-20">
-                      <Lock size={14} />
-                    </div>
-                  )}
-                  {/* Background gradient */}
-                  <div className={`absolute inset-0 ${locked ? 'bg-gray-300' : `bg-gradient-to-br ${gradeInfo.color}`} opacity-5 ${locked ? '' : 'group-hover:opacity-10'} transition-opacity duration-300`}></div>
-                  
-                  {/* Content */}
-                  <div className="relative z-10">
-                    {/* Grade number */}
-                    <div className="text-center mb-4">
-                      <div className={`w-16 h-16 rounded-2xl ${locked ? 'bg-gray-400' : `bg-gradient-to-r ${gradeInfo.color}`} flex items-center justify-center mx-auto mb-3 ${locked ? '' : 'group-hover:scale-110'} transition-transform duration-300`}>
-                        <span className="text-2xl font-bold text-white">{gradeInfo.grade}</span>
+                <div
+                  key={gradeInfo.grade}
+                  className={`group transform transition-all duration-300 ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-105'}`}
+                  onClick={() => handleGradeSelect(gradeInfo.grade)}
+                >
+                  <div className={`bg-white rounded-3xl shadow-lg p-6 h-full border-2 transition-all duration-300 relative overflow-hidden ${locked ? 'border-gray-200' : 'border-transparent group-hover:border-blue-300'}`}>
+                    {/* Lock Icon */}
+                    {locked && (
+                      <div className="absolute top-3 right-3 bg-gray-500 text-white p-1.5 rounded-full z-20">
+                        <Lock size={14} />
                       </div>
-                      <h3 className={`text-xl font-bold transition-colors ${locked ? 'text-gray-500' : 'text-gray-800 group-hover:text-blue-600'}`}>
-                        {gradeInfo.title}
-                      </h3>
-                    </div>
-
-                    {/* Description */}
-                    <div className="text-center space-y-2">
-                      <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${locked ? 'bg-gray-100 text-gray-400' : 'bg-gray-100 text-gray-600'}`}>
-                        {gradeInfo.difficulty}
-                      </div>
-                      <p className={`text-sm leading-relaxed ${locked ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {gradeInfo.description}
-                      </p>
-                    </div>
-
-                    {/* Hover Arrow */}
-                    {!locked && (
-                    <div className="flex justify-center mt-4">
-                      <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                        <ArrowLeft size={16} className="rotate-180" />
-                      </div>
-                    </div>
                     )}
+                    {/* Background gradient */}
+                    <div className={`absolute inset-0 ${locked ? 'bg-gray-300' : `bg-gradient-to-br ${gradeInfo.color}`} opacity-5 ${locked ? '' : 'group-hover:opacity-10'} transition-opacity duration-300`}></div>
+
+                    {/* Content */}
+                    <div className="relative z-10">
+                      {/* Grade number */}
+                      <div className="text-center mb-4">
+                        <div className={`w-16 h-16 rounded-2xl ${locked ? 'bg-gray-400' : `bg-gradient-to-r ${gradeInfo.color}`} flex items-center justify-center mx-auto mb-3 ${locked ? '' : 'group-hover:scale-110'} transition-transform duration-300`}>
+                          <span className="text-2xl font-bold text-white">{gradeInfo.grade}</span>
+                        </div>
+                        <h3 className={`text-xl font-bold transition-colors ${locked ? 'text-gray-500' : 'text-gray-800 group-hover:text-blue-600'}`}>
+                          {gradeInfo.title}
+                        </h3>
+                      </div>
+
+                      {/* Description */}
+                      <div className="text-center space-y-2">
+                        <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${locked ? 'bg-gray-100 text-gray-400' : 'bg-gray-100 text-gray-600'}`}>
+                          {gradeInfo.difficulty}
+                        </div>
+                        <p className={`text-sm leading-relaxed ${locked ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {gradeInfo.description}
+                        </p>
+                      </div>
+
+                      {/* Hover Arrow */}
+                      {!locked && (
+                        <div className="flex justify-center mt-4">
+                          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                            <ArrowLeft size={16} className="rotate-180" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
               );
             })}
           </div>
@@ -159,7 +159,7 @@ const StartingEndingSoundGradeSelector: React.FC = () => {
             <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 max-w-2xl mx-auto">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">How to Play</h3>
               <p className="text-gray-600 text-sm">
-                Listen to the word, look at the picture, and identify the beginning or ending sound. 
+                Listen to the word, look at the picture, and identify the beginning or ending sound.
                 No spelling is shown - use your ears and phonics knowledge!
               </p>
             </div>
