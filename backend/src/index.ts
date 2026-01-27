@@ -21,6 +21,10 @@ import quizContentRoutes from './routes/quizContent.js';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Trust proxy - Required for Railway/Heroku/etc behind reverse proxy
+// This fixes express-rate-limit X-Forwarded-For header issues
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 
