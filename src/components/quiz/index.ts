@@ -7,4 +7,4 @@ export { QuizFeedback } from './QuizFeedback';
 export { GradeSelector } from './GradeSelector';
 export { QuizResultsScreen } from './QuizResultsScreen';
 export { LockedGradeCard } from './LockedGradeCard';
-
+export { QuizNavigation } from './QuizNavigation';
