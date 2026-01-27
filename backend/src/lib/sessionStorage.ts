@@ -239,25 +239,26 @@ class RedisSessionStorage implements ISessionStorage {
 // HYBRID STORAGE (Fallback Pattern)
 // ============================================
 class HybridSessionStorage implements ISessionStorage {
-  private redis: RedisSessionStorage;
+  private redis: RedisSessionStorage | null = null;
   private memory: InMemorySessionStorage;
   private useRedis: boolean;
 
   constructor() {
-    this.redis = new RedisSessionStorage();
     this.memory = new InMemorySessionStorage();
-    this.useRedis = process.env.REDIS_URL !== undefined;
+    this.useRedis = !!process.env.REDIS_URL && process.env.REDIS_URL.length > 0;
     
     if (this.useRedis) {
       console.log('Session Storage: Using Redis with in-memory fallback');
+      // Only create Redis connection if REDIS_URL is actually set
+      this.redis = new RedisSessionStorage();
     } else {
-      console.log('Session Storage: Using in-memory only (set REDIS_URL for Redis)');
+      console.log('Session Storage: Using in-memory only (no REDIS_URL set)');
     }
   }
 
   private async getStorage(): Promise<ISessionStorage> {
     // If Redis is configured and connected, use it
-    if (this.useRedis) {
+    if (this.useRedis && this.redis) {
       const hasRedis = await this.redis.has('__ping__').catch(() => false);
       // If Redis fails, fall back to memory
       if (hasRedis === false && process.env.NODE_ENV !== 'production') {
@@ -269,7 +270,7 @@ class HybridSessionStorage implements ISessionStorage {
   }
 
   async get(sessionId: string): Promise<QuizSession | null> {
-    if (this.useRedis) {
+    if (this.useRedis && this.redis) {
       const result = await this.redis.get(sessionId);
       if (result) return result;
       // Fallback to memory
@@ -279,7 +280,7 @@ class HybridSessionStorage implements ISessionStorage {
   }
 
   async set(sessionId: string, session: QuizSession, ttlSeconds?: number): Promise<void> {
-    if (this.useRedis) {
+    if (this.useRedis && this.redis) {
       await this.redis.set(sessionId, session, ttlSeconds);
     }
     // Always store in memory as backup
@@ -287,14 +288,14 @@ class HybridSessionStorage implements ISessionStorage {
   }
 
   async delete(sessionId: string): Promise<void> {
-    if (this.useRedis) {
+    if (this.useRedis && this.redis) {
       await this.redis.delete(sessionId);
     }
     await this.memory.delete(sessionId);
   }
 
   async has(sessionId: string): Promise<boolean> {
-    if (this.useRedis) {
+    if (this.useRedis && this.redis) {
       const inRedis = await this.redis.has(sessionId);
       if (inRedis) return true;
     }
@@ -303,7 +304,7 @@ class HybridSessionStorage implements ISessionStorage {
 
   async updateAnswer(sessionId: string, questionId: string, answer: unknown): Promise<boolean> {
     let success = false;
-    if (this.useRedis) {
+    if (this.useRedis && this.redis) {
       success = await this.redis.updateAnswer(sessionId, questionId, answer);
     }
     const memorySuccess = await this.memory.updateAnswer(sessionId, questionId, answer);
@@ -312,7 +313,7 @@ class HybridSessionStorage implements ISessionStorage {
 
   async markComplete(sessionId: string): Promise<boolean> {
     let success = false;
-    if (this.useRedis) {
+    if (this.useRedis && this.redis) {
       success = await this.redis.markComplete(sessionId);
     }
     const memorySuccess = await this.memory.markComplete(sessionId);
