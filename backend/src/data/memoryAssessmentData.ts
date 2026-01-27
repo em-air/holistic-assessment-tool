@@ -24,18 +24,18 @@ export interface SequenceQuestion {
 
 // Sample memory items with reliable image URLs (Pexels/Pixabay)
 export const memoryItems: MemoryItem[] = [
-  { id: 'apple', name: 'Apple', image: 'https://cdn.pixabay.com/photo/2016/11/30/15/00/apples-1872997_1280.jpg', category: 'object' },
-  { id: 'dog', name: 'Dog', image: 'https://cdn.pixabay.com/photo/2018/03/18/18/06/australian-shepherd-3237735_1280.jpg', category: 'object' },
-  { id: 'ball', name: 'Ball', image: 'https://cdn.pixabay.com/photo/2016/11/18/17/47/ball-1835645_1280.jpg', category: 'object' },
-  { id: 'car', name: 'Car', image: 'https://cdn.pixabay.com/photo/2016/04/01/12/16/car-1300629_1280.png', category: 'object' },
-  { id: 'house', name: 'House', image: 'https://cdn.pixabay.com/photo/2016/11/18/17/46/house-1835642_1280.jpg', category: 'object' },
-  { id: 'tree', name: 'Tree', image: 'https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885_1280.jpg', category: 'object' },
-  { id: 'book', name: 'Book', image: 'https://cdn.pixabay.com/photo/2015/11/19/21/10/glasses-1052010_1280.jpg', category: 'object' },
-  { id: 'chair', name: 'Chair', image: 'https://cdn.pixabay.com/photo/2016/11/19/15/32/chair-1839633_1280.jpg', category: 'object' },
-  { id: 'cat', name: 'Cat', image: 'https://cdn.pixabay.com/photo/2018/01/03/19/17/cat-3059075_1280.jpg', category: 'object' },
-  { id: 'flower', name: 'Flower', image: 'https://cdn.pixabay.com/photo/2015/04/19/08/32/marguerite-729510_1280.jpg', category: 'object' },
-  { id: 'bicycle', name: 'Bicycle', image: 'https://cdn.pixabay.com/photo/2016/11/23/15/14/bike-1853497_1280.jpg', category: 'object' },
-  { id: 'cup', name: 'Cup', image: 'https://cdn.pixabay.com/photo/2017/05/12/08/29/coffee-2306471_1280.jpg', category: 'object' }
+  { id: 'apple', name: 'Apple', image: 'https://cdn.pixabay.com/photo/2018/04/12/11/37/apple-3313209_1280.jpg', category: 'object' },
+  { id: 'dog', name: 'Dog', image: 'https://pixabay.com/images/download/x-3237735_1920.jpg', category: 'object' },
+  { id: 'ball', name: 'Ball', image: 'https://pixabay.com/images/download/x-3568168_1920.jpg', category: 'object'},
+  { id: 'car', name: 'Car', image: 'https://pixabay.com/images/download/x-33556_1920.png', category: 'object' },
+  { id: 'house', name: 'House', image: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aG91c2V8ZW58MHx8MHx8fDA%3D', category: 'object' },
+  { id: 'tree', name: 'Tree', image: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dHJlZXxlbnwwfHwwfHx8MA%3D%3D', category: 'object' },
+  { id: 'book', name: 'Book', image: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Ym9va3xlbnwwfHwwfHx8MA%3D%3D', category: 'object' },
+  { id: 'chair', name: 'Chair', image: 'https://images.pexels.com/photos/34637971/pexels-photo-34637971.jpeg', category: 'object' },
+  { id: 'cat', name: 'Cat', image: 'https://images.pexels.com/photos/33238049/pexels-photo-33238049.jpeg', category: 'object' },
+  { id: 'flower', name: 'Flower', image: 'https://images.pexels.com/photos/60597/dahlia-red-blossom-bloom-60597.jpeg', category: 'object' },
+  { id: 'bicycle', name: 'Bicycle', image: 'https://images.pexels.com/photos/1149601/pexels-photo-1149601.jpeg', category: 'object' },
+  { id: 'cup', name: 'Cup', image: 'https://images.pexels.com/photos/724638/pexels-photo-724638.jpeg', category: 'object' }
 ];
 
 /**
