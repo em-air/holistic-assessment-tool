@@ -33,6 +33,9 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   process.env.FRONTEND_URL,
+  // Vercel production and preview URLs
+  'https://holistic-assessment-tool.vercel.app',
+  'https://holistic-assessment-tool-git-main.vercel.app',
   // Add Vercel preview URL patterns if needed
   ...(process.env.VERCEL_PREVIEW_URLS?.split(',') || []),
 ].filter(Boolean) as string[];
