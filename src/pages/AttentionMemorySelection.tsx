@@ -17,7 +17,7 @@ const AttentionMemorySelection: React.FC = () => {
       description: 'Evaluate your ability to focus and shift attention using a research-based questionnaire.',
       icon: Focus,
       color: 'from-blue-400 to-purple-500',
-      route: '/attention-assessment',
+      route: '/category/mind/attention-memory/attention-quiz',
       duration: '10-15 minutes'
     },
     {
@@ -27,7 +27,7 @@ const AttentionMemorySelection: React.FC = () => {
       description: 'Remember the order of 3-5 pictures and recall the sequence.',
       icon: Eye,
       color: 'from-purple-400 to-indigo-500',
-      route: '/memory-assessment',
+      route: '/category/mind/attention-memory/picture-sequence',
       startType: 'sequence_recall',
       duration: '10 minutes'
     },
@@ -38,7 +38,7 @@ const AttentionMemorySelection: React.FC = () => {
       description: 'Quickly memorize and recall words shown briefly on screen.',
       icon: Zap,
       color: 'from-orange-400 to-red-500',
-      route: '/flash-word-quiz',
+      route: '/category/mind/attention-memory/flash-word',
       duration: '10 minutes'
     }
   ];
@@ -59,8 +59,8 @@ const AttentionMemorySelection: React.FC = () => {
 
         {/* Progress Bar for Mind Section */}
         <div className="mb-6">
-          <MindProgressBar 
-            onShowReport={() => setShowReport(true)} 
+          <MindProgressBar
+            onShowReport={() => setShowReport(true)}
           />
         </div>
 
@@ -144,8 +144,8 @@ const AttentionMemorySelection: React.FC = () => {
                   Attention Assessment
                 </h4>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  Based on validated research from the Attentional Control Scale for Children (ACS-C), 
-                  this assessment measures your ability to focus on tasks and shift attention when needed. 
+                  Based on validated research from the Attentional Control Scale for Children (ACS-C),
+                  this assessment measures your ability to focus on tasks and shift attention when needed.
                   It provides insights into your attentional control abilities.
                 </p>
               </div>
@@ -155,8 +155,8 @@ const AttentionMemorySelection: React.FC = () => {
                   Memory Games
                 </h4>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  Interactive games that challenge different aspects of memory including visual memory, 
-                  sequence memory, and working memory. These activities help assess and exercise your 
+                  Interactive games that challenge different aspects of memory including visual memory,
+                  sequence memory, and working memory. These activities help assess and exercise your
                   cognitive abilities through engaging gameplay.
                 </p>
               </div>

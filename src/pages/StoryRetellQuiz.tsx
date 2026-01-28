@@ -255,7 +255,7 @@ const StoryRetellQuiz: React.FC = () => {
           <div className="text-xl text-red-600 mb-4">Error Loading Stories</div>
           <p className="text-gray-600 mb-6">{error}</p>
           <button
-            onClick={() => navigate('/story-retell-quiz')}
+            onClick={() => navigate('/category/oral-skills/story-retell')}
             className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
           >
             Go Back
@@ -317,14 +317,14 @@ const StoryRetellQuiz: React.FC = () => {
 
             <div className="space-y-3">
               <button
-                onClick={() => navigate('/story-retell-quiz')}
+                onClick={() => navigate('/category/oral-skills/story-retell')}
                 className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
               >
                 Try Different Grade
               </button>
 
               <button
-                onClick={() => navigate('/oral-language-selection/oral-skills')}
+                onClick={() => navigate('/category/oral-skills/selection')}
                 className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
               >
                 Back to Oral Skills
@@ -343,7 +343,7 @@ const StoryRetellQuiz: React.FC = () => {
       {/* Header */}
       <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-center">
         <button
-          onClick={() => navigate('/story-retell-quiz')}
+          onClick={() => navigate('/category/oral-skills/story-retell')}
           className="flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg hover:bg-black/30 transition-colors"
         >
           <ArrowLeft size={20} />

@@ -22,7 +22,7 @@ const OralLanguageSelection: React.FC = () => {
       subtitle: 'Sentence Formation',
       description: 'Understand sentence structure and meaning from pictures',
       icon: '💬',
-      route: '/oral-language-quiz',
+      route: '/category/oral-skills/sentence-building',
       color: 'from-green-400 to-green-600'
     },
     {
@@ -31,7 +31,7 @@ const OralLanguageSelection: React.FC = () => {
       subtitle: 'Narrative Sequencing',
       description: 'Arrange pictures in the correct story sequence',
       icon: '📖',
-      route: '/oral-language-quiz',
+      route: '/category/oral-skills/story-sequencing',
       color: 'from-purple-400 to-purple-600'
     },
     {
@@ -40,18 +40,14 @@ const OralLanguageSelection: React.FC = () => {
       subtitle: 'Narrative Skills',
       description: 'Read a story and retell it using Beginning, Middle, and End',
       icon: '📚',
-      route: '/story-retell-quiz',
+      route: '/category/oral-skills/story-retell',
       color: 'from-indigo-400 to-indigo-600'
     }
   ];
 
   const handleOptionClick = (option: OralLanguageOption) => {
-    if (option.route === '/oral-language-quiz') {
-      // Pass category ID in navigation state
-      navigate(option.route, { state: { categoryId: option.id } });
-    } else {
-      navigate(option.route);
-    }
+    // Each quiz now has its own unique route
+    navigate(option.route, { state: { categoryId: option.id } });
   };
 
   return (

@@ -42,11 +42,11 @@ const AttentionQuiz: React.FC = () => {
     const totalPositions = 9; // 3x3 grid
     const positions = Array.from({ length: totalPositions }, (_, i) => i);
     const selectedPositions = positions.sort(() => Math.random() - 0.5).slice(0, currentTileCount);
-    
+
     const newTiles: Tile[] = positions.map(position => {
       const isNumbered = selectedPositions.includes(position);
       const number = isNumbered ? selectedPositions.indexOf(position) + 1 : 0;
-      
+
       return {
         id: `tile-${position}`,
         number,
@@ -67,10 +67,10 @@ const AttentionQuiz: React.FC = () => {
   const generateSequenceTiles = useCallback(() => {
     const tileCount = Math.min(3 + currentLevel, 6); // Start with 4 tiles, max 6
     const numbers = Array.from({ length: tileCount }, (_, i) => i + 1);
-    
+
     // Create shuffled positions for the tiles
     const positions = Array.from({ length: 9 }, (_, i) => i).sort(() => Math.random() - 0.5).slice(0, tileCount);
-    
+
     const tiles = positions.map((pos, index) => ({
       id: pos,
       number: numbers[index],
@@ -91,7 +91,7 @@ const AttentionQuiz: React.FC = () => {
       setSequenceTiles(prev => prev.map(tile => ({ ...tile, isFlipped: true })));
       setSequencePhase('hidden');
       setShowInstructions(false);
-      
+
       // Wait 1 second then allow selection
       setTimeout(() => {
         setSequencePhase('selecting');
@@ -111,7 +111,7 @@ const AttentionQuiz: React.FC = () => {
     const isCorrectSelection = tile.number === expectedNumber;
 
     if (isCorrectSelection) {
-      setTiles(prev => prev.map(t => 
+      setTiles(prev => prev.map(t =>
         t.id === tileId ? { ...t, isSelected: true, isCorrect: true, isRevealed: true } : t
       ));
       setSelectedTiles(prev => [...prev, tile.number]);
@@ -121,7 +121,7 @@ const AttentionQuiz: React.FC = () => {
         setScore(prev => prev + currentLevel * 10);
         setIsCorrect(true);
         setGameState('result');
-        
+
         setTimeout(() => {
           if (currentLevel < maxLevel) {
             setCurrentLevel(prev => prev + 1);
@@ -133,12 +133,12 @@ const AttentionQuiz: React.FC = () => {
       }
     } else {
       // Wrong selection
-      setTiles(prev => prev.map(t => 
+      setTiles(prev => prev.map(t =>
         t.id === tileId ? { ...t, isSelected: true, isCorrect: false, isRevealed: true } : t
       ));
       setIsCorrect(false);
       setGameState('result');
-      
+
       setTimeout(() => {
         generateTiles(); // Restart same level
       }, 2000);
@@ -156,7 +156,7 @@ const AttentionQuiz: React.FC = () => {
     const isCorrect = tile.number === expectedNumber;
 
     if (isCorrect) {
-      setSequenceTiles(prev => prev.map(t => 
+      setSequenceTiles(prev => prev.map(t =>
         t.id === tileId ? { ...t, isFlipped: false, isCorrect: true } : t
       ));
       setSequenceGuess(prev => [...prev, tile.number]);
@@ -166,7 +166,7 @@ const AttentionQuiz: React.FC = () => {
         setScore(prev => prev + currentLevel * 10);
         setIsCorrect(true);
         setGameState('result');
-        
+
         setTimeout(() => {
           if (currentLevel < maxLevel) {
             setCurrentLevel(prev => prev + 1);
@@ -178,12 +178,12 @@ const AttentionQuiz: React.FC = () => {
       }
     } else {
       // Wrong selection
-      setSequenceTiles(prev => prev.map(t => 
+      setSequenceTiles(prev => prev.map(t =>
         t.id === tileId ? { ...t, isFlipped: false, isWrong: true } : t
       ));
       setIsCorrect(false);
       setGameState('result');
-      
+
       setTimeout(() => {
         generateSequenceTiles(); // Restart same level
       }, 2000);
@@ -216,7 +216,7 @@ const AttentionQuiz: React.FC = () => {
     if (gameState === 'complete' && quizType) {
       const maxPossibleScore = Array.from({ length: maxLevel }, (_, i) => (i + 1) * 10).reduce((a, b) => a + b, 0);
       const percentage = Math.round((score / maxPossibleScore) * 100);
-      
+
       ProgressTracker.saveQuizResult({
         quizId: 'attention-tiles',
         quizName: 'Attention Tiles',
@@ -235,10 +235,10 @@ const AttentionQuiz: React.FC = () => {
   const startQuiz = (type: 'attention' | 'memory' | 'sequence') => {
     if (type === 'attention') {
       // Redirect to Memory Assessment component
-      navigate('/memory-assessment');
+      navigate('/category/mind/attention-memory/picture-sequence');
       return;
     }
-    
+
     setQuizType(type);
     setCurrentLevel(1);
     setScore(0);
@@ -267,8 +267,8 @@ const AttentionQuiz: React.FC = () => {
 
           {/* Progress Bar for Mind Section */}
           <div className="mb-6">
-            <MindProgressBar 
-              onShowReport={() => setShowReport(true)} 
+            <MindProgressBar
+              onShowReport={() => setShowReport(true)}
             />
           </div>
 
@@ -300,7 +300,7 @@ const AttentionQuiz: React.FC = () => {
                     Test your focus and concentration skills
                   </p>
                 </div>
-                
+
                 <div className="bg-white/20 rounded-lg p-4 mb-6">
                   <h3 className="font-semibold mb-2">Features:</h3>
                   <ul className="text-sm space-y-1 text-emerald-100">
@@ -333,7 +333,7 @@ const AttentionQuiz: React.FC = () => {
                     Remember the order and tap tiles in sequence
                   </p>
                 </div>
-                
+
                 <div className="bg-white/20 rounded-lg p-4 mb-6">
                   <h3 className="font-semibold mb-2">Features:</h3>
                   <ul className="text-sm space-y-1 text-purple-100">
@@ -368,7 +368,7 @@ const AttentionQuiz: React.FC = () => {
                     See words flash for 1 second, then spell them from memory
                   </p>
                 </div>
-                
+
                 <div className="bg-white/20 rounded-lg p-4 mb-6">
                   <h3 className="font-semibold mb-2">Features:</h3>
                   <ul className="text-sm space-y-1 text-orange-100">
@@ -402,7 +402,7 @@ const AttentionQuiz: React.FC = () => {
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
             <span className="font-medium">Back</span>
           </button>
-          
+
           <div className="text-center">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-700 to-teal-600 bg-clip-text text-transparent mb-2">
               {quizType === 'attention' ? 'Attention' : quizType === 'sequence' ? 'Memory' : 'Focus'} Training
@@ -418,7 +418,7 @@ const AttentionQuiz: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           <button
             onClick={resetGame}
             className="group relative px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-stone-100 rounded-full font-medium overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-emerald-500/25 transform hover:scale-105 hover:-translate-y-1"
@@ -433,8 +433,8 @@ const AttentionQuiz: React.FC = () => {
 
         {/* Progress Bar for Mind Section */}
         <div className="mb-6">
-          <MindProgressBar 
-            onShowReport={() => setShowReport(true)} 
+          <MindProgressBar
+            onShowReport={() => setShowReport(true)}
           />
         </div>
 
@@ -496,9 +496,9 @@ const AttentionQuiz: React.FC = () => {
                       w-20 h-20 rounded-xl shadow-lg cursor-pointer
                       flex items-center justify-center text-2xl font-bold
                       transition-all duration-300 transform hover:scale-105
-                      ${!tile 
-                        ? 'bg-gray-200 cursor-default' 
-                        : tile.isFlipped 
+                      ${!tile
+                        ? 'bg-gray-200 cursor-default'
+                        : tile.isFlipped
                           ? 'bg-gradient-to-br from-purple-400 to-pink-400 text-white shadow-lg hover:shadow-xl'
                           : tile.isCorrect
                             ? 'bg-green-400 text-white border-2 border-green-600'
@@ -555,10 +555,10 @@ const AttentionQuiz: React.FC = () => {
                     w-20 h-20 rounded-xl shadow-lg cursor-pointer
                     flex items-center justify-center text-2xl font-bold
                     transition-all duration-300 transform hover:scale-105
-                    ${tile.isRevealed 
-                      ? tile.number > 0 
-                        ? tile.isCorrect 
-                          ? 'bg-emerald-400 text-white border-2 border-emerald-600' 
+                    ${tile.isRevealed
+                      ? tile.number > 0
+                        ? tile.isCorrect
+                          ? 'bg-emerald-400 text-white border-2 border-emerald-600'
                           : tile.isSelected && !tile.isCorrect
                             ? 'bg-red-400 text-white border-2 border-red-600'
                             : 'bg-gradient-to-br from-teal-400 to-emerald-500 text-white shadow-lg hover:shadow-xl'
@@ -584,9 +584,8 @@ const AttentionQuiz: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-8"
           >
-            <div className={`bg-stone-100 rounded-2xl p-6 shadow-xl border-2 ${
-              isCorrect ? 'border-emerald-300' : 'border-red-300'
-            } max-w-2xl mx-auto`}>
+            <div className={`bg-stone-100 rounded-2xl p-6 shadow-xl border-2 ${isCorrect ? 'border-emerald-300' : 'border-red-300'
+              } max-w-2xl mx-auto`}>
               {isCorrect ? (
                 <div className="text-emerald-600">
                   <Check className="w-12 h-12 mx-auto mb-3" />
