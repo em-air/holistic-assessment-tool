@@ -52,9 +52,9 @@ const CategoryPage: React.FC = () => {
     } else if (subcategoryId === 'writing') {
       navigate('/writing-grades');
     } else if (subcategoryId === 'attention') {
-      navigate('/attention-memory-selection');
+      navigate('/category/mind/attention-memory');
     } else if (subcategoryId === 'oral-language') {
-      navigate(`/oral-language-selection/${categoryId}`);
+      navigate('/category/oral-skills/selection');
     } else if (subcategoryId === 'critical-thinking') {
       navigate('/critical-thinking');
     } else {
@@ -86,7 +86,7 @@ const CategoryPage: React.FC = () => {
         {/* Progress Bar for Mind Section */}
         {categoryId === 'mind' && (
           <div className="max-w-4xl mx-auto mb-8">
-            <MindProgressBar 
+            <MindProgressBar
               onShowReport={() => setShowReport(true)}
               className="mb-6"
             />
@@ -123,7 +123,7 @@ const CategoryPage: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Report Modal */}
       {showReport && (
         <MindSectionReport onClose={() => setShowReport(false)} />

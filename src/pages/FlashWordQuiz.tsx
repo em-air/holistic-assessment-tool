@@ -28,7 +28,7 @@ const wordBank = {
     { id: 7, image: 'https://images.unsplash.com/vector-1743702228669-15c868db27e6?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2FyfGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=600', word: 'car' },
     { id: 8, image: 'https://plus.unsplash.com/premium_vector-1711987775501-7f3b47be125d?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aGF0fGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=600', word: 'hat' }
   ] as FlashWord[],
-  
+
   grade2: [
     { id: 1, image: 'https://plus.unsplash.com/premium_vector-1727952230707-372d1ba06834?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8d2F0ZXJ8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&q=60&w=600', word: 'water' },
     { id: 2, image: 'https://plus.unsplash.com/premium_vector-1682304496080-70b295c04782?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGpveXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=600', word: 'happy' },
@@ -39,7 +39,7 @@ const wordBank = {
     { id: 7, image: 'https://images.unsplash.com/vector-1740296579124-fea8e9995120?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8ZmFtaWx5fGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=600', word: 'family' },
     { id: 8, image: 'https://images.unsplash.com/vector-1740296579124-fea8e9995120?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8ZmFtaWx5fGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=600', word: 'apple' }
   ] as FlashWord[],
-  
+
   grade3: [
     { id: 1, image: 'https://source.unsplash.com/200x200/?between', word: 'between' },
     { id: 2, image: 'https://source.unsplash.com/200x200/?animal', word: 'animal' },
@@ -50,7 +50,7 @@ const wordBank = {
     { id: 7, image: 'https://source.unsplash.com/200x200/?kitchen', word: 'kitchen' },
     { id: 8, image: 'https://source.unsplash.com/200x200/?garden', word: 'garden' }
   ] as FlashWord[],
-  
+
   grade4: [
     { id: 1, image: 'https://source.unsplash.com/200x200/?because', word: 'because' },
     { id: 2, image: 'https://source.unsplash.com/200x200/?beautiful', word: 'beautiful' },
@@ -72,10 +72,10 @@ const keyboardRows = [
 
 const FlashWordQuiz: React.FC = () => {
   const navigate = useNavigate();
-  
+
   // Grade selection state
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel | null>(null);
-  
+
   // Quiz state
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [currentWords, setCurrentWords] = useState<FlashWord[]>([]);
@@ -144,7 +144,7 @@ const FlashWordQuiz: React.FC = () => {
 
     const currentWord = currentWords[currentWordIndex];
     const isAnswerCorrect = userInput.toLowerCase().trim() === currentWord.word.toLowerCase();
-    
+
     setTotalAttempts(prev => prev + 1);
     setIsCorrect(isAnswerCorrect);
     setShowFeedback(true);
@@ -153,7 +153,7 @@ const FlashWordQuiz: React.FC = () => {
     if (isAnswerCorrect) {
       setScore(prev => prev + 1);
       setFeedbackMessage('Correct! Great memory! 🌟');
-      
+
       // Auto-advance after 1.5 seconds
       setTimeout(() => {
         if (currentWordIndex < currentWords.length - 1) {
@@ -167,7 +167,7 @@ const FlashWordQuiz: React.FC = () => {
       }, 1500);
     } else {
       setFeedbackMessage('Not quite, try again! 🤔');
-      
+
       // Allow retry after 1 second
       setTimeout(() => {
         setShowFeedback(false);
@@ -180,7 +180,7 @@ const FlashWordQuiz: React.FC = () => {
   const saveResults = () => {
     const timeSpent = Math.round((new Date().getTime() - startTime.getTime()) / 1000);
     const percentage = Math.round((score / currentWords.length) * 100);
-    
+
     ProgressTracker.saveQuizResult({
       quizId: 'flash-word-quiz',
       quizName: 'Flash Word Quiz',
@@ -207,7 +207,7 @@ const FlashWordQuiz: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <button
-              onClick={() => navigate('/attention-memory-selection')}
+              onClick={() => navigate('/category/mind/attention-memory')}
               className="group flex items-center space-x-2 px-4 py-2 text-white bg-white/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-white/30 hover:shadow-md transform hover:scale-105"
             >
               <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
@@ -296,7 +296,7 @@ const FlashWordQuiz: React.FC = () => {
               Try Again
             </button>
             <button
-              onClick={() => navigate('/attention-memory-selection')}
+              onClick={() => navigate('/category/mind/attention-memory')}
               className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-colors"
             >
               Back to Mind
@@ -316,13 +316,13 @@ const FlashWordQuiz: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between p-4">
         <button
-          onClick={() => navigate('/attention-memory-selection')}
+          onClick={() => navigate('/category/mind/attention-memory')}
           className="group flex items-center space-x-2 px-4 py-2 text-white bg-white/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-white/30 hover:shadow-md transform hover:scale-105"
         >
           <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
           <span className="font-medium">Back</span>
         </button>
-        
+
         <div className="text-white text-lg font-medium">
           {getGradeDisplay(selectedGrade)} - Word {currentWordIndex + 1} of {currentWords.length}
         </div>
@@ -342,10 +342,10 @@ const FlashWordQuiz: React.FC = () => {
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-4xl">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            
+
             {/* Flash Card Area */}
             <div className="flex flex-col items-center space-y-6">
-              
+
               {/* Flash Card */}
               <div className="relative w-80 h-80">
                 <AnimatePresence>
@@ -372,7 +372,7 @@ const FlashWordQuiz: React.FC = () => {
                     </motion.div>
                   )}
                 </AnimatePresence>
-                
+
                 {/* Ready/Placeholder State */}
                 {gamePhase === 'ready' && (
                   <div className="absolute inset-0 bg-white/20 backdrop-blur-sm rounded-3xl flex items-center justify-center">
@@ -384,7 +384,7 @@ const FlashWordQuiz: React.FC = () => {
                     </button>
                   </div>
                 )}
-                
+
                 {/* Input State Placeholder */}
                 {gamePhase === 'input' && !showFlashCard && (
                   <div className="absolute inset-0 bg-white/10 backdrop-blur-sm rounded-3xl flex items-center justify-center">
@@ -406,7 +406,7 @@ const FlashWordQuiz: React.FC = () => {
 
             {/* Input and Keyboard Area */}
             <div className="flex flex-col items-center space-y-6">
-              
+
               {/* Input Display */}
               <div className="bg-white rounded-2xl p-6 w-full max-w-md">
                 <div className="text-center mb-4">
@@ -448,9 +448,8 @@ const FlashWordQuiz: React.FC = () => {
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`text-center p-3 rounded-lg ${
-                      isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}
+                    className={`text-center p-3 rounded-lg ${isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}
                   >
                     {feedbackMessage}
                     {!isCorrect && (

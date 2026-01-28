@@ -38,11 +38,11 @@ const MemoryQuiz: React.FC = () => {
     const totalPositions = 9; // 3x3 grid
     const positions = Array.from({ length: totalPositions }, (_, i) => i);
     const selectedPositions = positions.sort(() => Math.random() - 0.5).slice(0, currentTileCount);
-    
+
     const newTiles: Tile[] = positions.map(position => {
       const isNumbered = selectedPositions.includes(position);
       const number = isNumbered ? selectedPositions.indexOf(position) + 1 : 0;
-      
+
       return {
         id: `tile-${position}`,
         number,
@@ -71,7 +71,7 @@ const MemoryQuiz: React.FC = () => {
     const isCorrectSelection = tile.number === expectedNumber;
 
     if (isCorrectSelection) {
-      setTiles(prev => prev.map(t => 
+      setTiles(prev => prev.map(t =>
         t.id === tileId ? { ...t, isSelected: true, isCorrect: true, isRevealed: true } : t
       ));
       setSelectedTiles(prev => [...prev, tile.number]);
@@ -82,7 +82,7 @@ const MemoryQuiz: React.FC = () => {
         setScore(newScore);
         setIsCorrect(true);
         setGameState('result');
-        
+
         setTimeout(() => {
           if (currentLevel < maxLevel) {
             setCurrentLevel(prev => prev + 1);
@@ -96,16 +96,16 @@ const MemoryQuiz: React.FC = () => {
       }
     } else {
       // Wrong selection - check attempts
-      setTiles(prev => prev.map(t => 
+      setTiles(prev => prev.map(t =>
         t.id === tileId ? { ...t, isSelected: true, isCorrect: false, isRevealed: true } : t
       ));
       setIsCorrect(false);
       setGameState('result');
-      
+
       const newAttempts = currentLevelAttempts + 1;
       setCurrentLevelAttempts(newAttempts);
       setAttemptsPerLevel(prev => ({ ...prev, [currentLevel]: newAttempts }));
-      
+
       setTimeout(() => {
         if (newAttempts >= 3) {
           // Out of tries for this level
@@ -143,7 +143,7 @@ const MemoryQuiz: React.FC = () => {
       // Save progress to tracker when game completes or runs out of tries
       const maxPossibleScore = Array.from({ length: maxLevel }, (_, i) => (i + 1) * 10).reduce((a, b) => a + b, 0);
       const completedLevels = gameState === 'complete' ? maxLevel : Math.max(currentLevel - 1, 0);
-      
+
       ProgressTracker.saveQuizResult({
         quizId: 'number-tiles',
         quizName: 'Number Tiles',
@@ -176,13 +176,13 @@ const MemoryQuiz: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate('/attention-memory-selection')}
+            onClick={() => navigate('/category/mind/attention-memory')}
             className="group flex items-center space-x-2 px-4 py-2 text-stone-600 rounded-lg transition-all duration-300 ease-out hover:text-purple-700 hover:bg-white/50 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
           >
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
             <span className="font-medium">Back to Selection</span>
           </button>
-          
+
           <div className="text-center">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-700 to-purple-600 bg-clip-text text-transparent mb-2">
               Memory Training
@@ -198,7 +198,7 @@ const MemoryQuiz: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           <button
             onClick={resetGame}
             className="group relative px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-stone-100 rounded-full font-medium overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-indigo-500/25 transform hover:scale-105 hover:-translate-y-1"
@@ -213,8 +213,8 @@ const MemoryQuiz: React.FC = () => {
 
         {/* Mind Section Progress Bar */}
         <div className="mb-6">
-          <MindProgressBar 
-            onShowReport={() => setShowReport(true)} 
+          <MindProgressBar
+            onShowReport={() => setShowReport(true)}
           />
         </div>
 
@@ -249,10 +249,10 @@ const MemoryQuiz: React.FC = () => {
                     w-20 h-20 rounded-xl shadow-lg cursor-pointer
                     flex items-center justify-center text-2xl font-bold
                     transition-all duration-300 transform hover:scale-105
-                    ${tile.isRevealed 
-                      ? tile.number > 0 
-                        ? tile.isCorrect 
-                          ? 'bg-indigo-400 text-white border-2 border-indigo-600' 
+                    ${tile.isRevealed
+                      ? tile.number > 0
+                        ? tile.isCorrect
+                          ? 'bg-indigo-400 text-white border-2 border-indigo-600'
                           : tile.isSelected && !tile.isCorrect
                             ? 'bg-red-400 text-white border-2 border-red-600'
                             : 'bg-gradient-to-br from-indigo-400 to-purple-500 text-white shadow-lg hover:shadow-xl'
@@ -278,9 +278,8 @@ const MemoryQuiz: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-8"
           >
-            <div className={`bg-stone-100 rounded-2xl p-6 shadow-xl border-2 ${
-              isCorrect ? 'border-indigo-300' : 'border-red-300'
-            } max-w-2xl mx-auto`}>
+            <div className={`bg-stone-100 rounded-2xl p-6 shadow-xl border-2 ${isCorrect ? 'border-indigo-300' : 'border-red-300'
+              } max-w-2xl mx-auto`}>
               {isCorrect ? (
                 <div className="text-indigo-600">
                   <Check className="w-12 h-12 mx-auto mb-3" />
@@ -312,7 +311,7 @@ const MemoryQuiz: React.FC = () => {
               <p className="text-xl text-stone-600 mb-6">
                 You've used all 3 attempts for level {currentLevel}. Don't worry, you can try the entire quiz again!
               </p>
-              
+
               {/* Current Progress Display */}
               <div className="bg-white rounded-xl p-6 mb-6 shadow-inner">
                 <h3 className="text-lg font-bold text-gray-800 mb-4">Progress So Far</h3>
@@ -330,7 +329,7 @@ const MemoryQuiz: React.FC = () => {
                   <p>💪 <strong>Keep practicing!</strong> Memory games get easier with repetition.</p>
                 </div>
               </div>
-              
+
               <div className="flex justify-center gap-4">
                 <button
                   onClick={resetGame}
@@ -362,7 +361,7 @@ const MemoryQuiz: React.FC = () => {
               <p className="text-xl text-stone-600 mb-6">
                 You've completed all {maxLevel} levels of the memory challenge!
               </p>
-              
+
               {/* Score Display */}
               <div className="bg-white rounded-xl p-6 mb-6 shadow-inner">
                 <h3 className="text-lg font-bold text-gray-800 mb-4">Your Results</h3>
@@ -382,7 +381,7 @@ const MemoryQuiz: React.FC = () => {
                   <p>🧠 <strong>Memory Skills:</strong> {score >= 150 ? 'Excellent!' : score >= 100 ? 'Good!' : score >= 50 ? 'Developing' : 'Keep Practicing!'}</p>
                 </div>
               </div>
-              
+
               <div className="flex justify-center gap-4">
                 <button
                   onClick={resetGame}

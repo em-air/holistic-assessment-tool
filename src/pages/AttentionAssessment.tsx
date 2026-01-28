@@ -312,13 +312,13 @@ const AttentionAssessment: React.FC = () => {
                 Take Again
               </button>
               <button
-                onClick={() => navigate('/attention-memory-selection')}
+                onClick={() => navigate('/category/mind/attention-memory')}
                 className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200 transform hover:scale-105"
               >
                 Try Memory Games
               </button>
               <button
-                onClick={() => navigate('/attention-memory-selection')}
+                onClick={() => navigate('/category/mind/attention-memory')}
                 className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200 transform hover:scale-105"
               >
                 Back
@@ -356,7 +356,7 @@ const AttentionAssessment: React.FC = () => {
           <h2 className="text-xl font-bold text-gray-800 mb-2">Failed to Load</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
-            onClick={() => navigate('/attention-memory-selection')}
+            onClick={() => navigate('/category/mind/attention-memory')}
             className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-xl"
           >
             Go Back
@@ -384,7 +384,7 @@ const AttentionAssessment: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <button
-            onClick={() => navigate('/attention-memory-selection')}
+            onClick={() => navigate('/category/mind/attention-memory')}
             className="flex items-center space-x-2 px-4 py-2 text-white rounded-lg transition-all duration-300 hover:bg-white/20"
           >
             <ArrowLeft size={20} />
