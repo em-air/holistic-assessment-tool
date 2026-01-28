@@ -119,7 +119,7 @@ const AnalogyQuiz: React.FC = () => {
 
             <div className="text-center">
               <button
-                onClick={() => navigate('/category/mind/critical-thinking')}
+                onClick={() => navigate('/category/mind/critical-thinking-selection')}
                 className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-colors duration-200"
               >
                 Back
@@ -185,7 +185,7 @@ const AnalogyQuiz: React.FC = () => {
                 Change Grade
               </button>
               <button
-                onClick={() => navigate('/category/mind/critical-thinking')}
+                onClick={() => navigate('/category/mind/critical-thinking-selection')}
                 className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-colors duration-200"
               >
                 Back
@@ -204,7 +204,7 @@ const AnalogyQuiz: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate('/category/mind/critical-thinking')}
+            onClick={() => navigate('/category/mind/critical-thinking-selection')}
             className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:bg-white/20 transition-colors duration-200"
           >
             <ArrowLeft size={20} />
@@ -310,8 +310,8 @@ const AnalogyQuiz: React.FC = () => {
                 className="mb-8"
               >
                 <div className={`p-4 rounded-xl ${selectedAnswer === currentQuestion.correctAnswer
-                    ? 'bg-green-100 border border-green-200'
-                    : 'bg-red-100 border border-red-200'
+                  ? 'bg-green-100 border border-green-200'
+                  : 'bg-red-100 border border-red-200'
                   }`}>
                   <div className="flex items-center gap-2 mb-2">
                     {selectedAnswer === currentQuestion.correctAnswer ? (

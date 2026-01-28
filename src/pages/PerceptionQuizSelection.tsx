@@ -15,7 +15,7 @@ const PerceptionQuizSelection: React.FC = () => {
       subtitle: 'Visual Memory',
       description: 'Identify which object was removed from a set of pictures',
       icon: Search,
-      route: '/missing-object-quiz',
+      route: '/category/mind/perception/missing-object',
       color: 'from-pink-500 to-rose-600',
       difficulty: 'All Ages'
     },
@@ -25,7 +25,7 @@ const PerceptionQuizSelection: React.FC = () => {
       subtitle: 'Text Perception',
       description: 'Identify differences between similar sentences',
       icon: Search,
-      route: '/sentence-difference-quiz',
+      route: '/category/mind/perception/sentence-difference',
       color: 'from-green-500 to-emerald-600',
       difficulty: 'Grades 1-4'
     },
@@ -35,7 +35,7 @@ const PerceptionQuizSelection: React.FC = () => {
       subtitle: 'Sequential Processing',
       description: 'Arrange sentences in the correct logical order',
       icon: List,
-      route: '/logical-sequencing-quiz',
+      route: '/category/mind/perception/logical-sequencing',
       color: 'from-purple-500 to-pink-600',
       difficulty: 'Grades 1-4'
     }
@@ -44,11 +44,11 @@ const PerceptionQuizSelection: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-indigo-100 relative overflow-hidden">
       <FloatingBackground />
-      
+
       {/* Header with back button */}
       <div className="absolute top-4 left-4 z-20">
         <button
-          onClick={() => navigate(`/category/${categoryId}`)}
+          onClick={() => navigate('/category/mind')}
           className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
         >
           <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
@@ -59,7 +59,7 @@ const PerceptionQuizSelection: React.FC = () => {
       <div className="flex items-center justify-center min-h-screen p-4">
         <div className="max-w-4xl w-full">
           {/* Header */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
@@ -81,7 +81,7 @@ const PerceptionQuizSelection: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {perceptionQuizzes.map((quiz, index) => {
               const IconComponent = quiz.icon;
-              
+
               return (
                 <motion.div
                   key={quiz.id}
@@ -94,34 +94,34 @@ const PerceptionQuizSelection: React.FC = () => {
                   <div className="bg-white rounded-3xl shadow-lg p-8 h-full border-2 border-transparent group-hover:border-blue-300 transition-all duration-300 relative overflow-hidden">
                     {/* Background gradient */}
                     <div className={`absolute inset-0 bg-gradient-to-br ${quiz.color} opacity-5 group-hover:opacity-10 transition-opacity duration-300`}></div>
-                    
+
                     {/* Content */}
                     <div className="relative z-10 text-center">
                       {/* Icon */}
                       <div className={`w-16 h-16 bg-gradient-to-r ${quiz.color} rounded-2xl flex items-center justify-center mx-auto mb-6`}>
                         <IconComponent size={32} className="text-white" />
                       </div>
-                      
+
                       {/* Title */}
                       <h3 className="text-xl font-bold text-gray-800 mb-1">
                         {quiz.title}
                       </h3>
-                      
+
                       {/* Subtitle */}
                       <p className="text-xs text-gray-500 font-medium bg-gray-100 inline-block px-2 py-0.5 rounded mb-3">
                         ({quiz.subtitle})
                       </p>
-                      
+
                       {/* Description */}
                       <p className="text-gray-600 text-sm mb-4 min-h-[2.5rem]">
                         {quiz.description}
                       </p>
-                      
+
                       {/* Difficulty */}
                       <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
                         {quiz.difficulty}
                       </span>
-                      
+
                       {/* Play Button */}
                       <div className="mt-6">
                         <div className={`
@@ -134,7 +134,7 @@ const PerceptionQuizSelection: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Hover effect */}
                     <div className="absolute inset-0 rounded-3xl border-2 border-transparent group-hover:border-blue-200 transition-all duration-300"></div>
                   </div>
@@ -144,7 +144,7 @@ const PerceptionQuizSelection: React.FC = () => {
           </div>
 
           {/* Instructions */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
@@ -155,8 +155,8 @@ const PerceptionQuizSelection: React.FC = () => {
                 About Perception Activities
               </h3>
               <p className="text-gray-600 text-sm">
-                These activities help develop visual processing skills, attention to detail, 
-                and logical thinking abilities. Each quiz targets different aspects of perception 
+                These activities help develop visual processing skills, attention to detail,
+                and logical thinking abilities. Each quiz targets different aspects of perception
                 and cognitive processing to provide a comprehensive assessment.
               </p>
             </div>

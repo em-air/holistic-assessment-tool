@@ -148,7 +148,7 @@ const SentenceDifferenceQuiz: React.FC = () => {
       completedAt: new Date().toISOString()
     });
 
-    navigate('/category/mind/perception');
+    navigate('/category/mind/perception-selection');
   };
 
   // Loading state
@@ -172,7 +172,7 @@ const SentenceDifferenceQuiz: React.FC = () => {
           <h2 className="text-xl font-bold text-gray-800 mb-2">Failed to Load</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
-            onClick={() => navigate('/category/mind/perception')}
+            onClick={() => navigate('/category/mind/perception-selection')}
             className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-xl"
           >
             Go Back
@@ -224,7 +224,7 @@ const SentenceDifferenceQuiz: React.FC = () => {
       {/* Header with back button */}
       <div className="absolute top-4 left-4 z-20">
         <button
-          onClick={() => navigate('/category/mind/perception')}
+          onClick={() => navigate('/category/mind/perception-selection')}
           className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
         >
           <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />

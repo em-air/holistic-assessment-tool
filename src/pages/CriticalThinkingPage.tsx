@@ -17,7 +17,7 @@ const CriticalThinkingPage: React.FC = () => {
       description: 'Train logical reasoning through comparison and relationship questions',
       icon: Brain,
       color: 'from-purple-400 to-pink-500',
-      route: '/analogy-quiz',
+      route: '/category/mind/critical-thinking/analogy-quiz',
       features: [
         'If-then relationships',
         'Comparative logic',
@@ -33,7 +33,7 @@ const CriticalThinkingPage: React.FC = () => {
       description: 'Develop classification skills through drag-and-drop sorting challenges',
       icon: Target,
       color: 'from-green-400 to-teal-500',
-      route: '/category-quiz',
+      route: '/category/mind/critical-thinking/category-quiz',
       features: [
         'Drag & drop sorting',
         'Classification skills',
@@ -56,19 +56,19 @@ const CriticalThinkingPage: React.FC = () => {
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
             <span className="font-medium">Back</span>
           </button>
-          
+
           <div className="text-center text-white">
             <h1 className="text-3xl font-bold mb-2">Critical Thinking</h1>
             <p className="text-purple-100">Choose your thinking challenge!</p>
           </div>
-          
+
           <div className="w-32"></div> {/* Spacer for centering */}
         </div>
 
         {/* Progress Bar for Mind Section */}
         <div className="mb-6">
-          <MindProgressBar 
-            onShowReport={() => setShowReport(true)} 
+          <MindProgressBar
+            onShowReport={() => setShowReport(true)}
           />
         </div>
 
@@ -85,7 +85,7 @@ const CriticalThinkingPage: React.FC = () => {
             Sharpen Your Mind! 🧠
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Critical thinking helps you solve problems, make connections, and understand relationships. 
+            Critical thinking helps you solve problems, make connections, and understand relationships.
             Choose between analogy puzzles that test logical reasoning or category sorting that develops classification skills.
           </p>
         </motion.div>
@@ -170,7 +170,7 @@ const CriticalThinkingPage: React.FC = () => {
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg max-w-2xl mx-auto">
             <h3 className="text-lg font-bold text-gray-800 mb-2">💡 Pro Tip</h3>
             <p className="text-gray-600 text-sm">
-              Start with Grade 1 if you're new to these types of puzzles, or jump to your grade level for an appropriate challenge. 
+              Start with Grade 1 if you're new to these types of puzzles, or jump to your grade level for an appropriate challenge.
               You can always change the difficulty level within each quiz!
             </p>
           </div>

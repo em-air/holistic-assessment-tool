@@ -324,7 +324,7 @@ const StoryRetellQuiz: React.FC = () => {
               </button>
 
               <button
-                onClick={() => navigate('/category/oral-skills/selection')}
+                onClick={() => navigate('/category/oral-skills/oral-language-selection')}
                 className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
               >
                 Back to Oral Skills

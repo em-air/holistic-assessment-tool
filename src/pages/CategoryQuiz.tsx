@@ -180,7 +180,7 @@ const CategoryQuiz: React.FC = () => {
 
             <div className="text-center">
               <button
-                onClick={() => navigate('/category/mind/critical-thinking')}
+                onClick={() => navigate('/category/mind/critical-thinking-selection')}
                 className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-colors duration-200"
               >
                 Back
@@ -246,7 +246,7 @@ const CategoryQuiz: React.FC = () => {
                 Change Grade
               </button>
               <button
-                onClick={() => navigate('/category/mind/critical-thinking')}
+                onClick={() => navigate('/category/mind/critical-thinking-selection')}
                 className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-colors duration-200"
               >
                 Back
@@ -265,7 +265,7 @@ const CategoryQuiz: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate('/category/mind/critical-thinking')}
+            onClick={() => navigate('/category/mind/critical-thinking-selection')}
             className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:bg-white/20 transition-colors duration-200"
           >
             <ArrowLeft size={20} />
@@ -429,8 +429,8 @@ const CategoryQuiz: React.FC = () => {
                   onClick={checkAnswers}
                   disabled={!allItemsPlaced}
                   className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${allItemsPlaced
-                      ? 'bg-gradient-to-r from-teal-500 to-green-500 text-white hover:shadow-lg'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    ? 'bg-gradient-to-r from-teal-500 to-green-500 text-white hover:shadow-lg'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                 >
                   Check Answers

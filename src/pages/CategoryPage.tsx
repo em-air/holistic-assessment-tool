@@ -46,7 +46,7 @@ const CategoryPage: React.FC = () => {
     } else if (subcategoryId === 'learning-style') {
       navigate('/learning-styles-quiz');
     } else if (subcategoryId === 'perception') {
-      navigate('/category/mind/perception');
+      navigate('/category/mind/perception-selection');
     } else if (subcategoryId === 'spelling') {
       navigate('/spelling-grades');
     } else if (subcategoryId === 'writing') {
@@ -54,9 +54,9 @@ const CategoryPage: React.FC = () => {
     } else if (subcategoryId === 'attention') {
       navigate('/category/mind/attention-memory');
     } else if (subcategoryId === 'oral-language') {
-      navigate('/category/oral-skills/selection');
+      navigate('/category/oral-skills/oral-language-selection');
     } else if (subcategoryId === 'critical-thinking') {
-      navigate('/category/mind/critical-thinking');
+      navigate('/category/mind/critical-thinking-selection');
     } else {
       navigate(`/quiz/${categoryId}/${subcategoryId}`);
     }
