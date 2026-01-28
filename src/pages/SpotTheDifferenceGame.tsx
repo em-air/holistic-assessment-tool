@@ -220,7 +220,7 @@ export default function SpotTheDifferenceGame() {
           <h2 className="text-xl font-bold text-gray-800 mb-2">Failed to Load</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
-            onClick={() => navigate('/perception-quiz-selection/mind')}
+            onClick={() => navigate('/category/mind/perception')}
             className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-xl"
           >
             Go Back

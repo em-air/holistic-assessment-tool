@@ -335,7 +335,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/perception-quiz-selection/:categoryId"
+          path="/category/mind/perception"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -556,7 +556,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/critical-thinking"
+          path="/category/mind/critical-thinking"
           element={
             <motion.div
               initial={{ opacity: 0 }}

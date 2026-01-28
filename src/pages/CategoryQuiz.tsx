@@ -68,12 +68,12 @@ const CategoryQuiz: React.FC = () => {
 
   const handleDrop = (e: React.DragEvent, category: string) => {
     e.preventDefault();
-    
+
     if (!draggedItem) return;
 
     // Remove item from available items
     setAvailableItems(prev => prev.filter(item => item.id !== draggedItem.id));
-    
+
     // Add item to dropped items
     setDroppedItems(prev => [
       ...prev.filter(item => item.id !== draggedItem.id),
@@ -102,7 +102,7 @@ const CategoryQuiz: React.FC = () => {
   const checkAnswers = () => {
     const currentQuestion = questions[currentQuestionIndex];
     let correctCount = 0;
-    
+
     droppedItems.forEach(item => {
       if (item.droppedIn === item.correctCategory) {
         correctCount++;
@@ -112,7 +112,7 @@ const CategoryQuiz: React.FC = () => {
     if (correctCount === currentQuestion.items.length) {
       setScore(prev => prev + 1);
     }
-    
+
     setShowResults(true);
   };
 
@@ -124,7 +124,7 @@ const CategoryQuiz: React.FC = () => {
       const timeSpent = Math.round((Date.now() - startTime) / 1000);
       const totalQuestions = questions.reduce((sum, q) => sum + q.items.length, 0);
       const percentage = Math.round((score / totalQuestions) * 100);
-      
+
       ProgressTracker.saveQuizResult({
         quizId: 'category-quiz',
         quizName: 'Category Quiz',
@@ -136,7 +136,7 @@ const CategoryQuiz: React.FC = () => {
         completedAt: new Date().toISOString(),
         gradeLevel: selectedGrade || 'unknown'
       });
-      
+
       setIsComplete(true);
     }
   };
@@ -180,7 +180,7 @@ const CategoryQuiz: React.FC = () => {
 
             <div className="text-center">
               <button
-                onClick={() => navigate('/critical-thinking')}
+                onClick={() => navigate('/category/mind/critical-thinking')}
                 className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-colors duration-200"
               >
                 Back
@@ -217,7 +217,7 @@ const CategoryQuiz: React.FC = () => {
             </div>
 
             <h1 className="text-3xl font-bold text-gray-800 mb-4">Sorting Complete!</h1>
-            
+
             <div className="bg-gray-50 rounded-2xl p-6 mb-8">
               <div className="text-6xl mb-4">{performance.emoji}</div>
               <h2 className={`text-2xl font-bold mb-2 ${performance.color}`}>
@@ -246,7 +246,7 @@ const CategoryQuiz: React.FC = () => {
                 Change Grade
               </button>
               <button
-                onClick={() => navigate('/critical-thinking')}
+                onClick={() => navigate('/category/mind/critical-thinking')}
                 className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-colors duration-200"
               >
                 Back
@@ -265,13 +265,13 @@ const CategoryQuiz: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate('/critical-thinking')}
+            onClick={() => navigate('/category/mind/critical-thinking')}
             className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:bg-white/20 transition-colors duration-200"
           >
             <ArrowLeft size={20} />
             Back
           </button>
-          
+
           <div className="text-center text-white">
             <h1 className="text-xl font-bold">
               {gradeOptions.find(g => g.value === selectedGrade)?.label} Category Sort
@@ -280,14 +280,14 @@ const CategoryQuiz: React.FC = () => {
               Question {currentQuestionIndex + 1} of {questions.length} • Score: {score}/{currentQuestionIndex + (showResults ? 1 : 0)}
             </div>
           </div>
-          
+
           <div className="w-20"></div>
         </div>
 
         {/* Progress Bar for Mind Section */}
         <div className="mb-6">
-          <MindProgressBar 
-            onShowReport={() => setShowReport(true)} 
+          <MindProgressBar
+            onShowReport={() => setShowReport(true)}
           />
         </div>
 
@@ -305,7 +305,7 @@ const CategoryQuiz: React.FC = () => {
                 {currentQuestion?.instruction}
               </h2>
               <p className="text-gray-600">
-                {availableItems.length > 0 
+                {availableItems.length > 0
                   ? "Drag items into the correct categories (or click item then click category)"
                   : "All items placed! Click 'Check Answers' to see how you did."
                 }
@@ -342,12 +342,12 @@ const CategoryQuiz: React.FC = () => {
             )}
 
             {/* Categories */}
-            <div className="grid gap-6 mb-8" style={{ 
-              gridTemplateColumns: `repeat(${currentQuestion?.categories.length || 2}, 1fr)` 
+            <div className="grid gap-6 mb-8" style={{
+              gridTemplateColumns: `repeat(${currentQuestion?.categories.length || 2}, 1fr)`
             }}>
               {currentQuestion?.categories.map((category) => {
                 const categoryItems = droppedItems.filter(item => item.droppedIn === category);
-                
+
                 return (
                   <div
                     key={category}
@@ -364,11 +364,11 @@ const CategoryQuiz: React.FC = () => {
                     <h3 className="text-lg font-bold text-gray-700 mb-4 text-center">
                       {category}
                     </h3>
-                    
+
                     <div className="space-y-2">
                       {categoryItems.map((item) => {
                         let itemClass = "w-full p-3 rounded-lg border-2 text-center font-medium transition-all duration-200 cursor-pointer ";
-                        
+
                         if (showResults) {
                           if (item.correctCategory === category) {
                             itemClass += "bg-green-100 border-green-400 text-green-800";
@@ -410,7 +410,7 @@ const CategoryQuiz: React.FC = () => {
                           </motion.div>
                         );
                       })}
-                      
+
                       {categoryItems.length === 0 && (
                         <div className="text-center text-gray-400 py-8">
                           Drop items here
@@ -428,11 +428,10 @@ const CategoryQuiz: React.FC = () => {
                 <button
                   onClick={checkAnswers}
                   disabled={!allItemsPlaced}
-                  className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${
-                    allItemsPlaced
+                  className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${allItemsPlaced
                       ? 'bg-gradient-to-r from-teal-500 to-green-500 text-white hover:shadow-lg'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
+                    }`}
                 >
                   Check Answers
                 </button>

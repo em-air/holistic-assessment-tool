@@ -45,10 +45,10 @@ const AnalogyQuiz: React.FC = () => {
 
   const handleAnswerSelect = (answerIndex: number) => {
     if (showFeedback) return;
-    
+
     setSelectedAnswer(answerIndex);
     setShowFeedback(true);
-    
+
     const currentQuestion = questions[currentQuestionIndex];
     if (answerIndex === currentQuestion.correctAnswer) {
       setScore(prev => prev + 1);
@@ -64,7 +64,7 @@ const AnalogyQuiz: React.FC = () => {
       // Quiz completed - save result
       const timeSpent = Math.round((Date.now() - startTime) / 1000);
       const percentage = Math.round((score / questions.length) * 100);
-      
+
       ProgressTracker.saveQuizResult({
         quizId: 'analogy-quiz',
         quizName: 'Analogy Quiz',
@@ -76,7 +76,7 @@ const AnalogyQuiz: React.FC = () => {
         completedAt: new Date().toISOString(),
         gradeLevel: selectedGrade || 'unknown'
       });
-      
+
       setIsComplete(true);
     }
   };
@@ -119,7 +119,7 @@ const AnalogyQuiz: React.FC = () => {
 
             <div className="text-center">
               <button
-                onClick={() => navigate('/critical-thinking')}
+                onClick={() => navigate('/category/mind/critical-thinking')}
                 className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-colors duration-200"
               >
                 Back
@@ -156,7 +156,7 @@ const AnalogyQuiz: React.FC = () => {
             </div>
 
             <h1 className="text-3xl font-bold text-gray-800 mb-4">Quiz Complete!</h1>
-            
+
             <div className="bg-gray-50 rounded-2xl p-6 mb-8">
               <div className="text-6xl mb-4">{performance.emoji}</div>
               <h2 className={`text-2xl font-bold mb-2 ${performance.color}`}>
@@ -185,7 +185,7 @@ const AnalogyQuiz: React.FC = () => {
                 Change Grade
               </button>
               <button
-                onClick={() => navigate('/critical-thinking')}
+                onClick={() => navigate('/category/mind/critical-thinking')}
                 className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-colors duration-200"
               >
                 Back
@@ -204,13 +204,13 @@ const AnalogyQuiz: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate('/critical-thinking')}
+            onClick={() => navigate('/category/mind/critical-thinking')}
             className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:bg-white/20 transition-colors duration-200"
           >
             <ArrowLeft size={20} />
             Back
           </button>
-          
+
           <div className="text-center text-white">
             <h1 className="text-xl font-bold">
               {gradeOptions.find(g => g.value === selectedGrade)?.label} Analogy Quiz
@@ -219,14 +219,14 @@ const AnalogyQuiz: React.FC = () => {
               Question {currentQuestionIndex + 1} of {questions.length} • Score: {score}/{currentQuestionIndex + (showFeedback ? 1 : 0)}
             </div>
           </div>
-          
+
           <div className="w-20"></div>
         </div>
 
         {/* Progress Bar for Mind Section */}
         <div className="mb-6">
-          <MindProgressBar 
-            onShowReport={() => setShowReport(true)} 
+          <MindProgressBar
+            onShowReport={() => setShowReport(true)}
           />
         </div>
 
@@ -262,7 +262,7 @@ const AnalogyQuiz: React.FC = () => {
             <div className="grid gap-4 mb-8">
               {currentQuestion?.choices.map((choice, index) => {
                 let buttonClass = "w-full p-4 text-left rounded-xl border-2 transition-all duration-200 font-semibold ";
-                
+
                 if (showFeedback) {
                   if (index === currentQuestion.correctAnswer) {
                     buttonClass += "bg-green-100 border-green-400 text-green-800";
@@ -309,11 +309,10 @@ const AnalogyQuiz: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-8"
               >
-                <div className={`p-4 rounded-xl ${
-                  selectedAnswer === currentQuestion.correctAnswer 
-                    ? 'bg-green-100 border border-green-200' 
+                <div className={`p-4 rounded-xl ${selectedAnswer === currentQuestion.correctAnswer
+                    ? 'bg-green-100 border border-green-200'
                     : 'bg-red-100 border border-red-200'
-                }`}>
+                  }`}>
                   <div className="flex items-center gap-2 mb-2">
                     {selectedAnswer === currentQuestion.correctAnswer ? (
                       <>
