@@ -138,7 +138,7 @@ const OralLanguageQuiz: React.FC = () => {
     startTimeRef.current = Date.now();  // Reset timer when starting a quiz
   };
 
-  // Reset quiz
+  // Reset quiz and navigate back to selection
   const resetQuiz = () => {
     setSelectedCategory(null);
     setCurrentQuestionIndex(0);
@@ -153,6 +153,7 @@ const OralLanguageQuiz: React.FC = () => {
       storytelling: { correct: 0, total: 0 },
       'story-retell': { correct: 0, total: 0 }
     });
+    navigate('/category/oral-skills/oral-language-selection');
   };
 
   // Calculate overall performance
