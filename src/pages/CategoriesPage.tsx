@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Shield } from 'lucide-react';
+import { LogOut, Shield, User } from 'lucide-react';
 import CategoryCard from '../components/CategoryCard';
 import { assessmentCategories } from '../data/assessmentData';
 import FloatingBackground from '../components/FloatingBackground';
@@ -9,7 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const CategoriesPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, signOut, isAdmin } = useAuth();
+  const { user, signOut, isAdmin, studentName } = useAuth();
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
   const handleSignOut = async () => {
@@ -23,7 +23,7 @@ const CategoriesPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 relative overflow-hidden">
       {/* Animated Background Elements */}
       <FloatingBackground />
-      
+
       {/* Top Navigation Bar */}
       <nav className="relative z-50 bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -65,19 +65,28 @@ const CategoriesPage: React.FC = () => {
                 </button>
               )}
               {user ? (
-                <button
-                  onClick={() => setShowSignOutConfirm(true)}
-                  className="bg-red-600 text-white px-4 py-2 rounded-md font-medium hover:bg-red-700 transition-colors duration-200 flex items-center gap-2"
-                >
-                  <LogOut size={18} />
-                  Log Out
-                </button>
+                <>
+                  <button
+                    onClick={() => navigate('/profile')}
+                    className="bg-emerald-600 text-white px-4 py-2 rounded-md font-medium hover:bg-emerald-700 transition-colors duration-200 flex items-center gap-2"
+                  >
+                    <User size={18} />
+                    {studentName || 'Profile'}
+                  </button>
+                  <button
+                    onClick={() => setShowSignOutConfirm(true)}
+                    className="bg-red-600 text-white px-4 py-2 rounded-md font-medium hover:bg-red-700 transition-colors duration-200 flex items-center gap-2"
+                  >
+                    <LogOut size={18} />
+                    Sign Out
+                  </button>
+                </>
               ) : (
                 <button
                   onClick={() => navigate('/auth')}
                   className="bg-black text-white px-6 py-2 rounded-md font-medium hover:bg-gray-800 transition-colors duration-200"
                 >
-                  Register
+                  Register/Sign In
                 </button>
               )}
             </div>
@@ -96,7 +105,7 @@ const CategoriesPage: React.FC = () => {
               </button>
 
               {/* Home Button */}
-              <button 
+              <button
                 onClick={() => navigate('/')}
                 className="text-gray-600 hover:text-gray-800 p-2 transition-colors duration-200"
               >
@@ -106,7 +115,7 @@ const CategoriesPage: React.FC = () => {
               </button>
 
               {/* Profile/User Button */}
-              <button 
+              <button
                 onClick={() => navigate('/auth')}
                 className="text-gray-600 hover:text-gray-800 p-2 transition-colors duration-200"
               >
@@ -149,82 +158,82 @@ const CategoriesPage: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="mb-8"
           >
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h1 className="text-4xl font-medium text-white drop-shadow-lg mb-2">
-                    Choose Your Learning Path
-                  </h1>
-                  <p className="text-white/90 drop-shadow-md font-normal">Select an assessment category to begin your holistic learning journey</p>
-                </div>
-                
-                {/* Stats Cards */}
-                <div className="hidden md:flex space-x-4">
-                  <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/50 text-center min-w-[100px]">
-                    <div className="text-2xl font-medium text-emerald-600">{assessmentCategories.length}</div>
-                    <div className="text-xs text-gray-600">Categories</div>
-                  </div>
-                  <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/50 text-center min-w-[100px]">
-                    <div className="text-2xl font-medium text-green-600">12</div>
-                    <div className="text-xs text-gray-600">Completed</div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Subject Categories Grid */}
-            <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-            >
-              {assessmentCategories.map((category, index) => (
-                <motion.div
-                  key={category.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  whileHover={{ y: -5 }}
-                  className="group"
-                >
-                  <CategoryCard category={category} />
-                </motion.div>
-              ))}
-            </motion.div>
-
-            {/* Additional Features Section */}
-            <motion.div
-              className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.4 }}
-            >
-              <div className="bg-white rounded-2xl p-6 shadow-soft border border-gray-100">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-success-400 to-success-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-800">Progress Tracking</h3>
-                </div>
-                <p className="text-gray-600 text-sm">Monitor your learning journey with detailed analytics and progress reports.</p>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-4xl font-medium text-white drop-shadow-lg mb-2">
+                  Choose Your Learning Path
+                </h1>
+                <p className="text-white/90 drop-shadow-md font-normal">Select an assessment category to begin your holistic learning journey</p>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-soft border border-gray-100">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-secondary-400 to-secondary-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-800">Personalized Learning</h3>
+              {/* Stats Cards */}
+              <div className="hidden md:flex space-x-4">
+                <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/50 text-center min-w-[100px]">
+                  <div className="text-2xl font-medium text-emerald-600">{assessmentCategories.length}</div>
+                  <div className="text-xs text-gray-600">Categories</div>
                 </div>
-                <p className="text-gray-600 text-sm">Get customized recommendations based on your unique learning style and preferences.</p>
+                <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/50 text-center min-w-[100px]">
+                  <div className="text-2xl font-medium text-green-600">12</div>
+                  <div className="text-xs text-gray-600">Completed</div>
+                </div>
               </div>
-            </motion.div>
-          </div>
+            </div>
+          </motion.div>
+
+          {/* Subject Categories Grid */}
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+          >
+            {assessmentCategories.map((category, index) => (
+              <motion.div
+                key={category.id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                whileHover={{ y: -5 }}
+                className="group"
+              >
+                <CategoryCard category={category} />
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Additional Features Section */}
+          <motion.div
+            className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.4 }}
+          >
+            <div className="bg-white rounded-2xl p-6 shadow-soft border border-gray-100">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-success-400 to-success-600 rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800">Progress Tracking</h3>
+              </div>
+              <p className="text-gray-600 text-sm">Monitor your learning journey with detailed analytics and progress reports.</p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 shadow-soft border border-gray-100">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-secondary-400 to-secondary-600 rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800">Personalized Learning</h3>
+              </div>
+              <p className="text-gray-600 text-sm">Get customized recommendations based on your unique learning style and preferences.</p>
+            </div>
+          </motion.div>
         </div>
+      </div>
 
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg">

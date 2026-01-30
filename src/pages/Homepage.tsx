@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Shield } from 'lucide-react';
+import { LogOut, Shield, User } from 'lucide-react';
 import FloatingBackground from '../components/FloatingBackground';
 import { useAuth } from '../contexts/AuthContext';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, signOut, isAdmin } = useAuth();
+  const { user, signOut, isAdmin, studentName } = useAuth();
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
   const handleSignOut = async () => {
@@ -28,18 +28,18 @@ const HomePage: React.FC = () => {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <motion.span 
+              <motion.span
                 className="text-xl font-semibold text-black cursor-pointer"
-                whileHover={{ 
+                whileHover={{
                   scale: 1.05,
                   color: "#10b981",
                   textShadow: "0px 0px 8px rgba(16, 185, 129, 0.3)"
                 }}
                 whileTap={{ scale: 0.95 }}
-                transition={{ 
-                  type: "spring", 
-                  stiffness: 400, 
-                  damping: 17 
+                transition={{
+                  type: "spring",
+                  stiffness: 400,
+                  damping: 17
                 }}
               >
                 Bloom&deg;
@@ -61,19 +61,28 @@ const HomePage: React.FC = () => {
                 Contact
               </button>
               {user ? (
-                <button
-                  onClick={() => setShowSignOutConfirm(true)}
-                  className="bg-red-600 text-white px-6 py-2 rounded-md font-medium hover:bg-red-700 transition-colors duration-200 flex items-center gap-2"
-                >
-                  <LogOut size={18} />
-                  Log Out
-                </button>
+                <>
+                  <button
+                    onClick={() => navigate('/profile')}
+                    className="bg-emerald-600 text-white px-6 py-2 rounded-md font-medium hover:bg-emerald-700 transition-colors duration-200 flex items-center gap-2"
+                  >
+                    <User size={18} />
+                    {studentName || 'Profile'}
+                  </button>
+                  <button
+                    onClick={() => setShowSignOutConfirm(true)}
+                    className="bg-red-600 text-white px-6 py-2 rounded-md font-medium hover:bg-red-700 transition-colors duration-200 flex items-center gap-2"
+                  >
+                    <LogOut size={18} />
+                    Sign Out
+                  </button>
+                </>
               ) : (
                 <button
                   onClick={() => navigate('/auth')}
                   className="bg-black text-white px-6 py-2 rounded-md font-medium hover:bg-gray-800 transition-colors duration-200"
                 >
-                  Register
+                  Register/Sign In
                 </button>
               )}
             </div>
@@ -92,7 +101,7 @@ const HomePage: React.FC = () => {
               </button>
 
               {/* Search Button */}
-              <button 
+              <button
                 onClick={() => navigate('/categories')}
                 className="text-gray-600 hover:text-gray-800 p-2 transition-colors duration-200"
               >
@@ -167,7 +176,7 @@ const HomePage: React.FC = () => {
               >
                 Discover Your Learning Strengths
               </motion.h1>
-              
+
               <motion.p
                 className="text-lg md:text-xl text-white drop-shadow-md max-w-4xl mx-auto mb-8 font-normal"
                 initial={{ opacity: 0, y: 15 }}
@@ -187,7 +196,7 @@ const HomePage: React.FC = () => {
                 <motion.button
                   onClick={() => navigate('/categories')}
                   className="group relative bg-white/20 backdrop-blur-md text-white px-8 py-4 rounded-full text-lg font-medium border border-white/40 shadow-lg hover:shadow-xl transition-all duration-300"
-                  whileHover={{ 
+                  whileHover={{
                     scale: 1.02,
                     backgroundColor: "rgba(255,255,255,0.25)",
                     borderColor: "rgba(255,255,255,0.6)",
@@ -209,7 +218,7 @@ const HomePage: React.FC = () => {
                     </motion.div>
                   </span>
                 </motion.button>
-                
+
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -253,7 +262,7 @@ const HomePage: React.FC = () => {
                 <motion.div
                   key={index}
                   className="bg-gradient-to-br from-white/95 via-white/98 to-white/95 backdrop-blur-sm rounded-2xl p-4 md:p-6 text-center border border-white/50 shadow-lg"
-                  whileHover={{ 
+                  whileHover={{
                     scale: 1.03,
                     background: "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,255,255,1))",
                     borderColor: "#0891b2",
@@ -289,23 +298,23 @@ const HomePage: React.FC = () => {
               transition={{ duration: 0.4, delay: 0.6, ease: "easeOut" }}
             >
               {[
-                { 
-                  icon: "⚡", 
-                  title: "Quick & Easy", 
+                {
+                  icon: "⚡",
+                  title: "Quick & Easy",
                   desc: "Complete in 45 minutes",
                   gradient: "from-yellow-400 to-orange-500",
                   bgGradient: "from-yellow-50 to-orange-50"
                 },
-                { 
-                  icon: "👶", 
-                  title: "Kid-Friendly", 
+                {
+                  icon: "👶",
+                  title: "Kid-Friendly",
                   desc: "Designed for ages 6-12",
                   gradient: "from-pink-400 to-purple-500",
                   bgGradient: "from-pink-50 to-purple-50"
                 },
-                { 
-                  icon: "📊", 
-                  title: "Detailed Results", 
+                {
+                  icon: "📊",
+                  title: "Detailed Results",
                   desc: "Get insights into strengths",
                   gradient: "from-blue-400 to-cyan-500",
                   bgGradient: "from-blue-50 to-cyan-50"
@@ -314,7 +323,7 @@ const HomePage: React.FC = () => {
                 <motion.div
                   key={index}
                   className={`bg-gradient-to-br ${feature.bgGradient} backdrop-blur-sm rounded-2xl p-6 border border-white/60 text-center shadow-lg`}
-                  whileHover={{ 
+                  whileHover={{
                     scale: 1.02,
                     boxShadow: "0 25px 50px rgba(0,0,0,0.15)",
                     borderColor: "#0891b2",
@@ -361,7 +370,7 @@ const HomePage: React.FC = () => {
                 <motion.div
                   key={index}
                   className="bg-gradient-to-r from-white/95 via-white/98 to-white/95 backdrop-blur-sm px-6 py-3 rounded-full border border-white/60 shadow-lg"
-                  whileHover={{ 
+                  whileHover={{
                     scale: 1.05,
                     background: "linear-gradient(to right, rgba(255,255,255,0.98), rgba(255,255,255,1))",
                     borderColor: "#0891b2",
