@@ -361,7 +361,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/oral-skills/sentence-building"
+          path="/category/oral-skills/oral-language-selection/sentence-building"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -374,7 +374,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/oral-skills/story-sequencing"
+          path="/category/oral-skills/oral-language-selection/story-sequencing"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -387,7 +387,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/oral-skills/story-retell"
+          path="/category/oral-skills/oral-language-selection/story-retell"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -400,7 +400,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/oral-skills/story-retell/:grade"
+          path="/category/oral-skills/oral-language-selection/story-retell/:grade"
           element={
             <motion.div
               initial={{ opacity: 0 }}

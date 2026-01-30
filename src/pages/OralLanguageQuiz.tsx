@@ -124,7 +124,7 @@ const OralLanguageQuiz: React.FC = () => {
   const startQuiz = (category: QuizCategory) => {
     // If story-retell is selected, navigate to the separate Story Retell quiz
     if (category.id === 'story-retell') {
-      navigate('/category/oral-skills/story-retell');
+      navigate('/category/oral-skills/oral-language-selection/story-retell');
       return;
     }
 
@@ -175,7 +175,7 @@ const OralLanguageQuiz: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <button
-              onClick={() => navigate('/oral-language-selection/oral-skills')}
+              onClick={() => navigate('/category/oral-skills/oral-language-selection')}
               className="group flex items-center space-x-2 px-4 py-2 text-stone-600 rounded-lg transition-all duration-300 ease-out hover:text-purple-700 hover:bg-white/50 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
             >
               <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
@@ -343,8 +343,8 @@ const OralLanguageQuiz: React.FC = () => {
                           className="relative"
                         >
                           <div className={`relative bg-white rounded-xl shadow-lg overflow-hidden border-2 transition-all duration-300 ${sequenceOrder[sequenceImage.id]
-                              ? `border-blue-500 bg-blue-50`
-                              : 'border-gray-200 hover:border-blue-300'
+                            ? `border-blue-500 bg-blue-50`
+                            : 'border-gray-200 hover:border-blue-300'
                             }`}>
                             <img
                               src={sequenceImage.image}
@@ -377,8 +377,8 @@ const OralLanguageQuiz: React.FC = () => {
                                     return updated;
                                   })}
                                   className={`w-10 h-10 rounded-full font-bold text-lg transition-all duration-200 ${sequenceOrder[sequenceImage.id] === num
-                                      ? 'bg-blue-500 text-white scale-110'
-                                      : 'bg-gray-200 text-gray-700 hover:bg-blue-100 hover:text-blue-700'
+                                    ? 'bg-blue-500 text-white scale-110'
+                                    : 'bg-gray-200 text-gray-700 hover:bg-blue-100 hover:text-blue-700'
                                     }`}
                                 >
                                   {num}
@@ -391,8 +391,8 @@ const OralLanguageQuiz: React.FC = () => {
                           {showFeedback && (
                             <div className="text-center mt-3">
                               <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${sequenceOrder[sequenceImage.id] === sequenceImage.correctOrder
-                                  ? 'bg-green-100 text-green-700'
-                                  : 'bg-red-100 text-red-700'
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-red-100 text-red-700'
                                 }`}>
                                 {sequenceOrder[sequenceImage.id] === sequenceImage.correctOrder
                                   ? `✓ Correct (${sequenceImage.correctOrder})`

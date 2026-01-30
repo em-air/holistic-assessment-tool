@@ -59,7 +59,7 @@ const StoryRetellGradeSelector: React.FC = () => {
       return;
     }
     if (canAccessQuizGrade(userNumericGrade, 'oral', 'story-retell', grade, isAdmin)) {
-      navigate(`/category/oral-skills/story-retell/${grade}`);
+      navigate(`/category/oral-skills/oral-language-selection/story-retell/${grade}`);
     }
   };
 
