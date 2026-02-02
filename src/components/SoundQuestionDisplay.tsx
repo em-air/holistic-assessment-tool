@@ -1,6 +1,6 @@
 import React from 'react';
 import { Volume2, RotateCcw } from 'lucide-react';
-import { QuestionData } from '../utils/soundQuizUtils';
+import { QuestionData } from '../data/startingEndingSoundData';
 import { logger } from '../utils/logger';
 
 interface SoundQuestionDisplayProps {
@@ -31,13 +31,13 @@ const SoundQuestionDisplay: React.FC<SoundQuestionDisplayProps> = ({
             onError={(e) => {
               // Log the error for debugging
               logger.error('Image failed to load:', question.question.imageUrl);
-
+              
               // Keep the placeholder URL as fallback
               const target = e.target as HTMLImageElement;
               if (!target.src.includes('placeholder')) {
                 logger.log('Using fallback placeholder image');
-                target.src = 'https://via.placeholder.com/300x300/6B7280/FFFFFF?text=' +
-                  encodeURIComponent(question.question.word.toUpperCase());
+                target.src = 'https://via.placeholder.com/300x300/6B7280/FFFFFF?text=' + 
+                            encodeURIComponent(question.question.word.toUpperCase());
               }
             }}
             crossOrigin="anonymous"
@@ -64,7 +64,7 @@ const SoundQuestionDisplay: React.FC<SoundQuestionDisplayProps> = ({
             </>
           )}
         </button>
-
+        
         <button
           onClick={onPlayAudio}
           disabled={isAudioLoading}

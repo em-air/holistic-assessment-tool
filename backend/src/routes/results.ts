@@ -222,4 +222,41 @@ router.delete('/:quizId', verifySupabaseToken, async (req: Request, res: Respons
   }
 });
 
+/**
+ * DELETE /api/results/category/:category
+ * Delete all quiz results for a category
+ */
+router.delete('/category/:category', verifySupabaseToken, async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const { category } = req.params;
+    
+    if (!['mind', 'oral', 'academic'].includes(category)) {
+      return res.status(400).json({ error: 'Invalid category' });
+    }
+
+    const { error } = await supabaseAdmin
+      .from('quiz_results')
+      .delete()
+      .eq('user_id', req.user.id)
+      .eq('category', category as AssessmentCategory);
+
+    if (error) {
+      console.error('Delete category results error:', error);
+      return res.status(500).json({ error: 'Failed to delete results' });
+    }
+
+    res.json({
+      success: true,
+      message: `All ${category} results deleted successfully`,
+    });
+  } catch (error) {
+    console.error('Delete category results error:', error);
+    res.status(500).json({ error: 'Failed to delete results' });
+  }
+});
+
 export default router;

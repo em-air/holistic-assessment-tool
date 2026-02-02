@@ -1,33 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Book, CheckCircle, Lightbulb, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Book, CheckCircle, Lightbulb, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
+import {
+  StoryRetellQuestion,
+  getStoriesForGrade
+} from '../data/storyRetellData';
 import { ProgressTracker } from '../utils/progressTracker';
 import { saveQuizResult } from '../services/quizResultsService';
 import FloatingBackground from '../components/FloatingBackground';
 import { logger } from '../utils/logger';
-import { supabase } from '../supabase-client';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
-// API types
-interface StoryRetellOption {
-  id: string;
-  text: string;
-  isCorrect?: boolean; // Only set after validation
-}
-
-interface StoryRetellQuestion {
-  id: number;
-  title: string;
-  story: string;
-  grade: number;
-  readingLevel: string;
-  wordCount: number;
-  beginningOptions: StoryRetellOption[];
-  middleOptions: StoryRetellOption[];
-  endOptions: StoryRetellOption[];
-}
 
 const StoryRetellQuiz: React.FC = () => {
   const navigate = useNavigate();
@@ -36,76 +18,39 @@ const StoryRetellQuiz: React.FC = () => {
 
   // Quiz state
   const [stories, setStories] = useState<StoryRetellQuestion[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [showStory, setShowStory] = useState(true);
   const [hasReadStory, setHasReadStory] = useState(false);
-
+  
   // Multiple choice selections
   const [selectedBeginning, setSelectedBeginning] = useState<string | null>(null);
   const [selectedMiddle, setSelectedMiddle] = useState<string | null>(null);
   const [selectedEnd, setSelectedEnd] = useState<string | null>(null);
-
+  
   // UI state
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState({ correct: 0, total: 0 });
-  const [validationResult, setValidationResult] = useState<{
-    beginningCorrect: boolean;
-    middleCorrect: boolean;
-    endCorrect: boolean;
-  } | null>(null);
   const startTimeRef = useRef<number>(Date.now());
 
   const totalStories = 3; // Number of stories per grade
   const currentStory = stories[currentStoryIndex];
 
-  // Fetch stories from API
+  // Initialize quiz
   useEffect(() => {
     if (!grade) return;
 
-    const fetchStories = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.access_token) {
-          throw new Error('Please sign in to access this quiz');
-        }
-
-        const response = await fetch(`${API_BASE_URL}/api/quiz-content/story-retell/stories/${grade}`, {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch stories');
-        }
-
-        const data = await response.json();
-        if (data.success && data.stories) {
-          // Shuffle and limit
-          const shuffled = [...data.stories].sort(() => Math.random() - 0.5);
-          setStories(shuffled.slice(0, totalStories));
-          startTimeRef.current = Date.now();
-          setCurrentStoryIndex(0);
-          setScore({ correct: 0, total: 0 });
-          setShowResult(false);
-        } else {
-          throw new Error(data.error || 'Invalid response');
-        }
-      } catch (err) {
-        logger.error('Error loading story retell questions:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load stories');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStories();
+    try {
+      const gradeStories = getStoriesForGrade(grade, totalStories);
+      startTimeRef.current = Date.now();  // Reset timer when quiz loads
+      logger.log('Loaded stories for grade:', grade, gradeStories);
+      setStories(gradeStories);
+      setCurrentStoryIndex(0);
+      setScore({ correct: 0, total: 0 });
+      setShowResult(false);
+    } catch (error) {
+      logger.error('Error loading story retell questions:', error);
+    }
   }, [grade]);
 
   // Reset form when story changes
@@ -117,7 +62,6 @@ const StoryRetellQuiz: React.FC = () => {
       setSelectedMiddle(null);
       setSelectedEnd(null);
       setIsSubmitted(false);
-      setValidationResult(null);
     }
   }, [currentStory]);
 
@@ -130,61 +74,27 @@ const StoryRetellQuiz: React.FC = () => {
     setShowStory(!showStory);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!currentStory || isSubmitted) return;
-
+    
     // Validate that all sections are selected
     if (!selectedBeginning || !selectedMiddle || !selectedEnd) {
       alert('Please select an option for Beginning, Middle, and End');
       return;
     }
 
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        logger.error('No session found for validation');
-        return;
-      }
-
-      // Validate via API
-      const response = await fetch(`${API_BASE_URL}/api/quiz-content/story-retell/validate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          storyId: currentStory.id,
-          answers: {
-            beginningId: selectedBeginning,
-            middleId: selectedMiddle,
-            endId: selectedEnd,
-          },
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        const { beginningCorrect, middleCorrect, endCorrect, totalCorrect } = data;
-
-        setValidationResult({ beginningCorrect, middleCorrect, endCorrect });
-        setScore(prev => ({
-          correct: prev.correct + totalCorrect,
-          total: prev.total + 3
-        }));
-      } else {
-        // Fallback to client-side if API fails
-        const correctCount = 3; // Assume all correct on error
-        setScore(prev => ({
-          correct: prev.correct + correctCount,
-          total: prev.total + 3
-        }));
-      }
-    } catch (err) {
-      logger.error('Error validating answers:', err);
-    }
-
+    // Check if answers are correct
+    const beginningCorrect = currentStory.beginningOptions.find(opt => opt.id === selectedBeginning)?.isCorrect || false;
+    const middleCorrect = currentStory.middleOptions.find(opt => opt.id === selectedMiddle)?.isCorrect || false;
+    const endCorrect = currentStory.endOptions.find(opt => opt.id === selectedEnd)?.isCorrect || false;
+    
+    const correctCount = (beginningCorrect ? 1 : 0) + (middleCorrect ? 1 : 0) + (endCorrect ? 1 : 0);
+    
+    setScore(prev => ({
+      correct: prev.correct + correctCount,
+      total: prev.total + 3
+    }));
+    
     setIsSubmitted(true);
   };
 
@@ -200,7 +110,7 @@ const StoryRetellQuiz: React.FC = () => {
     // Save progress
     const percentage = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
     const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
-
+    
     ProgressTracker.saveQuizResult({
       quizId: 'story-retell',
       quizName: 'Story Retelling',
@@ -234,37 +144,6 @@ const StoryRetellQuiz: React.FC = () => {
     setShowResult(true);
   };
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-100 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading stories...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-100 to-indigo-100 flex items-center justify-center">
-        <div className="bg-white rounded-3xl shadow-lg p-8 text-center max-w-md">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <div className="text-xl text-red-600 mb-4">Error Loading Stories</div>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <button
-            onClick={() => navigate('/category/oral-skills/oral-language-selection/story-retell')}
-            className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            Go Back
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   if (!currentStory) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-blue-100 to-indigo-100 flex items-center justify-center">
@@ -282,7 +161,7 @@ const StoryRetellQuiz: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-to-b from-blue-100 to-indigo-100 relative overflow-hidden">
         <FloatingBackground />
-
+        
         <div className="flex items-center justify-center min-h-screen p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -290,11 +169,11 @@ const StoryRetellQuiz: React.FC = () => {
             className="bg-white rounded-3xl shadow-2xl p-8 max-w-2xl w-full text-center relative z-10"
           >
             <CheckCircle size={64} className="text-green-500 mx-auto mb-4" />
-
+            
             <h2 className="text-3xl font-bold text-gray-800 mb-4">
               Great Work!
             </h2>
-
+            
             <p className="text-xl text-gray-600 mb-6">
               You completed all {stories.length} story retellings!
             </p>
@@ -310,21 +189,21 @@ const StoryRetellQuiz: React.FC = () => {
             <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
               <p className="text-green-800">
                 {percentage >= 80 ? '🌟 Excellent work! You have a strong understanding of story structure!' :
-                  percentage >= 60 ? '👍 Good job! Keep practicing to improve your story comprehension.' :
-                    '💪 Keep trying! Read stories carefully and think about the beginning, middle, and end.'}
+                 percentage >= 60 ? '👍 Good job! Keep practicing to improve your story comprehension.' :
+                 '💪 Keep trying! Read stories carefully and think about the beginning, middle, and end.'}
               </p>
             </div>
 
             <div className="space-y-3">
               <button
-                onClick={() => navigate('/category/oral-skills/oral-language-selection/story-retell')}
+                onClick={() => navigate('/story-retell-quiz')}
                 className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
               >
                 Try Different Grade
               </button>
-
+              
               <button
-                onClick={() => navigate('/category/oral-skills/oral-language-selection')}
+                onClick={() => navigate('/oral-language-selection/oral-skills')}
                 className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
               >
                 Back to Oral Skills
@@ -339,22 +218,22 @@ const StoryRetellQuiz: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-indigo-100 relative overflow-hidden">
       <FloatingBackground />
-
+      
       {/* Header */}
       <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-center">
         <button
-          onClick={() => navigate('/category/oral-skills/oral-language-selection/story-retell')}
+          onClick={() => navigate('/story-retell-quiz')}
           className="flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg hover:bg-black/30 transition-colors"
         >
           <ArrowLeft size={20} />
           <span className="font-medium">back</span>
         </button>
-
+        
         <div className="text-white text-center bg-black/20 backdrop-blur-sm rounded-lg px-4 py-2">
           <div className="text-sm opacity-90">Grade {grade} • Story Retell</div>
           <div className="font-bold">Story {currentStoryIndex + 1} of {stories.length}</div>
         </div>
-
+        
         <div className="w-20"></div> {/* Spacer for symmetry */}
       </div>
 
@@ -439,7 +318,7 @@ const StoryRetellQuiz: React.FC = () => {
                   <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-start space-x-3">
                     <Lightbulb size={20} className="text-yellow-600 flex-shrink-0 mt-1" />
                     <p className="text-yellow-800 text-sm">
-                      <strong>Instructions:</strong> Retell the story in your own words. Include the beginning, middle, and end.
+                      <strong>Instructions:</strong> Retell the story in your own words. Include the beginning, middle, and end. 
                       Don't forget to mention the main characters and important events!
                     </p>
                   </div>
@@ -460,10 +339,11 @@ const StoryRetellQuiz: React.FC = () => {
                       {currentStory.beginningOptions.map((option) => (
                         <label
                           key={option.id}
-                          className={`flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all ${selectedBeginning === option.id
-                            ? 'border-green-500 bg-green-50'
-                            : 'border-gray-200 hover:border-green-300 hover:bg-gray-50'
-                            } ${isSubmitted && option.isCorrect ? 'border-green-600 bg-green-100' : ''}
+                          className={`flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                            selectedBeginning === option.id
+                              ? 'border-green-500 bg-green-50'
+                              : 'border-gray-200 hover:border-green-300 hover:bg-gray-50'
+                          } ${isSubmitted && option.isCorrect ? 'border-green-600 bg-green-100' : ''}
                           ${isSubmitted && selectedBeginning === option.id && !option.isCorrect ? 'border-red-500 bg-red-50' : ''}`}
                         >
                           <input
@@ -497,10 +377,11 @@ const StoryRetellQuiz: React.FC = () => {
                       {currentStory.middleOptions.map((option) => (
                         <label
                           key={option.id}
-                          className={`flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all ${selectedMiddle === option.id
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
-                            } ${isSubmitted && option.isCorrect ? 'border-blue-600 bg-blue-100' : ''}
+                          className={`flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                            selectedMiddle === option.id
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                          } ${isSubmitted && option.isCorrect ? 'border-blue-600 bg-blue-100' : ''}
                           ${isSubmitted && selectedMiddle === option.id && !option.isCorrect ? 'border-red-500 bg-red-50' : ''}`}
                         >
                           <input
@@ -534,10 +415,11 @@ const StoryRetellQuiz: React.FC = () => {
                       {currentStory.endOptions.map((option) => (
                         <label
                           key={option.id}
-                          className={`flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all ${selectedEnd === option.id
-                            ? 'border-purple-500 bg-purple-50'
-                            : 'border-gray-200 hover:border-purple-300 hover:bg-gray-50'
-                            } ${isSubmitted && option.isCorrect ? 'border-purple-600 bg-purple-100' : ''}
+                          className={`flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                            selectedEnd === option.id
+                              ? 'border-purple-500 bg-purple-50'
+                              : 'border-gray-200 hover:border-purple-300 hover:bg-gray-50'
+                          } ${isSubmitted && option.isCorrect ? 'border-purple-600 bg-purple-100' : ''}
                           ${isSubmitted && selectedEnd === option.id && !option.isCorrect ? 'border-red-500 bg-red-50' : ''}`}
                         >
                           <input

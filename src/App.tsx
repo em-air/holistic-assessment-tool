@@ -270,7 +270,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/mind/perception/quiz"
+          path="/perception-quiz"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -283,7 +283,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/mind/perception/missing-object"
+          path="/missing-object-quiz"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -296,7 +296,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/mind/perception/sentence-difference"
+          path="/sentence-difference-quiz"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -309,7 +309,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/mind/perception/logical-sequencing"
+          path="/logical-sequencing-quiz"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -322,7 +322,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/mind/perception/logical-sequencing/:grade"
+          path="/logical-sequencing-quiz/:grade"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -335,7 +335,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/mind/perception-selection"
+          path="/perception-quiz-selection/:categoryId"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -348,7 +348,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/oral-skills/oral-language-selection"
+          path="/oral-language-selection/:categoryId"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -361,7 +361,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/oral-skills/oral-language-selection/sentence-building"
+          path="/oral-language-quiz"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -374,20 +374,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/oral-skills/oral-language-selection/story-sequencing"
-          element={
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.1, ease: "easeOut" }}
-            >
-              <OralLanguageQuiz />
-            </motion.div>
-          }
-        />
-        <Route
-          path="/category/oral-skills/oral-language-selection/story-retell"
+          path="/story-retell-quiz"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -400,7 +387,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/oral-skills/oral-language-selection/story-retell/:grade"
+          path="/story-retell-quiz/:grade"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -413,7 +400,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/mind/attention-memory"
+          path="/attention-memory-selection"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -426,7 +413,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/mind/attention-memory/attention-quiz"
+          path="/attention-assessment"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -439,7 +426,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/mind/attention-memory/picture-sequence"
+          path="/memory-assessment"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -452,7 +439,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/mind/attention-memory/flash-word"
+          path="/attention-quiz"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -465,7 +452,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/mind/attention-memory/memory-quiz"
+          path="/memory-quiz"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -556,7 +543,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/mind/critical-thinking-selection"
+          path="/critical-thinking"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -569,7 +556,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/mind/critical-thinking/analogy-quiz"
+          path="/analogy-quiz"
           element={
             <motion.div
               initial={{ opacity: 0 }}
@@ -582,7 +569,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/category/mind/critical-thinking/category-quiz"
+          path="/category-quiz"
           element={
             <motion.div
               initial={{ opacity: 0 }}

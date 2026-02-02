@@ -1,31 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Volume2, VolumeX, Globe, XCircle } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, RotateCcw, Volume2, VolumeX, Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { spotTheDifferenceData, type GameLevelWithScene } from '../data/spotTheDifferenceData';
 import SimpleCartoonScene from '../components/SimpleCartoonScene';
 import { logger } from '../utils/logger';
-
-// API types for spot the difference
-interface DifferencePosition {
-  x: number;
-  y: number;
-}
-
-interface SceneConfig {
-  sceneType: 'toys' | 'classroom' | 'playground' | 'kitchen';
-  differencesA: string[];
-  differencesB: string[];
-}
-
-interface GameLevelWithScene {
-  id: number;
-  name: string;
-  grade: number;
-  differences: DifferencePosition[];
-  sceneConfig?: SceneConfig;
-}
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 // Translations
 const translations = {
@@ -65,12 +44,6 @@ const translations = {
 
 export default function SpotTheDifferenceGame() {
   const navigate = useNavigate();
-  const { grade: gradeParam } = useParams<{ grade: string }>();
-  const grade = parseInt(gradeParam || '1');
-
-  const [levels, setLevels] = useState<GameLevelWithScene[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [currentLevel, setCurrentLevel] = useState(0);
   const [foundDifferences, setFoundDifferences] = useState<Set<number>>(new Set());
   const [showCelebration, setShowCelebration] = useState(false);
@@ -81,37 +54,9 @@ export default function SpotTheDifferenceGame() {
   const [showSparkle, setShowSparkle] = useState<{ x: number; y: number } | null>(null);
   const [wrongClick, setWrongClick] = useState<{ x: number; y: number } | null>(null);
 
-  const currentGameLevel = levels[currentLevel];
+  const currentGameLevel: GameLevelWithScene = spotTheDifferenceData[currentLevel];
   const t = translations[isArabic ? 'ar' : 'en'];
   const isRTL = isArabic;
-
-  // Fetch levels from API
-  useEffect(() => {
-    const fetchLevels = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/quiz-content/spot-the-difference/grade/${grade}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch levels');
-        }
-
-        const data = await response.json();
-        if (data.success && data.levels) {
-          setLevels(data.levels);
-        } else {
-          throw new Error(data.error || 'Invalid response');
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load levels');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLevels();
-  }, [grade]);
 
   // Check if all differences are found
   useEffect(() => {
@@ -127,14 +72,12 @@ export default function SpotTheDifferenceGame() {
 
   // Check if all levels are complete
   useEffect(() => {
-    if (currentLevel >= levels.length - 1 && gameComplete && levels.length > 0) {
+    if (currentLevel >= spotTheDifferenceData.length - 1 && gameComplete) {
       setAllLevelsComplete(true);
     }
-  }, [currentLevel, gameComplete, levels.length]);
+  }, [currentLevel, gameComplete]);
 
   const handleSceneClick = useCallback((x: number, y: number, sceneWidth: number, sceneHeight: number) => {
-    if (!currentGameLevel) return;
-
     // Convert click coordinates to relative coordinates (0-1 range)
     const relativeX = x / sceneWidth;
     const relativeY = y / sceneHeight;
@@ -147,7 +90,7 @@ export default function SpotTheDifferenceGame() {
       if (!foundDifferences.has(index)) {
         const diffX = diff.x;
         const diffY = diff.y;
-
+        
         const distance = Math.sqrt(
           Math.pow(relativeX - diffX, 2) + Math.pow(relativeY - diffY, 2)
         );
@@ -155,7 +98,7 @@ export default function SpotTheDifferenceGame() {
         if (distance <= tolerance) {
           foundMatch = true;
           setFoundDifferences(prev => new Set([...prev, index]));
-
+          
           // Show sparkle effect
           setShowSparkle({ x, y });
           setTimeout(() => setShowSparkle(null), 1000);
@@ -171,7 +114,7 @@ export default function SpotTheDifferenceGame() {
     if (!foundMatch) {
       setWrongClick({ x, y });
       setTimeout(() => setWrongClick(null), 500);
-
+      
       if (soundEnabled) {
         logger.log('❌ Wrong click sound');
       }
@@ -179,7 +122,7 @@ export default function SpotTheDifferenceGame() {
   }, [currentGameLevel, foundDifferences, soundEnabled]);
 
   const handleNextLevel = () => {
-    if (currentLevel < levels.length - 1) {
+    if (currentLevel < spotTheDifferenceData.length - 1) {
       setCurrentLevel(prev => prev + 1);
       setFoundDifferences(new Set());
       setShowCelebration(false);
@@ -199,49 +142,6 @@ export default function SpotTheDifferenceGame() {
     setIsArabic(prev => !prev);
   };
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading levels...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-        <div className="text-center bg-white rounded-2xl p-8 shadow-xl max-w-md">
-          <XCircle size={48} className="text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Failed to Load</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={() => navigate('/category/mind/perception-selection')}
-            className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-xl"
-          >
-            Go Back
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // No levels loaded
-  if (!currentGameLevel) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading levels...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className={`min-h-screen bg-gradient-to-br from-purple-100 to-pink-100 ${isRTL ? 'rtl' : 'ltr'}`}>
       {/* Header */}
@@ -255,9 +155,9 @@ export default function SpotTheDifferenceGame() {
               <ArrowLeft className="w-5 h-5" />
               <span className="font-medium">{t.backToCategories}</span>
             </button>
-
+            
             <div className="h-8 w-px bg-gray-300" />
-
+            
             <h1 className="text-2xl font-bold text-gray-800">{t.title}</h1>
           </div>
 
@@ -294,7 +194,7 @@ export default function SpotTheDifferenceGame() {
               {t.level} {currentLevel + 1}
             </h2>
             <p className="text-gray-600 mb-4">{t.subtitle}</p>
-
+            
             {/* Progress */}
             <div className="flex items-center justify-center gap-2 text-lg">
               <span className="text-green-600 font-bold">{foundDifferences.size}</span>
@@ -313,7 +213,7 @@ export default function SpotTheDifferenceGame() {
               Original
             </h3>
             <div className="relative">
-              <SimpleCartoonScene
+              <SimpleCartoonScene 
                 sceneType={currentGameLevel.sceneConfig?.sceneType || 'toys'}
                 differences={currentGameLevel.sceneConfig?.differencesA || []}
                 width={500}
@@ -327,7 +227,7 @@ export default function SpotTheDifferenceGame() {
             <h3 className="text-lg font-semibold text-center mb-4 text-gray-700">
               Find Differences
             </h3>
-            <div
+            <div 
               className="relative cursor-pointer inline-block"
               onClick={(e) => {
                 const rect = e.currentTarget.getBoundingClientRect();
@@ -336,13 +236,13 @@ export default function SpotTheDifferenceGame() {
                 handleSceneClick(x, y, rect.width, rect.height);
               }}
             >
-              <SimpleCartoonScene
+              <SimpleCartoonScene 
                 sceneType={currentGameLevel.sceneConfig?.sceneType || 'toys'}
                 differences={currentGameLevel.sceneConfig?.differencesB || []}
                 width={500}
                 height={400}
               />
-
+              
               {/* Sparkle Effect */}
               <AnimatePresence>
                 {showSparkle && (

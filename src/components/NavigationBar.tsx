@@ -8,7 +8,7 @@ import { logger } from '../utils/logger';
 const NavigationBar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, signOut: authSignOut, studentName } = useAuth();
+  const { user, signOut: authSignOut } = useAuth();
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
   const handleSignOut = async () => {
@@ -35,10 +35,11 @@ const NavigationBar: React.FC = () => {
   }) => (
     <motion.button
       onClick={onClick}
-      className={`flex flex-col items-center justify-center py-3 px-4 rounded-2xl transition-all duration-300 group relative ${isActiveBtn
-        ? 'text-primary-600 bg-primary-50'
-        : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'
-        }`}
+      className={`flex flex-col items-center justify-center py-3 px-4 rounded-2xl transition-all duration-300 group relative ${
+        isActiveBtn 
+          ? 'text-primary-600 bg-primary-50' 
+          : 'text-gray-500 hover:text-primary-600 hover:bg-primary-50'
+      }`}
       whileTap={{ scale: 0.95 }}
       whileHover={{ y: -2 }}
     >
@@ -112,26 +113,30 @@ const NavigationBar: React.FC = () => {
               />
               {user ? (
                 <NavButton
-                  icon={User}
-                  label={studentName || 'User'}
-                  onClick={() => navigate('/profile')}
-                  isActiveBtn={isActive('/profile')}
+                  icon={LogOut}
+                  label="Log Out"
+                  onClick={() => setShowSignOutConfirm(true)}
                 />
               ) : (
                 <NavButton
                   icon={LogIn}
-                  label="Sign In"
+                  label="Register"
                   onClick={() => navigate('/auth')}
                   isActiveBtn={isActive('/auth')}
                 />
               )}
-              {user && (
-                <NavButton
-                  icon={LogOut}
-                  label="Sign Out"
-                  onClick={() => setShowSignOutConfirm(true)}
-                />
-              )}
+              <NavButton
+                icon={User}
+                label="Profile"
+                onClick={() => {
+                  if (user) {
+                    navigate('/profile');
+                  } else {
+                    navigate('/auth');
+                  }
+                }}
+                isActiveBtn={isActive('/profile')}
+              />
             </div>
           </div>
         </div>

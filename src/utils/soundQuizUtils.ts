@@ -1,37 +1,5 @@
+import { SoundQuestion, QuestionData, commonSounds } from '../data/startingEndingSoundData';
 import { logger } from './logger';
-
-// Local type definitions (previously from startingEndingSoundData)
-export interface SoundQuestion {
-  id: number;
-  word: string;
-  imageUrl: string;
-  audioUrl: string;
-  grade: number;
-  difficulty: 'easy' | 'medium' | 'hard';
-  beginningSound: string;
-  endingSound: string;
-  category: 'cvc' | 'cvcc' | 'blend' | 'digraph';
-}
-
-export interface QuestionData {
-  question: {
-    id: number;
-    word: string;
-    imageUrl: string;
-    audioUrl: string;
-  };
-  questionType: 'beginning' | 'ending';
-  options: string[];
-  correctAnswer?: string;
-}
-
-export const commonSounds = [
-  'b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z',
-  'a', 'e', 'i', 'o', 'u',
-  'sh', 'ch', 'th', 'wh', 'ph', 'ck',
-  'bl', 'br', 'cl', 'cr', 'dr', 'fl', 'fr', 'gl', 'gr', 'pl', 'pr', 'sc', 'sk', 'sl', 'sm', 'sn', 'sp', 'st', 'sw', 'tr', 'tw',
-  'ng', 'nk', 'mp', 'nd', 'nt', 'sk', 'lk', 'lp', 'lt', 'ft', 'pt'
-];
 
 /**
  * Extracts beginning sound from a word

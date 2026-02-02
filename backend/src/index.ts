@@ -16,14 +16,9 @@ import reportRoutes from './routes/reports.js';
 import adminRoutes from './routes/admin.js';
 import teacherRoutes from './routes/teacher.js';
 import aiRoutes from './routes/ai.js';
-import quizContentRoutes from './routes/quizContent.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-
-// Trust proxy - Required for Railway/Heroku/etc behind reverse proxy
-// This fixes express-rate-limit X-Forwarded-For header issues
-app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet());
@@ -33,9 +28,6 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   process.env.FRONTEND_URL,
-  // Vercel production and preview URLs
-  'https://holistic-assessment-tool.vercel.app',
-  'https://holistic-assessment-tool-git-main.vercel.app',
   // Add Vercel preview URL patterns if needed
   ...(process.env.VERCEL_PREVIEW_URLS?.split(',') || []),
 ].filter(Boolean) as string[];
@@ -96,7 +88,6 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/ai', aiRoutes);
-app.use('/api/quiz-content', quizContentRoutes);
 
 // Error handling middleware
 app.use((err: Error & { status?: number; errors?: unknown }, req: express.Request, res: express.Response, _next: express.NextFunction) => {

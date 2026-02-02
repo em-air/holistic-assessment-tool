@@ -1,56 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Volume2, RotateCcw, AlertCircle } from 'lucide-react';
-import { AudioPlayer, calculateQuizStats } from '../utils/soundQuizUtils';
+import { ArrowLeft, Volume2, RotateCcw } from 'lucide-react';
+import { getWordsByGrade } from '../data/startingEndingSoundData';
+import { generateQuizQuestions, AudioPlayer, calculateQuizStats } from '../utils/soundQuizUtils';
+import { QuestionData, QuizResult } from '../data/startingEndingSoundData';
 import { ProgressTracker } from '../utils/progressTracker';
 import SoundQuestionDisplay from '../components/SoundQuestionDisplay';
 import SoundOptionButtons from '../components/SoundOptionButtons';
 import FeedbackMessage from '../components/FeedbackMessage';
 import { logger } from '../utils/logger';
-import { supabase } from '../supabase-client';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
-// API types
-interface SoundQuestion {
-  id: number;
-  word: string;
-  imageUrl: string;
-  audioUrl: string;
-  grade: number;
-  difficulty: 'easy' | 'medium' | 'hard';
-  category: 'cvc' | 'cvcc' | 'blend' | 'digraph';
-}
-
-interface QuestionData {
-  question: {
-    id: number;
-    word: string;
-    imageUrl: string;
-    audioUrl: string;
-  };
-  questionType: 'beginning' | 'ending';
-  options: string[];
-  correctAnswer?: string; // Only set after server validation
-}
-
-interface QuizResult {
-  totalQuestions: number;
-  correctAnswers: number;
-  incorrectAnswers: number;
-  timePerQuestion: number[];
-  totalTime: number;
-  percentage: number;
-  grade: number;
-}
 
 const StartingEndingSoundQuiz: React.FC = () => {
   const navigate = useNavigate();
   const { grade: gradeParam } = useParams<{ grade: string }>();
   const grade = parseInt(gradeParam || '1');
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questions, setQuestions] = useState<QuestionData[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -66,85 +29,31 @@ const StartingEndingSoundQuiz: React.FC = () => {
   const currentQuestion = questions[currentQuestionIndex];
   const totalQuestions = 10;
 
-  // Fetch question options from API
-  const fetchQuestionOptions = useCallback(async (questionId: number, questionType: 'beginning' | 'ending'): Promise<string[]> => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/quiz-content/starting-ending-sounds/options`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ questionId, questionType }),
-      });
-
-      const data = await response.json();
-      if (data.success && data.options) {
-        return data.options;
-      }
-    } catch (err) {
-      logger.error('Error fetching options:', err);
-    }
-    return ['a', 'b', 'c', 'd']; // Fallback
-  }, []);
-
-  // Generate quiz questions from API data
-  const generateQuizFromAPI = useCallback(async (apiQuestions: SoundQuestion[]): Promise<QuestionData[]> => {
-    const shuffled = [...apiQuestions].sort(() => Math.random() - 0.5);
-    const selected = shuffled.slice(0, Math.min(totalQuestions, shuffled.length));
-
-    const quizQuestions: QuestionData[] = [];
-
-    for (const q of selected) {
-      const questionType: 'beginning' | 'ending' = Math.random() > 0.5 ? 'beginning' : 'ending';
-      const options = await fetchQuestionOptions(q.id, questionType);
-
-      quizQuestions.push({
-        question: {
-          id: q.id,
-          word: q.word,
-          imageUrl: q.imageUrl,
-          audioUrl: q.audioUrl,
-        },
-        questionType,
-        options,
-      });
-    }
-
-    return quizQuestions;
-  }, [fetchQuestionOptions]);
-
-  // Initialize quiz questions from API
+  // Initialize quiz questions
   useEffect(() => {
-    const fetchQuestions = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/quiz-content/starting-ending-sounds/grade/${grade}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch questions');
-        }
-
-        const data = await response.json();
-        if (data.success && data.questions) {
-          const quizData = await generateQuizFromAPI(data.questions);
-          setQuestions(quizData);
-          setQuestionStartTime(new Date());
-        } else {
-          throw new Error(data.error || 'Invalid response');
-        }
-      } catch (err) {
-        logger.error('Error initializing quiz:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load questions');
-      } finally {
-        setLoading(false);
+    logger.log('Initializing quiz for grade:', grade);
+    logger.log('Grade param from URL:', gradeParam);
+    try {
+      const words = getWordsByGrade(grade);
+      logger.log('Words for grade:', words.length, words);
+      if (words.length === 0) {
+        logger.error('No words found for grade:', grade);
+        return;
       }
-    };
+      const quizQuestions = generateQuizQuestions(words, totalQuestions);
+      logger.log('Generated questions:', quizQuestions.length, quizQuestions);
+      setQuestions(quizQuestions);
+      setQuestionStartTime(new Date());
+    } catch (error) {
+      logger.error('Error initializing quiz:', error);
+    }
+  }, [grade, gradeParam]);
 
-    fetchQuestions();
-  }, [grade, generateQuizFromAPI]);
+  // Removed automatic audio playback - now only plays when listen button is clicked
 
   const playQuestionAudio = async () => {
     if (!currentQuestion) return;
-
+    
     setIsAudioLoading(true);
     try {
       await AudioPlayer.playAudio(currentQuestion.question.audioUrl, currentQuestion.question.word);
@@ -155,49 +64,23 @@ const StartingEndingSoundQuiz: React.FC = () => {
     }
   };
 
-  const handleAnswerSelect = async (answer: string) => {
+  const handleAnswerSelect = (answer: string) => {
     if (selectedAnswer || showNext) return;
 
     setSelectedAnswer(answer);
     const questionTime = (new Date().getTime() - questionStartTime.getTime()) / 1000;
     setTimePerQuestion([...timePerQuestion, questionTime]);
 
-    // Validate answer via API
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        logger.error('No session found for answer validation');
-        return;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/api/quiz-content/starting-ending-sounds/check`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          questionId: currentQuestion.question.id,
-          questionType: currentQuestion.questionType,
-          answer,
-        }),
+    const isCorrect = answer === currentQuestion.correctAnswer;
+    
+    if (isCorrect) {
+      setScore(score + 1);
+      setFeedback({ type: 'correct', message: 'Correct!' });
+    } else {
+      setFeedback({ 
+        type: 'incorrect', 
+        message: `Not quite! The ${currentQuestion.questionType} sound is "${currentQuestion.correctAnswer}"` 
       });
-
-      const data = await response.json();
-
-      if (data.isCorrect) {
-        setScore(score + 1);
-        setFeedback({ type: 'correct', message: 'Correct!' });
-      } else {
-        setFeedback({
-          type: 'incorrect',
-          message: `Not quite! The ${currentQuestion.questionType} sound is "${data.correctAnswer}"`
-        });
-      }
-    } catch (err) {
-      logger.error('Error checking answer:', err);
-      // Fallback: just mark as answered
-      setFeedback({ type: 'incorrect', message: 'Could not validate answer' });
     }
 
     setShowNext(true);
@@ -222,10 +105,10 @@ const StartingEndingSoundQuiz: React.FC = () => {
 
   const completeQuiz = () => {
     setIsQuizComplete(true);
-
+    
     const stats = calculateQuizStats([...timePerQuestion]);
     const percentage = Math.round((score / questions.length) * 100);
-
+    
     const result: QuizResult = {
       totalQuestions: questions.length,
       correctAnswers: score,
@@ -251,23 +134,10 @@ const StartingEndingSoundQuiz: React.FC = () => {
     });
   };
 
-  const handleRestart = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/quiz-content/starting-ending-sounds/grade/${grade}`);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.questions) {
-          const quizData = await generateQuizFromAPI(data.questions);
-          setQuestions(quizData);
-        }
-      }
-    } catch (err) {
-      logger.error('Error restarting quiz:', err);
-    } finally {
-      setLoading(false);
-    }
-
+  const handleRestart = () => {
+    const words = getWordsByGrade(grade);
+    const quizQuestions = generateQuizQuestions(words, totalQuestions);
+    setQuestions(quizQuestions);
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
     setFeedback({ type: null, message: '' });
@@ -278,8 +148,8 @@ const StartingEndingSoundQuiz: React.FC = () => {
     setShowNext(false);
   };
 
-  // Loading state
-  if (loading) {
+  // Show loading screen while questions are being generated
+  if (questions.length === 0 && !isQuizComplete) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100">
         <div className="bg-white rounded-3xl shadow-lg p-8 text-center">
@@ -290,33 +160,14 @@ const StartingEndingSoundQuiz: React.FC = () => {
       </div>
     );
   }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100">
-        <div className="bg-white rounded-3xl shadow-lg p-8 text-center max-w-md">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <div className="text-xl text-red-600 mb-4">Error Loading Quiz</div>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <button
-            onClick={() => navigate('/phonics-quiz-selection/oral-skills')}
-            className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            Go Back
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // No questions error
+  
+  // Show error if no current question but questions exist
   if (!currentQuestion && questions.length > 0 && !isQuizComplete) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100">
         <div className="bg-white rounded-3xl shadow-lg p-8 text-center">
           <div className="text-xl text-red-600 mb-4">Error Loading Question</div>
-          <button
+          <button 
             onClick={() => navigate('/starting-ending-sound-quiz')}
             className="bg-blue-500 text-white px-4 py-2 rounded-lg"
           >
@@ -336,7 +187,7 @@ const StartingEndingSoundQuiz: React.FC = () => {
         <div className="bg-white rounded-3xl shadow-lg p-8 max-w-md w-full text-center">
           <h2 className="text-3xl font-bold text-purple-600 mb-4">Quiz Complete!</h2>
           <div className="text-6xl mb-4">🎯</div>
-
+          
           <div className="space-y-3 mb-6">
             <p className="text-xl text-gray-700">
               Score: <span className="font-bold text-green-600">{score}</span> out of{" "}
@@ -411,8 +262,8 @@ const StartingEndingSoundQuiz: React.FC = () => {
           {/* Question type instruction */}
           <div className="text-center mb-6">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
-              {currentQuestion.questionType === 'beginning'
-                ? 'Select the beginning sound'
+              {currentQuestion.questionType === 'beginning' 
+                ? 'Select the beginning sound' 
                 : 'Select the ending sound'
               }
             </h1>
@@ -422,7 +273,7 @@ const StartingEndingSoundQuiz: React.FC = () => {
           </div>
 
           {/* Question Display */}
-          <SoundQuestionDisplay
+          <SoundQuestionDisplay 
             question={currentQuestion}
             grade={grade}
             onPlayAudio={playQuestionAudio}
@@ -433,7 +284,7 @@ const StartingEndingSoundQuiz: React.FC = () => {
           <SoundOptionButtons
             options={currentQuestion.options}
             selectedAnswer={selectedAnswer}
-            correctAnswer={currentQuestion.correctAnswer || ''}
+            correctAnswer={currentQuestion.correctAnswer}
             onAnswerSelect={handleAnswerSelect}
             showNext={showNext}
           />
