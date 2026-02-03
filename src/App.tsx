@@ -400,6 +400,46 @@ function AnimatedRoutes() {
             </motion.div>
           }
         />
+        {/* Attention & Memory sub-routes */}
+        <Route
+          path="/category/mind/attention-memory/attention-quiz"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <AttentionAssessment />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/category/mind/attention-memory/picture-sequence"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <AttentionQuiz />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/category/mind/attention-memory/flash-word"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <FlashWordQuiz />
+            </motion.div>
+          }
+        />
         <Route
           path="/oral-language-selection/:categoryId"
           element={
