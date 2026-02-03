@@ -347,6 +347,59 @@ function AnimatedRoutes() {
             </motion.div>
           }
         />
+        {/* Mind section selection routes */}
+        <Route
+          path="/category/mind/perception-selection"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <PerceptionQuizSelection />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/category/mind/attention-memory"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <AttentionMemorySelection />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/category/mind/critical-thinking-selection"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <CriticalThinkingPage />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/category/oral-skills/oral-language-selection"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <OralLanguageSelection />
+            </motion.div>
+          }
+        />
         <Route
           path="/oral-language-selection/:categoryId"
           element={
