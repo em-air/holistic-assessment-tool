@@ -19,7 +19,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     id: 1,
     subscale: 'focusing',
     question: "It's very hard for me to concentrate on a difficult lesson, if there is a lot of noise in the class",
-    kidFriendlyQuestion: "It's hard for me to focus on schoolwork when the classroom is noisy",
+    kidFriendlyQuestion: "It's hard for me to do my work when the class is loud",
     type: 'rating',
     options: [1, 2, 3, 4],
     reverse: false
@@ -28,7 +28,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     id: 2,
     subscale: 'focusing',
     question: "If I have to concentrate and solve a difficult math problem, I have trouble focusing my attention",
-    kidFriendlyQuestion: "When I'm doing hard math problems, it's difficult for me to focus",
+    kidFriendlyQuestion: "When math is hard, it's tough to keep my mind on it",
     type: 'rating',
     options: [1, 2, 3, 4],
     reverse: false
@@ -37,7 +37,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     id: 3,
     subscale: 'focusing',
     question: "When I am working hard on something, I still get distracted by things going on around me",
-    kidFriendlyQuestion: "When I'm working on something important, I get distracted by what's happening around me",
+    kidFriendlyQuestion: "When I'm working, things around me make me lose track",
     type: 'rating',
     options: [1, 2, 3, 4],
     reverse: false
@@ -46,7 +46,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     id: 6,
     subscale: 'focusing',
     question: "When I am reading in the classroom, I am easily disturbed by other children talking to each other",
-    kidFriendlyQuestion: "When I'm reading, other kids talking makes it hard for me to concentrate",
+    kidFriendlyQuestion: "When I read, other kids talking makes it hard to keep going",
     type: 'rating',
     options: [1, 2, 3, 4],
     reverse: false
@@ -55,7 +55,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     id: 7,
     subscale: 'focusing',
     question: "When I try to concentrate myself, I find it difficult not to think about other things",
-    kidFriendlyQuestion: "When I try to focus, my mind keeps thinking about other things",
+    kidFriendlyQuestion: "When I try to think about one thing, my mind goes to other things",
     type: 'rating',
     options: [1, 2, 3, 4],
     reverse: false
@@ -64,7 +64,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     id: 8,
     subscale: 'focusing',
     question: "I find it difficult to concentrate myself when I am excited about something",
-    kidFriendlyQuestion: "It's hard for me to focus when I'm excited about something",
+    kidFriendlyQuestion: "It's hard to do my work when I feel very excited",
     type: 'rating',
     options: [1, 2, 3, 4],
     reverse: false
@@ -73,7 +73,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     id: 11,
     subscale: 'focusing',
     question: "When I have to start a new task, it takes me a while to get really involved in it",
-    kidFriendlyQuestion: "When I start something new, it takes me time to really get into it",
+    kidFriendlyQuestion: "When I start something new, it takes me a while to really get going",
     type: 'rating',
     options: [1, 2, 3, 4],
     reverse: false
@@ -82,7 +82,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     id: 12,
     subscale: 'focusing',
     question: "When the teacher explains something, I find it difficult to understand and write it down at the same time",
-    kidFriendlyQuestion: "It's hard for me to listen to the teacher and take notes at the same time",
+    kidFriendlyQuestion: "It's hard to listen to the teacher and write at the same time",
     type: 'rating',
     options: [1, 2, 3, 4],
     reverse: false
@@ -91,7 +91,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     id: 20,
     subscale: 'focusing',
     question: "I find it difficult to let go my own way of thinking about something, and to look at it in a different way",
-    kidFriendlyQuestion: "It's hard for me to think about things in a different way once I have an idea",
+    kidFriendlyQuestion: "It's hard for me to think about things in a new way",
     type: 'rating',
     options: [1, 2, 3, 4],
     reverse: false
@@ -101,7 +101,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     id: 10,
     subscale: 'shifting',
     question: "When I am doing something, I can easily stop and switch to some other task",
-    kidFriendlyQuestion: "I can easily stop what I'm doing and switch to something else",
+    kidFriendlyQuestion: "I can stop what I'm doing and start something else easily",
     type: 'rating',
     options: [1, 2, 3, 4],
     reverse: true
@@ -110,7 +110,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     id: 13,
     subscale: 'shifting',
     question: "When it is necessary, I can become interested in a new topic very quickly",
-    kidFriendlyQuestion: "I can quickly get interested in new things when I need to",
+    kidFriendlyQuestion: "I can get excited about new things fast when I need to",
     type: 'rating',
     options: [1, 2, 3, 4],
     reverse: true
@@ -119,7 +119,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     id: 14,
     subscale: 'shifting',
     question: "It is easy for me to read or write, while I am also talking to someone on the telephone",
-    kidFriendlyQuestion: "I can easily do homework while talking to someone",
+    kidFriendlyQuestion: "I can do my work while talking to someone at the same time",
     type: 'rating',
     options: [1, 2, 3, 4],
     reverse: true
@@ -128,7 +128,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     id: 17,
     subscale: 'shifting',
     question: "After being interrupted or distracted, I can easily shift my attention back to what I was doing before",
-    kidFriendlyQuestion: "When something interrupts me, I can easily go back to what I was doing",
+    kidFriendlyQuestion: "When someone stops me, I can go back to what I was doing easily",
     type: 'rating',
     options: [1, 2, 3, 4],
     reverse: true
@@ -137,7 +137,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     id: 18,
     subscale: 'shifting',
     question: "When I am daydreaming or having distracting thoughts, it is easy for me to switch back to the work I have to do",
-    kidFriendlyQuestion: "When my mind wanders, I can easily get back to my work",
+    kidFriendlyQuestion: "When I daydream, I can get back to my work easily",
     type: 'rating',
     options: [1, 2, 3, 4],
     reverse: true
@@ -146,7 +146,7 @@ export const attentionControlQuestions: AttentionControlQuestion[] = [
     id: 19,
     subscale: 'shifting',
     question: "It is easy for me to switch back and forth between two different tasks",
-    kidFriendlyQuestion: "I can easily switch between doing different activities",
+    kidFriendlyQuestion: "I can jump between two things easily",
     type: 'rating',
     options: [1, 2, 3, 4],
     reverse: true
