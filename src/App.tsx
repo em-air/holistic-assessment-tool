@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { lazy, Suspense } from 'react';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import RequireAuth from './components/RequireAuth';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -139,6 +140,8 @@ function AnimatedRoutes() {
             </motion.div>
           }
         />
+        {/* All quiz/test/assessment routes require authentication */}
+        <Route element={<RequireAuth />}>
         <Route
           path="/quiz/:categoryId/:subcategoryId"
           element={
@@ -687,6 +690,7 @@ function AnimatedRoutes() {
             </motion.div>
           }
         />
+        </Route>
       </Routes>
     </AnimatePresence>
   );

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { signUp, signIn } from '../supabase-client';
 
 export interface AuthFormData {
@@ -30,6 +30,8 @@ const initialFormData: AuthFormData = {
  */
 export function useAuthForm() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -132,7 +134,7 @@ export function useAuthForm() {
           setIsLoading(false);
         } else {
           setShowSuccess(true);
-          setTimeout(() => navigate('/'), 2500);
+          setTimeout(() => navigate(from, { replace: true }), 2500);
         }
       } catch (error) {
         setErrors({ general: 'An unexpected error occurred' });
