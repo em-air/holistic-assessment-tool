@@ -426,7 +426,7 @@ function AnimatedRoutes() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.1, ease: "easeOut" }}
             >
-              <AttentionQuiz />
+              <MemoryAssessment />
             </motion.div>
           }
         />
@@ -440,6 +440,73 @@ function AnimatedRoutes() {
               transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <FlashWordQuiz />
+            </motion.div>
+          }
+        />
+        {/* Perception sub-routes */}
+        <Route
+          path="/category/mind/perception/missing-object"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <MissingObjectQuizPage />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/category/mind/perception/sentence-difference"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <SentenceDifferenceQuiz />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/category/mind/perception/logical-sequencing"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <LogicalSequencingGradeSelector />
+            </motion.div>
+          }
+        />
+        {/* Critical Thinking sub-routes */}
+        <Route
+          path="/category/mind/critical-thinking/analogy-quiz"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <AnalogyQuiz />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/category/mind/critical-thinking/category-quiz"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <CategoryQuiz />
             </motion.div>
           }
         />
