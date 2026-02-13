@@ -403,6 +403,46 @@ function AnimatedRoutes() {
             </motion.div>
           }
         />
+        {/* Oral Language sub-routes */}
+        <Route
+          path="/category/oral-skills/oral-language-selection/sentence-building"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <OralLanguageQuiz />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/category/oral-skills/oral-language-selection/story-sequencing"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <OralLanguageQuiz />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/category/oral-skills/oral-language-selection/story-retell"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <StoryRetellGradeSelector />
+            </motion.div>
+          }
+        />
         {/* Attention & Memory sub-routes */}
         <Route
           path="/category/mind/attention-memory/attention-quiz"
