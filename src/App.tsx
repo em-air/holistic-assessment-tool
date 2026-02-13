@@ -443,6 +443,19 @@ function AnimatedRoutes() {
             </motion.div>
           }
         />
+        <Route
+          path="/category/oral-skills/oral-language-selection/story-retell/:grade"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1, ease: "easeOut" }}
+            >
+              <StoryRetellQuiz />
+            </motion.div>
+          }
+        />
         {/* Attention & Memory sub-routes */}
         <Route
           path="/category/mind/attention-memory/attention-quiz"

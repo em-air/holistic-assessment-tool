@@ -1,492 +1,825 @@
-# Bloom° Holistic Assessment Tool
+# Holistic Assessment Tool — Comprehensive Project Overview
 
-> **Educational Assessment Platform for Ages 6-12**  
-> Comprehensive cognitive skills evaluation covering Mind, Oral, and Academic abilities
+> **A web-based platform for holistic student assessment across cognitive, oral, and academic skill domains.**
+>
+> Built with React + TypeScript (Vite) on the frontend, Node.js/Express on the backend, and Supabase (PostgreSQL + Auth) as the data layer.
 
 ---
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [System Architecture](#system-architecture)
-- [Technology Stack](#technology-stack)
-- [Feature Inventory](#feature-inventory)
-- [Code Organization](#code-organization)
-- [User Flows](#user-flows)
-- [Key Insights & Analysis](#key-insights--analysis)
-- [Actionable Recommendations](#actionable-recommendations)
+1. [High-Level Architecture](#1-high-level-architecture)
+2. [Technology Stack](#2-technology-stack)
+3. [Repository Structure](#3-repository-structure)
+4. [Frontend Architecture](#4-frontend-architecture)
+5. [Backend Architecture](#5-backend-architecture)
+6. [Database Schema](#6-database-schema)
+7. [Authentication & Authorization](#7-authentication--authorization)
+8. [Assessment Domains & Quiz Catalog](#8-assessment-domains--quiz-catalog)
+9. [Key User Flows](#9-key-user-flows)
+10. [Deployment Architecture](#10-deployment-architecture)
+11. [Security Model](#11-security-model)
+12. [Developer Perspective — Code Quality & Maintainability](#12-developer-perspective--code-quality--maintainability)
+13. [Architect Perspective — Scalability & Patterns](#13-architect-perspective--scalability--patterns)
+14. [Product Manager Perspective — Features & Roadmap](#14-product-manager-perspective--features--roadmap)
+15. [Environment Variables](#15-environment-variables)
+16. [Getting Started](#16-getting-started)
+17. [Open Questions & Actionable Insights](#17-open-questions--actionable-insights)
 
 ---
 
-## Overview
-
-Bloom° is a holistic educational assessment platform designed for students aged 6-12 (Grades 1-8). The platform evaluates cognitive, oral, and academic skills through interactive quizzes and assessments, providing detailed reports with actionable recommendations for parents and educators.
-
-### Key Value Propositions
-
-| Feature | Description |
-|---------|-------------|
-| **Comprehensive Assessment** | 3 categories, 12+ skill areas, 30+ individual quizzes |
-| **AI-Powered Evaluation** | Gemini AI for writing assessment and custom test generation |
-| **Grade-Specific Rubrics** | Tailored evaluation criteria for each grade level (1-8) |
-| **Detailed Reporting** | PDF reports with scores, strengths, and recommendations |
-| **Role-Based Access** | Student, Teacher, and Admin roles with appropriate permissions |
-
----
-
-## System Architecture
+## 1. High-Level Architecture
 
 ```mermaid
 graph TB
-    subgraph Client["Frontend (Vite + React)"]
-        UI[React UI<br/>48 Pages]
-        Auth[AuthContext]
-        Services[Frontend Services]
+    subgraph Client["Frontend (React SPA)"]
+        UI[React UI<br/>49 Pages · 45 Components]
+        Router[React Router v7<br/>55 Routes]
+        Auth[AuthContext<br/>Supabase Auth]
+        Services[Frontend Services<br/>Quiz · Report · Gemini]
     end
-    
-    subgraph Server["Backend (Express.js)"]
-        API[REST API<br/>8 Route Modules]
-        MW[Middleware<br/>Auth, Rate Limit]
-        SVC[Backend Services<br/>PDF, Email, AI]
+
+    subgraph Backend["Backend (Express API)"]
+        API[Express Server<br/>Helmet · CORS · Rate Limit]
+        Routes[API Routes<br/>9 Route Modules]
+        MW[Middleware<br/>JWT Verify · Grade Access]
+        BServices[Services<br/>PDF · Email · Storage]
+        Data[Quiz Data Layer<br/>16 Data Modules]
+        Session[Session Storage<br/>In-Memory / Redis]
     end
-    
+
     subgraph External["External Services"]
-        SB[(Supabase<br/>Auth + PostgreSQL)]
-        Gemini[Google Gemini AI]
-        Resend[Resend Email]
+        Supabase[(Supabase<br/>PostgreSQL + Auth + Storage)]
+        Gemini[Google Gemini AI<br/>Writing Eval · Assessment Gen]
+        Resend[Resend<br/>Email Delivery]
     end
-    
-    UI --> Auth
-    Auth --> SB
-    Services --> API
-    API --> MW
-    MW --> SVC
-    SVC --> SB
-    SVC --> Gemini
-    SVC --> Resend
-    
-    style Client fill:#e0f2fe
-    style Server fill:#fef3c7
-    style External fill:#f0fdf4
-```
 
-### Data Flow for Quiz Completion
-
-```mermaid
-sequenceDiagram
-    participant S as Student
-    participant FE as Frontend
-    participant BE as Backend
-    participant DB as Supabase
-    participant AI as Gemini AI
-    
-    S->>FE: Complete Quiz
-    FE->>BE: POST /api/results
-    BE->>DB: Upsert quiz_results
-    DB-->>BE: Confirm save
-    
-    alt Writing Assessment
-        BE->>AI: Evaluate writing
-        AI-->>BE: Return scores + feedback
+    subgraph Deploy["Deployment"]
+        Vercel[Vercel<br/>Frontend + Serverless]
+        Railway[Railway<br/>Backend API]
     end
-    
-    BE-->>FE: Return result with evaluation
-    FE->>S: Display feedback & scores
+
+    UI --> Router
+    Router --> Auth
+    Auth --> Services
+    Services -->|REST + JWT| API
+    API --> Routes
+    Routes --> MW
+    Routes --> BServices
+    Routes --> Data
+    Data --> Session
+    MW -->|Verify JWT| Supabase
+    BServices -->|Store PDFs| Supabase
+    BServices -->|Send Emails| Resend
+    Routes -->|AI Calls| Gemini
+    Client -.->|Direct Auth| Supabase
+    Client --> Vercel
+    Backend --> Railway
 ```
 
 ---
 
-## Technology Stack
+## 2. Technology Stack
 
-### Frontend
-
-| Technology | Purpose | Version |
-|------------|---------|---------|
-| **React** | UI Framework | 18.3.1 |
-| **Vite** | Build Tool | 5.4.2 |
-| **TypeScript** | Type Safety | 5.5.3 |
-| **TailwindCSS** | Styling | 3.4.1 |
-| **Framer Motion** | Animations | 12.23.9 |
-| **React Router** | Navigation | 7.7.0 |
-| **@dnd-kit** | Drag and Drop | 6.3.1 |
-| **@react-pdf/renderer** | PDF Generation (client) | 4.3.1 |
-
-### Backend
-
-| Technology | Purpose | Version |
-|------------|---------|---------|
-| **Express.js** | API Server | 4.21.0 |
-| **TypeScript** | Type Safety | 5.5.4 |
-| **Zod** | Request Validation | 3.23.8 |
-| **Helmet** | Security Headers | 7.1.0 |
-| **express-rate-limit** | Rate Limiting | 7.4.1 |
-| **PDFKit** | PDF Generation | 0.15.0 |
-| **Resend** | Email Service | 4.0.0 |
-
-### External Services
-
-| Service | Purpose |
-|---------|---------|
-| **Supabase** | Authentication, PostgreSQL Database, Storage |
-| **Google Gemini AI** | Writing evaluation, Assessment generation |
-| **Railway** | Backend hosting |
-| **Vercel** | Frontend hosting |
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Frontend** | React 18, TypeScript, Vite 5 | SPA framework & build tooling |
+| **Styling** | Tailwind CSS 3, DaisyUI 5 | Utility-first CSS + component library |
+| **Animation** | Framer Motion | Page transitions & micro-interactions |
+| **Drag & Drop** | @dnd-kit | Sortable quiz interactions |
+| **PDF Generation** | @react-pdf/renderer (client), PDFKit (server) | Client-side reports & server-side reports |
+| **Icons** | Lucide React | Consistent icon set |
+| **Routing** | React Router DOM v7 | Client-side routing with lazy loading |
+| **Backend** | Node.js 20+, Express 4 | REST API server |
+| **Validation** | Zod | Runtime schema validation (backend) |
+| **Auth** | Supabase Auth (JWT) | Authentication & session management |
+| **Database** | Supabase (PostgreSQL) | Data persistence with RLS |
+| **Storage** | Supabase Storage | PDF report file storage |
+| **AI** | Google Gemini 2.5 Flash | Writing evaluation & assessment generation |
+| **Email** | Resend API | Transactional email with PDF attachment |
+| **Security** | Helmet, express-rate-limit | HTTP hardening & rate limiting |
+| **Session** | In-Memory / Redis | Server-side quiz session tracking |
+| **TTS** | Web Speech API | Text-to-speech for spelling & phonics quizzes |
+| **Deploy** | Vercel (frontend), Railway (backend) | Production hosting |
 
 ---
 
-## Feature Inventory
+## 3. Repository Structure
 
-### Assessment Categories
-
-```mermaid
-mindmap
-  root((Bloom°<br/>Assessment))
-    Mind Skills
-      Attention & Memory
-      Learning Styles
-      Critical Thinking
-      Perception
-    Oral Skills
-      Oral Language
-      Reading
-      Phonics Awareness
-      Blending & Segmenting
-    Academic Skills
-      Writing
-      Vocabulary
-      Spelling
-      AI Assessment Generator
+```
+holistic-assessment-tool/
+├── src/                        # Frontend source (React + TypeScript)
+│   ├── App.tsx                 # Root component — 55 lazy-loaded routes
+│   ├── main.tsx                # React entry point
+│   ├── supabase-client.ts      # Supabase client + helper functions
+│   ├── components/             # 45 reusable UI components
+│   │   ├── auth/               # Auth-related components
+│   │   ├── common/             # Shared UI primitives
+│   │   ├── games/              # Game-specific components
+│   │   ├── quiz/               # Quiz-specific components (GradeSelector, etc.)
+│   │   └── reading/            # Reading assessment components
+│   ├── contexts/               # React Context providers (AuthContext)
+│   ├── data/                   # Frontend quiz data (12 data modules)
+│   ├── hooks/                  # Custom React hooks
+│   ├── pages/                  # 49 page-level components
+│   ├── services/               # API client services (4 modules)
+│   ├── types/                  # TypeScript type definitions
+│   └── utils/                  # Utility functions (8 modules)
+│
+├── backend/                    # Backend API (Express + TypeScript)
+│   ├── src/
+│   │   ├── index.ts            # Express server entry point
+│   │   ├── config/             # Supabase admin client config
+│   │   ├── data/               # 16 quiz data modules (secure, server-side)
+│   │   ├── lib/                # Session storage (Memory/Redis)
+│   │   ├── middleware/         # Auth (JWT verify), grade access control
+│   │   ├── routes/             # 9 API route modules
+│   │   ├── services/           # Email, PDF generation, storage
+│   │   └── types/              # Shared TypeScript types
+│   └── scripts/                # DB schema, seed scripts
+│
+├── server/                     # Legacy email server (Nodemailer/Gmail)
+├── api/                        # Vercel serverless function (send-report)
+├── public/                     # Static assets (puzzle images)
+├── supabase/                   # Supabase configuration
+└── [config files]              # Vite, Tailwind, ESLint, TypeScript configs
 ```
 
-### Quiz Types by Category
+---
 
-| Category | Subcategory | Quizzes |
-|----------|-------------|---------|
-| **Mind** | Attention/Memory | Attention Assessment, Memory Assessment, Attention Quiz |
-| | Learning Style | Learning Styles Quiz (VARK) |
-| | Critical Thinking | Analogy Quiz, Category Quiz |
-| | Perception | Perception Quiz, Missing Object, Sentence Difference, Spot the Difference |
-| **Oral** | Oral Language | Oral Language Quiz, Story Retell |
-| | Reading | Reading Assessment, Flash Word Quiz |
-| | Phonics | Phonics Quiz, Starting/Ending Sound |
-| | Blending | Blending Quiz, Segmenting Quiz |
-| **Academic** | Writing | Writing Test (AI-evaluated) |
-| | Vocabulary | Vocabulary Matching |
-| | Spelling | Spelling Test |
-| | AI Tools | Assessment Generator |
+## 4. Frontend Architecture
 
-### User Roles & Permissions
+### 4.1 Routing & Code Splitting
+
+All 49 page components are **lazy-loaded** via `React.lazy()` with a shared `<Suspense>` boundary showing a `<LoadingSpinner />`. Routes are wrapped in `<AnimatePresence>` for animated transitions.
 
 ```mermaid
 graph LR
-    subgraph Roles
-        Student["👨‍🎓 Student"]
-        Teacher["👩‍🏫 Teacher"]  
-        Admin["🔧 Admin"]
+    subgraph PublicRoutes["Public Routes"]
+        Home["/"]
+        AuthR["/auth"]
     end
-    
-    subgraph Permissions
-        P1[Take Assessments]
-        P2[View Own Results]
-        P3[View Student Results]
-        P4[Generate Reports]
-        P5[Manage Users]
-        P6[Admin Dashboard]
+
+    subgraph ProtectedRoutes["Protected Routes (Require Auth)"]
+
+        subgraph Cognition["Cognition (Mind)"]
+            AM["/category/mind/attention-memory"]
+            AQ["/category/mind/attention-memory/attention-quiz"]
+            PS["/category/mind/attention-memory/picture-sequence"]
+            FW["/category/mind/attention-memory/flash-word"]
+            PS2["/category/mind/perception-selection"]
+            MO["/category/mind/perception/missing-object"]
+            SD["/category/mind/perception/sentence-difference"]
+            LS["/category/mind/perception/logical-sequencing"]
+            CT["/category/mind/critical-thinking-selection"]
+            AQz["/category/mind/critical-thinking/analogy-quiz"]
+            CQz["/category/mind/critical-thinking/category-quiz"]
+        end
+
+        subgraph OralSkills["Oral Skills"]
+            OL["/category/oral-skills/oral-language-selection"]
+            SB["/category/oral-skills/.../sentence-building"]
+            SS["/category/oral-skills/.../story-sequencing"]
+            SR["/category/oral-skills/.../story-retell"]
+        end
+
+        subgraph Academic["Academic Skills"]
+            Sp["/spelling-grades → /spelling-test/:grade"]
+            Wr["/writing-grades → /writing-test/:grade"]
+            Rd["/reading-assessment/:categoryId"]
+        end
     end
-    
-    Student --> P1
-    Student --> P2
-    Teacher --> P1
-    Teacher --> P2
-    Teacher --> P3
-    Teacher --> P4
-    Admin --> P1
-    Admin --> P2
-    Admin --> P3
-    Admin --> P4
-    Admin --> P5
-    Admin --> P6
+
+    subgraph AdminRoutes["Admin-Only Routes"]
+        AR["/admin/reports"]
+    end
+
+    Home --> AuthR
+    AuthR --> ProtectedRoutes
+```
+
+### 4.2 State Management
+
+| Pattern | Usage |
+|---------|-------|
+| **React Context** | `AuthContext` — user session, profile, role, grade |
+| **Component State** | Quiz game state (per-component `useState`) |
+| **LocalStorage** | Progress tracking (per-user, via `ProgressTracker`) |
+| **Supabase Auth** | Session stored in `sessionStorage` (allows multi-tab) |
+
+### 4.3 Key Frontend Services
+
+| Service | File | Responsibility |
+|---------|------|---------------|
+| `secureQuizService` | `services/secureQuizService.ts` | Fetch quiz content from backend API; submit answers for server-side grading |
+| `geminiService` | `services/geminiService.ts` | Writing evaluation via backend AI proxy |
+| `reportService` | `services/reportService.ts` | Generate PDF reports, trigger email delivery |
+| `quizResultsService` | `services/quizResultsService.ts` | Save quiz results to backend database |
+| `ProgressTracker` | `utils/progressTracker.ts` | Track cognition section completion (14 quizzes) |
+| `EnhancedTTS` | `utils/enhancedTTS.ts` | Text-to-speech with voice quality selection |
+
+---
+
+## 5. Backend Architecture
+
+### 5.1 Server Setup
+
+The Express server (`backend/src/index.ts`) applies security-first middleware:
+
+1. **Helmet** — HTTP security headers
+2. **CORS** — Strict origin checking (localhost + production URLs)
+3. **Rate Limiting** — 100 requests per 15 minutes per IP
+4. **Body Parsing** — JSON + URL-encoded, 10 MB limit
+
+### 5.2 API Route Modules
+
+```mermaid
+graph TD
+    API["/api"]
+    API --> Health["/health — Health Check"]
+    API --> Profile["/profile — User Profile CRUD"]
+    API --> Quizzes["/quizzes — Quiz Metadata"]
+    API --> Results["/results — Save/Get Quiz Results"]
+    API --> Progress["/progress — User Progress"]
+    API --> Reports["/reports — PDF Generation + Email"]
+    API --> Admin["/admin — User Mgmt, Analytics (Admin Only)"]
+    API --> Teacher["/teacher — Student View (Teacher/Admin)"]
+    API --> AI["/ai — Gemini AI (Writing Eval, Assessment Gen)"]
+    API --> QuizContent["/quiz-content — Secure Quiz Delivery"]
+
+    QuizContent --> Spelling["Spelling Sessions"]
+    QuizContent --> Blending["Blending Quiz"]
+    QuizContent --> Vocab["Vocabulary"]
+    QuizContent --> StoryRetell["Story Retell"]
+    QuizContent --> CritThink["Critical Thinking"]
+    QuizContent --> LearnStyle["Learning Styles"]
+    QuizContent --> LogicSeq["Logical Sequencing"]
+    QuizContent --> Attention["Attention Control"]
+    QuizContent --> Memory["Memory Assessment"]
+    QuizContent --> SentDiff["Sentence Differences"]
+    QuizContent --> StartEnd["Starting/Ending Sounds"]
+    QuizContent --> Writing["Writing Prompts"]
+```
+
+### 5.3 Session Storage Architecture
+
+Quiz sessions use a **dual-backend abstraction** (`lib/sessionStorage.ts`):
+
+```mermaid
+graph LR
+    Client -->|Start Session| API
+    API -->|Dev| InMemory["In-Memory Map<br/>(auto-TTL cleanup)"]
+    API -->|Prod| Redis["Redis<br/>(TTL + shared across instances)"]
+    API -->|Submit Answer| Validate[Server-side Validation]
+    Validate -->|Score| Results["Save to Supabase"]
 ```
 
 ---
 
-## Code Organization
+## 6. Database Schema
 
-### Frontend Structure (`/src`)
+```mermaid
+erDiagram
+    PROFILES {
+        uuid id PK
+        text student_name
+        int age
+        text grade
+        text parent_email
+        text role "student | teacher | admin"
+        uuid assigned_teacher_id FK
+        timestamptz created_at
+        timestamptz updated_at
+    }
 
-```
-src/
-├── App.tsx                    # Main app with lazy-loaded routes
-├── main.tsx                   # Entry point
-├── index.css                  # Global styles
-├── supabase-client.ts         # Supabase client + API functions
-│
-├── components/                # 24 reusable components
-│   ├── ErrorBoundary.tsx      # Error handling
-│   ├── LoadingSpinner.tsx     # Loading states
-│   ├── ProtectedRoute.tsx     # Route protection
-│   ├── NavigationBar.tsx      # App navigation
-│   ├── ResultScreen.tsx       # Quiz results display
-│   ├── ReportPDF.tsx          # Client-side PDF
-│   └── games/                 # Interactive game components
-│
-├── pages/                     # 48 page components
-│   ├── Homepage.tsx           # Landing page
-│   ├── AuthPage.tsx           # Login/Register
-│   ├── CategoriesPage.tsx     # Assessment categories
-│   ├── AdminReports.tsx       # Admin dashboard
-│   └── [Quiz]*.tsx            # Individual quiz pages
-│
-├── contexts/                  # React contexts
-│   └── AuthContext.tsx        # Authentication state
-│
-├── services/                  # API services
-│   ├── geminiService.ts       # AI API calls
-│   ├── quizResultsService.ts  # Results API
-│   └── reportService.ts       # Report generation
-│
-├── data/                      # Static quiz content
-│   ├── assessmentData.ts      # Category structure
-│   ├── spellingData.ts        # Spelling words by grade
-│   ├── writingData.ts         # Writing prompts
-│   └── [quiz]Data.ts          # Quiz-specific content
-│
-├── utils/                     # Utility functions
-│   ├── logger.ts              # Logging wrapper
-│   ├── gradeUtils.ts          # Grade helpers
-│   ├── enhancedTTS.ts         # Text-to-speech
-│   └── progressTracker.ts     # Progress tracking
-│
-└── types/
-    ├── index.ts               # Frontend types
-    └── database.ts            # Database types
+    QUIZ_METADATA {
+        uuid id PK
+        text quiz_id UK
+        text quiz_name
+        text category "mind | oral | academic"
+        text subcategory
+        text[] allowed_grades
+        boolean is_active
+        timestamptz created_at
+    }
+
+    QUIZ_RESULTS {
+        uuid id PK
+        uuid user_id FK
+        text quiz_id
+        text quiz_name
+        text category
+        text subcategory
+        int score
+        int total_questions
+        int percentage
+        int time_spent
+        text grade_level
+        jsonb additional_data
+        timestamptz completed_at
+    }
+
+    ASSESSMENT_SESSIONS {
+        uuid id PK
+        uuid user_id FK
+        text session_type "mind | oral | academic | full"
+        text status "in_progress | completed | abandoned"
+        int overall_progress
+        timestamptz started_at
+        timestamptz completed_at
+    }
+
+    REPORTS {
+        uuid id PK
+        uuid user_id FK
+        uuid session_id FK
+        text report_type
+        text pdf_url
+        text[] emailed_to
+        timestamptz generated_at
+    }
+
+    PROFILES ||--o{ QUIZ_RESULTS : "has"
+    PROFILES ||--o{ ASSESSMENT_SESSIONS : "has"
+    PROFILES ||--o{ REPORTS : "has"
+    PROFILES ||--o| PROFILES : "assigned_teacher"
+    ASSESSMENT_SESSIONS ||--o{ REPORTS : "generates"
+    QUIZ_METADATA ||--o{ QUIZ_RESULTS : "references"
 ```
 
-### Backend Structure (`/backend/src`)
+### Row-Level Security (RLS)
 
-```
-backend/src/
-├── index.ts                   # Express server entry
-│
-├── routes/                    # 8 route modules
-│   ├── admin.ts               # Admin endpoints
-│   ├── ai.ts                  # AI evaluation endpoints
-│   ├── profile.ts             # User profile CRUD
-│   ├── progress.ts            # Progress tracking
-│   ├── quizzes.ts             # Quiz metadata
-│   ├── reports.ts             # Report generation
-│   ├── results.ts             # Quiz results
-│   └── teacher.ts             # Teacher endpoints
-│
-├── middleware/
-│   ├── auth.ts                # JWT verification
-│   └── gradeAccess.ts         # Grade-based access control
-│
-├── services/
-│   ├── emailService.ts        # Resend email
-│   ├── pdfGenerator.ts        # PDFKit reports
-│   └── storageService.ts      # Supabase storage
-│
-├── config/
-│   └── supabase.ts            # Supabase admin client
-│
-└── types/
-    └── database.ts            # Database types
-```
+All tables have RLS enabled:
+
+| Table | Students | Teachers | Admins |
+|-------|----------|----------|--------|
+| `profiles` | Own profile only | Assigned students | All profiles |
+| `quiz_results` | Own results | Assigned student results | All results |
+| `assessment_sessions` | Own sessions | — | All sessions |
+| `reports` | Own reports | Assigned student reports | All reports |
+| `quiz_metadata` | Active quizzes (read) | Active quizzes (read) | Full CRUD |
 
 ---
 
-## User Flows
+## 7. Authentication & Authorization
 
-### Student Assessment Flow
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Supabase
+    participant Backend
+
+    User->>Frontend: Sign up / Sign in
+    Frontend->>Supabase: auth.signUp() / auth.signInWithPassword()
+    Supabase-->>Frontend: JWT + Session
+    Note over Supabase: DB trigger creates profile row
+
+    Frontend->>Frontend: AuthContext stores user + profile
+    Frontend->>Backend: API call (Authorization: Bearer JWT)
+    Backend->>Supabase: auth.getUser(token) — verify JWT
+    Supabase-->>Backend: User data
+    Backend->>Backend: Fetch profile → attach role+grade to req.user
+    Backend-->>Frontend: Protected response
+```
+
+### Role Hierarchy
+
+| Role | Access |
+|------|--------|
+| **Student** | Take quizzes (grade-restricted), view own results & reports |
+| **Teacher** | View assigned students' results and reports |
+| **Admin** | Full access — manage users, view all data, configure quizzes |
+
+### Grade-Based Access Control
+
+Quiz access is controlled by a rules engine (`utils/gradeUtils.ts` + `middleware/gradeAccess.ts`):
+
+- **Cognition (Mind)**: Grades 1–5 only
+- **Oral Skills**: Varies by sub-quiz (Grades 1–4 or 1–6)
+- **Academic**: All grades (1–8), but students can only access their own grade level
+- **Admin/Teacher**: Bypass all grade restrictions
+
+---
+
+## 8. Assessment Domains & Quiz Catalog
+
+```mermaid
+mindmap
+  root((Holistic<br/>Assessment))
+    Cognition
+      Attention & Memory
+        Attention Questionnaire
+        Attention Tiles
+        Picture Sequence
+        Flash Word Quiz
+      Learning Style
+        Learning Style Quiz
+      Critical Thinking
+        Analogy Quiz
+        Category Quiz
+      Perception
+        Missing Object
+        Sentence Differences
+        Logical Sequencing
+    Oral Skills
+      Oral Language
+        Sentence Building
+        Story Sequencing
+        Story Retell
+      Reading
+        Reading Assessment
+      Phonics Awareness
+        Phonics Quiz
+        Starting/Ending Sounds
+      Blending & Segmenting
+        Blending Quiz
+        Segmenting Quiz
+    Academic Skills
+      Writing
+        Writing Test (AI-graded)
+      Vocabulary
+        Vocabulary Matching
+      Spelling
+        Spelling Test (TTS)
+      AI Assessment Generator
+        Custom AI-generated tests
+```
+
+### Quiz Delivery Security Model
+
+Quizzes use a **server-side scoring architecture**:
+
+1. Frontend requests questions → Backend sends questions **without answers**
+2. Student submits answers → Backend validates against stored answers
+3. Backend calculates score → Returns result to frontend
+4. Result saved to `quiz_results` table in Supabase
+
+This prevents answer inspection via browser DevTools.
+
+---
+
+## 9. Key User Flows
+
+### 9.1 Student Assessment Flow
 
 ```mermaid
 flowchart TD
-    A[Homepage] --> B{Logged In?}
-    B -->|No| C[Auth Page]
-    C --> D[Register/Login]
-    D --> E[Categories Page]
-    B -->|Yes| E
-    E --> F[Select Category]
-    F --> G[Select Quiz]
-    G --> H[Complete Quiz]
-    H --> I[View Results]
-    I --> J{More Quizzes?}
-    J -->|Yes| F
-    J -->|No| K[View Report]
+    A[Student Signs In] --> B[Homepage]
+    B --> C[Categories Page]
+    C --> D{Select Category}
+    D --> E[Cognition]
+    D --> F[Oral Skills]
+    D --> G[Academic Skills]
+
+    E --> E1[Select Sub-domain]
+    E1 --> E2[Take Quiz]
+    E2 --> E3[View Results]
+    E3 --> E4[Progress Updated]
+
+    F --> F1[Select Sub-domain]
+    F1 --> F2[Take Quiz]
+    F2 --> F3[View Results]
+
+    G --> G1[Select Grade Level]
+    G1 --> G2[Take Quiz/Test]
+    G2 --> G3[View Results]
+
+    E4 --> H{All Quizzes Done?}
+    H -->|Yes| I[Generate Full Report PDF]
+    H -->|No| E1
+    I --> J[Email Report to Parent]
 ```
 
-### Report Generation Flow
+### 9.2 Report Generation Flow
 
 ```mermaid
-flowchart LR
-    A[Admin Panel] --> B[Select Student]
-    B --> C[Generate Report]
-    C --> D[Backend PDF Service]
-    D --> E[Aggregate Results]
-    E --> F[Generate PDF]
-    F --> G{Email Report?}
-    G -->|Yes| H[Send via Resend]
-    G -->|No| I[Download PDF]
+sequenceDiagram
+    participant Student
+    participant Frontend
+    participant Backend
+    participant Supabase
+    participant Resend
+
+    Student->>Frontend: Click "Generate Report"
+    Frontend->>Backend: POST /api/reports/generate
+    Backend->>Supabase: Fetch all quiz_results for user
+    Backend->>Backend: Generate PDF (PDFKit)
+    Backend->>Supabase: Upload PDF to Storage
+    Backend->>Supabase: Save report record
+    Backend-->>Frontend: { pdf_url, downloadUrl }
+
+    opt Email Requested
+        Backend->>Resend: Send email with PDF attachment
+        Resend-->>Backend: Delivery confirmation
+    end
+
+    Frontend->>Student: Show report / Download link
+```
+
+### 9.3 AI Writing Evaluation Flow
+
+```mermaid
+sequenceDiagram
+    participant Student
+    participant Frontend
+    participant Backend
+    participant Gemini
+
+    Student->>Frontend: Write response to prompt
+    Frontend->>Backend: POST /api/ai/evaluate-writing
+    Backend->>Backend: Validate with Zod schema
+    Backend->>Gemini: Send prompt + rubric + student text
+    Gemini-->>Backend: Structured evaluation JSON
+    Backend->>Backend: Parse & validate AI response
+    Backend-->>Frontend: Scores, feedback, suggestions
+    Frontend->>Student: Display evaluation results
 ```
 
 ---
 
-## Key Insights & Analysis
+## 10. Deployment Architecture
 
-### 🏗️ Software Architect Perspective
+```mermaid
+graph TB
+    subgraph Vercel["Vercel"]
+        FE["Frontend SPA<br/>(Static + SPA Fallback)"]
+        SF["Serverless Function<br/>/api/send-report"]
+    end
 
-| Aspect | Rating | Analysis |
-|--------|--------|----------|
-| **Scalability** | 7/10 | Stateless backend enables horizontal scaling. Consider caching for quiz data. |
-| **Security** | 8/10 | JWT auth, Helmet, rate limiting, RLS in Supabase. API keys properly server-side. |
-| **Separation of Concerns** | 7/10 | Clear frontend/backend split. Some pages are too large (30KB+). |
-| **Database Design** | 8/10 | Good normalized schema with proper foreign keys and RLS policies. |
-| **API Design** | 7/10 | RESTful patterns, Zod validation. Missing API versioning. |
+    subgraph Railway["Railway"]
+        BE["Backend API<br/>Node.js Express"]
+    end
 
-**Architecture Strengths:**
-- Clean separation between frontend and backend
-- Supabase handles auth, database, and storage in one platform
-- AI processing offloaded to Gemini API
-- Session storage prevents multi-user conflicts
+    subgraph Supabase["Supabase Cloud"]
+        DB[(PostgreSQL)]
+        AuthS[Auth Service]
+        Storage[File Storage]
+    end
 
-**Architecture Concerns:**
-- No caching layer for frequently accessed quiz data
-- Large monolithic pages instead of micro-frontends
-- Missing API versioning (`/api/v1/`)
+    Browser -->|HTTPS| FE
+    FE -->|REST API| BE
+    FE -->|Auth| AuthS
+    FE -.->|Fallback email| SF
+    BE -->|Service Role Key| DB
+    BE -->|Service Role Key| Storage
+    BE -->|Verify JWT| AuthS
+```
 
-### 💻 Software Developer Perspective
+### Configuration
 
-| Aspect | Rating | Analysis |
-|--------|--------|----------|
-| **Code Organization** | 7/10 | Good folder structure, but 48 pages in one folder is unwieldy |
-| **Type Safety** | 8/10 | Comprehensive types, shared between FE/BE |
-| **Error Handling** | 7/10 | ErrorBoundary added, fallback patterns in services |
-| **Code Splitting** | 8/10 | React.lazy() for all pages (recently implemented) |
-| **Testing** | 2/10 | No test files found - significant gap |
-| **Documentation** | 5/10 | Inline comments exist, missing API documentation |
-
-**Developer Experience Wins:**
-- TypeScript throughout the stack
-- Zod validation provides runtime type checking
-- Logger abstraction prevents console.log pollution
-- Clear naming conventions
-
-**Technical Debt Identified:**
-- No automated tests
-- Some page files exceed 30KB (ReadingAssessment, AuthPage)
-- Quiz data hardcoded in frontend (should be in database)
-- Duplicate type definitions (now synced)
-
-### 📊 Product Manager Perspective
-
-| Aspect | Rating | Analysis |
-|--------|--------|----------|
-| **Feature Completeness** | 8/10 | 30+ quizzes covering 3 major cognitive areas |
-| **User Experience** | 8/10 | Kid-friendly design, engaging animations, clear feedback |
-| **Value Proposition** | 9/10 | Unique comprehensive assessment with AI evaluation |
-| **Onboarding** | 6/10 | Registration works but no guided tour |
-| **Analytics** | 4/10 | Progress tracking exists but no business analytics |
-| **Accessibility** | 5/10 | Basic support, needs improvement for screen readers |
-
-**Product Strengths:**
-- Clear target audience (ages 6-12)
-- AI-powered writing evaluation is differentiating
-- PDF reports provide tangible value for parents
-- Grade-specific rubrics ensure age-appropriate assessment
-
-**Product Opportunities:**
-- Add onboarding tutorial for first-time users
-- Implement gamification (badges, streaks, leaderboards)
-- Add parent portal for viewing child progress
-- Mobile app for offline assessment
+- **Vercel**: `vercel.json` — SPA rewrites, serverless function memory (1024 MB)
+- **Railway**: `railway.json` + `Procfile` — `node dist/index.js`
+- **Base Path**: `/holistic-assessment-tool` (GitHub Pages compatible)
 
 ---
 
-## Actionable Recommendations
+## 11. Security Model
 
-### 🔴 Critical Priority (Week 1)
-
-| # | Recommendation | Impact | Effort |
-|---|----------------|--------|--------|
-| 1 | **Add automated tests** - At minimum, unit tests for services and integration tests for API routes | High | Medium |
-| 2 | **Add API versioning** - Prefix all routes with `/api/v1/` to enable future breaking changes | Medium | Low |
-| 3 | **Implement request logging** - Add structured logging for debugging and monitoring | Medium | Low |
-
-### 🟡 High Priority (Month 1)
-
-| # | Recommendation | Impact | Effort |
-|---|----------------|--------|--------|
-| 4 | **Refactor large page components** - Split AuthPage (36KB), ReadingAssessment (37KB) into smaller components | Medium | Medium |
-| 5 | **Add caching layer** - Redis or in-memory cache for quiz data and metadata | High | Medium |
-| 6 | **Move quiz data to database** - Store quiz content in Supabase instead of hardcoded files | Medium | High |
-| 7 | **Improve accessibility** - Add ARIA labels, keyboard navigation, screen reader support | Medium | Medium |
-
-### 🟢 Future Enhancements
-
-| # | Recommendation | Business Value |
-|---|----------------|----------------|
-| 8 | **Mobile app** - React Native app for offline-first assessment | Expands market reach |
-| 9 | **Parent dashboard** - Dedicated view for parents to track child progress | Increases engagement |
-| 10 | **Gamification** - Badges, achievements, progress streaks | Improves retention |
-| 11 | **Teacher dashboard** - Class-wide analytics and progress comparison | Enables school sales |
-| 12 | **Multi-language support** - i18n for content and UI | International expansion |
+| Layer | Mechanism | Details |
+|-------|-----------|---------|
+| **Transport** | HTTPS | Enforced by Vercel/Railway |
+| **Auth** | Supabase JWT | `sessionStorage`-based (multi-tab safe) |
+| **API** | Bearer token verification | Every protected route verifies JWT via Supabase |
+| **CORS** | Strict origin allowlist | Only `localhost:5173` + production URL |
+| **Rate Limiting** | 100 req/15min per IP | `express-rate-limit` |
+| **Headers** | Helmet | CSP, X-Frame-Options, HSTS, etc. |
+| **Quiz Integrity** | Server-side answers | Answers never sent to client until post-submission |
+| **Session Tracking** | Server-side session storage | Prevents replaying quiz answers |
+| **Data Access** | PostgreSQL RLS | Row-level security on all tables |
+| **Input Validation** | Zod schemas | All API inputs validated before processing |
+| **Grade Access** | Rules engine | Students restricted to grade-appropriate quizzes |
+| **Role Access** | Middleware guards | Admin/Teacher routes protected by role checks |
 
 ---
 
-## Questions for Further Development
+## 12. Developer Perspective — Code Quality & Maintainability
 
-1. **What is the target deployment scale?** - This affects caching and database strategy
-2. **Are there plans for school/district licensing?** - Impacts multi-tenancy architecture
-3. **Is offline support required?** - Would require service worker implementation
-4. **What analytics are needed for business decisions?** - May need event tracking (Mixpanel, Amplitude)
-5. **Are there COPPA/FERPA compliance requirements?** - May need additional data handling procedures
+### Strengths
+
+- **TypeScript throughout**: Both frontend and backend have type definitions, reducing runtime errors
+- **Lazy loading**: All 49 pages use `React.lazy()` for code splitting — keeps initial bundle small
+- **Zod validation**: Every backend endpoint validates input with Zod schemas
+- **Consistent patterns**: Services follow a uniform `getAccessToken() → fetch() → handle error` pattern
+- **Environment-based config**: All secrets via environment variables, never hardcoded
+- **Error boundaries**: React `ErrorBoundary` wrapping prevents full-app crashes
+- **Dual session storage**: Clean abstraction allowing in-memory (dev) to Redis (prod) switch
+
+### Areas for Improvement
+
+| Area | Current State | Recommendation |
+|------|--------------|----------------|
+| **Route duplication** | Some quizzes have duplicate routes (legacy + new paths) | Consolidate to canonical paths; add redirects for old ones |
+| **Component size** | Some page components (e.g. AttentionQuiz, MemoryAssessment) exceed 500–600 lines | Extract quiz logic into custom hooks; split UI into sub-components |
+| **Data co-location** | Frontend `src/data/` has quiz data that's also in `backend/src/data/` | Single source of truth on backend; remove frontend duplicates |
+| **Error handling** | Frontend services silently fall back on failure | Add user-facing error toasts/banners |
+| **Testing** | No test files found | Add unit tests (Vitest) and integration tests |
+| **Strict TypeScript** | Backend has `strict: false`, `noImplicitAny: false` | Enable strict mode incrementally |
+| **CSS verbosity** | Inline Tailwind classes can get very long | Extract common patterns into Tailwind `@apply` utilities |
+| **Magic strings** | Quiz IDs, routes, and category names are strings throughout | Create shared enums/constants |
 
 ---
 
-## Quick Start
+## 13. Architect Perspective — Scalability & Patterns
+
+### Current Architecture Patterns
+
+| Pattern | Implementation |
+|---------|---------------|
+| **SPA + REST API** | Decoupled frontend/backend with JWT auth |
+| **BFF (Backend for Frontend)** | Backend acts as a BFF — proxies Gemini AI, handles scoring |
+| **Repository pattern** | Supabase client acts as data access layer |
+| **Strategy pattern** | Session storage (In-Memory vs. Redis) via interface |
+| **Lazy loading** | Route-level code splitting |
+| **Role-based access** | Middleware-based role + grade guards |
+
+### Scalability Considerations
+
+```mermaid
+graph TD
+    subgraph Current["Current (Single-Instance)"]
+        C1[In-Memory Sessions]
+        C2[Single Express Instance]
+        C3[Supabase Managed DB]
+    end
+
+    subgraph Scaled["Scaled (Multi-Instance)"]
+        S1[Redis Sessions — Ready]
+        S2[Multiple Express Workers]
+        S3[Supabase Connection Pooling]
+        S4[CDN for Static Assets]
+        S5[Queue for PDF Generation]
+    end
+
+    Current -->|Scale Trigger| Scaled
+```
+
+| Concern | Status | Path Forward |
+|---------|--------|-------------|
+| **Session state** | ✅ Redis-ready abstraction exists | Deploy Redis in production |
+| **PDF generation** | ⚠️ Synchronous in request handler | Move to background job queue (BullMQ) |
+| **AI calls** | ⚠️ Synchronous, can be slow | Add timeout + retry; consider async with webhooks |
+| **Database** | ✅ Supabase-managed PostgreSQL | Built-in connection pooling via pgBouncer |
+| **Static assets** | ⚠️ Served from same origin | Move to CDN (Vercel Edge handles this) |
+| **Monitoring** | ❌ No observability layer | Add structured logging, error tracking (Sentry) |
+
+---
+
+## 14. Product Manager Perspective — Features & Roadmap
+
+### Feature Inventory
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Student registration & auth | ✅ Complete | Email/password via Supabase |
+| Multi-role system (Student/Teacher/Admin) | ✅ Complete | Role-based routing and API access |
+| Cognition assessments (14 quizzes) | ✅ Complete | Attention, Memory, Learning Style, Critical Thinking, Perception |
+| Oral skills assessments | ✅ Complete | Sentence building, Story sequencing/retell, Reading, Phonics, Blending |
+| Academic assessments | ✅ Complete | Spelling (TTS), Writing (AI-graded), Vocabulary matching |
+| AI assessment generator | ✅ Complete | Custom test generation via Gemini |
+| Grade-based access control | ✅ Complete | Students see only age-appropriate content |
+| Progress tracking | ✅ Complete | Per-user progress bar for cognition section |
+| PDF report generation | ✅ Complete | Server-side PDF with scores, recommendations |
+| Email report delivery | ✅ Complete | PDF attachment via Resend |
+| Admin dashboard | ✅ Complete | User management, report viewing, analytics |
+| Teacher dashboard | ✅ Complete | Assigned student view |
+| Drag-and-drop interactions | ✅ Complete | @dnd-kit for sorting quizzes |
+| Animated UI | ✅ Complete | Framer Motion throughout |
+| Bilingual support | 🟡 Partial | Arabic language toggle exists in Oral Language quiz |
+| Mobile responsiveness | 🟡 Partial | Tailwind responsive classes used, not fully audited |
+| Offline support | ❌ Not started | No service worker or PWA manifest |
+| Analytics dashboard | 🟡 Basic | Admin can view reports; no aggregate analytics |
+| Parent portal | ❌ Not started | Parents receive email but have no login |
+| Accessibility (WCAG) | 🟡 Partial | Some ARIA patterns; needs audit |
+
+### User Personas & Value Proposition
+
+```mermaid
+graph LR
+    subgraph Students["Students (Primary Users)"]
+        S[Take age-appropriate assessments<br/>across 3 skill domains]
+    end
+
+    subgraph Teachers["Teachers"]
+        T[Monitor assigned students<br/>View results & progress]
+    end
+
+    subgraph Parents["Parents"]
+        P[Receive PDF report via email<br/>Actionable recommendations]
+    end
+
+    subgraph Admins["Administrators"]
+        A[Manage users, quizzes, and system<br/>Generate reports for any student]
+    end
+
+    Students --> Teachers
+    Students --> Parents
+    Teachers --> Admins
+```
+
+### Suggested Product Roadmap
+
+| Priority | Feature | Impact | Effort |
+|----------|---------|--------|--------|
+| 🔴 High | Automated test suite | Prevents regressions (routes have broken before) | Medium |
+| 🔴 High | Error monitoring (Sentry) | Catch production issues early | Low |
+| 🟡 Medium | Parent portal | Parents can track progress directly | High |
+| 🟡 Medium | Aggregate analytics dashboard | Teachers see class-level trends | Medium |
+| 🟡 Medium | Full mobile audit + PWA | Broader device support | Medium |
+| 🟡 Medium | Full WCAG accessibility audit | Inclusivity & compliance | Medium |
+| 🟢 Low | Full bilingual support (Arabic) | Broader user base | High |
+| 🟢 Low | Gamification (badges, streaks) | Student engagement | Medium |
+| 🟢 Low | Offline quiz support | Use in low-connectivity environments | High |
+
+---
+
+## 15. Environment Variables
+
+### Frontend (`.env`)
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_SUPABASE_URL` | Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anonymous public key |
+| `VITE_API_URL` | Backend API base URL (default: `http://localhost:3001`) |
+| `VITE_BASE_PATH` | SPA base path (default: `/holistic-assessment-tool`) |
+
+### Backend (`.env`)
+
+| Variable | Description |
+|----------|-------------|
+| `PORT` | Server port (default: `3001`) |
+| `SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_SERVICE_KEY` | Supabase service role key (admin) |
+| `SUPABASE_ANON_KEY` | Supabase anonymous key |
+| `GEMINI_API_KEY` | Google Gemini AI API key |
+| `RESEND_API_KEY` | Resend email API key |
+| `FRONTEND_URL` | Frontend origin for CORS |
+| `REDIS_URL` | Redis connection string (production) |
+| `NODE_ENV` | `development` or `production` |
+
+---
+
+## 16. Getting Started
 
 ### Prerequisites
-- Node.js >= 20.0.0
+
+- Node.js >= 20
 - npm or yarn
-- Supabase account
+- Supabase project (with schema applied)
+- Google Gemini API key (for AI features)
+- Resend API key (for email features)
 
-### Frontend Development
+### Setup
+
 ```bash
+# 1. Clone the repository
+git clone https://github.com/YOUR_USERNAME/holistic-assessment-tool.git
 cd holistic-assessment-tool
+
+# 2. Install frontend dependencies
 npm install
-npm run dev
-# Available at http://localhost:5173
-```
 
-### Backend Development
-```bash
-cd backend
-npm install
-npm run dev
-# Available at http://localhost:3001
-```
+# 3. Install backend dependencies
+cd backend && npm install && cd ..
 
-### Environment Variables
+# 4. Configure environment variables
+cp .env.example .env          # Frontend
+cp backend/.env.example backend/.env  # Backend
 
-**Frontend (`.env`):**
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_API_URL=http://localhost:3001
-VITE_BASE_PATH=/holistic-assessment-tool
-```
+# 5. Apply database schema
+# Run backend/scripts/schema.sql in Supabase SQL Editor
 
-**Backend (`.env`):**
-```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_KEY=your-service-key
-GEMINI_API_KEY=your-gemini-key
-RESEND_API_KEY=your-resend-key
-FRONTEND_URL=http://localhost:5173
+# 6. Seed quiz metadata
+cd backend && npm run seed && cd ..
+
+# 7. Start development servers
+npm run dev          # Frontend → http://localhost:5173
+cd backend && npm run dev  # Backend → http://localhost:3001
 ```
 
 ---
 
-*Generated: January 2026*  
-*Platform: Bloom° by Holistic Assessment Tool*
+## 17. Open Questions & Actionable Insights
+
+### Architecture Decisions to Revisit
+
+1. **Duplicate data layers**: Frontend `src/data/` contains quiz data that also lives in `backend/src/data/`. Which is the source of truth? Consider eliminating the frontend copies entirely and serving all quiz content via the API.
+
+2. **Three server entrypoints**: There are three separate server implementations — `backend/` (main Express API), `server/` (legacy email server), and `api/send-report.js` (Vercel serverless). Consolidate into the main backend to reduce maintenance surface.
+
+3. **Route explosion**: 55 routes with many following identical patterns (motion wrapper). Consider a route configuration array mapped to components, which would reduce App.tsx from 822 lines to ~100.
+
+4. **Progress tracking scope**: The `ProgressTracker` currently only tracks the Cognition (Mind) section. Should Oral Skills and Academic Skills also have progress tracking and section reports?
+
+### Questions for Product Stakeholders
+
+- **Target user scale**: How many concurrent students are expected? This impacts whether Redis is needed immediately.
+- **Offline requirements**: Will this be used in schools with unreliable internet? This drives PWA investment.
+- **Curriculum alignment**: Are the quiz questions mapped to specific national/regional curricula? This affects content governance.
+- **Data retention**: How long should quiz results be stored? Are there educational data privacy regulations (FERPA, GDPR) to comply with?
+- **Multi-tenancy**: Will multiple schools use the same instance, or will each school have a separate deployment?
+
+---
+
+*Platform: Holistic Assessment Tool*
