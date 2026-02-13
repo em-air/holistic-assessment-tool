@@ -285,7 +285,7 @@ export const oralLanguageCategories: QuizCategory[] = [
         sequenceImages: [
           {
             id: 'wake_up',
-            image: 'https://i.postimg.cc/jD4fXB28/st1-1.png',
+            image: 'https://images.pexels.com/photos/7504649/pexels-photo-7504649.jpeg',
             correctOrder: 1,
             description: 'Child waking up in bed'
           },
@@ -297,7 +297,7 @@ export const oralLanguageCategories: QuizCategory[] = [
           },
           {
             id: 'brush_teeth',
-            image: 'https://i.postimg.cc/CRs8N953/st1-2.png',
+            image: 'https://images.pexels.com/photos/7086233/pexels-photo-7086233.jpeg',
             correctOrder: 2,
             description: 'Child brushing teeth'
           }
