@@ -291,7 +291,7 @@ export const oralLanguageCategories: QuizCategory[] = [
           },
           {
             id: 'go_to_school',
-            image: 'https://i.postimg.cc/dhjCBg3z/st1-3.png',
+            image: 'https://pixabay.com/images/download/dimitrisvetsikas1969-student-1666118_1920.jpg',
             correctOrder: 3,
             description: 'Child walking to school'
           },
