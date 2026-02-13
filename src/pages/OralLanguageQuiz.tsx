@@ -140,6 +140,12 @@ const OralLanguageQuiz: React.FC = () => {
 
   // Reset quiz
   const resetQuiz = () => {
+    // If the user arrived via a direct route (with state), navigate back to the selection page
+    const state = location.state as { categoryId?: string } | null;
+    if (state?.categoryId) {
+      navigate('/category/oral-skills/oral-language-selection');
+      return;
+    }
     setSelectedCategory(null);
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
