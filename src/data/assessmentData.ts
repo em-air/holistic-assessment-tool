@@ -3,7 +3,7 @@ import { AssessmentCategory } from '../types';
 export const assessmentCategories: AssessmentCategory[] = [
   {
     id: 'mind',
-    title: 'Mind',
+    title: 'Cognition',
     description: 'Assess memory, focus, comprehension, and critical thinking.',
     color: 'mind',
     subcategories: [

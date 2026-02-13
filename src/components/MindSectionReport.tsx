@@ -350,7 +350,7 @@ Assessment Results:
             <div>
               <h2 className="text-2xl font-bold flex items-center space-x-2">
                 <Brain size={28} />
-                <span>Mind Section Report</span>
+                <span>Cognition Section Report</span>
                 {progress.overallProgress < 100 && (
                   <span className="text-sm bg-yellow-500 text-white px-2 py-1 rounded-full">Partial</span>
                 )}

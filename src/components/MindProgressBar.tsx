@@ -187,7 +187,7 @@ const MindProgressBar: React.FC<MindProgressBarProps> = ({ onShowReport, classNa
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-lg font-bold text-gray-800">Mind Section Progress</h3>
+          <h3 className="text-lg font-bold text-gray-800">Cognition Section Progress</h3>
           <p className="text-sm text-gray-600">
             {progress.mindSectionResults.length} of {MIND_QUIZZES.length} quizzes completed
           </p>

@@ -299,7 +299,7 @@ const FlashWordQuiz: React.FC = () => {
               onClick={() => navigate('/category/mind/attention-memory')}
               className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-colors"
             >
-              Back to Mind
+              Back to Cognition
             </button>
           </div>
         </motion.div>

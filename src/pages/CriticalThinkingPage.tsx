@@ -82,7 +82,7 @@ const CriticalThinkingPage: React.FC = () => {
             <Brain size={36} className="text-white" />
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Sharpen Your Mind! 🧠
+            Sharpen Your Cognition! 🧠
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Critical thinking helps you solve problems, make connections, and understand relationships.

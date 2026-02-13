@@ -269,7 +269,7 @@ const AdminReports: React.FC = () => {
             >
               <option value="">All Report Types</option>
               <option value="full">Full Report</option>
-              <option value="mind">Mind Skills</option>
+              <option value="mind">Cognition Skills</option>
               <option value="oral">Oral Language</option>
               <option value="academic">Academic</option>
             </select>

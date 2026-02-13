@@ -155,7 +155,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
             ) : (
               <>
                 <span>
-                  {category.id === 'mind' ? 'Start Mind Assessment' :
+                  {category.id === 'mind' ? 'Start Cognition Assessment' :
                     category.id === 'oral-skills' ? 'Start Oral Skills' :
                       'Begin Assessment'}
                 </span>
