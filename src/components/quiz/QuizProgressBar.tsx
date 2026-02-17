@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useLanguage } from '../../i18n';
 
 interface QuizProgressBarProps {
     currentQuestion: number;
@@ -15,6 +16,7 @@ export const QuizProgressBar = ({
     totalQuestions,
     showQuestionCount = true,
 }: QuizProgressBarProps) => {
+    const { t } = useLanguage();
     const progress = ((currentQuestion + 1) / totalQuestions) * 100;
 
     return (
@@ -22,9 +24,9 @@ export const QuizProgressBar = ({
             {showQuestionCount && (
                 <div className="flex justify-between text-sm text-slate-600 mb-2">
                     <span>
-                        Question {currentQuestion + 1} of {totalQuestions}
+                        {t('quiz.question')} {currentQuestion + 1} {t('quiz.of')} {totalQuestions}
                     </span>
-                    <span>{Math.round(progress)}% Complete</span>
+                    <span>{Math.round(progress)}% {t('quiz.complete')}</span>
                 </div>
             )}
             <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">

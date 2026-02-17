@@ -3,12 +3,14 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Home, BookOpen, User, LogOut, LogIn } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../i18n';
 import { logger } from '../utils/logger';
 
 const NavigationBar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut: authSignOut } = useAuth();
+  const { t } = useLanguage();
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
   const handleSignOut = async () => {
@@ -72,21 +74,21 @@ const NavigationBar: React.FC = () => {
           <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <LogOut className="w-8 h-8 text-white" />
           </div>
-          <h3 className="text-xl font-bold text-gray-800 mb-2">Sign Out</h3>
-          <p className="text-gray-600">Are you sure you want to sign out of your account?</p>
+          <h3 className="text-xl font-bold text-gray-800 mb-2">{t('auth.signOut')}</h3>
+          <p className="text-gray-600">{t('auth.signOutConfirm')}</p>
         </div>
         <div className="flex space-x-3">
           <button
             onClick={() => setShowSignOutConfirm(false)}
             className="flex-1 px-6 py-3 border border-gray-300 rounded-2xl text-gray-700 hover:bg-gray-50 transition-all duration-300 font-semibold"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleSignOut}
             className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl hover:from-red-600 hover:to-red-700 transition-all duration-300 font-semibold shadow-lg"
           >
-            Sign Out
+            {t('auth.signOut')}
           </button>
         </div>
       </motion.div>
@@ -101,33 +103,33 @@ const NavigationBar: React.FC = () => {
             <div className="flex items-center space-x-6 bg-white rounded-3xl px-6 py-2 shadow-lg border border-gray-100">
               <NavButton
                 icon={Home}
-                label="Home"
+                label={t('nav.home')}
                 onClick={() => navigate('/')}
                 isActiveBtn={isActive('/')}
               />
               <NavButton
                 icon={BookOpen}
-                label="Courses"
+                label={t('nav.courses')}
                 onClick={() => navigate('/categories')}
                 isActiveBtn={isActive('/categories') || isActive('/category') || isActive('/quiz')}
               />
               {user ? (
                 <NavButton
                   icon={LogOut}
-                  label="Log Out"
+                  label={t('nav.logOut')}
                   onClick={() => setShowSignOutConfirm(true)}
                 />
               ) : (
                 <NavButton
                   icon={LogIn}
-                  label="Register"
+                  label={t('nav.register')}
                   onClick={() => navigate('/auth')}
                   isActiveBtn={isActive('/auth')}
                 />
               )}
               <NavButton
                 icon={User}
-                label="Profile"
+                label={t('nav.profile')}
                 onClick={() => {
                   if (user) {
                     navigate('/profile');

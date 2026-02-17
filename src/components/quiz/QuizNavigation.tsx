@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useLanguage } from '../../i18n';
 
 interface QuizNavigationProps {
     currentIndex: number;
@@ -25,6 +26,7 @@ export const QuizNavigation: React.FC<QuizNavigationProps> = ({
     answeredIndices = [],
     className = '',
 }) => {
+    const { t } = useLanguage();
     return (
         <div className={`flex flex-col items-center gap-4 ${className}`}>
             {/* Navigation Buttons */}
@@ -38,7 +40,7 @@ export const QuizNavigation: React.FC<QuizNavigationProps> = ({
                         }`}
                     whileTap={{ scale: currentIndex === 0 ? 1 : 0.95 }}
                 >
-                    ← Previous
+                    ← {t('quiz.previous')}
                 </motion.button>
 
                 {isLastQuestion ? (
@@ -48,7 +50,7 @@ export const QuizNavigation: React.FC<QuizNavigationProps> = ({
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                     >
-                        Submit ✓
+                        {t('quiz.submit')} ✓
                     </motion.button>
                 ) : (
                     <motion.button
@@ -57,7 +59,7 @@ export const QuizNavigation: React.FC<QuizNavigationProps> = ({
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                     >
-                        Next →
+                        {t('quiz.next')} →
                     </motion.button>
                 )}
             </div>
@@ -73,7 +75,7 @@ export const QuizNavigation: React.FC<QuizNavigationProps> = ({
                                     ? 'bg-green-500'
                                     : 'bg-gray-300'
                             }`}
-                        title={`Question ${index + 1}`}
+                        title={`${t('quiz.question')} ${index + 1}`}
                     />
                 ))}
             </div>

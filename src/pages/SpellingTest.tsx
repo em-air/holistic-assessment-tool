@@ -6,6 +6,7 @@ import { saveQuizResult } from '../services/quizResultsService';
 import { logger } from '../utils/logger';
 import { QuizProgressBar, QuizNavigation, QuizResultsScreen } from '../components/quiz';
 import { useSpeech } from '../hooks';
+import { useLanguage } from '../i18n';
 
 /**
  * SpellingTest - Refactored
@@ -21,6 +22,7 @@ import { useSpeech } from '../hooks';
 const SpellingTest = () => {
   const { grade } = useParams<{ grade: string }>();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [words, setWords] = useState<SpellingWord[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -110,12 +112,12 @@ const SpellingTest = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">📝</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Loading Spelling Test...</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">{t('quiz.loading')}</h2>
           <button
             onClick={() => navigate('/spelling-grades')}
             className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-colors"
           >
-            Back to Grade Selection
+            {t('nav.back')}
           </button>
         </div>
       </div>
@@ -165,7 +167,7 @@ const SpellingTest = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Grade {grade} Spelling Test</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">{t('spelling.grade')} {grade} {t('spelling.title')}</h1>
           <p className="text-gray-600 mb-4">{getGradeDescription(parseInt(grade || '1'))}</p>
 
           {/* Using reusable progress bar */}
@@ -213,7 +215,7 @@ const SpellingTest = () => {
                   type="text"
                   value={currentAnswer}
                   onChange={(e) => handleAnswerChange(currentWord.id, e.target.value)}
-                  placeholder="Type your spelling here..."
+                  placeholder={t('spelling.typeWord')}
                   className="w-full max-w-md px-4 py-3 text-xl text-center border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none transition-colors"
                   autoFocus
                 />
@@ -255,7 +257,7 @@ const SpellingTest = () => {
             onClick={() => navigate('/spelling-grades')}
             className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-medium transition-colors"
           >
-            ← Back to Grade Selection
+            ← {t('nav.back')}
           </button>
         </div>
       </div>

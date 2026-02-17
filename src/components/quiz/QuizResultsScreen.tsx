@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../i18n';
 
 interface QuizResultsScreenProps {
     score: number;
@@ -25,6 +26,7 @@ export const QuizResultsScreen = ({
     accentColor = 'purple',
 }: QuizResultsScreenProps) => {
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const percentage = Math.round((score / totalQuestions) * 100);
 
     const getPerformanceEmoji = () => {
@@ -35,10 +37,10 @@ export const QuizResultsScreen = ({
     };
 
     const getPerformanceMessage = () => {
-        if (percentage >= 90) return 'Outstanding!';
-        if (percentage >= 70) return 'Great job!';
-        if (percentage >= 50) return 'Good effort!';
-        return 'Keep practicing!';
+        if (percentage >= 90) return t('results.outstanding');
+        if (percentage >= 70) return t('results.greatJob');
+        if (percentage >= 50) return t('results.goodEffort');
+        return t('results.keepPracticing');
     };
 
     const colorClasses = {
@@ -97,10 +99,10 @@ export const QuizResultsScreen = ({
             </motion.div>
 
             <p className="text-xl text-gray-700 mb-2">
-                You got {score} out of {totalQuestions} correct
+                {t('results.youGot')} {score} {t('results.outOf')} {totalQuestions} {t('results.correct')}
             </p>
 
-            <p className="text-lg text-gray-600 mb-8">That's {percentage}%!</p>
+            <p className="text-lg text-gray-600 mb-8">{t('results.thats')} {percentage}%!</p>
 
             {/* Progress Ring */}
             <div className="relative w-24 h-24 mx-auto mb-8">
@@ -141,7 +143,7 @@ export const QuizResultsScreen = ({
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                     >
-                        🔄 Try Again
+                        {t('quiz.tryAgain')}
                     </motion.button>
                 )}
 
@@ -152,7 +154,7 @@ export const QuizResultsScreen = ({
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                     >
-                        📚 Try Another Grade
+                        {t('quiz.tryAnotherGrade')}
                     </motion.button>
                 )}
 
@@ -162,7 +164,7 @@ export const QuizResultsScreen = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                 >
-                    🏠 Back to Categories
+                    {t('quiz.backToCategories')}
                 </motion.button>
             </div>
         </motion.div>

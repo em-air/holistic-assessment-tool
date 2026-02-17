@@ -6,10 +6,12 @@ import CategoryCard from '../components/CategoryCard';
 import { assessmentCategories } from '../data/assessmentData';
 import FloatingBackground from '../components/FloatingBackground';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../i18n';
 
 const CategoriesPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, signOut, isAdmin, studentName } = useAuth();
+  const { t, isRTL } = useLanguage();
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
   const handleSignOut = async () => {
@@ -20,7 +22,7 @@ const CategoriesPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 relative overflow-hidden">
+    <div className={`min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 relative overflow-hidden ${isRTL ? 'rtl' : 'ltr'}`}>
       {/* Animated Background Elements */}
       <FloatingBackground />
 
@@ -41,19 +43,19 @@ const CategoriesPage: React.FC = () => {
                 onClick={() => navigate('/')}
                 className="text-black hover:text-gray-600 font-medium px-3 py-2 transition-colors duration-200"
               >
-                Home
+                {t('nav.home')}
               </button>
               <button
                 onClick={() => navigate('/about')}
                 className="text-black hover:text-gray-600 font-medium px-3 py-2 transition-colors duration-200"
               >
-                About
+                {t('nav.about')}
               </button>
               <button
                 onClick={() => navigate('/contact')}
                 className="text-black hover:text-gray-600 font-medium px-3 py-2 transition-colors duration-200"
               >
-                Contact
+                {t('nav.contact')}
               </button>
               {isAdmin && (
                 <button
@@ -61,7 +63,7 @@ const CategoriesPage: React.FC = () => {
                   className="bg-purple-600 text-white px-4 py-2 rounded-md font-medium hover:bg-purple-700 transition-colors duration-200 flex items-center gap-2"
                 >
                   <Shield size={18} />
-                  Admin
+                  {t('nav.admin')}
                 </button>
               )}
               {user ? (
@@ -71,14 +73,14 @@ const CategoriesPage: React.FC = () => {
                     className="bg-emerald-600 text-white px-4 py-2 rounded-md font-medium hover:bg-emerald-700 transition-colors duration-200 flex items-center gap-2"
                   >
                     <User size={18} />
-                    {studentName || 'Profile'}
+                    {studentName || t('nav.profile')}
                   </button>
                   <button
                     onClick={() => setShowSignOutConfirm(true)}
                     className="bg-red-600 text-white px-4 py-2 rounded-md font-medium hover:bg-red-700 transition-colors duration-200 flex items-center gap-2"
                   >
                     <LogOut size={18} />
-                    Sign Out
+                    {t('nav.signOut')}
                   </button>
                 </>
               ) : (
@@ -86,7 +88,7 @@ const CategoriesPage: React.FC = () => {
                   onClick={() => navigate('/auth')}
                   className="bg-black text-white px-6 py-2 rounded-md font-medium hover:bg-gray-800 transition-colors duration-200"
                 >
-                  Register/Sign In
+                  {t('nav.registerSignIn')}
                 </button>
               )}
             </div>
@@ -161,20 +163,20 @@ const CategoriesPage: React.FC = () => {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h1 className="text-4xl font-medium text-white drop-shadow-lg mb-2">
-                  Choose Your Learning Path
+                  {t('categories.title')}
                 </h1>
-                <p className="text-white/90 drop-shadow-md font-normal">Select an assessment category to begin your holistic learning journey</p>
+                <p className="text-white/90 drop-shadow-md font-normal">{t('categories.subtitle')}</p>
               </div>
 
               {/* Stats Cards */}
               <div className="hidden md:flex space-x-4">
                 <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/50 text-center min-w-[100px]">
                   <div className="text-2xl font-medium text-emerald-600">{assessmentCategories.length}</div>
-                  <div className="text-xs text-gray-600">Categories</div>
+                  <div className="text-xs text-gray-600">{t('categories.statsCategories')}</div>
                 </div>
                 <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/50 text-center min-w-[100px]">
                   <div className="text-2xl font-medium text-green-600">12</div>
-                  <div className="text-xs text-gray-600">Completed</div>
+                  <div className="text-xs text-gray-600">{t('categories.statsCompleted')}</div>
                 </div>
               </div>
             </div>
@@ -215,9 +217,9 @@ const CategoriesPage: React.FC = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-800">Progress Tracking</h3>
+                <h3 className="text-lg font-semibold text-gray-800">{t('categories.progressTracking')}</h3>
               </div>
-              <p className="text-gray-600 text-sm">Monitor your learning journey with detailed analytics and progress reports.</p>
+              <p className="text-gray-600 text-sm">{t('categories.progressTrackingDesc')}</p>
             </div>
 
             <div className="bg-white rounded-2xl p-6 shadow-soft border border-gray-100">
@@ -227,9 +229,9 @@ const CategoriesPage: React.FC = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-800">Personalized Learning</h3>
+                <h3 className="text-lg font-semibold text-gray-800">{t('categories.personalizedLearning')}</h3>
               </div>
-              <p className="text-gray-600 text-sm">Get customized recommendations based on your unique learning style and preferences.</p>
+              <p className="text-gray-600 text-sm">{t('categories.personalizedLearningDesc')}</p>
             </div>
           </motion.div>
         </div>
@@ -246,7 +248,7 @@ const CategoriesPage: React.FC = () => {
             <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
-            <span className="text-xs font-medium">Home</span>
+            <span className="text-xs font-medium">{t('nav.home')}</span>
           </button>
 
           {/* Categories Button */}
@@ -257,7 +259,7 @@ const CategoriesPage: React.FC = () => {
             <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            <span className="text-xs font-medium">Categories</span>
+            <span className="text-xs font-medium">{t('nav.categories')}</span>
           </button>
 
           {/* Profile/Auth Button */}
@@ -267,7 +269,7 @@ const CategoriesPage: React.FC = () => {
               className="flex flex-col items-center justify-center py-2 px-1 text-red-500 hover:text-red-600 transition-colors duration-200"
             >
               <LogOut className="w-6 h-6 mb-1" />
-              <span className="text-xs font-medium">Log Out</span>
+              <span className="text-xs font-medium">{t('nav.logOut')}</span>
             </button>
           ) : (
             <button
@@ -277,7 +279,7 @@ const CategoriesPage: React.FC = () => {
               <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-              <span className="text-xs font-medium">Register</span>
+              <span className="text-xs font-medium">{t('nav.register')}</span>
             </button>
           )}
 
@@ -289,7 +291,7 @@ const CategoriesPage: React.FC = () => {
             <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-xs font-medium">Help</span>
+            <span className="text-xs font-medium">{t('nav.help')}</span>
           </button>
         </div>
       </div>
@@ -312,21 +314,21 @@ const CategoriesPage: React.FC = () => {
               <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <LogOut className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">Sign Out</h3>
-              <p className="text-gray-600">Are you sure you want to sign out?</p>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">{t('auth.signOut')}</h3>
+              <p className="text-gray-600">{t('auth.signOutConfirm')}</p>
             </div>
             <div className="flex space-x-3">
               <button
                 onClick={() => setShowSignOutConfirm(false)}
                 className="flex-1 px-6 py-3 border border-gray-300 rounded-2xl text-gray-700 hover:bg-gray-50 transition-all duration-300 font-semibold"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleSignOut}
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl hover:from-red-600 hover:to-red-700 transition-all duration-300 font-semibold shadow-lg"
               >
-                Sign Out
+                {t('auth.signOut')}
               </button>
             </div>
           </motion.div>

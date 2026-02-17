@@ -5,11 +5,14 @@ import { assessmentCategories } from '../data/assessmentData';
 import FloatingBackground from '../components/FloatingBackground';
 import MindProgressBar from '../components/MindProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
+import { useLanguage } from '../i18n';
+import type { TranslationKeys } from '../i18n';
 import '../utils/testProgressUtils'; // For testing - adds window.addTestResults() and window.clearTestResults()
 
 const CategoryPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
   const navigate = useNavigate();
+  const { t, isRTL } = useLanguage();
   const [showReport, setShowReport] = useState(false);
 
   const category = assessmentCategories.find(cat => cat.id === categoryId);
@@ -19,13 +22,13 @@ const CategoryPage: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 flex items-center justify-center">
         <FloatingBackground />
         <div className="text-center bg-stone-100 p-8 rounded-2xl shadow-xl border border-stone-200 relative z-10">
-          <h1 className="text-2xl font-bold text-stone-800 mb-4">Category Not Found</h1>
+          <h1 className="text-2xl font-bold text-stone-800 mb-4">{t('categoryPage.notFound')}</h1>
           <button
             onClick={() => navigate('/categories')}
             className="group relative px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-stone-100 rounded-full font-medium overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-emerald-500/25 transform hover:scale-105 hover:-translate-y-1"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-700 to-teal-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <span className="relative">Back</span>
+            <span className="relative">{t('nav.back')}</span>
           </button>
         </div>
       </div>
@@ -73,7 +76,7 @@ const CategoryPage: React.FC = () => {
             className="group flex items-center space-x-2 px-4 py-2 text-stone-600 rounded-lg transition-all duration-300 ease-out hover:text-emerald-700 hover:bg-white/50 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
           >
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
-            <span className="font-medium">Back</span>
+            <span className="font-medium">{t('nav.back')}</span>
           </button>
         </div>
 
@@ -95,7 +98,7 @@ const CategoryPage: React.FC = () => {
 
         {/* Subcategories */}
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-semibold text-stone-800 mb-8">Choose an Assessment</h2>
+          <h2 className="text-2xl font-semibold text-stone-800 mb-8">{t('categoryPage.chooseAssessment')}</h2>
           <div className="space-y-4">
             {category.subcategories.map((subcategory) => (
               <button
@@ -110,9 +113,9 @@ const CategoryPage: React.FC = () => {
                 </div>
                 <div className="relative flex items-center space-x-3">
                   {(subcategory.id === 'attention' || subcategory.id === 'perception' || subcategory.id === 'assessment-generator' || subcategory.id === 'reading' || subcategory.id === 'phonics-awareness' || subcategory.id === 'blending' || subcategory.id === 'sentence-formation' || subcategory.id === 'learning-style' || subcategory.id === 'oral-language' || subcategory.id === 'critical-thinking') ? (
-                    <span className="text-emerald-600 text-sm font-medium">Available</span>
+                    <span className="text-emerald-600 text-sm font-medium">{t('categoryPage.available')}</span>
                   ) : (
-                    <span className="text-stone-400 text-sm">Coming Soon</span>
+                    <span className="text-stone-400 text-sm">{t('categoryPage.comingSoon')}</span>
                   )}
                   <svg className="w-4 h-4 text-stone-400 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
