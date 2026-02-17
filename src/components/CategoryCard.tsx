@@ -81,6 +81,38 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
     navigate(`/category/${category.id}`);
   };
 
+  const handleSubcategoryClick = (e: React.MouseEvent, subcategoryId: string) => {
+    e.stopPropagation();
+    if (isBlocked) return;
+    if (subcategoryId === 'assessment-generator') {
+      navigate('/assessment-generator');
+    } else if (subcategoryId === 'reading') {
+      navigate(`/reading-assessment/${category.id}`);
+    } else if (subcategoryId === 'phonics-awareness') {
+      navigate(`/phonics-quiz-selection/${category.id}`);
+    } else if (subcategoryId === 'blending') {
+      navigate(`/blending-segmenting-selection/${category.id}`);
+    } else if (subcategoryId === 'sentence-formation') {
+      navigate('/vocabulary-matching');
+    } else if (subcategoryId === 'learning-style') {
+      navigate('/learning-styles-quiz');
+    } else if (subcategoryId === 'perception') {
+      navigate('/category/mind/perception-selection');
+    } else if (subcategoryId === 'spelling') {
+      navigate('/spelling-grades');
+    } else if (subcategoryId === 'writing') {
+      navigate('/writing-grades');
+    } else if (subcategoryId === 'attention') {
+      navigate('/category/mind/attention-memory');
+    } else if (subcategoryId === 'oral-language') {
+      navigate('/category/oral-skills/oral-language-selection');
+    } else if (subcategoryId === 'critical-thinking') {
+      navigate('/category/mind/critical-thinking-selection');
+    } else {
+      navigate(`/quiz/${category.id}/${subcategoryId}`);
+    }
+  };
+
   return (
     <div
       className={`group rounded-2xl p-6 shadow-sm ${isBlocked ? '' : 'hover:shadow-lg'} ${getCardBgColor(category.color, isBlocked)} max-w-sm mx-auto transform transition-all duration-500 ease-out ${isBlocked ? 'cursor-not-allowed' : 'hover:scale-105 cursor-pointer'} overflow-hidden relative`}
@@ -125,13 +157,14 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
           {category.subcategories.map((subcategory, index) => (
             <div
               key={subcategory.id}
-              className={`flex items-center space-x-3 ${isBlocked ? 'bg-gray-100/60' : 'bg-white/60 group-hover:bg-white/80'} rounded-lg px-3 py-2 transition-all duration-300 ${!isBlocked && 'transform group-hover:translate-x-1'}`}
+              onClick={(e) => handleSubcategoryClick(e, subcategory.id)}
+              className={`flex items-center space-x-3 ${isBlocked ? 'bg-gray-100/60 cursor-not-allowed' : 'bg-white/60 hover:bg-white/90 cursor-pointer'} rounded-lg px-3 py-2 transition-all duration-300 ${!isBlocked && 'hover:translate-x-1 hover:shadow-sm'}`}
               style={{
                 transitionDelay: `${index * 50}ms`
               }}
             >
               <div className={`w-3 h-3 rounded-full ${isBlocked ? 'bg-gray-300' : getSubcategoryColor(subcategory.color)} transition-all duration-300 ${!isBlocked && 'group-hover:scale-110'}`}></div>
-              <span className={`${getTextColor(category.color, isBlocked)} text-sm font-medium transition-colors duration-300`}>
+              <span className={`${getTextColor(category.color, isBlocked)} text-sm font-medium transition-colors duration-300 ${!isBlocked && 'hover:underline'}`}>
                 {subcategory.title}
               </span>
             </div>
