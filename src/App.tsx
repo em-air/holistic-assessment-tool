@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { lazy, Suspense } from 'react';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-import RequireAuth from './components/RequireAuth';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -140,8 +139,6 @@ function AnimatedRoutes() {
             </motion.div>
           }
         />
-        {/* All quiz/test/assessment routes require authentication */}
-        <Route element={<RequireAuth />}>
         <Route
           path="/quiz/:categoryId/:subcategoryId"
           element={
@@ -403,59 +400,6 @@ function AnimatedRoutes() {
             </motion.div>
           }
         />
-        {/* Oral Language sub-routes */}
-        <Route
-          path="/category/oral-skills/oral-language-selection/sentence-building"
-          element={
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.1, ease: "easeOut" }}
-            >
-              <OralLanguageQuiz />
-            </motion.div>
-          }
-        />
-        <Route
-          path="/category/oral-skills/oral-language-selection/story-sequencing"
-          element={
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.1, ease: "easeOut" }}
-            >
-              <OralLanguageQuiz />
-            </motion.div>
-          }
-        />
-        <Route
-          path="/category/oral-skills/oral-language-selection/story-retell"
-          element={
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.1, ease: "easeOut" }}
-            >
-              <StoryRetellGradeSelector />
-            </motion.div>
-          }
-        />
-        <Route
-          path="/category/oral-skills/oral-language-selection/story-retell/:grade"
-          element={
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.1, ease: "easeOut" }}
-            >
-              <StoryRetellQuiz />
-            </motion.div>
-          }
-        />
         {/* Attention & Memory sub-routes */}
         <Route
           path="/category/mind/attention-memory/attention-quiz"
@@ -479,7 +423,7 @@ function AnimatedRoutes() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.1, ease: "easeOut" }}
             >
-              <MemoryAssessment />
+              <AttentionQuiz />
             </motion.div>
           }
         />
@@ -493,73 +437,6 @@ function AnimatedRoutes() {
               transition={{ duration: 0.1, ease: "easeOut" }}
             >
               <FlashWordQuiz />
-            </motion.div>
-          }
-        />
-        {/* Perception sub-routes */}
-        <Route
-          path="/category/mind/perception/missing-object"
-          element={
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.1, ease: "easeOut" }}
-            >
-              <MissingObjectQuizPage />
-            </motion.div>
-          }
-        />
-        <Route
-          path="/category/mind/perception/sentence-difference"
-          element={
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.1, ease: "easeOut" }}
-            >
-              <SentenceDifferenceQuiz />
-            </motion.div>
-          }
-        />
-        <Route
-          path="/category/mind/perception/logical-sequencing"
-          element={
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.1, ease: "easeOut" }}
-            >
-              <LogicalSequencingGradeSelector />
-            </motion.div>
-          }
-        />
-        {/* Critical Thinking sub-routes */}
-        <Route
-          path="/category/mind/critical-thinking/analogy-quiz"
-          element={
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.1, ease: "easeOut" }}
-            >
-              <AnalogyQuiz />
-            </motion.div>
-          }
-        />
-        <Route
-          path="/category/mind/critical-thinking/category-quiz"
-          element={
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.1, ease: "easeOut" }}
-            >
-              <CategoryQuiz />
             </motion.div>
           }
         />
@@ -810,7 +687,6 @@ function AnimatedRoutes() {
             </motion.div>
           }
         />
-        </Route>
       </Routes>
     </AnimatePresence>
   );

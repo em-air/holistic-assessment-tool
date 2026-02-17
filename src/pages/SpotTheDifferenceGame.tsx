@@ -1,11 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Volume2, VolumeX, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { spotTheDifferenceData, type GameLevelWithScene } from '../data/spotTheDifferenceData';
 import SimpleCartoonScene from '../components/SimpleCartoonScene';
-import { logger } from '../utils/logger';
-import { useLanguage } from '../contexts/LanguageContext';
 
 // Translations
 const translations = {
@@ -49,7 +47,7 @@ export default function SpotTheDifferenceGame() {
   const [foundDifferences, setFoundDifferences] = useState<Set<number>>(new Set());
   const [showCelebration, setShowCelebration] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const { isArabic, isRTL } = useLanguage();
+  const [isArabic, setIsArabic] = useState(false);
   const [gameComplete, setGameComplete] = useState(false);
   const [allLevelsComplete, setAllLevelsComplete] = useState(false);
   const [showSparkle, setShowSparkle] = useState<{ x: number; y: number } | null>(null);
@@ -57,6 +55,7 @@ export default function SpotTheDifferenceGame() {
 
   const currentGameLevel: GameLevelWithScene = spotTheDifferenceData[currentLevel];
   const t = translations[isArabic ? 'ar' : 'en'];
+  const isRTL = isArabic;
 
   // Check if all differences are found
   useEffect(() => {
@@ -65,7 +64,7 @@ export default function SpotTheDifferenceGame() {
       setShowCelebration(true);
       setGameComplete(true);
       if (soundEnabled) {
-        logger.log('🎉 Level complete sound');
+        console.log('🎉 Level complete sound');
       }
     }
   }, [foundDifferences, currentGameLevel, soundEnabled]);
@@ -104,7 +103,7 @@ export default function SpotTheDifferenceGame() {
           setTimeout(() => setShowSparkle(null), 1000);
 
           if (soundEnabled) {
-            logger.log('✨ Found difference sound');
+            console.log('✨ Found difference sound');
           }
         }
       }
@@ -116,7 +115,7 @@ export default function SpotTheDifferenceGame() {
       setTimeout(() => setWrongClick(null), 500);
       
       if (soundEnabled) {
-        logger.log('❌ Wrong click sound');
+        console.log('❌ Wrong click sound');
       }
     }
   }, [currentGameLevel, foundDifferences, soundEnabled]);
@@ -136,6 +135,10 @@ export default function SpotTheDifferenceGame() {
     setShowCelebration(false);
     setGameComplete(false);
     setAllLevelsComplete(false);
+  };
+
+  const toggleLanguage = () => {
+    setIsArabic(prev => !prev);
   };
 
   return (
@@ -168,6 +171,14 @@ export default function SpotTheDifferenceGame() {
               ) : (
                 <VolumeX className="w-5 h-5 text-gray-600" />
               )}
+            </button>
+
+            <button
+              onClick={toggleLanguage}
+              className="flex items-center gap-2 p-2 rounded-lg bg-blue-100 hover:bg-blue-200 transition-colors"
+            >
+              <Globe className="w-5 h-5 text-blue-600" />
+              <span className="text-blue-600 font-medium">{isArabic ? 'AR' : 'EN'}</span>
             </button>
           </div>
         </div>

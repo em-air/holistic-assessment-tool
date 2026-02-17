@@ -81,35 +81,50 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
     navigate(`/category/${category.id}`);
   };
 
-  const handleSubcategoryClick = (e: React.MouseEvent, subcategoryId: string) => {
+  const handleSubcategoryClick = (subcategoryId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (isBlocked) return;
-    if (subcategoryId === 'assessment-generator') {
-      navigate('/assessment-generator');
-    } else if (subcategoryId === 'reading') {
-      navigate(`/reading-assessment/${category.id}`);
-    } else if (subcategoryId === 'phonics-awareness') {
-      navigate(`/phonics-quiz-selection/${category.id}`);
-    } else if (subcategoryId === 'blending') {
-      navigate(`/blending-segmenting-selection/${category.id}`);
-    } else if (subcategoryId === 'sentence-formation') {
-      navigate('/vocabulary-matching');
-    } else if (subcategoryId === 'learning-style') {
-      navigate('/learning-styles-quiz');
-    } else if (subcategoryId === 'perception') {
-      navigate('/category/mind/perception-selection');
-    } else if (subcategoryId === 'spelling') {
-      navigate('/spelling-grades');
-    } else if (subcategoryId === 'writing') {
-      navigate('/writing-grades');
-    } else if (subcategoryId === 'attention') {
-      navigate('/category/mind/attention-memory');
-    } else if (subcategoryId === 'oral-language') {
-      navigate('/category/oral-skills/oral-language-selection');
-    } else if (subcategoryId === 'critical-thinking') {
-      navigate('/category/mind/critical-thinking-selection');
-    } else {
-      navigate(`/quiz/${category.id}/${subcategoryId}`);
+
+    // Route mapping matching CategoryPage logic
+    switch (subcategoryId) {
+      case 'attention':
+        navigate('/category/mind/attention-memory');
+        break;
+      case 'learning-style':
+        navigate('/learning-styles-quiz');
+        break;
+      case 'critical-thinking':
+        navigate('/category/mind/critical-thinking-selection');
+        break;
+      case 'perception':
+        navigate('/category/mind/perception-selection');
+        break;
+      case 'oral-language':
+        navigate('/category/oral-skills/oral-language-selection');
+        break;
+      case 'reading':
+        navigate(`/reading-assessment/${category.id}`);
+        break;
+      case 'phonics-awareness':
+        navigate(`/phonics-quiz-selection/${category.id}`);
+        break;
+      case 'blending':
+        navigate(`/blending-segmenting-selection/${category.id}`);
+        break;
+      case 'writing':
+        navigate('/writing-grades');
+        break;
+      case 'sentence-formation':
+        navigate('/vocabulary-matching');
+        break;
+      case 'spelling':
+        navigate('/spelling-grades');
+        break;
+      case 'assessment-generator':
+        navigate('/assessment-generator');
+        break;
+      default:
+        navigate(`/quiz/${category.id}/${subcategoryId}`);
     }
   };
 
@@ -157,8 +172,8 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
           {category.subcategories.map((subcategory, index) => (
             <div
               key={subcategory.id}
-              onClick={(e) => handleSubcategoryClick(e, subcategory.id)}
-              className={`flex items-center space-x-3 ${isBlocked ? 'bg-gray-100/60 cursor-not-allowed' : 'bg-white/60 hover:bg-white/90 cursor-pointer'} rounded-lg px-3 py-2 transition-all duration-300 ${!isBlocked && 'hover:translate-x-1 hover:shadow-sm'}`}
+              onClick={(e) => handleSubcategoryClick(subcategory.id, e)}
+              className={`flex items-center space-x-3 ${isBlocked ? 'bg-gray-100/60' : 'bg-white/60 hover:bg-white/90 hover:shadow-md cursor-pointer'} rounded-lg px-3 py-2 transition-all duration-300 ${!isBlocked && 'transform hover:translate-x-1'}`}
               style={{
                 transitionDelay: `${index * 50}ms`
               }}

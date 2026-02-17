@@ -4,7 +4,6 @@ import { ArrowLeft, Star, Brain, Check, X, RotateCcw } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { oralLanguageCategories, oralLanguageTranslations, type QuizCategory } from '../data/oralLanguageData';
 import { saveQuizResult } from '../services/quizResultsService';
-import { logger } from '../utils/logger';
 
 interface QuizScores {
   vocabulary: { correct: number; total: number };
@@ -50,10 +49,10 @@ const OralLanguageQuiz: React.FC = () => {
         time_spent: timeSpent,
       }).then(result => {
         if (result.success) {
-          logger.log(`Oral Language ${selectedCategory.id} result saved to database`);
+          console.log(`Oral Language ${selectedCategory.id} result saved to database`);
         }
       }).catch(err => {
-        logger.error(`Failed to save Oral Language ${selectedCategory.id} result:`, err);
+        console.error(`Failed to save Oral Language ${selectedCategory.id} result:`, err);
       });
     }
   }, [showResults, selectedCategory, quizScores]);
@@ -140,12 +139,6 @@ const OralLanguageQuiz: React.FC = () => {
 
   // Reset quiz
   const resetQuiz = () => {
-    // If the user arrived via a direct route (with state), navigate back to the selection page
-    const state = location.state as { categoryId?: string } | null;
-    if (state?.categoryId) {
-      navigate('/category/oral-skills/oral-language-selection');
-      return;
-    }
     setSelectedCategory(null);
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
@@ -181,7 +174,7 @@ const OralLanguageQuiz: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <button
-              onClick={() => navigate('/category/oral-skills/oral-language-selection')}
+              onClick={() => navigate('/oral-language-selection/oral-skills')}
               className="group flex items-center space-x-2 px-4 py-2 text-stone-600 rounded-lg transition-all duration-300 ease-out hover:text-purple-700 hover:bg-white/50 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
             >
               <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
