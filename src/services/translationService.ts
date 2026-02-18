@@ -1,15 +1,16 @@
 /**
  * translationService.ts
  *
- * DOM-level real-time translation — works exactly like Chrome / Firefox's
- * built-in "Translate this page" feature:
+ * DOM-level real-time translation — works like Chrome's "Translate this page":
  *
- *   1. Walks the DOM tree and collects visible text nodes
- *   2. Translates them via Google's free translate API (same endpoint browsers use)
- *   3. Caches every translation so repeated / navigated-to text is instant
- *   4. Stores originals per-node so switching back to English is instant
- *      with NO page reload
- *   5. A MutationObserver auto-translates new content React renders
+ *   1. Walks the DOM and groups text nodes by their nearest block-level
+ *      ancestor so full sentences / paragraphs are translated together
+ *      (contextual translation, not word-by-word)
+ *   2. Sends grouped text to Google's free translate API with a separator
+ *      so the API sees complete sentences and can translate idiomatically
+ *   3. Caches every block-level translation for instant repeat visits
+ *   4. Stores originals per-node for instant revert to English (no reload)
+ *   5. MutationObserver auto-translates new content React renders
  *
  * No iframes, no widgets, no banners, no hardcoded strings.
  */
@@ -17,8 +18,15 @@
 // ─── types ──────────────────────────────────────────────────────────
 type Lang = 'en' | 'ar';
 
+interface TextGroup {
+  /** The common block-level ancestor element */
+  block: Element;
+  /** Text nodes in DOM order within this block */
+  nodes: Text[];
+}
+
 // ─── state ──────────────────────────────────────────────────────────
-/** EN text → AR text cache (survives across navigations) */
+/** Full block text (EN) → AR translation cache */
 const cache = new Map<string, string>();
 
 /** Text node → its original English textContent (for clean revert) */
@@ -30,7 +38,7 @@ const translated = new Set<Text>();
 /** Current language */
 let activeLang: Lang = 'en';
 
-/** MutationObserver instance (one at a time) */
+/** MutationObserver instance */
 let observer: MutationObserver | null = null;
 
 /** Debounce timer for observer batching */
@@ -45,7 +53,20 @@ const SKIP_TAGS = new Set([
   'SVG', 'NOSCRIPT', 'IFRAME', 'CANVAS', 'VIDEO', 'AUDIO',
 ]);
 
-const CONCURRENT_REQUESTS = 8;
+/** Tags that are considered block-level (translation boundaries) */
+const BLOCK_TAGS = new Set([
+  'DIV', 'P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
+  'LI', 'TD', 'TH', 'BLOCKQUOTE', 'SECTION', 'ARTICLE',
+  'HEADER', 'FOOTER', 'NAV', 'MAIN', 'ASIDE', 'FIGCAPTION',
+  'LABEL', 'LEGEND', 'DETAILS', 'SUMMARY', 'OPTION',
+  'BUTTON', 'A',
+]);
+
+const CONCURRENT_REQUESTS = 6;
+
+/** Separator used to join/split multiple text chunks in one API call */
+const SEP = ' |||SEP||| ';
+const SEP_REGEX = /\s*\|\|\|SEP\|\|\|\s*/;
 
 // ─── helpers ────────────────────────────────────────────────────────
 function shouldSkip(el: Element | null): boolean {
@@ -53,6 +74,16 @@ function shouldSkip(el: Element | null): boolean {
   if (SKIP_TAGS.has(el.tagName)) return true;
   if (el.closest('.notranslate, [translate="no"]')) return true;
   return false;
+}
+
+/** Find the nearest block-level ancestor for a text node */
+function getBlockAncestor(node: Text): Element {
+  let el: Element | null = node.parentElement;
+  while (el) {
+    if (BLOCK_TAGS.has(el.tagName)) return el;
+    el = el.parentElement;
+  }
+  return document.body;
 }
 
 /** Collect all visible text nodes under `root` */
@@ -71,7 +102,22 @@ function collectTextNodes(root: Node): Text[] {
   return nodes;
 }
 
-/** Translate a single string via Google's free API */
+/** Group text nodes by their nearest block-level ancestor */
+function groupByBlock(nodes: Text[]): TextGroup[] {
+  const map = new Map<Element, Text[]>();
+  for (const node of nodes) {
+    const block = getBlockAncestor(node);
+    if (!map.has(block)) map.set(block, []);
+    map.get(block)!.push(node);
+  }
+  const groups: TextGroup[] = [];
+  map.forEach((textNodes, block) => {
+    groups.push({ block, nodes: textNodes });
+  });
+  return groups;
+}
+
+/** Translate text via Google's free API (contextual, full sentences) */
 async function apiTranslate(text: string, to: Lang): Promise<string> {
   if (cache.has(text)) return cache.get(text)!;
   try {
@@ -81,7 +127,6 @@ async function apiTranslate(text: string, to: Lang): Promise<string> {
     const res = await fetch(url);
     if (!res.ok) return text;
     const json = await res.json();
-    // Response: [[[translatedChunk, originalChunk], ...], ...]
     const out = (json[0] as any[])
       .filter(Boolean)
       .map((seg: any) => seg[0])
@@ -126,32 +171,57 @@ async function translateDOM(root: Node = document.body): Promise<void> {
     }
   }
 
-  // 2. Deduplicate strings to minimise API calls
-  const unique = new Set<string>();
-  for (const node of nodes) {
-    const text = (originals.get(node) ?? node.textContent ?? '').trim();
-    if (text && !cache.has(text)) unique.add(text);
+  // 2. Group nodes by block-level ancestor for contextual translation
+  const groups = groupByBlock(nodes);
+
+  // 3. Build translation tasks — one API call per group
+  //    Each group's text nodes are joined with a separator so the API
+  //    sees full context. After translation, we split on the separator
+  //    to map results back to individual nodes.
+  const uncachedGroups: TextGroup[] = [];
+  const groupKeys: string[] = [];
+
+  for (const group of groups) {
+    const parts = group.nodes.map(
+      (n) => (originals.get(n) ?? n.textContent ?? '').trim()
+    );
+    const key = parts.join(SEP);
+    if (!key) continue;
+    if (cache.has(key)) {
+      // Already cached — apply immediately
+      applyGroupTranslation(group, cache.get(key)!);
+    } else {
+      uncachedGroups.push(group);
+      groupKeys.push(key);
+    }
   }
 
-  // 3. Translate unique strings in parallel (with concurrency limit)
-  if (unique.size > 0) {
-    const tasks = [...unique].map(
-      (text) => () => apiTranslate(text, 'ar'),
+  // 4. Translate uncached groups in parallel
+  if (uncachedGroups.length > 0) {
+    const tasks = groupKeys.map(
+      (key, i) => async () => {
+        const result = await apiTranslate(key, 'ar');
+        applyGroupTranslation(uncachedGroups[i], result);
+      }
     );
     await parallelLimit(tasks, CONCURRENT_REQUESTS);
   }
+}
 
-  // 4. Apply translations to DOM
-  for (const node of nodes) {
-    if (!node.parentNode) continue; // node was removed from DOM
+/** Apply a translated group result back to individual text nodes */
+function applyGroupTranslation(group: TextGroup, translatedBlock: string): void {
+  const parts = translatedBlock.split(SEP_REGEX);
+
+  for (let i = 0; i < group.nodes.length; i++) {
+    const node = group.nodes[i];
+    if (!node.parentNode) continue;
     const original = originals.get(node) ?? node.textContent ?? '';
-    const key = original.trim();
-    const translatedText = cache.get(key);
-    if (translatedText && translatedText !== key) {
-      // Preserve leading/trailing whitespace from the original
+    const translatedPart = parts[i];
+
+    if (translatedPart && translatedPart !== original.trim()) {
       const lead = original.match(/^\s*/)?.[0] ?? '';
       const trail = original.match(/\s*$/)?.[0] ?? '';
-      node.textContent = lead + translatedText + trail;
+      node.textContent = lead + translatedPart + trail;
       translated.add(node);
     }
   }
@@ -172,7 +242,6 @@ function restoreDOM(): void {
 function startObserver(): void {
   if (observer) return;
   observer = new MutationObserver(() => {
-    // Debounce: wait 300ms after last mutation to batch-translate
     if (observerTimer) clearTimeout(observerTimer);
     observerTimer = setTimeout(() => {
       if (activeLang === 'ar') translateDOM();
