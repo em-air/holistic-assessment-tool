@@ -64,9 +64,13 @@ const BLOCK_TAGS = new Set([
 
 const CONCURRENT_REQUESTS = 6;
 
-/** Separator used to join/split multiple text chunks in one API call */
-const SEP = ' |||SEP||| ';
-const SEP_REGEX = /\s*\|\|\|SEP\|\|\|\s*/;
+/**
+ * HTML separator — Google Translate in HTML mode preserves tags untouched.
+ * Using a self-closing <br> with a unique class so it never collides with
+ * real content and we can split reliably after translation.
+ */
+const SEP = '<br class="t-s">';
+const SEP_REGEX = /<br\s+class="t-s"\s*\/?>/gi;
 
 // ─── helpers ────────────────────────────────────────────────────────
 function shouldSkip(el: Element | null): boolean {
@@ -117,13 +121,33 @@ function groupByBlock(nodes: Text[]): TextGroup[] {
   return groups;
 }
 
-/** Translate text via Google's free API (contextual, full sentences) */
+/** HTML-escape plain text so it can be embedded safely in HTML-mode API calls */
+function htmlEscape(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+/** Decode any HTML entities in the translated result back to plain text */
+function htmlUnescape(s: string): string {
+  const el = document.createElement('textarea');
+  el.innerHTML = s;
+  return el.value;
+}
+
+/**
+ * Translate text via Google's free API.
+ * Uses &format=html so the API preserves HTML tags (our separator)
+ * and only translates the text content.
+ */
 async function apiTranslate(text: string, to: Lang): Promise<string> {
   if (cache.has(text)) return cache.get(text)!;
   try {
     const url =
       `https://translate.googleapis.com/translate_a/single` +
-      `?client=gtx&sl=en&tl=${to}&dt=t&q=${encodeURIComponent(text)}`;
+      `?client=gtx&sl=en&tl=${to}&dt=t&format=html` +
+      `&q=${encodeURIComponent(text)}`;
     const res = await fetch(url);
     if (!res.ok) return text;
     const json = await res.json();
@@ -183,7 +207,7 @@ async function translateDOM(root: Node = document.body): Promise<void> {
 
   for (const group of groups) {
     const parts = group.nodes.map(
-      (n) => (originals.get(n) ?? n.textContent ?? '').trim()
+      (n) => htmlEscape((originals.get(n) ?? n.textContent ?? '').trim())
     );
     const key = parts.join(SEP);
     if (!key) continue;
@@ -216,7 +240,8 @@ function applyGroupTranslation(group: TextGroup, translatedBlock: string): void 
     const node = group.nodes[i];
     if (!node.parentNode) continue;
     const original = originals.get(node) ?? node.textContent ?? '';
-    const translatedPart = parts[i];
+    // Unescape HTML entities from the API response
+    const translatedPart = parts[i] ? htmlUnescape(parts[i].trim()) : undefined;
 
     if (translatedPart && translatedPart !== original.trim()) {
       const lead = original.match(/^\s*/)?.[0] ?? '';
