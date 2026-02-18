@@ -1,11 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { AuthProvider } from './contexts/AuthContext';
-import { LanguageProvider } from './i18n';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
-import GlobalLanguageToggle from './components/GlobalLanguageToggle';
+import TranslateToggle from './components/TranslateToggle';
 import { AnimatePresence, motion } from 'framer-motion';
 
 // ============================================
@@ -697,18 +696,16 @@ function AnimatedRoutes() {
 function App() {
   return (
     <ErrorBoundary>
-      <LanguageProvider>
-        <AuthProvider>
-          <Router basename={base}>
-            <Suspense fallback={<LoadingSpinner message="Loading..." />}>
-              <div className="App" data-theme="grow360">
-                <GlobalLanguageToggle />
-                <AnimatedRoutes />
-              </div>
-            </Suspense>
-          </Router>
-        </AuthProvider>
-      </LanguageProvider>
+      <AuthProvider>
+        <Router basename={base}>
+          <Suspense fallback={<LoadingSpinner message="Loading..." />}>
+            <div className="App" data-theme="grow360">
+              <TranslateToggle />
+              <AnimatedRoutes />
+            </div>
+          </Suspense>
+        </Router>
+      </AuthProvider>
     </ErrorBoundary>
   );
 }

@@ -19,10 +19,6 @@ export default defineConfig({
   server: {
     fs: {
       allow: ['..']
-    },
-    headers: {
-      // Allow eval for @react-pdf/renderer which requires it
-      'Content-Security-Policy': "script-src 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;"
     }
   }
 });

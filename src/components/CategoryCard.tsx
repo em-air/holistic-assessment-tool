@@ -4,8 +4,6 @@ import { Lock } from 'lucide-react';
 import { AssessmentCategory } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { getNumericGrade, canAccessCategory, getCategoryBlockedMessage } from '../utils/gradeUtils';
-import { useLanguage } from '../i18n';
-import type { TranslationKeys } from '../i18n';
 
 interface CategoryCardProps {
   category: AssessmentCategory;
@@ -14,7 +12,6 @@ interface CategoryCardProps {
 const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
   const navigate = useNavigate();
   const { grade: userGrade, isAdmin, user } = useAuth();
-  const { t, isRTL } = useLanguage();
   const numericGrade = getNumericGrade(userGrade);
   const isAdminUser = isAdmin || false;
 
@@ -78,35 +75,6 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
         return 'text-blue-600';
     }
   };
-
-  // Translation mappings for category titles/descriptions
-  const categoryTitleKey: Record<string, keyof TranslationKeys> = {
-    'mind': 'category.mind.title',
-    'oral-skills': 'category.oral.title',
-    'academic-skills': 'category.academic.title',
-  };
-  const categoryDescKey: Record<string, keyof TranslationKeys> = {
-    'mind': 'category.mind.description',
-    'oral-skills': 'category.oral.description',
-    'academic-skills': 'category.academic.description',
-  };
-  const subcategoryTitleKey: Record<string, keyof TranslationKeys> = {
-    'attention': 'subcategory.attention',
-    'learning-style': 'subcategory.learningStyle',
-    'critical-thinking': 'subcategory.criticalThinking',
-    'perception': 'subcategory.perception',
-    'oral-language': 'subcategory.oralLanguage',
-    'reading': 'subcategory.reading',
-    'phonics-awareness': 'subcategory.phonicsAwareness',
-    'blending': 'subcategory.blending',
-    'writing': 'subcategory.writing',
-    'sentence-formation': 'subcategory.vocabulary',
-    'spelling': 'subcategory.spelling',
-    'assessment-generator': 'subcategory.aiAssessment',
-  };
-
-  const translatedTitle = categoryTitleKey[category.id] ? t(categoryTitleKey[category.id]) : category.title;
-  const translatedDesc = categoryDescKey[category.id] ? t(categoryDescKey[category.id]) : category.description;
 
   const handleStartAssessment = () => {
     if (isBlocked) return; // Don't navigate if blocked
@@ -183,10 +151,10 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
             {getCardEmoji(category.color)}
           </div>
           <h2 className={`text-xl font-semibold ${getTextColor(category.color, isBlocked)} mb-3 transition-colors duration-300`}>
-            {translatedTitle}
+            {category.title}
           </h2>
           <p className={`${getSubtextColor(category.color, isBlocked)} text-sm leading-relaxed font-normal transition-colors duration-300`}>
-            {translatedDesc}
+            {category.description}
           </p>
         </div>
 
@@ -212,7 +180,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
             >
               <div className={`w-3 h-3 rounded-full ${isBlocked ? 'bg-gray-300' : getSubcategoryColor(subcategory.color)} transition-all duration-300 ${!isBlocked && 'group-hover:scale-110'}`}></div>
               <span className={`${getTextColor(category.color, isBlocked)} text-sm font-medium transition-colors duration-300 ${!isBlocked && 'hover:underline'}`}>
-                {subcategoryTitleKey[subcategory.id] ? t(subcategoryTitleKey[subcategory.id]) : subcategory.title}
+                {subcategory.title}
               </span>
             </div>
           ))}
@@ -230,14 +198,14 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
             {isBlocked ? (
               <>
                 <Lock size={16} />
-                <span>{t('category.notAvailable')}</span>
+                <span>Not Available</span>
               </>
             ) : (
               <>
                 <span>
-                  {category.id === 'mind' ? t('category.startCognition') :
-                    category.id === 'oral-skills' ? t('category.startOral') :
-                      t('category.beginAssessment')}
+                  {category.id === 'mind' ? 'Start Cognition Assessment' :
+                    category.id === 'oral-skills' ? 'Start Oral Skills' :
+                      'Begin Assessment'}
                 </span>
                 <svg className="w-4 h-4 transform group-hover/btn:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />

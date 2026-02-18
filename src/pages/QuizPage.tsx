@@ -4,13 +4,11 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import QuizQuestion from '../components/QuizQuestion';
 import { assessmentCategories } from '../data/assessmentData';
 import { QuizResult } from '../types';
-import FloatingBackground from '../components/FloatingBackground';
-import { useLanguage } from '../i18n'; 
+import FloatingBackground from '../components/FloatingBackground'; 
 
 const QuizPage: React.FC = () => {
   const { categoryId, subcategoryId } = useParams();
   const navigate = useNavigate();
-  const { t, isRTL } = useLanguage();
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<{ [key: number]: string | number }>({});
@@ -30,12 +28,12 @@ const QuizPage: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 flex items-center justify-center">
         <FloatingBackground />
         <div className="text-center bg-stone-100 p-8 rounded-2xl shadow-xl relative z-10">
-          <h1 className="text-2xl font-bold text-stone-800 mb-4">{t('quiz.notFound')}</h1>
+          <h1 className="text-2xl font-bold text-stone-800 mb-4">Quiz not found</h1>
           <button
             onClick={() => navigate('/')}
             className="bg-emerald-600 hover:bg-emerald-700 text-stone-100 px-6 py-3 rounded-full"
           >
-            {t('quiz.backToHome')}
+            Back to Home
           </button>
         </div>
       </div>
@@ -106,25 +104,25 @@ const QuizPage: React.FC = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto">
             <div className="bg-stone-50 rounded-2xl p-8 shadow-xl text-center border border-stone-200">
-              <h1 className="text-3xl font-bold text-stone-800 mb-4">{t('assessment.complete')}</h1>
-              <h2 className="text-xl text-stone-600 mb-8">{subcategory.title} {t('assessment.results')}</h2>
+              <h1 className="text-3xl font-bold text-stone-800 mb-4">Assessment Complete!</h1>
+              <h2 className="text-xl text-stone-600 mb-8">{subcategory.title} Results</h2>
               
               <div className="mb-8 space-y-2">
                 <div className="text-lg text-stone-700">
-                  <strong>{t('assessment.focusingScore')}</strong> {focusingScore} / 30 ({focusingLevel})
+                  <strong>Focusing Score:</strong> {focusingScore} / 30 ({focusingLevel})
                 </div>
                 <div className="text-lg text-stone-700">
-                  <strong>{t('assessment.shiftingScore')}</strong> {shiftingScore} / 35 ({shiftingLevel})
+                  <strong>Shifting Score:</strong> {shiftingScore} / 35 ({shiftingLevel})
                 </div>
                 <div className="text-lg text-stone-700">
-                  <strong>{t('assessment.totalScore')}</strong> {totalScore} / 65
+                  <strong>Total Score:</strong> {totalScore} / 65
                 </div>
               </div>
               <div className="mb-8">
                 <p className="text-lg font-semibold text-emerald-700">
                   {focusingLevel === "Low" || shiftingLevel === "Low"
-                    ? t('assessment.needsDevelopment')
-                    : t('assessment.strongSkills')}
+                    ? "Some areas need development."
+                    : "Great job! Your attention skills are strong."}
                 </p>
               </div>
               <div className="space-y-4">
@@ -132,13 +130,13 @@ const QuizPage: React.FC = () => {
                   onClick={() => navigate(`/category/${categoryId}`)}
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-stone-100 font-semibold py-3 px-6 rounded-full transition-colors duration-200"
                 >
-                  {t('quiz.takeAnother')}
+                  Take Another Assessment
                 </button>
                 <button
                   onClick={() => navigate('/')}
                   className="w-full bg-stone-500 hover:bg-stone-600 text-stone-100 font-semibold py-3 px-6 rounded-full transition-colors duration-200"
                 >
-                  {t('quiz.backToDashboard')}
+                  Back to Dashboard
                 </button>
               </div>
             </div>
@@ -158,13 +156,13 @@ const QuizPage: React.FC = () => {
             className="flex items-center space-x-2 text-stone-600 hover:text-emerald-700"
           >
             <ArrowLeft size={20} />
-            <span>{t('nav.back')}</span>
+            <span>Back</span>
           </button>
           
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-stone-800">{subcategory.title}</h1>
+            <h1 className="text-2xl font-bold text-stone-800">{subcategory.title} Assessment</h1>
             <p className="text-stone-600">
-              {t('quiz.question')} {currentQuestionIndex + 1} {t('quiz.of')} {totalQuestions}
+              Question {currentQuestionIndex + 1} of {totalQuestions}
             </p>
           </div>
           
@@ -193,7 +191,7 @@ const QuizPage: React.FC = () => {
             className="flex items-center space-x-2 px-6 py-3 bg-stone-500 text-stone-100 rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-stone-600 transition-colors duration-200"
           >
             <ArrowLeft size={20} />
-            <span>{t('quiz.previous')}</span>
+            <span>Previous</span>
           </button>
 
           <button
@@ -201,7 +199,7 @@ const QuizPage: React.FC = () => {
             disabled={!answers[currentQuestion.id]}
             className="flex items-center space-x-2 px-6 py-3 bg-emerald-600 text-stone-100 rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-emerald-700 transition-colors duration-200"
           >
-            <span>{isLastQuestion ? t('quiz.finish') : t('quiz.next')}</span>
+            <span>{isLastQuestion ? 'Finish' : 'Next'}</span>
             <ArrowRight size={20} />
           </button>
         </div>

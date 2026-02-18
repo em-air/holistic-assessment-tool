@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import QuestionCard from '../components/QuestionCard';
 import ResultScreen from '../components/ResultScreen';
+import LanguageToggle from '../components/LanguageToggle';
 import FloatingBackground from '../components/FloatingBackground';
-import { useLanguage } from '../i18n';
 import { 
   quizQuestions, 
   learningStyles, 
@@ -27,9 +27,8 @@ interface LearningStyleScore {
 }
 
 const LearningStylesQuiz: React.FC = () => {
-  // Use global language context
-  const { language } = useLanguage();
   // State management
+  const [language, setLanguage] = useState<'en' | 'ar'>('en');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [answers, setAnswers] = useState<QuizAnswer[]>([]);
   const [showReport, setShowReport] = useState(false);
@@ -174,6 +173,11 @@ const LearningStylesQuiz: React.FC = () => {
           >
             {quizTexts.title[language]}
           </motion.h1>
+          
+          <LanguageToggle
+            language={language}
+            onLanguageChange={setLanguage}
+          />
         </div>
 
         {/* Progress Bar for Mind Section */}

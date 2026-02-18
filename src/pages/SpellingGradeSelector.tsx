@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { spellingData } from '../data/spellingData';
 import { useAuth } from '../contexts/AuthContext';
-import { useLanguage } from '../i18n';
 import {
   getNumericGrade,
   canAccessQuizGrade,
@@ -15,7 +14,6 @@ import {
 const SpellingGradeSelector: React.FC = () => {
   const navigate = useNavigate();
   const { grade: userGrade, isAdmin, user } = useAuth();
-  const { t } = useLanguage();
   const userNumericGrade = getNumericGrade(userGrade);
 
   // Check if the whole category is blocked
@@ -51,7 +49,7 @@ const SpellingGradeSelector: React.FC = () => {
               📝
             </div>
             <h1 className="text-4xl font-bold text-gray-800">
-              {t('spelling.title')}
+              Spelling Test
             </h1>
           </div>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -166,7 +164,7 @@ const SpellingGradeSelector: React.FC = () => {
             onClick={() => navigate('/category/academic')}
             className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-medium transition-colors duration-200 shadow-md hover:shadow-lg"
           >
-            ← {t('nav.back')}
+            ← Back to Academic Tests
           </button>
         </motion.div>
       </div>
