@@ -6,37 +6,29 @@ import type { Profile, QuizResult } from '../types/database.js';
 // @ts-ignore — arabic-reshaper has no type declarations
 import ArabicReshaper from 'arabic-reshaper';
 
-// ── Arabic font cache (loaded once from local file, fallback to CDN) ──
+// ── Arabic font cache ──
 let _arabicFontCache: Buffer | null = null;
 
 /**
- * Reshape Arabic text so that PDFKit can render connected glyphs correctly.
- * Converts Unicode Arabic (U+0600-U+06FF) to Arabic Presentation Forms B
- * (U+FE70-U+FEFF) which embed the correct initial/medial/final/isolated shapes.
- * Non-Arabic characters (Latin, numbers, punctuation) pass through unchanged.
+ * Reshape Arabic text for PDFKit rendering.
+ * Converts regular Arabic (U+0600-U+06FF) → Presentation Forms B (U+FE70-U+FEFF)
+ * so PDFKit renders connected glyphs correctly.
  */
 function reshapeArabic(text: string): string {
   if (!text) return text;
-  try {
-    return ArabicReshaper.convertArabic(text);
-  } catch {
-    return text; // Fallback to original text if reshaping fails
-  }
+  try { return ArabicReshaper.convertArabic(text); }
+  catch { return text; }
 }
 
 function getLocalFontPath(): string {
-  // CJS: __dirname is available
   if (typeof __dirname !== 'undefined') {
     return join(__dirname, 'fonts', 'NotoSansArabic-Regular.ttf');
   }
-  // Fallback: use process.cwd() (Railway/Docker)
   return join(process.cwd(), 'dist', 'fonts', 'NotoSansArabic-Regular.ttf');
 }
 
 async function getArabicFontBuffer(): Promise<Buffer | null> {
   if (_arabicFontCache) return _arabicFontCache;
-
-  // 1. Try local font file first (bundled with backend)
   try {
     const localPath = getLocalFontPath();
     if (existsSync(localPath)) {
@@ -47,30 +39,26 @@ async function getArabicFontBuffer(): Promise<Buffer | null> {
   } catch (err) {
     console.warn('Failed to load local Arabic font:', err);
   }
-
-  // 2. Fallback: download from CDN
   const urls = [
     'https://raw.githubusercontent.com/google/fonts/main/ofl/notosansarabic/NotoSansArabic%5Bwdth%2Cwght%5D.ttf',
     'https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSansArabic/NotoSansArabic-Regular.ttf',
-    'https://cdn.jsdelivr.net/gh/googlefonts/noto-fonts@main/hinted/ttf/NotoSansArabic/NotoSansArabic-Regular.ttf',
   ];
   for (const url of urls) {
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const arrayBuffer = await response.arrayBuffer();
-      _arabicFontCache = Buffer.from(arrayBuffer);
-      console.log('Arabic font downloaded from CDN:', url);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      _arabicFontCache = Buffer.from(await res.arrayBuffer());
+      console.log('Arabic font downloaded:', url);
       return _arabicFontCache;
     } catch (err) {
-      console.warn(`Failed to download Arabic font from ${url}:`, err);
+      console.warn(`CDN font fetch failed (${url}):`, err);
     }
   }
-
-  console.error('All Arabic font sources failed — Arabic PDF section will be skipped');
+  console.error('All Arabic font sources failed');
   return null;
 }
 
+// ── Public types ──
 export interface ReportData {
   profile: Profile;
   mindResults: QuizResult[];
@@ -79,830 +67,800 @@ export interface ReportData {
   generatedAt: Date;
 }
 
-interface CategorySummary {
-  completed: number;
-  total: number;
-  averageScore: number;
-  subcategories: Record<string, { quizzes: QuizResult[]; averageScore: number }>;
-}
-
-// Color palette
-const colors = {
-  primary: '#6366f1',
-  secondary: '#8b5cf6',
-  success: '#22c55e',
-  warning: '#f59e0b',
-  danger: '#ef4444',
-  gray: '#6b7280',
-  lightGray: '#f3f4f6',
-  dark: '#1f2937',
-  white: '#ffffff',
+// ── Color palette ──
+const C = {
+  primary:     '#4f46e5',
+  primaryLt:   '#eef2ff',
+  secondary:   '#7c3aed',
+  secondaryLt: '#f5f3ff',
+  emerald:     '#059669',
+  emeraldLt:   '#ecfdf5',
+  success:     '#16a34a',
+  successLt:   '#f0fdf4',
+  warning:     '#d97706',
+  warningLt:   '#fffbeb',
+  danger:      '#dc2626',
+  dangerLt:    '#fef2f2',
+  blue:        '#2563eb',
+  blueLt:      '#eff6ff',
+  gray50:      '#f9fafb',
+  gray100:     '#f3f4f6',
+  gray200:     '#e5e7eb',
+  gray400:     '#9ca3af',
+  gray500:     '#6b7280',
+  gray700:     '#374151',
+  gray900:     '#111827',
+  white:       '#ffffff',
 };
 
-/**
- * Get performance level based on percentage
- */
-function getPerformanceLevel(percentage: number): { level: string; color: string } {
-  if (percentage >= 90) return { level: 'Excellent', color: colors.success };
-  if (percentage >= 75) return { level: 'Good', color: '#3b82f6' };
-  if (percentage >= 60) return { level: 'Satisfactory', color: colors.warning };
-  return { level: 'Needs Improvement', color: colors.danger };
+function perfLevel(pct: number) {
+  if (pct >= 90) return { label: 'Excellent',        labelAr: reshapeArabic('ممتاز'),       color: C.success, bg: C.successLt };
+  if (pct >= 75) return { label: 'Good',             labelAr: reshapeArabic('جيد'),         color: C.blue,    bg: C.blueLt };
+  if (pct >= 60) return { label: 'Satisfactory',     labelAr: reshapeArabic('مُرضٍ'),       color: C.warning, bg: C.warningLt };
+  return               { label: 'Needs Improvement', labelAr: reshapeArabic('يحتاج تحسين'), color: C.danger,  bg: C.dangerLt };
 }
 
-function getPerformanceLevelAr(percentage: number): { level: string; color: string } {
-  if (percentage >= 90) return { level: reshapeArabic('ممتاز'), color: colors.success };
-  if (percentage >= 75) return { level: reshapeArabic('جيد'), color: '#3b82f6' };
-  if (percentage >= 60) return { level: reshapeArabic('مُرضٍ'), color: colors.warning };
-  return { level: reshapeArabic('يحتاج تحسين'), color: colors.danger };
-}
-
-/**
- * Generate recommendations based on results
- */
-function generateRecommendations(
-  mindResults: QuizResult[],
-  oralResults: QuizResult[],
-  academicResults: QuizResult[]
-): { strengths: string[]; improvements: string[]; activities: string[] } {
-  const strengths: string[] = [];
-  const improvements: string[] = [];
-  const activities: string[] = [];
-
-  const allResults = [...mindResults, ...oralResults, ...academicResults];
-
-  // Strengths: Results with >= 85%
-  const highPerformers = allResults.filter(r => r.percentage >= 85);
-  for (const result of highPerformers) {
-    strengths.push(`${result.quiz_name}: Excellent performance showing mastery in this area`);
-  }
-
-  if (highPerformers.length === 0 && allResults.length > 0) {
-    strengths.push('Your child is developing their skills across all areas assessed');
-  }
-
-  // Areas for Improvement: Results with < 75%
-  const needsSupport = allResults.filter(r => r.percentage < 75);
-  for (const result of needsSupport) {
-    const subcategoryName = getSubcategoryDisplayName(result.subcategory);
-    improvements.push(`${subcategoryName}: Consider additional practice and support`);
-  }
-
-  if (needsSupport.length === 0 && allResults.length > 0) {
-    improvements.push('Your child shows consistent performance across all assessed areas');
-  }
-
-  // General Recommendations (matching frontend)
-  activities.push('Encourage regular practice in areas where scores were below 75%');
-  activities.push('Celebrate successes and maintain motivation for continued learning');
-  activities.push('Consider educational games and activities that target specific skill areas');
-  activities.push("Discuss results with your child's teacher for additional classroom support");
-  activities.push('Re-assess periodically to track improvement over time');
-
-  return { strengths, improvements, activities };
-}
-
-/**
- * Safely parse additional_data (could be string or object)
- */
 function parseAdditionalData(data: any): Record<string, any> | null {
   if (!data) return null;
-  if (typeof data === 'string') {
-    try { return JSON.parse(data); } catch { return null; }
-  }
+  if (typeof data === 'string') { try { return JSON.parse(data); } catch { return null; } }
   return data;
 }
 
-/**
- * Get English attention level label from percentage
- */
-function getAttentionLevelEn(pct: number): string {
+function attnLabelEn(pct: number) {
   if (pct >= 75) return 'Strong Focus';
   if (pct >= 60) return 'Moderate Focus';
   return 'Developing Focus';
 }
-
-/**
- * Get Arabic attention level label from percentage
- */
-function getAttentionLevelAr(pct: number): string {
-  if (pct >= 75) return reshapeArabic('\u062A\u0631\u0643\u064A\u0632 \u0642\u0648\u064A');
-  if (pct >= 60) return reshapeArabic('\u062A\u0631\u0643\u064A\u0632 \u0645\u062A\u0648\u0633\u0637');
-  return reshapeArabic('\u062A\u0631\u0643\u064A\u0632 \u0642\u064A\u062F \u0627\u0644\u062A\u0637\u0648\u064A\u0631');
+function attnLabelAr(pct: number) {
+  if (pct >= 75) return reshapeArabic('تركيز قوي');
+  if (pct >= 60) return reshapeArabic('تركيز متوسط');
+  return reshapeArabic('تركيز قيد التطوير');
 }
 
-/** Shared style name maps */
-const enStyleNames: Record<string, string> = {
-  'visual': 'Visual Learner',
-  'auditory': 'Auditory Learner',
-  'reading-writing': 'Reading/Writing Learner',
-  'kinesthetic': 'Kinesthetic Learner',
+const styleEn: Record<string, string> = {
+  visual: 'Visual Learner', auditory: 'Auditory Learner',
+  'reading-writing': 'Reading/Writing Learner', kinesthetic: 'Kinesthetic Learner',
 };
-const arStyleNames: Record<string, string> = {
-  'visual': reshapeArabic('\u0645\u062A\u0639\u0644\u0645 \u0628\u0635\u0631\u064A'),
-  'auditory': reshapeArabic('\u0645\u062A\u0639\u0644\u0645 \u0633\u0645\u0639\u064A'),
-  'reading-writing': reshapeArabic('\u0645\u062A\u0639\u0644\u0645 \u0642\u0631\u0627\u0626\u064A/\u0643\u062A\u0627\u0628\u064A'),
-  'kinesthetic': reshapeArabic('\u0645\u062A\u0639\u0644\u0645 \u062D\u0631\u0643\u064A'),
+const styleAr: Record<string, string> = {
+  visual: reshapeArabic('متعلم بصري'), auditory: reshapeArabic('متعلم سمعي'),
+  'reading-writing': reshapeArabic('متعلم قرائي/كتابي'), kinesthetic: reshapeArabic('متعلم حركي'),
 };
 
-/**
- * Get display name for subcategory
- */
-function getSubcategoryDisplayName(subcategory: string): string {
-  const names: Record<string, string> = {
-    'attention': 'Attention & Focus',
-    'memory': 'Memory & Recall',
-    'learning-style': 'Learning Style',
-    'critical-thinking': 'Critical Thinking',
-    'perception': 'Visual Perception',
-    'oral-language': 'Oral Language',
-    'reading': 'Reading Skills',
-    'phonics': 'Phonics Awareness',
-    'phonics-awareness': 'Phonics Awareness',
-    'blending-segmenting': 'Blending & Segmenting',
-    'writing': 'Writing Skills',
-    'vocabulary': 'Vocabulary',
-    'spelling': 'Spelling',
-  };
-  return names[subcategory] || subcategory;
+const subNameEn: Record<string, string> = {
+  attention: 'Attention & Focus', memory: 'Memory & Recall',
+  'learning-style': 'Learning Style', 'critical-thinking': 'Critical Thinking',
+  perception: 'Visual Perception', 'oral-language': 'Oral Language',
+  reading: 'Reading Skills', phonics: 'Phonics Awareness',
+  'phonics-awareness': 'Phonics Awareness', 'blending-segmenting': 'Blending & Segmenting',
+  writing: 'Writing Skills', vocabulary: 'Vocabulary', spelling: 'Spelling',
+};
+const subNameAr: Record<string, string> = {
+  attention: reshapeArabic('الانتباه والتركيز'), memory: reshapeArabic('الذاكرة والاسترجاع'),
+  'learning-style': reshapeArabic('أسلوب التعلم'), 'critical-thinking': reshapeArabic('التفكير النقدي'),
+  perception: reshapeArabic('الإدراك البصري'), 'oral-language': reshapeArabic('اللغة الشفهية'),
+  reading: reshapeArabic('مهارات القراءة'), phonics: reshapeArabic('الوعي الصوتي'),
+  'phonics-awareness': reshapeArabic('الوعي الصوتي'), 'blending-segmenting': reshapeArabic('الدمج والتقسيم'),
+  writing: reshapeArabic('مهارات الكتابة'), vocabulary: reshapeArabic('المفردات'), spelling: reshapeArabic('الإملاء'),
+};
+
+// ══════ Helpers ══════
+
+function groupBySub(results: QuizResult[]) {
+  const map: Record<string, QuizResult[]> = {};
+  for (const r of results) {
+    (map[r.subcategory] ??= []).push(r);
+  }
+  return map;
 }
 
-/**
- * Generate PDF report buffer
- */
+/** English score string, e.g. "3/5 (80%)" */
+function scoreStr(r: QuizResult) {
+  return `${r.score}/${r.total_questions} (${r.percentage}%)`;
+}
+
+function qualitativeEn(sub: string, result: QuizResult): string | null {
+  if (sub === 'learning-style') {
+    const ad = parseAdditionalData(result.additional_data);
+    if (ad?.dominantStyle) return styleEn[ad.dominantStyle] ?? `${ad.dominantStyle} Learner`;
+  }
+  if (sub === 'attention' || result.quiz_id === 'attention-assessment') {
+    const ad = parseAdditionalData(result.additional_data);
+    return ad?.attentionLevel ?? attnLabelEn(result.percentage);
+  }
+  return null;
+}
+
+function qualitativeAr(sub: string, result: QuizResult): string | null {
+  if (sub === 'learning-style') {
+    const ad = parseAdditionalData(result.additional_data);
+    if (ad?.dominantStyle) return styleAr[ad.dominantStyle] ?? ad.dominantStyle;
+  }
+  if (sub === 'attention' || result.quiz_id === 'attention-assessment') {
+    return attnLabelAr(result.percentage);
+  }
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  MAIN PDF GENERATION
+// ═══════════════════════════════════════════════════════════════════
 export async function generateReportPDF(data: ReportData): Promise<Buffer> {
-  // Pre-load Arabic font for bilingual report
-  const arabicFontBuffer = await getArabicFontBuffer();
+  const arabicFont = await getArabicFontBuffer();
 
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({
         size: 'A4',
-        margins: { top: 50, bottom: 50, left: 50, right: 50 },
+        margins: { top: 50, bottom: 60, left: 50, right: 50 },
+        autoFirstPage: true,
         info: {
-          Title: `Assessment Report - ${data.profile.student_name || 'Student'}`,
-          Author: 'Holistic Assessment Tool',
-          Subject: 'Cognitive Skills Assessment Report',
+          Title: `Assessment Report – ${data.profile.student_name || 'Student'}`,
+          Author: 'Holistic Assessment Tool – Bloom Tutoring',
+          Subject: 'Cognitive & Language Skills Assessment',
         },
       });
 
       const chunks: Buffer[] = [];
-      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('data', (c: Buffer) => chunks.push(c));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
-      // Register Arabic font if available
-      if (arabicFontBuffer) {
-        doc.registerFont('NotoSansArabic', arabicFontBuffer);
+      if (arabicFont) doc.registerFont('Arabic', arabicFont);
+
+      const pageW = doc.page.width;
+      const W = pageW - 100;   // usable width (50 margin each side)
+      const L = 50;             // left margin
+      const R = L + W;          // right edge
+      const PAGE_BOTTOM = doc.page.height - 80; // safe content zone
+
+      // ─── Shared drawing helpers ───
+
+      /** Reset cursor to top-left so PDFKit doesn't auto-paginate */
+      function resetCursor() {
+        doc.x = L;
+        doc.y = 50;
       }
 
-      const pageWidth = doc.page.width - 100;
-      let yPos = 50;
+      function pageFooter(isArabic = false) {
+        // Temporarily zero out bottom margin so PDFKit doesn't auto-paginate
+        // when we write near the page bottom (y = height-40 is past the 60px margin)
+        const savedMargin = doc.page.margins.bottom;
+        doc.page.margins.bottom = 0;
 
-      // ============= PAGE 1: Cover & Summary =============
-      
-      // Header
-      doc.fontSize(28).fillColor(colors.primary).text('Assessment Report', 50, yPos, { align: 'center' });
-      yPos += 40;
+        const txt = isArabic && arabicFont
+          ? reshapeArabic('صادر من أداة التقييم الشامل | بلوم للتعليم')
+          : 'Generated by Holistic Assessment Tool  |  Bloom Tutoring';
+        if (isArabic && arabicFont) doc.font('Arabic');
+        else doc.font('Helvetica');
+        doc.fontSize(8).fillColor(C.gray400)
+          .text(txt, L, doc.page.height - 40, { width: W, align: 'center', lineBreak: false });
+        doc.font('Helvetica');
 
-      // Student info
-      doc.fontSize(18).fillColor(colors.dark).text(data.profile.student_name || 'Student', 50, yPos, { align: 'center' });
-      yPos += 25;
-      
-      if (data.profile.grade) {
-        doc.fontSize(14).fillColor(colors.gray).text(data.profile.grade, 50, yPos, { align: 'center' });
-        yPos += 20;
+        // Restore margin and reset cursor to prevent phantom page creation
+        doc.page.margins.bottom = savedMargin;
+        resetCursor();
       }
 
-      doc.fontSize(12).fillColor(colors.gray).text(
-        `Generated: ${data.generatedAt.toLocaleDateString('en-US', { 
-          year: 'numeric', month: 'long', day: 'numeric' 
-        })}`,
-        50, yPos, { align: 'center' }
-      );
-      yPos += 50;
+      /** Draws a rounded-rect card and returns inner content y. */
+      function card(y: number, h: number, bgColor: string): number {
+        doc.save();
+        doc.roundedRect(L, y, W, h, 6).fill(bgColor);
+        doc.restore();
+        return y + 12;
+      }
 
-      // Divider
-      doc.moveTo(50, yPos).lineTo(pageWidth + 50, yPos).strokeColor(colors.lightGray).stroke();
-      yPos += 30;
-
-      // Summary Section
-      doc.fontSize(16).fillColor(colors.dark).text('Assessment Summary', 50, yPos);
-      yPos += 30;
-
-      // Calculate overall stats
-      const allResults = [...data.mindResults, ...data.oralResults, ...data.academicResults];
-      const totalCompleted = allResults.length;
-      const overallAverage = totalCompleted > 0
-        ? Math.round(allResults.reduce((sum, r) => sum + r.percentage, 0) / totalCompleted)
-        : 0;
-      const totalTime = allResults.reduce((sum, r) => sum + (r.time_spent || 0), 0);
-
-      // Summary boxes
-      const boxWidth = (pageWidth - 30) / 4;
-      const summaryItems = [
-        { label: 'Quizzes Completed', value: totalCompleted.toString() },
-        { label: 'Overall Score', value: `${overallAverage}%` },
-        { label: 'Mind Skills', value: `${data.mindResults.length} completed` },
-        { label: 'Time Invested', value: `${Math.round(totalTime / 60)} min` },
-      ];
-
-      summaryItems.forEach((item, index) => {
-        const x = 50 + (index * (boxWidth + 10));
-        doc.rect(x, yPos, boxWidth, 60).fillColor(colors.lightGray).fill();
-        doc.fontSize(18).fillColor(colors.primary).text(item.value, x, yPos + 12, { width: boxWidth, align: 'center' });
-        doc.fontSize(9).fillColor(colors.gray).text(item.label, x, yPos + 38, { width: boxWidth, align: 'center' });
-      });
-      yPos += 90;
-
-      // Parent Note
-      doc.rect(50, yPos, pageWidth, 80).fillColor('#f0f9ff').fill();
-      doc.rect(50, yPos, 4, 80).fillColor(colors.primary).fill();
-      doc.fontSize(11).fillColor(colors.dark).text(
-        'Dear Parent/Guardian,\n\nThis report provides an overview of your child\'s cognitive skills assessment. ' +
-        'The scores reflect performance across various cognitive areas including attention, memory, critical thinking, ' +
-        'and language skills. Please review the recommendations section for suggested activities.',
-        60, yPos + 12, { width: pageWidth - 20 }
-      );
-      yPos += 100;
-
-      // Performance level indicator
-      const performance = getPerformanceLevel(overallAverage);
-      doc.fontSize(14).fillColor(colors.dark).text('Overall Performance: ', 50, yPos);
-      doc.fontSize(14).fillColor(performance.color).text(performance.level, 180, yPos);
-      yPos += 40;
-
-      // ============= PAGE 2: Mind Skills =============
-      doc.addPage();
-      yPos = 50;
-
-      doc.fontSize(20).fillColor(colors.primary).text('Mind Skills Assessment', 50, yPos);
-      yPos += 35;
-
-      const mindSubcategories: Record<string, QuizResult[]> = {};
-      data.mindResults.forEach(r => {
-        if (!mindSubcategories[r.subcategory]) {
-          mindSubcategories[r.subcategory] = [];
+      /** Horizontal progress bar with rounded ends. */
+      function progressBar(x: number, y: number, w: number, pct: number, fgColor: string) {
+        const h = 8, r = 4;
+        doc.save();
+        doc.roundedRect(x, y, w, h, r).fill(C.gray200);
+        doc.restore();
+        if (pct > 0) {
+          const fillW = Math.max(r * 2, (pct / 100) * w);
+          doc.save();
+          doc.roundedRect(x, y, fillW, h, r).fill(fgColor);
+          doc.restore();
         }
-        mindSubcategories[r.subcategory].push(r);
-      });
+      }
 
-      const subcategoryNames: Record<string, string> = {
-        'attention': 'Attention & Focus',
-        'memory': 'Memory & Recall',
-        'learning-style': 'Learning Style',
-        'critical-thinking': 'Critical Thinking',
-        'perception': 'Visual Perception',
-      };
+      /** Thin coloured divider. */
+      function divider(y: number, color = C.gray200): number {
+        doc.moveTo(L, y).lineTo(R, y).lineWidth(0.5).strokeColor(color).stroke();
+        return y + 15;
+      }
 
-      for (const [subcategory, results] of Object.entries(mindSubcategories)) {
-        if (yPos > 700) {
+      /** Ensure we have enough vertical space; add a page if necessary. */
+      function ensureSpace(y: number, need: number, isArabic = false): number {
+        if (y + need > PAGE_BOTTOM) {
           doc.addPage();
-          yPos = 50;
+          pageFooter(isArabic);
+          return 50;
         }
-
-        const avgScore = Math.round(results.reduce((sum, r) => sum + r.percentage, 0) / results.length);
-        const perfLevel = getPerformanceLevel(avgScore);
-
-        // Subcategory header
-        doc.rect(50, yPos, pageWidth, 30).fillColor(colors.lightGray).fill();
-        doc.fontSize(14).fillColor(colors.dark).text(
-          subcategoryNames[subcategory] || subcategory, 
-          60, yPos + 8
-        );
-        
-        // For qualitative subcategories, show labels instead of percentage
-        if (subcategory === 'learning-style' && results.length > 0) {
-          const learningResult = results[0];
-          const additionalData = parseAdditionalData(learningResult.additional_data);
-          if (additionalData?.dominantStyle) {
-            const styleName = enStyleNames[additionalData.dominantStyle] || 
-              `${additionalData.dominantStyle.charAt(0).toUpperCase() + additionalData.dominantStyle.slice(1)} Learner`;
-            doc.fontSize(14).fillColor(perfLevel.color).text(styleName, pageWidth - 20, yPos + 8, { align: 'right' });
-          } else {
-            doc.fontSize(14).fillColor(perfLevel.color).text(`${avgScore}%`, pageWidth - 20, yPos + 8, { align: 'right' });
-          }
-        } else if (subcategory === 'attention' && results.length > 0) {
-          const attnResult = results[0];
-          const additionalData = parseAdditionalData(attnResult.additional_data);
-          const attnLevel = additionalData?.attentionLevel || getAttentionLevelEn(attnResult.percentage);
-          doc.fontSize(14).fillColor(perfLevel.color).text(attnLevel, pageWidth - 20, yPos + 8, { align: 'right' });
-        } else {
-          doc.fontSize(14).fillColor(perfLevel.color).text(`${avgScore}%`, pageWidth - 20, yPos + 8, { align: 'right' });
-        }
-        yPos += 40;
-
-        // Individual quiz results
-        for (const result of results) {
-          const quizPerf = getPerformanceLevel(result.percentage);
-          const categoryLabel = subcategoryNames[subcategory] || subcategory;
-          doc.fontSize(11).fillColor(colors.dark).text(`• ${result.quiz_name} (${categoryLabel})`, 70, yPos);
-          
-          // Special handling for qualitative quizzes
-          if (subcategory === 'learning-style') {
-            const additionalData = parseAdditionalData(result.additional_data);
-            if (additionalData?.dominantStyle) {
-              const styleName = enStyleNames[additionalData.dominantStyle] || 
-                `${additionalData.dominantStyle.charAt(0).toUpperCase() + additionalData.dominantStyle.slice(1)} Learner`;
-              doc.fontSize(11).fillColor(quizPerf.color).text(
-                styleName,
-                pageWidth - 50, yPos, { align: 'right' }
-              );
-            } else {
-              doc.fontSize(11).fillColor(quizPerf.color).text(
-                `${result.score}/${result.total_questions} (${result.percentage}%)`,
-                pageWidth - 50, yPos, { align: 'right' }
-              );
-            }
-          } else if (result.quiz_id === 'attention-assessment' || subcategory === 'attention') {
-            const additionalData = parseAdditionalData(result.additional_data);
-            const attnLevel = additionalData?.attentionLevel || getAttentionLevelEn(result.percentage);
-            doc.fontSize(11).fillColor(quizPerf.color).text(
-              attnLevel,
-              pageWidth - 50, yPos, { align: 'right' }
-            );
-          } else {
-            doc.fontSize(11).fillColor(quizPerf.color).text(
-              `${result.score}/${result.total_questions} (${result.percentage}%)`,
-              pageWidth - 50, yPos, { align: 'right' }
-            );
-          }
-          yPos += 20;
-        }
-        yPos += 15;
+        return y;
       }
 
-      // ============= PAGE 3: Oral Skills =============
+      /**
+       * Render a score (e.g. "3/5 (80%)") using Helvetica so digits are never
+       * affected by Arabic RTL rendering. Then switch back to Arabic font.
+       */
+      function drawScoreHelvetica(
+        score: string, x: number, y: number,
+        width: number, color: string, align: 'left' | 'right' = 'left'
+      ) {
+        doc.font('Helvetica').fontSize(10).fillColor(color)
+          .text(score, x, y, { width, align, lineBreak: false });
+      }
+
+      // ─── Section renderer (English) ───
+
+      function renderSectionEn(
+        y: number,
+        sectionTitle: string,
+        sectionColor: string,
+        results: QuizResult[],
+        nameMap: Record<string, string>,
+      ): number {
+        doc.font('Helvetica-Bold').fontSize(18).fillColor(sectionColor)
+          .text(sectionTitle, L, y, { lineBreak: false });
+        y += 8;
+        doc.moveTo(L, y + 18).lineTo(L + 180, y + 18).lineWidth(2.5).strokeColor(sectionColor).stroke();
+        y += 30;
+
+        const groups = groupBySub(results);
+        for (const [sub, items] of Object.entries(groups)) {
+          y = ensureSpace(y, 80);
+          const avg = Math.round(items.reduce((s, r) => s + r.percentage, 0) / items.length);
+          const pl = perfLevel(avg);
+
+          // subcategory header bar
+          doc.save();
+          doc.roundedRect(L, y, W, 32, 4).fill(C.gray100);
+          doc.restore();
+          doc.font('Helvetica-Bold').fontSize(11).fillColor(C.gray900)
+            .text(nameMap[sub] || sub, L + 12, y + 9, { width: W - 180, lineBreak: false });
+
+          // header right: qualitative label or percentage text
+          const headerQual = items.length > 0 ? qualitativeEn(sub, items[0]) : null;
+          const headerLabel = headerQual ?? `${avg}%`;
+          doc.font('Helvetica-Bold').fontSize(11).fillColor(pl.color)
+            .text(headerLabel, L + 12, y + 9, { width: W - 24, align: 'right', lineBreak: false });
+          y += 40;
+
+          // individual quiz rows
+          for (const result of items) {
+            y = ensureSpace(y, 28);
+            const qp = perfLevel(result.percentage);
+            const qual = qualitativeEn(sub, result);
+
+            doc.font('Helvetica').fontSize(10).fillColor(C.gray700)
+              .text(result.quiz_name, L + 20, y, { width: W - 280, lineBreak: false });
+
+            if (qual) {
+              doc.font('Helvetica').fontSize(10).fillColor(qp.color)
+                .text(qual, L + 20, y, { width: W - 40, align: 'right', lineBreak: false });
+            } else {
+              const barW = 100;
+              const barX = R - barW;
+              const scoreX = barX - 110;
+              doc.font('Helvetica').fontSize(10).fillColor(qp.color)
+                .text(scoreStr(result), scoreX, y, { width: 100, align: 'right', lineBreak: false });
+              progressBar(barX, y + 2, barW, result.percentage, qp.color);
+            }
+            y += 22;
+          }
+          y += 12;
+        }
+        return y;
+      }
+
+      // ─── Section renderer (Arabic) ───
+
+      function renderSectionAr(
+        y: number,
+        sectionTitle: string,
+        sectionColor: string,
+        results: QuizResult[],
+        nameMap: Record<string, string>,
+      ): number {
+        doc.font('Arabic').fontSize(18).fillColor(sectionColor)
+          .text(sectionTitle, L, y, { width: W, align: 'right', lineBreak: false });
+        y += 8;
+        doc.moveTo(R, y + 18).lineTo(R - 180, y + 18).lineWidth(2.5).strokeColor(sectionColor).stroke();
+        y += 30;
+
+        const groups = groupBySub(results);
+        for (const [sub, items] of Object.entries(groups)) {
+          y = ensureSpace(y, 80, true);
+          const avg = Math.round(items.reduce((s, r) => s + r.percentage, 0) / items.length);
+          const pl = perfLevel(avg);
+
+          // subcategory header bar
+          doc.save();
+          doc.roundedRect(L, y, W, 32, 4).fill(C.gray100);
+          doc.restore();
+
+          // name – right aligned (Arabic font)
+          doc.font('Arabic').fontSize(11).fillColor(C.gray900)
+            .text(nameMap[sub] || sub, L + 12, y + 9, { width: W - 24, align: 'right', lineBreak: false });
+
+          // qualitative or percentage – left side (Helvetica for numbers)
+          const headerQual = items.length > 0 ? qualitativeAr(sub, items[0]) : null;
+          if (headerQual) {
+            doc.font('Arabic').fontSize(11).fillColor(pl.color)
+              .text(headerQual, L + 12, y + 9, { width: W / 3, lineBreak: false });
+          } else {
+            // Use Helvetica for the percentage number
+            drawScoreHelvetica(`${avg}%`, L + 12, y + 9, W / 3, pl.color, 'left');
+          }
+          y += 40;
+
+          // individual quiz rows
+          for (const result of items) {
+            y = ensureSpace(y, 28, true);
+            const qp = perfLevel(result.percentage);
+            const qual = qualitativeAr(sub, result);
+
+            // quiz name – right-aligned (Arabic font)
+            doc.font('Arabic').fontSize(10).fillColor(C.gray700)
+              .text(result.quiz_name, L + 20, y, { width: W - 40, align: 'right', lineBreak: false });
+
+            if (qual) {
+              // qualitative label – left-aligned (Arabic font)
+              doc.font('Arabic').fontSize(10).fillColor(qp.color)
+                .text(qual, L + 20, y, { width: W / 2 - 20, lineBreak: false });
+            } else {
+              // progress bar (left side) + score in Helvetica (avoids RTL reversal)
+              const barW = 100;
+              const barX = L + 20;
+              drawScoreHelvetica(
+                scoreStr(result), barX + barW + 8, y, 120, qp.color, 'left',
+              );
+              progressBar(barX, y + 2, barW, result.percentage, qp.color);
+            }
+            y += 22;
+          }
+          y += 12;
+        }
+        doc.font('Helvetica');
+        return y;
+      }
+
+      // ═════════════════════════════════════════════════
+      //  PAGE 1 — ENGLISH COVER
+      // ═════════════════════════════════════════════════
+      let y = 80;
+
+      // Top accent stripe
+      doc.save();
+      doc.rect(0, 0, pageW, 6).fill(C.primary);
+      doc.restore();
+
+      // Brand name top-right
+      doc.font('Helvetica').fontSize(9).fillColor(C.gray400)
+        .text('BLOOM TUTORING', L, 20, { width: W, align: 'right', characterSpacing: 2, lineBreak: false });
+
+      // Title
+      doc.font('Helvetica-Bold').fontSize(30).fillColor(C.primary)
+        .text('Assessment Report', L, y, { align: 'center', width: W, lineBreak: false });
+      y += 50;
+
+      // Student name card
+      const nameCardH = data.profile.grade ? 70 : 50;
+      const nameY = card(y, nameCardH, C.primaryLt);
+      doc.font('Helvetica-Bold').fontSize(20).fillColor(C.gray900)
+        .text(data.profile.student_name || 'Student', L, nameY, { width: W, align: 'center', lineBreak: false });
+      if (data.profile.grade) {
+        doc.font('Helvetica').fontSize(13).fillColor(C.gray500)
+          .text(data.profile.grade, L, nameY + 28, { width: W, align: 'center', lineBreak: false });
+      }
+      y += nameCardH + 12;
+
+      doc.font('Helvetica').fontSize(11).fillColor(C.gray500)
+        .text(
+          `Generated: ${data.generatedAt.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
+          L, y, { width: W, align: 'center', lineBreak: false },
+        );
+      y += 35;
+
+      y = divider(y);
+
+      // ── Summary stats ──
+      const allResults = [...data.mindResults, ...data.oralResults, ...data.academicResults];
+      const totalCount = allResults.length;
+      const overallAvg = totalCount > 0
+        ? Math.round(allResults.reduce((s, r) => s + r.percentage, 0) / totalCount)
+        : 0;
+      const totalTime = allResults.reduce((s, r) => s + (r.time_spent || 0), 0);
+
+      doc.font('Helvetica-Bold').fontSize(14).fillColor(C.gray900)
+        .text('Assessment Summary', L, y, { lineBreak: false });
+      y += 28;
+
+      const boxW = (W - 30) / 4;
+      const statItems = [
+        { val: String(totalCount),                   lbl: 'Quizzes Completed', accent: C.primary },
+        { val: `${overallAvg}%`,                     lbl: 'Overall Score',     accent: C.primary },
+        { val: `${data.mindResults.length}`,         lbl: 'Mind Skills',       accent: C.secondary },
+        { val: `${Math.round(totalTime / 60)} min`,  lbl: 'Time Invested',     accent: C.emerald },
+      ];
+      for (let i = 0; i < statItems.length; i++) {
+        const x = L + i * (boxW + 10);
+        doc.save();
+        doc.roundedRect(x, y, boxW, 62, 6).fill(C.gray50);
+        doc.roundedRect(x, y, boxW, 3, 1.5).fill(statItems[i].accent);
+        doc.restore();
+        doc.font('Helvetica-Bold').fontSize(20).fillColor(statItems[i].accent)
+          .text(statItems[i].val, x, y + 14, { width: boxW, align: 'center', lineBreak: false });
+        doc.font('Helvetica').fontSize(8).fillColor(C.gray500)
+          .text(statItems[i].lbl, x, y + 42, { width: boxW, align: 'center', lineBreak: false });
+      }
+      y += 82;
+
+      // Overall performance badge
+      const overallPl = perfLevel(overallAvg);
+      doc.save();
+      doc.roundedRect(L, y, W, 36, 6).fill(overallPl.bg);
+      doc.restore();
+      doc.font('Helvetica').fontSize(12).fillColor(C.gray700)
+        .text('Overall Performance:', L + 14, y + 10, { lineBreak: false });
+      doc.font('Helvetica-Bold').fontSize(13).fillColor(overallPl.color)
+        .text(overallPl.label, L + 170, y + 10, { lineBreak: false });
+      progressBar(R - 160, y + 14, 140, overallAvg, overallPl.color);
+      y += 50;
+
+      // Parent note
+      const parentNoteEn =
+        'Dear Parent/Guardian,\n\n' +
+        'This report provides an overview of your child\'s cognitive skills assessment. ' +
+        'The scores reflect performance across various areas including attention, memory, ' +
+        'critical thinking, and language skills. Please review the recommendations section.';
+      doc.font('Helvetica').fontSize(10);
+      const parentNoteEnH = doc.heightOfString(parentNoteEn, { width: W - 32 });
+      const parentBoxEnH = Math.max(60, parentNoteEnH + 20);
+
+      doc.save();
+      doc.roundedRect(L, y, W, parentBoxEnH, 6).fill(C.blueLt);
+      doc.roundedRect(L, y, 4, parentBoxEnH, 2).fill(C.primary);
+      doc.restore();
+      doc.font('Helvetica').fontSize(10).fillColor(C.gray700)
+        .text(parentNoteEn, L + 16, y + 10, { width: W - 32 });
+      y += parentBoxEnH + 14;
+
+      pageFooter();
+
+      // ═════════════════════════════════════════════════
+      //  MIND SKILLS (English)
+      // ═════════════════════════════════════════════════
+      if (data.mindResults.length > 0) {
+        doc.addPage();
+        doc.save(); doc.rect(0, 0, pageW, 4).fill(C.primary); doc.restore();
+        y = 50;
+        y = renderSectionEn(y, 'Mind Skills Assessment', C.primary, data.mindResults, subNameEn);
+        pageFooter();
+      }
+
+      // ═════════════════════════════════════════════════
+      //  ORAL SKILLS (English)
+      // ═════════════════════════════════════════════════
       if (data.oralResults.length > 0) {
         doc.addPage();
-        yPos = 50;
-
-        doc.fontSize(20).fillColor(colors.secondary).text('Oral Skills Assessment', 50, yPos);
-        yPos += 35;
-
-        const oralSubcategories: Record<string, QuizResult[]> = {};
-        data.oralResults.forEach(r => {
-          if (!oralSubcategories[r.subcategory]) {
-            oralSubcategories[r.subcategory] = [];
-          }
-          oralSubcategories[r.subcategory].push(r);
-        });
-
-        const oralNames: Record<string, string> = {
-          'oral-language': 'Oral Language',
-          'reading': 'Reading Skills',
-          'phonics': 'Phonics Awareness',
-          'blending-segmenting': 'Blending & Segmenting',
-        };
-
-        for (const [subcategory, results] of Object.entries(oralSubcategories)) {
-          if (yPos > 700) {
-            doc.addPage();
-            yPos = 50;
-          }
-
-          const avgScore = Math.round(results.reduce((sum, r) => sum + r.percentage, 0) / results.length);
-          const perfLevel = getPerformanceLevel(avgScore);
-
-          doc.rect(50, yPos, pageWidth, 30).fillColor(colors.lightGray).fill();
-          doc.fontSize(14).fillColor(colors.dark).text(oralNames[subcategory] || subcategory, 60, yPos + 8);
-          doc.fontSize(14).fillColor(perfLevel.color).text(`${avgScore}%`, pageWidth - 20, yPos + 8, { align: 'right' });
-          yPos += 40;
-
-          for (const result of results) {
-            const quizPerf = getPerformanceLevel(result.percentage);
-            const categoryLabel = oralNames[subcategory] || subcategory;
-            doc.fontSize(11).fillColor(colors.dark).text(`• ${result.quiz_name} (${categoryLabel})`, 70, yPos);
-            doc.fontSize(11).fillColor(quizPerf.color).text(
-              `${result.score}/${result.total_questions} (${result.percentage}%)`,
-              pageWidth - 50, yPos, { align: 'right' }
-            );
-            yPos += 20;
-          }
-          yPos += 15;
-        }
+        doc.save(); doc.rect(0, 0, pageW, 4).fill(C.secondary); doc.restore();
+        y = 50;
+        y = renderSectionEn(y, 'Oral Skills Assessment', C.secondary, data.oralResults, subNameEn);
+        pageFooter();
       }
 
-      // ============= PAGE 4: Academic Skills =============
+      // ═════════════════════════════════════════════════
+      //  ACADEMIC SKILLS (English)
+      // ═════════════════════════════════════════════════
       if (data.academicResults.length > 0) {
         doc.addPage();
-        yPos = 50;
-
-        doc.fontSize(20).fillColor('#059669').text('Academic Skills Assessment', 50, yPos);
-        yPos += 35;
-
-        const academicSubcategories: Record<string, QuizResult[]> = {};
-        data.academicResults.forEach(r => {
-          if (!academicSubcategories[r.subcategory]) {
-            academicSubcategories[r.subcategory] = [];
-          }
-          academicSubcategories[r.subcategory].push(r);
-        });
-
-        const academicNames: Record<string, string> = {
-          'writing': 'Writing Skills',
-          'vocabulary': 'Vocabulary',
-          'spelling': 'Spelling',
-        };
-
-        for (const [subcategory, results] of Object.entries(academicSubcategories)) {
-          if (yPos > 700) {
-            doc.addPage();
-            yPos = 50;
-          }
-
-          const avgScore = Math.round(results.reduce((sum, r) => sum + r.percentage, 0) / results.length);
-          const perfLevel = getPerformanceLevel(avgScore);
-
-          doc.rect(50, yPos, pageWidth, 30).fillColor(colors.lightGray).fill();
-          doc.fontSize(14).fillColor(colors.dark).text(academicNames[subcategory] || subcategory, 60, yPos + 8);
-          doc.fontSize(14).fillColor(perfLevel.color).text(`${avgScore}%`, pageWidth - 20, yPos + 8, { align: 'right' });
-          yPos += 40;
-
-          for (const result of results) {
-            const quizPerf = getPerformanceLevel(result.percentage);
-            const categoryLabel = academicNames[subcategory] || subcategory;
-            doc.fontSize(11).fillColor(colors.dark).text(`• ${result.quiz_name} (${categoryLabel})`, 70, yPos);
-            doc.fontSize(11).fillColor(quizPerf.color).text(
-              `${result.score}/${result.total_questions} (${result.percentage}%)`,
-              pageWidth - 50, yPos, { align: 'right' }
-            );
-            yPos += 20;
-          }
-          yPos += 15;
-        }
+        doc.save(); doc.rect(0, 0, pageW, 4).fill(C.emerald); doc.restore();
+        y = 50;
+        y = renderSectionEn(y, 'Academic Skills Assessment', C.emerald, data.academicResults, subNameEn);
+        pageFooter();
       }
 
-      // ============= FINAL PAGE: Recommendations =============
+      // ═════════════════════════════════════════════════
+      //  RECOMMENDATIONS (English)
+      // ═════════════════════════════════════════════════
       doc.addPage();
-      yPos = 50;
+      doc.save(); doc.rect(0, 0, pageW, 4).fill(C.success); doc.restore();
+      y = 50;
 
-      doc.fontSize(20).fillColor(colors.success).text('Recommendations', 50, yPos);
-      yPos += 35;
-
-      const recommendations = generateRecommendations(
-        data.mindResults,
-        data.oralResults,
-        data.academicResults
-      );
+      doc.font('Helvetica-Bold').fontSize(18).fillColor(C.success)
+        .text('Recommendations', L, y, { lineBreak: false });
+      y += 8;
+      doc.moveTo(L, y + 18).lineTo(L + 160, y + 18).lineWidth(2.5).strokeColor(C.success).stroke();
+      y += 30;
 
       // Strengths
-      doc.rect(50, yPos, pageWidth, 25).fillColor('#f0fdf4').fill();
-      doc.fontSize(14).fillColor('#166534').text('💪 Strengths Identified', 60, yPos + 6);
-      yPos += 35;
+      y = ensureSpace(y, 60);
+      doc.save(); doc.roundedRect(L, y, W, 28, 4).fill(C.successLt); doc.restore();
+      doc.font('Helvetica-Bold').fontSize(12).fillColor(C.success)
+        .text('Strengths Identified', L + 14, y + 7, { lineBreak: false });
+      y += 36;
 
-      for (const strength of recommendations.strengths) {
-        doc.fontSize(11).fillColor(colors.dark).text(`• ${strength}`, 70, yPos);
-        yPos += 20;
+      const highPerf = allResults.filter(r => r.percentage >= 85);
+      if (highPerf.length > 0) {
+        for (const r of highPerf) {
+          y = ensureSpace(y, 20);
+          doc.font('Helvetica').fontSize(10).fillColor(C.gray700)
+            .text(`•  ${r.quiz_name}: Excellent performance`, L + 14, y, { width: W - 28, lineBreak: false });
+          y += 18;
+        }
+      } else if (allResults.length > 0) {
+        doc.font('Helvetica').fontSize(10).fillColor(C.gray700)
+          .text('•  Your child is developing skills across all assessed areas.', L + 14, y, { width: W - 28, lineBreak: false });
+        y += 18;
       }
-      yPos += 15;
+      y += 10;
 
-      // Areas for Improvement
-      doc.rect(50, yPos, pageWidth, 25).fillColor('#fef3c7').fill();
-      doc.fontSize(14).fillColor('#92400e').text('📈 Areas for Growth', 60, yPos + 6);
-      yPos += 35;
+      // Areas for Growth
+      y = ensureSpace(y, 60);
+      doc.save(); doc.roundedRect(L, y, W, 28, 4).fill(C.warningLt); doc.restore();
+      doc.font('Helvetica-Bold').fontSize(12).fillColor(C.warning)
+        .text('Areas for Growth', L + 14, y + 7, { lineBreak: false });
+      y += 36;
 
-      for (const improvement of recommendations.improvements) {
-        doc.fontSize(11).fillColor(colors.dark).text(`• ${improvement}`, 70, yPos);
-        yPos += 20;
+      const lowPerf = allResults.filter(r => r.percentage < 75);
+      if (lowPerf.length > 0) {
+        for (const r of lowPerf) {
+          y = ensureSpace(y, 20);
+          const sub = subNameEn[r.subcategory] || r.subcategory;
+          doc.font('Helvetica').fontSize(10).fillColor(C.gray700)
+            .text(`•  ${sub}: Consider additional practice and support`, L + 14, y, { width: W - 28, lineBreak: false });
+          y += 18;
+        }
+      } else if (allResults.length > 0) {
+        doc.font('Helvetica').fontSize(10).fillColor(C.gray700)
+          .text('•  Consistent performance across all areas — great job!', L + 14, y, { width: W - 28, lineBreak: false });
+        y += 18;
       }
-      yPos += 15;
+      y += 10;
 
       // Suggested Activities
-      doc.rect(50, yPos, pageWidth, 25).fillColor('#dbeafe').fill();
-      doc.fontSize(14).fillColor('#1e40af').text('🎯 Suggested Activities', 60, yPos + 6);
-      yPos += 35;
+      y = ensureSpace(y, 120);
+      doc.save(); doc.roundedRect(L, y, W, 28, 4).fill(C.blueLt); doc.restore();
+      doc.font('Helvetica-Bold').fontSize(12).fillColor(C.blue)
+        .text('Suggested Activities', L + 14, y + 7, { lineBreak: false });
+      y += 36;
 
-      for (const activity of recommendations.activities) {
-        doc.fontSize(11).fillColor(colors.dark).text(`• ${activity}`, 70, yPos);
-        yPos += 20;
+      const activities = [
+        'Encourage regular practice in areas where scores were below 75%.',
+        'Celebrate successes and maintain motivation for continued learning.',
+        'Explore educational games that target specific skill areas.',
+        "Discuss results with your child's teacher for additional support.",
+        'Re-assess periodically to track improvement over time.',
+      ];
+      for (const act of activities) {
+        y = ensureSpace(y, 20);
+        doc.font('Helvetica').fontSize(10).fillColor(C.gray700)
+          .text(`•  ${act}`, L + 14, y, { width: W - 28, lineBreak: false });
+        y += 18;
       }
-      yPos += 30;
+      pageFooter();
 
-      // Footer with watermark
-      doc.fontSize(10).fillColor(colors.gray).text(
-        'Generated by Holistic Assessment Tool | Bloom Tutoring',
-        50, doc.page.height - 50, { align: 'center', width: pageWidth }
-      );
-
-      // ============= ARABIC SECTION — النسخة العربية =============
-      if (arabicFontBuffer) {
+      // ═══════════════════════════════════════════════════════════════
+      //  ARABIC SECTION
+      // ═══════════════════════════════════════════════════════════════
+      if (arabicFont) {
         try {
-          // --- Arabic Cover & Summary ---
+          // ── Arabic Cover ──
           doc.addPage();
-          yPos = 50;
-          doc.font('NotoSansArabic');
+          doc.save(); doc.rect(0, 0, pageW, 6).fill(C.primary); doc.restore();
+          y = 80;
 
-          // Section divider
-          doc.fontSize(14).fillColor(colors.primary).text(
-            reshapeArabic('النسخة العربية') + ' — Arabic Version', 50, yPos, { align: 'center', width: pageWidth }
-          );
-          yPos += 30;
+          // Brand name top-left (no characterSpacing for Arabic!)
+          doc.font('Arabic').fontSize(9).fillColor(C.gray400)
+            .text(reshapeArabic('بلوم للتعليم'), L, 20, { width: W, align: 'left', lineBreak: false });
 
           // Title
-          doc.fontSize(28).fillColor(colors.primary).text(reshapeArabic('تقرير التقييم'), 50, yPos, { align: 'center', width: pageWidth });
-          yPos += 40;
+          doc.font('Arabic').fontSize(30).fillColor(C.primary)
+            .text(reshapeArabic('تقرير التقييم'), L, y, { width: W, align: 'center', lineBreak: false });
+          y += 55;
 
-          // Student name
-          doc.fontSize(18).fillColor(colors.dark).text(
-            data.profile.student_name || reshapeArabic('الطالب'), 50, yPos, { align: 'center', width: pageWidth }
-          );
-          yPos += 25;
-
+          // Student name card
+          const arNameH = data.profile.grade ? 70 : 50;
+          const arNameY = card(y, arNameH, C.primaryLt);
+          doc.font('Arabic').fontSize(20).fillColor(C.gray900)
+            .text(data.profile.student_name || reshapeArabic('الطالب'), L, arNameY, { width: W, align: 'center', lineBreak: false });
           if (data.profile.grade) {
-            doc.fontSize(14).fillColor(colors.gray).text(data.profile.grade, 50, yPos, { align: 'center', width: pageWidth });
-            yPos += 20;
+            doc.font('Arabic').fontSize(13).fillColor(C.gray500)
+              .text(data.profile.grade, L, arNameY + 28, { width: W, align: 'center', lineBreak: false });
           }
+          y += arNameH + 12;
 
-          doc.fontSize(12).fillColor(colors.gray).text(
-            reshapeArabic(`تاريخ الإصدار: ${data.generatedAt.toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}`),
-            50, yPos, { align: 'center', width: pageWidth }
-          );
-          yPos += 50;
+          // Date — render Arabic label + date separately to avoid glyph issues
+          const dateStr = data.generatedAt.toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' });
+          doc.font('Arabic').fontSize(11).fillColor(C.gray500)
+            .text(reshapeArabic('تاريخ الإصدار') + ':  ' + dateStr,
+              L, y, { width: W, align: 'center', lineBreak: false });
+          y += 35;
 
-          // Divider
-          doc.moveTo(50, yPos).lineTo(pageWidth + 50, yPos).strokeColor(colors.lightGray).stroke();
-          yPos += 30;
+          y = divider(y);
 
           // Summary heading
-          doc.fontSize(16).fillColor(colors.dark).text(reshapeArabic('ملخص التقييم'), 50, yPos, { align: 'right', width: pageWidth });
-          yPos += 30;
+          doc.font('Arabic').fontSize(14).fillColor(C.gray900)
+            .text(reshapeArabic('ملخص التقييم'), L, y, { width: W, align: 'right', lineBreak: false });
+          y += 28;
 
-          // Summary boxes
-          const arSummaryItems = [
-            { label: reshapeArabic('الاختبارات المكتملة'), value: totalCompleted.toString() },
-            { label: reshapeArabic('الدرجة الكلية'), value: `%${overallAverage}` },
-            { label: reshapeArabic('المهارات الذهنية'), value: reshapeArabic(`${data.mindResults.length} مكتمل`) },
-            { label: reshapeArabic('الوقت المستغرق'), value: reshapeArabic(`${Math.round(totalTime / 60)} دقيقة`) },
+          // Stat boxes — numbers in Helvetica, labels in Arabic
+          const arStatLabels = [
+            { val: String(totalCount),                     lbl: reshapeArabic('الاختبارات المكتملة'), accent: C.primary },
+            { val: `${overallAvg}%`,                       lbl: reshapeArabic('الدرجة الكلية'),       accent: C.primary },
+            { val: String(data.mindResults.length),        lbl: reshapeArabic('المهارات الذهنية'),     accent: C.secondary },
+            { val: `${Math.round(totalTime / 60)}`,        lbl: reshapeArabic('الوقت المستغرق'),       accent: C.emerald },
           ];
+          for (let i = 0; i < arStatLabels.length; i++) {
+            const x = L + i * (boxW + 10);
+            doc.save();
+            doc.roundedRect(x, y, boxW, 62, 6).fill(C.gray50);
+            doc.roundedRect(x, y, boxW, 3, 1.5).fill(arStatLabels[i].accent);
+            doc.restore();
+            // Value: render with Helvetica so digits are clean
+            doc.font('Helvetica-Bold').fontSize(18).fillColor(arStatLabels[i].accent)
+              .text(arStatLabels[i].val, x, y + 14, { width: boxW, align: 'center', lineBreak: false });
+            // Label: render with Arabic font
+            doc.font('Arabic').fontSize(8).fillColor(C.gray500)
+              .text(arStatLabels[i].lbl, x, y + 42, { width: boxW, align: 'center', lineBreak: false });
+          }
+          y += 82;
 
-          arSummaryItems.forEach((item, index) => {
-            const x = 50 + (index * (boxWidth + 10));
-            doc.rect(x, yPos, boxWidth, 60).fillColor(colors.lightGray).fill();
-            doc.font('NotoSansArabic').fontSize(18).fillColor(colors.primary).text(item.value, x, yPos + 12, { width: boxWidth, align: 'center' });
-            doc.font('NotoSansArabic').fontSize(9).fillColor(colors.gray).text(item.label, x, yPos + 38, { width: boxWidth, align: 'center' });
-          });
-          yPos += 90;
+          // Performance badge — label on a SEPARATE line from value to avoid overlap
+          const arPl = perfLevel(overallAvg);
+          doc.save();
+          doc.roundedRect(L, y, W, 44, 6).fill(arPl.bg);
+          doc.restore();
+          // Arabic label: right-aligned
+          doc.font('Arabic').fontSize(12).fillColor(C.gray700)
+            .text(reshapeArabic('الأداء العام'), L + 14, y + 8, { width: W - 28, align: 'right', lineBreak: false });
+          // Performance level: also right, next to a progress bar
+          doc.font('Arabic').fontSize(12).fillColor(arPl.color)
+            .text(arPl.labelAr, L + 14, y + 8, { width: W / 2, lineBreak: false });
+          // progress bar in the middle
+          progressBar(L + 14, y + 30, 140, overallAvg, arPl.color);
+          y += 58;
 
-          // Parent Note
-          doc.rect(50, yPos, pageWidth, 80).fillColor('#f0f9ff').fill();
-          doc.rect(pageWidth + 50 - 4, yPos, 4, 80).fillColor(colors.primary).fill();
-          doc.font('NotoSansArabic').fontSize(11).fillColor(colors.dark).text(
-            reshapeArabic('عزيزي ولي الأمر،') + '\n\n' + reshapeArabic('يقدم هذا التقرير نظرة عامة على تقييم المهارات الإدراكية لطفلك. تعكس الدرجات الأداء في مختلف المجالات الإدراكية بما في ذلك الانتباه والذاكرة والتفكير النقدي والمهارات اللغوية.'),
-            60, yPos + 12, { width: pageWidth - 20, align: 'right' }
-          );
-          yPos += 100;
+          // Parent note — measure height dynamically
+          const parentNoteAr1 = reshapeArabic('عزيزي ولي الأمر،');
+          const parentNoteAr2 = reshapeArabic('يقدم هذا التقرير نظرة عامة على تقييم المهارات الإدراكية لطفلك.');
+          const parentNoteAr3 = reshapeArabic('تعكس الدرجات الأداء في مختلف المجالات بما في ذلك الانتباه والذاكرة والتفكير النقدي والمهارات اللغوية.');
+          const fullParentAr = parentNoteAr1 + '\n\n' + parentNoteAr2 + ' ' + parentNoteAr3;
 
-          // Performance level
-          const arPerf = getPerformanceLevelAr(overallAverage);
-          doc.font('NotoSansArabic').fontSize(14).fillColor(arPerf.color).text(
-            reshapeArabic('الأداء العام: ') + arPerf.level, 50, yPos, { align: 'right', width: pageWidth }
-          );
-          yPos += 40;
+          doc.font('Arabic').fontSize(10);
+          const parentNoteArH = doc.heightOfString(fullParentAr, { width: W - 32, align: 'right' });
+          const parentBoxArH = Math.max(60, parentNoteArH + 24);
 
-          // --- Arabic subcategory name maps ---
-          const arSubNames: Record<string, string> = {
-            'attention': reshapeArabic('الانتباه والتركيز'),
-            'memory': reshapeArabic('الذاكرة والاسترجاع'),
-            'learning-style': reshapeArabic('أسلوب التعلم'),
-            'critical-thinking': reshapeArabic('التفكير النقدي'),
-            'perception': reshapeArabic('الإدراك البصري'),
-          };
-          const arOralNames: Record<string, string> = {
-            'oral-language': reshapeArabic('اللغة الشفهية'),
-            'reading': reshapeArabic('مهارات القراءة'),
-            'phonics': reshapeArabic('الوعي الصوتي'),
-            'blending-segmenting': reshapeArabic('الدمج والتقسيم'),
-          };
-          const arAcadNames: Record<string, string> = {
-            'writing': reshapeArabic('مهارات الكتابة'),
-            'vocabulary': reshapeArabic('المفردات'),
-            'spelling': reshapeArabic('الإملاء'),
-          };
+          doc.save();
+          doc.roundedRect(L, y, W, parentBoxArH, 6).fill(C.blueLt);
+          doc.roundedRect(R - 4, y, 4, parentBoxArH, 2).fill(C.primary);
+          doc.restore();
+          doc.font('Arabic').fontSize(10).fillColor(C.gray700)
+            .text(fullParentAr, L + 12, y + 12, { width: W - 32, align: 'right' });
+          // after the text, reset cursor so PDFKit doesn't auto-paginate
+          resetCursor();
+          y += parentBoxArH + 14;
 
-          // --- Arabic Mind Skills ---
+          pageFooter(true);
+
+          // ── Arabic Mind Skills ──
           if (data.mindResults.length > 0) {
             doc.addPage();
-            yPos = 50;
-            doc.font('NotoSansArabic');
-            doc.fontSize(20).fillColor(colors.primary).text(reshapeArabic('تقييم المهارات الذهنية'), 50, yPos, { align: 'right', width: pageWidth });
-            yPos += 35;
-
-            const arMindSubs: Record<string, QuizResult[]> = {};
-            data.mindResults.forEach(r => {
-              if (!arMindSubs[r.subcategory]) arMindSubs[r.subcategory] = [];
-              arMindSubs[r.subcategory].push(r);
-            });
-
-            for (const [sub, subResults] of Object.entries(arMindSubs)) {
-              if (yPos > 700) { doc.addPage(); yPos = 50; doc.font('NotoSansArabic'); }
-              const avg = Math.round(subResults.reduce((s, r) => s + r.percentage, 0) / subResults.length);
-              const pLvl = getPerformanceLevel(avg);
-
-              doc.rect(50, yPos, pageWidth, 30).fillColor(colors.lightGray).fill();
-              doc.font('NotoSansArabic').fontSize(14).fillColor(colors.dark).text(
-                arSubNames[sub] || sub, 60, yPos + 8, { width: pageWidth - 80, align: 'right' }
-              );
-
-              if (sub === 'learning-style' && subResults.length > 0) {
-                const ad = parseAdditionalData(subResults[0].additional_data);
-                if (ad?.dominantStyle) {
-                  doc.font('NotoSansArabic').fontSize(14).fillColor(pLvl.color).text(
-                    arStyleNames[ad.dominantStyle] || ad.dominantStyle, 60, yPos + 8
-                  );
-                } else {
-                  doc.font('NotoSansArabic').fontSize(14).fillColor(pLvl.color).text(`%${avg}`, 60, yPos + 8);
-                }
-              } else if (sub === 'attention' && subResults.length > 0) {
-                const ad = parseAdditionalData(subResults[0].additional_data);
-                const attnLvl = ad?.attentionLevel ? getAttentionLevelAr(subResults[0].percentage) : getAttentionLevelAr(subResults[0].percentage);
-                doc.font('NotoSansArabic').fontSize(14).fillColor(pLvl.color).text(attnLvl, 60, yPos + 8);
-              } else {
-                doc.font('NotoSansArabic').fontSize(14).fillColor(pLvl.color).text(`%${avg}`, 60, yPos + 8);
-              }
-              yPos += 40;
-
-              for (const result of subResults) {
-                const qp = getPerformanceLevel(result.percentage);
-                doc.font('NotoSansArabic').fontSize(11).fillColor(colors.dark).text(
-                  `• ${result.quiz_name} (${arSubNames[sub] || sub})`, 70, yPos, { width: pageWidth - 90, align: 'right' }
-                );
-                if (sub === 'learning-style') {
-                  const ad = parseAdditionalData(result.additional_data);
-                  if (ad?.dominantStyle) {
-                    doc.font('NotoSansArabic').fontSize(11).fillColor(qp.color).text(
-                      arStyleNames[ad.dominantStyle] || ad.dominantStyle, 60, yPos
-                    );
-                  } else {
-                    doc.font('NotoSansArabic').fontSize(11).fillColor(qp.color).text(
-                      `%${result.percentage} (${result.total_questions}/${result.score})`, 60, yPos
-                    );
-                  }
-                } else if (result.quiz_id === 'attention-assessment' || sub === 'attention') {
-                  const attnLvl = getAttentionLevelAr(result.percentage);
-                  doc.font('NotoSansArabic').fontSize(11).fillColor(qp.color).text(attnLvl, 60, yPos);
-                } else {
-                  doc.font('NotoSansArabic').fontSize(11).fillColor(qp.color).text(
-                    `%${result.percentage} (${result.total_questions}/${result.score})`, 60, yPos
-                  );
-                }
-                yPos += 20;
-              }
-              yPos += 15;
-            }
+            doc.save(); doc.rect(0, 0, pageW, 4).fill(C.primary); doc.restore();
+            y = 50;
+            y = renderSectionAr(y, reshapeArabic('تقييم المهارات الذهنية'), C.primary, data.mindResults, subNameAr);
+            pageFooter(true);
           }
 
-          // --- Arabic Oral Skills ---
+          // ── Arabic Oral Skills ──
           if (data.oralResults.length > 0) {
             doc.addPage();
-            yPos = 50;
-            doc.font('NotoSansArabic');
-            doc.fontSize(20).fillColor(colors.secondary).text(reshapeArabic('تقييم المهارات الشفهية'), 50, yPos, { align: 'right', width: pageWidth });
-            yPos += 35;
-
-            const arOralSubs: Record<string, QuizResult[]> = {};
-            data.oralResults.forEach(r => {
-              if (!arOralSubs[r.subcategory]) arOralSubs[r.subcategory] = [];
-              arOralSubs[r.subcategory].push(r);
-            });
-
-            for (const [sub, subResults] of Object.entries(arOralSubs)) {
-              if (yPos > 700) { doc.addPage(); yPos = 50; doc.font('NotoSansArabic'); }
-              const avg = Math.round(subResults.reduce((s, r) => s + r.percentage, 0) / subResults.length);
-              const pLvl = getPerformanceLevel(avg);
-
-              doc.rect(50, yPos, pageWidth, 30).fillColor(colors.lightGray).fill();
-              doc.font('NotoSansArabic').fontSize(14).fillColor(colors.dark).text(arOralNames[sub] || sub, 60, yPos + 8, { width: pageWidth - 80, align: 'right' });
-              doc.font('NotoSansArabic').fontSize(14).fillColor(pLvl.color).text(`%${avg}`, 60, yPos + 8);
-              yPos += 40;
-
-              for (const result of subResults) {
-                const qp = getPerformanceLevel(result.percentage);
-                doc.font('NotoSansArabic').fontSize(11).fillColor(colors.dark).text(
-                  `• ${result.quiz_name} (${arOralNames[sub] || sub})`, 70, yPos, { width: pageWidth - 90, align: 'right' }
-                );
-                doc.font('NotoSansArabic').fontSize(11).fillColor(qp.color).text(
-                  `%${result.percentage} (${result.total_questions}/${result.score})`, 60, yPos
-                );
-                yPos += 20;
-              }
-              yPos += 15;
-            }
+            doc.save(); doc.rect(0, 0, pageW, 4).fill(C.secondary); doc.restore();
+            y = 50;
+            y = renderSectionAr(y, reshapeArabic('تقييم المهارات الشفهية'), C.secondary, data.oralResults, subNameAr);
+            pageFooter(true);
           }
 
-          // --- Arabic Academic Skills ---
+          // ── Arabic Academic Skills ──
           if (data.academicResults.length > 0) {
             doc.addPage();
-            yPos = 50;
-            doc.font('NotoSansArabic');
-            doc.fontSize(20).fillColor('#059669').text(reshapeArabic('تقييم المهارات الأكاديمية'), 50, yPos, { align: 'right', width: pageWidth });
-            yPos += 35;
-
-            const arAcadSubs: Record<string, QuizResult[]> = {};
-            data.academicResults.forEach(r => {
-              if (!arAcadSubs[r.subcategory]) arAcadSubs[r.subcategory] = [];
-              arAcadSubs[r.subcategory].push(r);
-            });
-
-            for (const [sub, subResults] of Object.entries(arAcadSubs)) {
-              if (yPos > 700) { doc.addPage(); yPos = 50; doc.font('NotoSansArabic'); }
-              const avg = Math.round(subResults.reduce((s, r) => s + r.percentage, 0) / subResults.length);
-              const pLvl = getPerformanceLevel(avg);
-
-              doc.rect(50, yPos, pageWidth, 30).fillColor(colors.lightGray).fill();
-              doc.font('NotoSansArabic').fontSize(14).fillColor(colors.dark).text(arAcadNames[sub] || sub, 60, yPos + 8, { width: pageWidth - 80, align: 'right' });
-              doc.font('NotoSansArabic').fontSize(14).fillColor(pLvl.color).text(`%${avg}`, 60, yPos + 8);
-              yPos += 40;
-
-              for (const result of subResults) {
-                const qp = getPerformanceLevel(result.percentage);
-                doc.font('NotoSansArabic').fontSize(11).fillColor(colors.dark).text(
-                  `• ${result.quiz_name} (${arAcadNames[sub] || sub})`, 70, yPos, { width: pageWidth - 90, align: 'right' }
-                );
-                doc.font('NotoSansArabic').fontSize(11).fillColor(qp.color).text(
-                  `%${result.percentage} (${result.total_questions}/${result.score})`, 60, yPos
-                );
-                yPos += 20;
-              }
-              yPos += 15;
-            }
+            doc.save(); doc.rect(0, 0, pageW, 4).fill(C.emerald); doc.restore();
+            y = 50;
+            y = renderSectionAr(y, reshapeArabic('تقييم المهارات الأكاديمية'), C.emerald, data.academicResults, subNameAr);
+            pageFooter(true);
           }
 
-          // --- Arabic Recommendations ---
+          // ── Arabic Recommendations ──
           doc.addPage();
-          yPos = 50;
-          doc.font('NotoSansArabic');
-          doc.fontSize(20).fillColor(colors.success).text(reshapeArabic('التوصيات'), 50, yPos, { align: 'right', width: pageWidth });
-          yPos += 35;
+          doc.save(); doc.rect(0, 0, pageW, 4).fill(C.success); doc.restore();
+          y = 50;
+
+          doc.font('Arabic').fontSize(18).fillColor(C.success)
+            .text(reshapeArabic('التوصيات'), L, y, { width: W, align: 'right', lineBreak: false });
+          y += 8;
+          doc.moveTo(R, y + 18).lineTo(R - 140, y + 18).lineWidth(2.5).strokeColor(C.success).stroke();
+          y += 30;
 
           // Strengths
-          doc.rect(50, yPos, pageWidth, 25).fillColor('#f0fdf4').fill();
-          doc.font('NotoSansArabic').fontSize(14).fillColor('#166534').text(reshapeArabic('نقاط القوة المحددة'), 60, yPos + 6, { width: pageWidth - 20, align: 'right' });
-          yPos += 35;
+          y = ensureSpace(y, 60, true);
+          doc.save(); doc.roundedRect(L, y, W, 28, 4).fill(C.successLt); doc.restore();
+          doc.font('Arabic').fontSize(12).fillColor(C.success)
+            .text(reshapeArabic('نقاط القوة المحددة'), L + 14, y + 7, { width: W - 28, align: 'right', lineBreak: false });
+          y += 36;
 
-          const arHighPerf = allResults.filter(r => r.percentage >= 85);
-          if (arHighPerf.length > 0) {
-            for (const r of arHighPerf) {
-              doc.font('NotoSansArabic').fontSize(11).fillColor(colors.dark).text(
-                reshapeArabic(`• ${r.quiz_name}: أداء ممتاز يظهر إتقاناً في هذا المجال`), 70, yPos, { width: pageWidth - 40, align: 'right' }
-              );
-              yPos += 20;
-            }
-          } else {
-            doc.font('NotoSansArabic').fontSize(11).fillColor(colors.dark).text(
-              reshapeArabic('• طفلك يطور مهاراته في جميع المجالات التي تم تقييمها'), 70, yPos, { width: pageWidth - 40, align: 'right' }
-            );
-            yPos += 20;
-          }
-          yPos += 15;
-
-          // Areas for Growth
-          doc.rect(50, yPos, pageWidth, 25).fillColor('#fef3c7').fill();
-          doc.font('NotoSansArabic').fontSize(14).fillColor('#92400e').text(reshapeArabic('مجالات النمو'), 60, yPos + 6, { width: pageWidth - 20, align: 'right' });
-          yPos += 35;
-
-          const arLowPerf = allResults.filter(r => r.percentage < 75);
-          if (arLowPerf.length > 0) {
-            for (const r of arLowPerf) {
-              const arName = arSubNames[r.subcategory] || arOralNames[r.subcategory] || arAcadNames[r.subcategory] || r.subcategory;
-              doc.font('NotoSansArabic').fontSize(11).fillColor(colors.dark).text(
-                reshapeArabic(`• ${arName}: يحتاج مزيداً من الممارسة والدعم`), 70, yPos, { width: pageWidth - 40, align: 'right' }
-              );
-              yPos += 20;
+          if (highPerf.length > 0) {
+            for (const r of highPerf) {
+              y = ensureSpace(y, 20, true);
+              doc.font('Arabic').fontSize(10).fillColor(C.gray700)
+                .text(
+                  reshapeArabic('أداء ممتاز') + ':  ' + r.quiz_name + '  •',
+                  L + 14, y, { width: W - 28, align: 'right', lineBreak: false },
+                );
+              y += 18;
             }
           } else if (allResults.length > 0) {
-            doc.font('NotoSansArabic').fontSize(11).fillColor(colors.dark).text(
-              reshapeArabic('• يظهر طفلك أداءً متسقاً في جميع المجالات التي تم تقييمها'), 70, yPos, { width: pageWidth - 40, align: 'right' }
-            );
-            yPos += 20;
+            doc.font('Arabic').fontSize(10).fillColor(C.gray700)
+              .text(
+                reshapeArabic('طفلك يطور مهاراته في جميع المجالات التي تم تقييمها') + '  •',
+                L + 14, y, { width: W - 28, align: 'right', lineBreak: false },
+              );
+            y += 18;
           }
-          yPos += 15;
+          y += 10;
+
+          // Areas for Growth
+          y = ensureSpace(y, 60, true);
+          doc.save(); doc.roundedRect(L, y, W, 28, 4).fill(C.warningLt); doc.restore();
+          doc.font('Arabic').fontSize(12).fillColor(C.warning)
+            .text(reshapeArabic('مجالات النمو'), L + 14, y + 7, { width: W - 28, align: 'right', lineBreak: false });
+          y += 36;
+
+          if (lowPerf.length > 0) {
+            for (const r of lowPerf) {
+              y = ensureSpace(y, 20, true);
+              const arSub = subNameAr[r.subcategory] || r.subcategory;
+              doc.font('Arabic').fontSize(10).fillColor(C.gray700)
+                .text(
+                  reshapeArabic('يحتاج مزيداً من الممارسة') + ':  ' + arSub + '  •',
+                  L + 14, y, { width: W - 28, align: 'right', lineBreak: false },
+                );
+              y += 18;
+            }
+          } else if (allResults.length > 0) {
+            doc.font('Arabic').fontSize(10).fillColor(C.gray700)
+              .text(
+                reshapeArabic('أداء متسق في جميع المجالات') + '  •',
+                L + 14, y, { width: W - 28, align: 'right', lineBreak: false },
+              );
+            y += 18;
+          }
+          y += 10;
 
           // Suggested Activities
-          doc.rect(50, yPos, pageWidth, 25).fillColor('#dbeafe').fill();
-          doc.font('NotoSansArabic').fontSize(14).fillColor('#1e40af').text(reshapeArabic('الأنشطة المقترحة'), 60, yPos + 6, { width: pageWidth - 20, align: 'right' });
-          yPos += 35;
+          y = ensureSpace(y, 120, true);
+          doc.save(); doc.roundedRect(L, y, W, 28, 4).fill(C.blueLt); doc.restore();
+          doc.font('Arabic').fontSize(12).fillColor(C.blue)
+            .text(reshapeArabic('الأنشطة المقترحة'), L + 14, y + 7, { width: W - 28, align: 'right', lineBreak: false });
+          y += 36;
 
-          const arActivities = [
-            reshapeArabic('شجع على الممارسة المنتظمة في المجالات التي كانت الدرجات فيها أقل من 75٪'),
-            reshapeArabic('احتفل بالنجاحات وحافظ على الدافع لمواصلة التعلم'),
-            reshapeArabic('فكر في الألعاب التعليمية التي تستهدف مجالات مهارات محددة'),
-            reshapeArabic('ناقش النتائج مع معلم طفلك للحصول على دعم إضافي في الفصل'),
-            reshapeArabic('أعد التقييم بشكل دوري لتتبع التحسن مع مرور الوقت'),
+          const arActs = [
+            reshapeArabic('شجع على الممارسة المنتظمة في المجالات الضعيفة'),
+            reshapeArabic('احتفل بالنجاحات وحافظ على الدافع للتعلم'),
+            reshapeArabic('استخدم الألعاب التعليمية لتطوير المهارات'),
+            reshapeArabic('ناقش النتائج مع معلم طفلك للدعم الإضافي'),
+            reshapeArabic('أعد التقييم بشكل دوري لتتبع التحسن'),
           ];
-
-          for (const act of arActivities) {
-            doc.font('NotoSansArabic').fontSize(11).fillColor(colors.dark).text(`• ${act}`, 70, yPos, { width: pageWidth - 40, align: 'right' });
-            yPos += 20;
+          for (const act of arActs) {
+            y = ensureSpace(y, 20, true);
+            doc.font('Arabic').fontSize(10).fillColor(C.gray700)
+              .text(act + '  •', L + 14, y, { width: W - 28, align: 'right', lineBreak: false });
+            y += 18;
           }
-          yPos += 30;
 
-          // Arabic Footer
-          doc.font('NotoSansArabic').fontSize(10).fillColor(colors.gray).text(
-            reshapeArabic('صادر من أداة التقييم الشامل | بلوم للتعليم'),
-            50, doc.page.height - 50, { align: 'center', width: pageWidth }
-          );
-        } catch (arabicErr) {
-          console.warn('Failed to render Arabic PDF section:', arabicErr);
+          pageFooter(true);
+        } catch (err) {
+          console.warn('Arabic PDF section error:', err);
         }
       }
 
