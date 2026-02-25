@@ -11,6 +11,13 @@
   font-family: 'Nunito', 'Poppins', 'Inter', sans-serif;
 }
 
+/* Arabic font family utility class */
+.font-arabic {
+  font-family: 'Noto Sans Arabic', 'Nunito', 'Poppins', sans-serif;
+}
+
+/* Arabic font is applied via .font-arabic class only — no global RTL overrides */
+
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;

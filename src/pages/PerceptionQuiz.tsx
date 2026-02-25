@@ -3,6 +3,7 @@ import { ArrowLeft, Eye, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MindSectionReport from '../components/MindSectionReport';
 import FloatingBackground from '../components/FloatingBackground';
+import { ROUTES } from '../routes';
 
 const PerceptionQuiz: React.FC = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ const PerceptionQuiz: React.FC = () => {
       title: 'Missing Object Quiz',
       description: 'identify what is missing from pictures',
       icon: Eye,
-      route: '/missing-object-quiz',
+      route: ROUTES.MISSING_OBJECT_QUIZ_FLAT,
       color: 'from-blue-500 to-cyan-500',
       bgColor: 'bg-blue-50',
       borderColor: 'border-blue-200',
@@ -25,7 +26,7 @@ const PerceptionQuiz: React.FC = () => {
       title: 'Find the Difference',
       description: 'spot the single word that differs between two sentences',
       icon: FileText,
-      route: '/sentence-difference-quiz',
+      route: ROUTES.SENTENCE_DIFFERENCE_QUIZ_FLAT,
       color: 'from-purple-500 to-pink-500',
       bgColor: 'bg-purple-50',
       borderColor: 'border-purple-200',
@@ -45,7 +46,7 @@ const PerceptionQuiz: React.FC = () => {
         {/* Header with back button */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate('/category/mind')}
+            onClick={() => navigate(ROUTES.CATEGORY_MIND)}
             className="group flex items-center space-x-2 px-4 py-2 text-gray-700 bg-white/70 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-white/90 hover:shadow-md transform hover:scale-105"
           >
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />

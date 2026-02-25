@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Brain, Target } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import MindProgressBar from '../components/MindProgressBar';
+import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
+import { ROUTES } from '../routes';
 
 const CriticalThinkingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const CriticalThinkingPage: React.FC = () => {
       description: 'Train logical reasoning through comparison and relationship questions',
       icon: Brain,
       color: 'from-purple-400 to-pink-500',
-      route: '/category/mind/critical-thinking/analogy-quiz',
+      route: ROUTES.ANALOGY_QUIZ,
       features: [
         'If-then relationships',
         'Comparative logic',
@@ -33,7 +34,7 @@ const CriticalThinkingPage: React.FC = () => {
       description: 'Develop classification skills through drag-and-drop sorting challenges',
       icon: Target,
       color: 'from-green-400 to-teal-500',
-      route: '/category/mind/critical-thinking/category-quiz',
+      route: ROUTES.CATEGORY_QUIZ,
       features: [
         'Drag & drop sorting',
         'Classification skills',
@@ -50,7 +51,7 @@ const CriticalThinkingPage: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate('/category/mind')}
+            onClick={() => navigate(ROUTES.CATEGORY_MIND)}
             className="group flex items-center space-x-2 px-4 py-2 text-white rounded-lg transition-all duration-300 ease-out hover:text-purple-100 hover:bg-white/20 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
           >
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
@@ -67,7 +68,7 @@ const CriticalThinkingPage: React.FC = () => {
 
         {/* Progress Bar for Mind Section */}
         <div className="mb-6">
-          <MindProgressBar
+          <AssessmentProgressBar
             onShowReport={() => setShowReport(true)}
           />
         </div>

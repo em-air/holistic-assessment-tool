@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Brain, Target, Eye, Focus, Hash, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import MindProgressBar from '../components/MindProgressBar';
+import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
+import { ROUTES } from '../routes';
 
 const AttentionMemorySelection: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const AttentionMemorySelection: React.FC = () => {
       description: 'Evaluate your ability to focus and shift attention using a research-based questionnaire.',
       icon: Focus,
       color: 'from-blue-400 to-purple-500',
-      route: '/category/mind/attention-memory/attention-quiz',
+      route: ROUTES.ATTENTION_QUIZ,
       duration: '10-15 minutes'
     },
     {
@@ -27,7 +28,7 @@ const AttentionMemorySelection: React.FC = () => {
       description: 'Remember the order of 3-5 pictures and recall the sequence.',
       icon: Eye,
       color: 'from-purple-400 to-indigo-500',
-      route: '/category/mind/attention-memory/picture-sequence',
+      route: ROUTES.PICTURE_SEQUENCE,
       startType: 'sequence_recall',
       duration: '10 minutes'
     },
@@ -38,7 +39,7 @@ const AttentionMemorySelection: React.FC = () => {
       description: 'Quickly memorize and recall words shown briefly on screen.',
       icon: Zap,
       color: 'from-orange-400 to-red-500',
-      route: '/category/mind/attention-memory/flash-word',
+      route: ROUTES.FLASH_WORD,
       duration: '10 minutes'
     }
   ];
@@ -49,7 +50,7 @@ const AttentionMemorySelection: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate('/category/mind')}
+            onClick={() => navigate(ROUTES.CATEGORY_MIND)}
             className="group flex items-center space-x-2 px-4 py-2 text-white rounded-lg transition-all duration-300 ease-out hover:text-purple-100 hover:bg-white/20 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
           >
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
@@ -59,7 +60,7 @@ const AttentionMemorySelection: React.FC = () => {
 
         {/* Progress Bar for Mind Section */}
         <div className="mb-6">
-          <MindProgressBar
+          <AssessmentProgressBar
             onShowReport={() => setShowReport(true)}
           />
         </div>

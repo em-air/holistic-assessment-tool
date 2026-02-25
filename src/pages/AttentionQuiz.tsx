@@ -3,8 +3,9 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Star, Eye, Check, X, Brain, Target } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ProgressTracker } from '../utils/progressTracker';
-import MindProgressBar from '../components/MindProgressBar';
+import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
+import { ROUTES } from '../routes';
 
 // Tile interface
 interface Tile {
@@ -229,13 +230,13 @@ const AttentionQuiz: React.FC = () => {
       });
     }
 
-    navigate('/category/mind');
+    navigate(ROUTES.CATEGORY_MIND);
   };
 
   const startQuiz = (type: 'attention' | 'memory' | 'sequence') => {
     if (type === 'attention') {
       // Redirect to Memory Assessment component
-      navigate('/category/mind/attention-memory/picture-sequence');
+      navigate(ROUTES.PICTURE_SEQUENCE);
       return;
     }
 
@@ -267,7 +268,7 @@ const AttentionQuiz: React.FC = () => {
 
           {/* Progress Bar for Mind Section */}
           <div className="mb-6">
-            <MindProgressBar
+            <AssessmentProgressBar
               onShowReport={() => setShowReport(true)}
             />
           </div>
@@ -358,7 +359,7 @@ const AttentionQuiz: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
               className="group bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl p-8 shadow-xl border border-orange-300 cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-2xl"
-              onClick={() => navigate('/flash-word-quiz')}
+              onClick={() => navigate(ROUTES.FLASH_WORD_QUIZ_FLAT)}
             >
               <div className="text-center text-white">
                 <div className="mb-6">
@@ -433,7 +434,7 @@ const AttentionQuiz: React.FC = () => {
 
         {/* Progress Bar for Mind Section */}
         <div className="mb-6">
-          <MindProgressBar
+          <AssessmentProgressBar
             onShowReport={() => setShowReport(true)}
           />
         </div>

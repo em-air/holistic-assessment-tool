@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import FloatingBackground from '../components/FloatingBackground';
 import { AuthSuccessAnimation, LoginForm, SignupForm } from '../components/auth';
 import { useAuthForm } from '../hooks/useAuthForm';
+import { ROUTES } from '../routes';
 
 /**
  * AuthPage - Refactored
@@ -55,7 +56,7 @@ const AuthPage = () => {
         {/* Back button */}
         <div className="absolute top-6 left-6 z-50">
           <motion.button
-            onClick={() => navigate('/')}
+            onClick={() => navigate(ROUTES.HOME)}
             className="group flex items-center space-x-2 px-4 py-2 text-slate-700 rounded-lg transition-all duration-300 ease-out hover:text-slate-800 hover:bg-white/50 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5 backdrop-blur-sm border border-violet-200/30"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

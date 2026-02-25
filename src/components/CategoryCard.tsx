@@ -4,6 +4,7 @@ import { Lock } from 'lucide-react';
 import { AssessmentCategory } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { getNumericGrade, canAccessCategory, getCategoryBlockedMessage } from '../utils/gradeUtils';
+import { ROUTES, categoryRoute, readingAssessmentRoute, phonicsQuizSelectionRoute, blendingSegmentingSelectionRoute, quizRoute } from '../routes';
 
 interface CategoryCardProps {
   category: AssessmentCategory;
@@ -78,7 +79,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
 
   const handleStartAssessment = () => {
     if (isBlocked) return; // Don't navigate if blocked
-    navigate(`/category/${category.id}`);
+    navigate(categoryRoute(category.id));
   };
 
   const handleSubcategoryClick = (subcategoryId: string, e: React.MouseEvent) => {
@@ -88,43 +89,43 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
     // Route mapping matching CategoryPage logic
     switch (subcategoryId) {
       case 'attention':
-        navigate('/category/mind/attention-memory');
+        navigate(ROUTES.ATTENTION_MEMORY);
         break;
       case 'learning-style':
-        navigate('/learning-styles-quiz');
+        navigate(ROUTES.LEARNING_STYLES_QUIZ);
         break;
       case 'critical-thinking':
-        navigate('/category/mind/critical-thinking-selection');
+        navigate(ROUTES.CRITICAL_THINKING_SELECTION);
         break;
       case 'perception':
-        navigate('/category/mind/perception-selection');
+        navigate(ROUTES.PERCEPTION_SELECTION);
         break;
       case 'oral-language':
-        navigate('/category/oral-skills/oral-language-selection');
+        navigate(ROUTES.ORAL_LANGUAGE_SELECTION);
         break;
       case 'reading':
-        navigate(`/reading-assessment/${category.id}`);
+        navigate(readingAssessmentRoute(category.id));
         break;
       case 'phonics-awareness':
-        navigate(`/phonics-quiz-selection/${category.id}`);
+        navigate(phonicsQuizSelectionRoute(category.id));
         break;
       case 'blending':
-        navigate(`/blending-segmenting-selection/${category.id}`);
+        navigate(blendingSegmentingSelectionRoute(category.id));
         break;
       case 'writing':
-        navigate('/writing-grades');
+        navigate(ROUTES.WRITING_GRADES);
         break;
       case 'sentence-formation':
-        navigate('/vocabulary-matching');
+        navigate(ROUTES.VOCABULARY_MATCHING);
         break;
       case 'spelling':
-        navigate('/spelling-grades');
+        navigate(ROUTES.SPELLING_GRADES);
         break;
       case 'assessment-generator':
-        navigate('/assessment-generator');
+        navigate(ROUTES.ASSESSMENT_GENERATOR);
         break;
       default:
-        navigate(`/quiz/${category.id}/${subcategoryId}`);
+        navigate(quizRoute(category.id, subcategoryId));
     }
   };
 

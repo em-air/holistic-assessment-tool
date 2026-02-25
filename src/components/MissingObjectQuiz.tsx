@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProgressTracker } from '../utils/progressTracker';
+import { ROUTES } from '../routes';
 
 interface Question {
   id: number;
@@ -132,7 +133,7 @@ const MissingObjectQuiz: React.FC = () => {
     });
 
     // Route back to mind category
-    navigate('/category/mind');
+    navigate(ROUTES.CATEGORY_MIND);
   };
 
   const resetForRetry = () => {

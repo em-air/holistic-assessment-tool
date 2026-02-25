@@ -6,6 +6,7 @@ import CategoryCard from '../components/CategoryCard';
 import { assessmentCategories } from '../data/assessmentData';
 import FloatingBackground from '../components/FloatingBackground';
 import { useAuth } from '../contexts/AuthContext';
+import { ROUTES } from '../routes';
 
 const CategoriesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -38,7 +39,7 @@ const CategoriesPage: React.FC = () => {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-4">
               <button
-                onClick={() => navigate('/')}
+                onClick={() => navigate(ROUTES.HOME)}
                 className="text-black hover:text-gray-600 font-medium px-3 py-2 transition-colors duration-200"
               >
                 Home
@@ -57,7 +58,7 @@ const CategoriesPage: React.FC = () => {
               </button>
               {isAdmin && (
                 <button
-                  onClick={() => navigate('/admin/reports')}
+                  onClick={() => navigate(ROUTES.ADMIN_REPORTS)}
                   className="bg-purple-600 text-white px-4 py-2 rounded-md font-medium hover:bg-purple-700 transition-colors duration-200 flex items-center gap-2"
                 >
                   <Shield size={18} />
@@ -83,7 +84,7 @@ const CategoriesPage: React.FC = () => {
                 </>
               ) : (
                 <button
-                  onClick={() => navigate('/auth')}
+                  onClick={() => navigate(ROUTES.AUTH)}
                   className="bg-black text-white px-6 py-2 rounded-md font-medium hover:bg-gray-800 transition-colors duration-200"
                 >
                   Register/Sign In
@@ -106,7 +107,7 @@ const CategoriesPage: React.FC = () => {
 
               {/* Home Button */}
               <button
-                onClick={() => navigate('/')}
+                onClick={() => navigate(ROUTES.HOME)}
                 className="text-gray-600 hover:text-gray-800 p-2 transition-colors duration-200"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,7 +117,7 @@ const CategoriesPage: React.FC = () => {
 
               {/* Profile/User Button */}
               <button
-                onClick={() => navigate('/auth')}
+                onClick={() => navigate(ROUTES.AUTH)}
                 className="text-gray-600 hover:text-gray-800 p-2 transition-colors duration-200"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -240,7 +241,7 @@ const CategoriesPage: React.FC = () => {
         <div className="grid grid-cols-4 h-16">
           {/* Home Button */}
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate(ROUTES.HOME)}
             className="flex flex-col items-center justify-center py-2 px-1 text-gray-500 hover:text-emerald-600 transition-colors duration-200"
           >
             <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -251,7 +252,7 @@ const CategoriesPage: React.FC = () => {
 
           {/* Categories Button */}
           <button
-            onClick={() => navigate('/categories')}
+            onClick={() => navigate(ROUTES.CATEGORIES)}
             className="flex flex-col items-center justify-center py-2 px-1 text-emerald-600 transition-colors duration-200"
           >
             <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -271,7 +272,7 @@ const CategoriesPage: React.FC = () => {
             </button>
           ) : (
             <button
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate(ROUTES.AUTH)}
               className="flex flex-col items-center justify-center py-2 px-1 text-gray-500 hover:text-emerald-600 transition-colors duration-200"
             >
               <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

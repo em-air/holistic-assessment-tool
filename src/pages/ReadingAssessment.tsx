@@ -4,6 +4,7 @@ import { ArrowLeft, MicOff, Clock, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FloatingBackground from '../components/FloatingBackground';
 import { logger } from '../utils/logger';
+import { ROUTES, categoryRoute } from '../routes';
 
 interface ReadingResult {
   wordsPerMinute: number;
@@ -420,7 +421,7 @@ const ReadingAssessment: React.FC = () => {
         
         <div className="relative z-10 p-6">
           <button
-            onClick={() => navigate(`/category/${categoryId}`)}
+            onClick={() => navigate(categoryRoute(categoryId!))}
             className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
           >
             <ArrowLeft size={20} />
@@ -489,7 +490,7 @@ const ReadingAssessment: React.FC = () => {
                   Take Another Assessment
                 </button>
                 <button
-                  onClick={() => navigate('/categories')}
+                  onClick={() => navigate(ROUTES.CATEGORIES)}
                   className="flex-1 bg-gray-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-700 transition-colors duration-200"
                 >
                   Back to Categories
@@ -508,7 +509,7 @@ const ReadingAssessment: React.FC = () => {
       
       <div className="relative z-10 p-6">
         <button
-          onClick={() => navigate(`/category/${categoryId}`)}
+          onClick={() => navigate(categoryRoute(categoryId!))}
           className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
         >
           <ArrowLeft size={20} />

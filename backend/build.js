@@ -31,4 +31,15 @@ esbuild.buildSync({
   bundle: false,
 });
 
+// Copy font assets to dist
+const fontsDir = path.join(__dirname, 'src', 'fonts');
+const distFontsDir = path.join(__dirname, 'dist', 'fonts');
+if (fs.existsSync(fontsDir)) {
+  fs.mkdirSync(distFontsDir, { recursive: true });
+  for (const file of fs.readdirSync(fontsDir)) {
+    fs.copyFileSync(path.join(fontsDir, file), path.join(distFontsDir, file));
+  }
+  console.log('Copied font assets to dist/fonts/');
+}
+
 console.log('Build completed successfully!');

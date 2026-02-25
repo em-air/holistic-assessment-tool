@@ -7,9 +7,9 @@ import {
   getStoriesForGrade
 } from '../data/storyRetellData';
 import { ProgressTracker } from '../utils/progressTracker';
-import { saveQuizResult } from '../services/quizResultsService';
 import FloatingBackground from '../components/FloatingBackground';
 import { logger } from '../utils/logger';
+import { ROUTES, oralLanguageSelectionRoute } from '../routes';
 
 const StoryRetellQuiz: React.FC = () => {
   const navigate = useNavigate();
@@ -114,6 +114,7 @@ const StoryRetellQuiz: React.FC = () => {
     ProgressTracker.saveQuizResult({
       quizId: 'story-retell',
       quizName: 'Story Retelling',
+      category: 'oral',
       subcategory: 'oral-language',
       score: score.correct,
       totalQuestions: score.total,
@@ -121,24 +122,6 @@ const StoryRetellQuiz: React.FC = () => {
       timeSpent: timeSpent,
       completedAt: new Date().toISOString(),
       gradeLevel: `Grade ${grade}`,
-    });
-
-    // Also save directly to database with oral category
-    saveQuizResult({
-      quiz_id: 'story-retell',
-      quiz_name: `Story Retelling - Grade ${grade}`,
-      category: 'oral',
-      subcategory: 'oral-language',
-      score: score.correct,
-      total_questions: score.total,
-      time_spent: timeSpent,
-      grade_level: `Grade ${grade}`,
-    }).then(result => {
-      if (result.success) {
-        logger.log('Story Retell result saved to database');
-      }
-    }).catch(err => {
-      logger.error('Failed to save Story Retell result:', err);
     });
 
     setShowResult(true);
@@ -196,14 +179,14 @@ const StoryRetellQuiz: React.FC = () => {
 
             <div className="space-y-3">
               <button
-                onClick={() => navigate('/story-retell-quiz')}
+                onClick={() => navigate(ROUTES.STORY_RETELL_QUIZ_FLAT)}
                 className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
               >
                 Try Different Grade
               </button>
               
               <button
-                onClick={() => navigate('/oral-language-selection/oral-skills')}
+                onClick={() => navigate(oralLanguageSelectionRoute('oral-skills'))}
                 className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
               >
                 Back to Oral Skills
@@ -222,7 +205,7 @@ const StoryRetellQuiz: React.FC = () => {
       {/* Header */}
       <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-center">
         <button
-          onClick={() => navigate('/story-retell-quiz')}
+          onClick={() => navigate(ROUTES.STORY_RETELL_QUIZ_FLAT)}
           className="flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg hover:bg-black/30 transition-colors"
         >
           <ArrowLeft size={20} />

@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Volume2 } from 'lucide-react';
 import FloatingBackground from '../components/FloatingBackground';
+import { ROUTES, categoryRoute, phonicsQuizRoute } from '../routes';
 
 const PhonicsQuizSelection: React.FC = () => {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ const PhonicsQuizSelection: React.FC = () => {
       title: 'Phonics Awareness',
       description: 'Match letters with their sounds',
       icon: BookOpen,
-      route: `/phonics-quiz/${categoryId}`,
+      route: phonicsQuizRoute(categoryId!),
       color: 'from-blue-500 to-purple-600',
       difficulty: 'Grades 1-4'
     },
@@ -22,7 +23,7 @@ const PhonicsQuizSelection: React.FC = () => {
       title: 'Beginning & Ending Sounds',
       description: 'Identify beginning and ending sounds in words',
       icon: Volume2,
-      route: '/starting-ending-sound-quiz',
+      route: ROUTES.STARTING_ENDING_SOUND,
       color: 'from-green-500 to-blue-600',
       difficulty: 'Grades 1-4'
     }
@@ -35,7 +36,7 @@ const PhonicsQuizSelection: React.FC = () => {
       {/* Header with back button */}
       <div className="absolute top-4 left-4 z-20">
         <button
-          onClick={() => navigate(`/category/${categoryId}`)}
+          onClick={() => navigate(categoryRoute(categoryId!))}
           className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
         >
           <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />

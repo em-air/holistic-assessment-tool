@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Volume2, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FloatingBackground from '../components/FloatingBackground';
+import { categoryRoute, blendingQuizRoute, segmentingQuizRoute } from '../routes';
 
 const BlendingSegmentingSelection: React.FC = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const BlendingSegmentingSelection: React.FC = () => {
       description: 'Combine sounds to form words',
       icon: Volume2,
       color: 'from-green-400 to-emerald-500',
-      route: `/blending-quiz/${categoryId}`
+      route: blendingQuizRoute(categoryId!)
     },
     {
       id: 'segmenting',
@@ -23,7 +24,7 @@ const BlendingSegmentingSelection: React.FC = () => {
       description: 'Break words into individual sounds',
       icon: Zap,
       color: 'from-purple-400 to-pink-500',
-      route: `/segmenting-quiz/${categoryId}`
+      route: segmentingQuizRoute(categoryId!)
     }
   ];
 
@@ -33,7 +34,7 @@ const BlendingSegmentingSelection: React.FC = () => {
       
       <div className="relative z-10 p-6">
         <button
-          onClick={() => navigate(`/category/${categoryId}`)}
+          onClick={() => navigate(categoryRoute(categoryId!))}
           className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
         >
           <ArrowLeft size={20} />

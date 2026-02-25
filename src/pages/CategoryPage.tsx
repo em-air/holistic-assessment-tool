@@ -3,9 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { assessmentCategories } from '../data/assessmentData';
 import FloatingBackground from '../components/FloatingBackground';
-import MindProgressBar from '../components/MindProgressBar';
+import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 import '../utils/testProgressUtils'; // For testing - adds window.addTestResults() and window.clearTestResults()
+import { ROUTES, categoryRoute, quizRoute, readingAssessmentRoute, phonicsQuizSelectionRoute, blendingSegmentingSelectionRoute } from '../routes';
 
 const CategoryPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
@@ -21,7 +22,7 @@ const CategoryPage: React.FC = () => {
         <div className="text-center bg-stone-100 p-8 rounded-2xl shadow-xl border border-stone-200 relative z-10">
           <h1 className="text-2xl font-bold text-stone-800 mb-4">Category Not Found</h1>
           <button
-            onClick={() => navigate('/categories')}
+            onClick={() => navigate(ROUTES.CATEGORIES)}
             className="group relative px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-stone-100 rounded-full font-medium overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-emerald-500/25 transform hover:scale-105 hover:-translate-y-1"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-700 to-teal-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -34,31 +35,31 @@ const CategoryPage: React.FC = () => {
 
   const handleSubcategoryClick = (subcategoryId: string) => {
     if (subcategoryId === 'assessment-generator') {
-      navigate('/assessment-generator');
+      navigate(ROUTES.ASSESSMENT_GENERATOR);
     } else if (subcategoryId === 'reading') {
-      navigate(`/reading-assessment/${categoryId}`);
+      navigate(readingAssessmentRoute(categoryId!));
     } else if (subcategoryId === 'phonics-awareness') {
-      navigate(`/phonics-quiz-selection/${categoryId}`);
+      navigate(phonicsQuizSelectionRoute(categoryId!));
     } else if (subcategoryId === 'blending') {
-      navigate(`/blending-segmenting-selection/${categoryId}`);
+      navigate(blendingSegmentingSelectionRoute(categoryId!));
     } else if (subcategoryId === 'sentence-formation') {
-      navigate('/vocabulary-matching');
+      navigate(ROUTES.VOCABULARY_MATCHING);
     } else if (subcategoryId === 'learning-style') {
-      navigate('/learning-styles-quiz');
+      navigate(ROUTES.LEARNING_STYLES_QUIZ);
     } else if (subcategoryId === 'perception') {
-      navigate('/category/mind/perception-selection');
+      navigate(ROUTES.PERCEPTION_SELECTION);
     } else if (subcategoryId === 'spelling') {
-      navigate('/spelling-grades');
+      navigate(ROUTES.SPELLING_GRADES);
     } else if (subcategoryId === 'writing') {
-      navigate('/writing-grades');
+      navigate(ROUTES.WRITING_GRADES);
     } else if (subcategoryId === 'attention') {
-      navigate('/category/mind/attention-memory');
+      navigate(ROUTES.ATTENTION_MEMORY);
     } else if (subcategoryId === 'oral-language') {
-      navigate('/category/oral-skills/oral-language-selection');
+      navigate(ROUTES.ORAL_LANGUAGE_SELECTION);
     } else if (subcategoryId === 'critical-thinking') {
-      navigate('/category/mind/critical-thinking-selection');
+      navigate(ROUTES.CRITICAL_THINKING_SELECTION);
     } else {
-      navigate(`/quiz/${categoryId}/${subcategoryId}`);
+      navigate(quizRoute(categoryId!, subcategoryId));
     }
   };
 
@@ -69,7 +70,7 @@ const CategoryPage: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate('/categories')}
+            onClick={() => navigate(ROUTES.CATEGORIES)}
             className="group flex items-center space-x-2 px-4 py-2 text-stone-600 rounded-lg transition-all duration-300 ease-out hover:text-emerald-700 hover:bg-white/50 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
           >
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
@@ -83,11 +84,12 @@ const CategoryPage: React.FC = () => {
           <p className="text-stone-700 text-lg max-w-2xl mx-auto">{category.description}</p>
         </div>
 
-        {/* Progress Bar for Mind Section */}
-        {categoryId === 'mind' && (
+        {/* Progress Bar for Mind/Oral Skills Section */}
+        {(categoryId === 'mind' || categoryId === 'oral-skills') && (
           <div className="max-w-4xl mx-auto mb-8">
-            <MindProgressBar
+            <AssessmentProgressBar
               onShowReport={() => setShowReport(true)}
+              filter={categoryId === 'mind' ? 'mind' : 'oral'}
               className="mb-6"
             />
           </div>

@@ -4,6 +4,7 @@ import { ArrowLeft, RotateCcw, Volume2, VolumeX, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { spotTheDifferenceData, type GameLevelWithScene } from '../data/spotTheDifferenceData';
 import SimpleCartoonScene from '../components/SimpleCartoonScene';
+import { ROUTES } from '../routes';
 
 // Translations
 const translations = {
@@ -148,7 +149,7 @@ export default function SpotTheDifferenceGame() {
         <div className="flex items-center justify-between max-w-6xl mx-auto">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate('/categories')}
+              onClick={() => navigate(ROUTES.CATEGORIES)}
               className="flex items-center gap-2 text-purple-600 hover:text-purple-700 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -319,7 +320,7 @@ export default function SpotTheDifferenceGame() {
                         {t.playAgain}
                       </button>
                       <button
-                        onClick={() => navigate('/categories')}
+                        onClick={() => navigate(ROUTES.CATEGORIES)}
                         className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
                       >
                         {t.backToCategories}

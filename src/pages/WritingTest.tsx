@@ -6,6 +6,7 @@ import { evaluateWritingWithGemini, WritingEvaluation } from '../services/gemini
 import { saveQuizResult } from '../services/quizResultsService';
 import { ArrowLeft, Clock, Target, BookOpen, Lightbulb, CheckCircle, Star, RefreshCw, Sparkles, Brain } from 'lucide-react';
 import { logger } from '../utils/logger';
+import { ROUTES } from '../routes';
 
 const WritingTest: React.FC = () => {
   const { grade } = useParams<{ grade: string }>();
@@ -133,7 +134,7 @@ const WritingTest: React.FC = () => {
           <div className="text-6xl mb-4">✍️</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Loading Writing Assessment...</h2>
           <button
-            onClick={() => navigate('/writing-grades')}
+            onClick={() => navigate(ROUTES.WRITING_GRADES)}
             className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-colors"
           >
             Back to Grade Selection
@@ -204,7 +205,7 @@ const WritingTest: React.FC = () => {
           {/* Back Button */}
           <div className="text-center">
             <button
-              onClick={() => navigate('/writing-grades')}
+              onClick={() => navigate(ROUTES.WRITING_GRADES)}
               className="inline-flex items-center px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-medium transition-colors"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -460,13 +461,13 @@ const WritingTest: React.FC = () => {
               Write Another Topic
             </button>
             <button
-              onClick={() => navigate('/writing-grades')}
+              onClick={() => navigate(ROUTES.WRITING_GRADES)}
               className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-medium transition-colors shadow-lg"
             >
               Choose Different Grade
             </button>
             <button
-              onClick={() => navigate('/category/academic-skills')}
+              onClick={() => navigate(ROUTES.CATEGORY_ACADEMIC_SKILLS)}
               className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg"
             >
               Back to Academic Tests
@@ -591,7 +592,7 @@ const WritingTest: React.FC = () => {
           </button>
           
           <button
-            onClick={() => navigate('/writing-grades')}
+            onClick={() => navigate(ROUTES.WRITING_GRADES)}
             className="inline-flex items-center px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-medium transition-colors shadow-lg"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />

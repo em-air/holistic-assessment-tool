@@ -25,6 +25,7 @@ import {
 import { saveQuizResult } from '../services/quizResultsService';
 import { logger } from '../utils/logger';
 import FloatingBackground from '../components/FloatingBackground';
+import { ROUTES } from '../routes';
 
 const SecureSpellingTest: React.FC = () => {
     const navigate = useNavigate();
@@ -190,7 +191,7 @@ const SecureSpellingTest: React.FC = () => {
                     <h2 className="text-xl font-bold text-gray-800 mb-2">Oops!</h2>
                     <p className="text-gray-600 mb-6">{error || 'Something went wrong'}</p>
                     <button
-                        onClick={() => navigate('/spelling-grades')}
+                        onClick={() => navigate(ROUTES.SPELLING_GRADES)}
                         className="bg-purple-500 hover:bg-purple-600 text-white py-2 px-6 rounded-lg font-medium"
                     >
                         Go Back
@@ -260,14 +261,14 @@ const SecureSpellingTest: React.FC = () => {
                             </button>
 
                             <button
-                                onClick={() => navigate('/spelling-grades')}
+                                onClick={() => navigate(ROUTES.SPELLING_GRADES)}
                                 className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded-lg font-bold transition-colors"
                             >
                                 📚 Try Another Grade
                             </button>
 
                             <button
-                                onClick={() => navigate('/category/academic')}
+                                onClick={() => navigate(ROUTES.CATEGORY_ACADEMIC_SKILLS)}
                                 className="w-full bg-gray-400 hover:bg-gray-500 text-white py-3 px-6 rounded-lg font-bold transition-colors"
                             >
                                 🏠 Back to Academic Tests
@@ -289,7 +290,7 @@ const SecureSpellingTest: React.FC = () => {
             <div className="relative z-10 p-6">
                 <div className="flex items-center justify-between">
                     <button
-                        onClick={() => navigate('/spelling-grades')}
+                        onClick={() => navigate(ROUTES.SPELLING_GRADES)}
                         className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 bg-white/50 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors"
                     >
                         <ArrowLeft size={20} />

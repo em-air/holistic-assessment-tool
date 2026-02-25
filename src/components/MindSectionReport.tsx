@@ -2,12 +2,13 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { X, Download, Share2, Brain, Award, Mail, Database, CheckCircle, LogIn } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
-import { ProgressTracker, MIND_QUIZZES, QuizResult } from '../utils/progressTracker';
+import { ProgressTracker, MIND_QUIZZES, ORAL_QUIZZES, ALL_TRACKED_QUIZZES, QuizResult } from '../utils/progressTracker';
 import ReportPDF from './ReportPDF';
 import EmailReportModal from './EmailReportModal';
 import { generateReport } from '../services/reportService';
 import { useNavigate } from 'react-router-dom';
 import { logger } from '../utils/logger';
+import { ROUTES } from '../routes';
 
 interface MindSectionReportProps {
   onClose: () => void;
@@ -23,7 +24,7 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
   
   const isAuthenticated = ProgressTracker.isAuthenticated();
   const progress = ProgressTracker.getProgress();
-  const results = progress.mindSectionResults;
+  const results = [...progress.mindSectionResults, ...(progress.oralSectionResults ?? [])];
 
   // Show login prompt if not authenticated
   if (!isAuthenticated) {
@@ -55,7 +56,7 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
               Cancel
             </button>
             <button
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate(ROUTES.AUTH)}
               className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg"
             >
               Sign In
@@ -85,7 +86,11 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       'memory': 'Memory',
       'learning-style': 'Learning Style',
       'critical-thinking': 'Critical Thinking',
-      'perception': 'Perception'
+      'perception': 'Perception',
+      'oral-language': 'Oral Language',
+      'phonics': 'Phonics',
+      'phonics-awareness': 'Phonics',
+      'blending-segmenting': 'Blending & Segmenting'
     };
     return names[subcategory] || subcategory;
   };
@@ -96,7 +101,11 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       'memory': 'text-orange-600',
       'learning-style': 'text-green-600',
       'critical-thinking': 'text-purple-600',
-      'perception': 'text-indigo-600'
+      'perception': 'text-indigo-600',
+      'oral-language': 'text-sky-600',
+      'phonics': 'text-pink-600',
+      'phonics-awareness': 'text-pink-600',
+      'blending-segmenting': 'text-teal-600'
     };
     return colors[subcategory] || 'text-gray-600';
   };
@@ -118,7 +127,11 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       'memory': 'Memory skills encompass the ability to retain, recall, and work with information over different time periods. This includes both short-term and long-term memory functions.',
       'learning-style': 'Learning Styles refer to how your child best receives, processes, and retains information. Understanding their preferred learning style helps optimize their educational experience.',
       'critical-thinking': 'Critical Thinking encompasses reasoning, problem-solving, and analytical skills. It includes the ability to make connections, recognize patterns, and think logically about relationships between concepts.',
-      'perception': 'Perception involves how your child interprets and understands visual and spatial information. This includes recognizing patterns, understanding spatial relationships, and processing visual details.'
+      'perception': 'Perception involves how your child interprets and understands visual and spatial information. This includes recognizing patterns, understanding spatial relationships, and processing visual details.',
+      'oral-language': 'Oral Language skills measure vocabulary breadth, sentence construction, story sequencing, and narrative retelling abilities essential for communication and literacy development.',
+      'phonics': 'Phonics skills assess the ability to identify letter-sound relationships, recognize beginning and ending sounds, and decode words — foundational skills for reading.',
+      'phonics-awareness': 'Phonics skills assess the ability to identify letter-sound relationships, recognize beginning and ending sounds, and decode words — foundational skills for reading.',
+      'blending-segmenting': 'Blending and Segmenting skills measure the ability to combine individual sounds into words (blending) and break words into component sounds (segmenting), both critical for reading fluency.'
     };
     return descriptions[subcategory] || 'This skill area measures important cognitive abilities.';
   };
@@ -272,7 +285,7 @@ Generated: ${date}
 ASSESSMENT SUMMARY
 ================================
 
-Overall Progress: ${progress.overallProgress}% (${results.length}/${MIND_QUIZZES.length} assessments completed)
+Overall Progress: ${progress.overallProgress}% (${results.length}/${ALL_TRACKED_QUIZZES.length} assessments completed)
 Average Score: ${averageScore}%
 Total Time Invested: ${formatTime(totalTimeSpent)}
 
@@ -286,7 +299,7 @@ DETAILED SKILL ANALYSIS
 `;
 
     // Group results by skill category
-    ['attention', 'memory', 'learning-style', 'critical-thinking', 'perception'].forEach(category => {
+    ['attention', 'memory', 'learning-style', 'critical-thinking', 'perception', 'oral-language', 'phonics', 'phonics-awareness', 'blending-segmenting'].forEach(category => {
       const categoryResults = results.filter(r => remapQuizCategory(r) === category);
       if (categoryResults.length === 0) return;
       
@@ -302,9 +315,16 @@ Assessment Results:
       
       categoryResults.forEach(result => {
         const performance = ProgressTracker.getPerformanceLevel(result.percentage);
+        const isLS = result.quizId === 'learning-styles' && result.additionalData?.dominantStyle;
+        const isAttn = result.quizId === 'attention-assessment';
+        const scoreDisplay = isLS
+          ? `Style: ${result.additionalData.dominantStyle === 'visual' ? 'Visual Learner' : result.additionalData.dominantStyle === 'auditory' ? 'Auditory Learner' : result.additionalData.dominantStyle === 'kinesthetic' ? 'Kinesthetic Learner' : 'Reading/Writing Learner'}`
+          : isAttn
+            ? `Attention Level: ${result.additionalData?.attentionLevel || (result.percentage >= 75 ? 'Strong Focus' : result.percentage >= 60 ? 'Moderate Focus' : 'Developing Focus')}`
+            : `Score: ${result.score}/${result.totalQuestions} (${result.percentage}%)`;
         reportText += `
-• ${result.quizName} (${getSubcategoryName(category)})
-  Score: ${result.score}/${result.totalQuestions} (${result.percentage}%)
+\u2022 ${result.quizName} (${getSubcategoryName(category)})
+  ${scoreDisplay}
   Performance Level: ${performance.level}
   Analysis: ${getDetailedAnalysis(result)}
 
@@ -454,8 +474,8 @@ Assessment Results:
                 <strong>Dear Parent,</strong> This report provides an overview of your child's performance across key cognitive skill areas. 
                 Each section below explains what skills were tested and how your child performed, along with suggestions for continued development. 
                 {progress.overallProgress === 100 
-                  ? `The assessment covers all ${MIND_QUIZZES.length} areas that are fundamental to learning and academic success.`
-                  : `Your child has completed ${results.length} out of ${MIND_QUIZZES.length} assessments so far. You can continue taking additional assessments to get a more complete picture.`
+                  ? `The assessment covers all ${ALL_TRACKED_QUIZZES.length} areas that are fundamental to learning and academic success.`
+                  : `Your child has completed ${results.length} out of ${ALL_TRACKED_QUIZZES.length} assessments so far. You can continue taking additional assessments to get a more complete picture.`
                 }
               </p>
             </div>
@@ -466,7 +486,7 @@ Assessment Results:
             <h3 className="text-xl font-bold text-gray-800 mb-6">🧠 Detailed Skill Analysis</h3>
             
             {/* Group results by skill category */}
-            {['attention', 'memory', 'learning-style', 'critical-thinking', 'perception'].map(category => {
+            {['attention', 'memory', 'learning-style', 'critical-thinking', 'perception', 'oral-language', 'phonics', 'phonics-awareness', 'blending-segmenting'].map(category => {
               const categoryResults = results.filter(r => remapQuizCategory(r) === category);
               if (categoryResults.length === 0) return null;
               
@@ -509,6 +529,12 @@ Assessment Results:
                           : result.additionalData.dominantStyle === 'kinesthetic' ? 'Kinesthetic Learner'
                           : result.additionalData.dominantStyle.charAt(0).toUpperCase() + result.additionalData.dominantStyle.slice(1) + ' Learner'
                         : null;
+
+                      // For attention assessment, show qualitative level
+                      const isAttention = result.quizId === 'attention-assessment';
+                      const attentionLevel = isAttention
+                        ? (result.additionalData?.attentionLevel || (result.percentage >= 75 ? 'Strong Focus' : result.percentage >= 60 ? 'Moderate Focus' : 'Developing Focus'))
+                        : null;
                       
                       return (
                         <div key={result.quizId} className={`border-l-4 pl-4 ${getCategoryColor(category).replace('text-', 'border-')}`}>
@@ -528,6 +554,13 @@ Assessment Results:
                                     {learnerType}
                                   </div>
                                   <div className="text-sm text-gray-500">Learning Style Identified</div>
+                                </>
+                              ) : isAttention && attentionLevel ? (
+                                <>
+                                  <div className={`text-lg font-bold ${getCategoryColor(category)}`}>
+                                    {attentionLevel}
+                                  </div>
+                                  <div className="text-sm text-gray-500">Attention Level</div>
                                 </>
                               ) : (
                                 <>
@@ -574,7 +607,7 @@ Assessment Results:
                 To get a complete picture of your child's cognitive abilities, consider completing these additional assessments:
               </p>
               <div className="space-y-2">
-                {MIND_QUIZZES.filter(quiz => !results.some(r => r.quizId === quiz.id)).map(quiz => (
+                {ALL_TRACKED_QUIZZES.filter(quiz => !results.some(r => r.quizId === quiz.id)).map(quiz => (
                   <div key={quiz.id} className="flex items-center space-x-3 p-3 bg-white rounded-lg">
                     <div className="w-3 h-3 bg-orange-400 rounded-full"></div>
                     <div>

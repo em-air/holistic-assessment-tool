@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../supabase-client';
+import { ROUTES } from '../routes';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -199,7 +200,7 @@ const AdminReports: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-700">Admin Access Required</h2>
           <p className="text-gray-500 mt-2">Please sign in with an admin account</p>
           <button
-            onClick={() => navigate('/auth')}
+            onClick={() => navigate(ROUTES.AUTH)}
             className="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
           >
             Sign In
@@ -227,7 +228,7 @@ const AdminReports: React.FC = () => {
               <p className="text-gray-600 mt-1">View and manage all student reports</p>
             </div>
             <button
-              onClick={() => navigate('/categories')}
+              onClick={() => navigate(ROUTES.CATEGORIES)}
               className="px-4 py-2 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-gray-700 flex items-center gap-2"
             >
               <ChevronLeft size={20} />

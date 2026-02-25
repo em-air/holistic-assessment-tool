@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Star, Brain, Check, X, RotateCcw } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { oralLanguageCategories, oralLanguageTranslations, type QuizCategory } from '../data/oralLanguageData';
-import { saveQuizResult } from '../services/quizResultsService';
+import { ProgressTracker } from '../utils/progressTracker';
+import { ROUTES, oralLanguageSelectionRoute } from '../routes';
 
 interface QuizScores {
   vocabulary: { correct: number; total: number };
@@ -39,20 +40,17 @@ const OralLanguageQuiz: React.FC = () => {
       const categoryScore = quizScores[selectedCategory.id as keyof QuizScores];
       const percentage = Math.round((categoryScore.correct / categoryScore.total) * 100);
       
-      saveQuizResult({
-        quiz_id: `oral-language-${selectedCategory.id}`,
-        quiz_name: `Oral Language - ${selectedCategory.title}`,
+      // Save to ProgressTracker (localStorage + DB sync)
+      ProgressTracker.saveQuizResult({
+        quizId: `oral-language-${selectedCategory.id}`,
+        quizName: `Oral Language - ${selectedCategory.title}`,
         category: 'oral',
         subcategory: 'oral-language',
         score: categoryScore.correct,
-        total_questions: categoryScore.total,
-        time_spent: timeSpent,
-      }).then(result => {
-        if (result.success) {
-          console.log(`Oral Language ${selectedCategory.id} result saved to database`);
-        }
-      }).catch(err => {
-        console.error(`Failed to save Oral Language ${selectedCategory.id} result:`, err);
+        totalQuestions: categoryScore.total,
+        percentage,
+        timeSpent,
+        completedAt: new Date().toISOString(),
       });
     }
   }, [showResults, selectedCategory, quizScores]);
@@ -123,7 +121,7 @@ const OralLanguageQuiz: React.FC = () => {
   const startQuiz = (category: QuizCategory) => {
     // If story-retell is selected, navigate to the separate Story Retell quiz
     if (category.id === 'story-retell') {
-      navigate('/story-retell-quiz');
+      navigate(ROUTES.STORY_RETELL_QUIZ_FLAT);
       return;
     }
     
@@ -174,7 +172,7 @@ const OralLanguageQuiz: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <button
-              onClick={() => navigate('/oral-language-selection/oral-skills')}
+            onClick={() => navigate(oralLanguageSelectionRoute('oral-skills'))}
               className="group flex items-center space-x-2 px-4 py-2 text-stone-600 rounded-lg transition-all duration-300 ease-out hover:text-purple-700 hover:bg-white/50 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
             >
               <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />

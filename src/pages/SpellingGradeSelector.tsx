@@ -10,6 +10,7 @@ import {
   getLockedReason,
   getCategoryBlockedMessage
 } from '../utils/gradeUtils';
+import { ROUTES, spellingTestRoute } from '../routes';
 
 const SpellingGradeSelector: React.FC = () => {
   const navigate = useNavigate();
@@ -21,11 +22,11 @@ const SpellingGradeSelector: React.FC = () => {
 
   const handleGradeSelect = (grade: number) => {
     if (!user) {
-      navigate('/auth');
+      navigate(ROUTES.AUTH);
       return;
     }
     if (canAccessQuizGrade(userNumericGrade, 'academic', 'spelling', grade, isAdmin)) {
-      navigate(`/spelling-test/${grade}`);
+      navigate(spellingTestRoute(grade));
     }
   };
 
@@ -161,7 +162,7 @@ const SpellingGradeSelector: React.FC = () => {
           transition={{ duration: 0.6, delay: 0.8 }}
         >
           <button
-            onClick={() => navigate('/category/academic')}
+            onClick={() => navigate(ROUTES.CATEGORY_ACADEMIC_SKILLS)}
             className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-medium transition-colors duration-200 shadow-md hover:shadow-lg"
           >
             ← Back to Academic Tests

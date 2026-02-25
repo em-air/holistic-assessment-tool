@@ -8,6 +8,7 @@ import {
     canAccessQuizGrade,
     getLockedReason
 } from '../../utils/gradeUtils';
+import { ROUTES } from '../../routes';
 
 interface GradeSelectorProps {
     title: string;
@@ -80,7 +81,7 @@ export const GradeSelector = ({
 
     const handleGradeClick = (grade: number) => {
         if (!user) {
-            navigate('/auth');
+            navigate(ROUTES.AUTH);
             return;
         }
         if (!isLocked(grade)) {

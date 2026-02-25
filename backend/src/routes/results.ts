@@ -38,7 +38,8 @@ router.post('/', verifySupabaseToken, async (req: Request, res: Response) => {
     }
 
     const data = validationResult.data;
-    const percentage = Math.round((data.score / data.total_questions) * 100);
+    // Clamp to 0-100 — some quizzes use Likert scoring where score > total_questions
+    const percentage = Math.min(100, Math.max(0, Math.round((data.score / data.total_questions) * 100)));
 
     const resultInsert: QuizResultInsert = {
       user_id: req.user.id,

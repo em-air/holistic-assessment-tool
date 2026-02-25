@@ -3,10 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Star, CheckCircle, XCircle, Clock, Brain } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ProgressTracker } from '../utils/progressTracker';
-import MindProgressBar from '../components/MindProgressBar';
+import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 import { supabase } from '../supabase-client';
 import { logger } from '../utils/logger';
+import { ROUTES } from '../routes';
 
 // API types for memory assessment (no answers exposed)
 interface MemoryItem {
@@ -285,7 +286,7 @@ const MemoryAssessment: React.FC = () => {
         <div className="container mx-auto px-4 max-w-4xl">
           {/* Mind Section Progress Bar */}
           <div className="mb-6">
-            <MindProgressBar
+            <AssessmentProgressBar
               onShowReport={() => setShowReport(true)}
             />
           </div>
@@ -371,7 +372,7 @@ const MemoryAssessment: React.FC = () => {
                 Try Again
               </button>
               <button
-                onClick={() => navigate('/category/mind/attention-memory')}
+                onClick={() => navigate(ROUTES.ATTENTION_MEMORY)}
                 className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200 transform hover:scale-105"
               >
                 Back to Selection
@@ -395,7 +396,7 @@ const MemoryAssessment: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate('/category/mind/attention-memory')}
+            onClick={() => navigate(ROUTES.ATTENTION_MEMORY)}
             className="group flex items-center space-x-2 px-4 py-2 text-white rounded-lg transition-all duration-300 ease-out hover:text-emerald-100 hover:bg-white/20 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
           >
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
@@ -418,7 +419,7 @@ const MemoryAssessment: React.FC = () => {
 
         {/* Mind Section Progress Bar */}
         <div className="mb-6">
-          <MindProgressBar
+          <AssessmentProgressBar
             onShowReport={() => setShowReport(true)}
           />
         </div>

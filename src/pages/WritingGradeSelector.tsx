@@ -5,6 +5,7 @@ import { writingData } from '../data/writingData';
 import { BookOpen, Pencil, Users, Target, ArrowLeft, Lock } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { getNumericGrade, canAccessQuizGrade } from '../utils/gradeUtils';
+import { ROUTES, writingTestRoute } from '../routes';
 
 const WritingGradeSelector: React.FC = () => {
   const navigate = useNavigate();
@@ -13,11 +14,11 @@ const WritingGradeSelector: React.FC = () => {
 
   const handleGradeSelect = (grade: number) => {
     if (!user) {
-      navigate('/auth');
+      navigate(ROUTES.AUTH);
       return;
     }
     if (canAccessQuizGrade(userNumericGrade, 'academic', 'writing', grade, isAdmin || false)) {
-      navigate(`/writing-test/${grade}`);
+      navigate(writingTestRoute(grade));
     }
   };
 
@@ -205,7 +206,7 @@ const WritingGradeSelector: React.FC = () => {
           transition={{ duration: 0.6, delay: 1.0 }}
         >
           <button
-            onClick={() => navigate('/category/academic-skills')}
+            onClick={() => navigate(ROUTES.CATEGORY_ACADEMIC_SKILLS)}
             className="inline-flex items-center px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-medium transition-colors duration-200 shadow-md hover:shadow-lg"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import QuestionCard from '../components/QuestionCard';
 import ResultScreen from '../components/ResultScreen';
-import LanguageToggle from '../components/LanguageToggle';
 import FloatingBackground from '../components/FloatingBackground';
 import { 
   quizQuestions, 
@@ -11,7 +10,7 @@ import {
   LearningStyle 
 } from '../data/learningStylesData';
 import { ProgressTracker } from '../utils/progressTracker';
-import MindProgressBar from '../components/MindProgressBar';
+import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 
 interface QuizAnswer {
@@ -173,16 +172,11 @@ const LearningStylesQuiz: React.FC = () => {
           >
             {quizTexts.title[language]}
           </motion.h1>
-          
-          <LanguageToggle
-            language={language}
-            onLanguageChange={setLanguage}
-          />
         </div>
 
         {/* Progress Bar for Mind Section */}
         <div className="mb-6">
-          <MindProgressBar 
+          <AssessmentProgressBar 
             onShowReport={() => setShowReport(true)} 
           />
         </div>

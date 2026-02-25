@@ -49,7 +49,6 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         text = text.replace(new RegExp(`\\{${paramKey}\\}`, 'g'), String(paramValue));
       });
     }
-    
     return text;
   }, [language]);
 

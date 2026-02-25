@@ -4,8 +4,9 @@ import { ArrowLeft, Volume2, Mic } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FloatingBackground from '../components/FloatingBackground';
 import { enhancedTTS, phoneticSoundMap } from '../utils/enhancedTTS';
-import { saveQuizResult } from '../services/quizResultsService';
+import { ProgressTracker } from '../utils/progressTracker';
 import { logger } from '../utils/logger';
+import { ROUTES, categoryRoute } from '../routes';
 
 interface BlendingQuestion {
   id: number;
@@ -69,27 +70,23 @@ const BlendingQuiz: React.FC = () => {
   const [speechResult, setSpeechResult] = useState<'correct' | 'incorrect' | null>(null);
   const startTimeRef = useRef<number>(Date.now());
 
-  // Save quiz results to database when quiz is completed
+  // Save quiz results when completed
   useEffect(() => {
     if (showResults && currentQuestions.length > 0 && selectedGrade) {
       const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
       const percentage = Math.round((score / currentQuestions.length) * 100);
       
-      saveQuizResult({
-        quiz_id: 'blending-quiz',
-        quiz_name: `Blending Quiz - Grade ${selectedGrade}`,
+      ProgressTracker.saveQuizResult({
+        quizId: 'blending-quiz',
+        quizName: `Blending Quiz - Grade ${selectedGrade}`,
         category: 'oral',
         subcategory: 'blending-segmenting',
         score,
-        total_questions: currentQuestions.length,
-        time_spent: timeSpent,
-        grade_level: `Grade ${selectedGrade}`,
-      }).then(result => {
-        if (result.success) {
-          logger.log('Blending Quiz result saved to database');
-        }
-      }).catch(err => {
-        logger.error('Failed to save Blending Quiz result:', err);
+        totalQuestions: currentQuestions.length,
+        percentage,
+        timeSpent,
+        completedAt: new Date().toISOString(),
+        gradeLevel: `Grade ${selectedGrade}`,
       });
     }
   }, [showResults, score, currentQuestions.length, selectedGrade]);
@@ -316,7 +313,7 @@ const BlendingQuiz: React.FC = () => {
         
         <div className="relative z-10 p-6">
           <button
-            onClick={() => navigate(`/category/${categoryId}`)}
+            onClick={() => navigate(categoryRoute(categoryId!))}
             className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
           >
             <ArrowLeft size={20} />
@@ -365,7 +362,7 @@ const BlendingQuiz: React.FC = () => {
         
         <div className="relative z-10 p-6">
           <button
-            onClick={() => navigate(`/category/${categoryId}`)}
+            onClick={() => navigate(categoryRoute(categoryId!))}
             className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
           >
             <ArrowLeft size={20} />
@@ -406,7 +403,7 @@ const BlendingQuiz: React.FC = () => {
               </button>
               
               <button
-                onClick={() => navigate('/categories')}
+                onClick={() => navigate(ROUTES.CATEGORIES)}
                 className="w-full bg-gray-500 hover:bg-gray-600 text-white py-3 px-6 rounded-lg font-bold transition-colors duration-200"
               >
                 Back to Categories
@@ -425,7 +422,7 @@ const BlendingQuiz: React.FC = () => {
       
       <div className="relative z-10 p-6">
         <button
-          onClick={() => navigate(`/category/${categoryId}`)}
+          onClick={() => navigate(categoryRoute(categoryId!))}
           className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
         >
           <ArrowLeft size={20} />

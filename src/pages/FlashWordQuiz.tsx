@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Delete, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ProgressTracker } from '../utils/progressTracker';
-import MindProgressBar from '../components/MindProgressBar';
+import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
+import { ROUTES } from '../routes';
 
 // Flash word data structure
 interface FlashWord {
@@ -207,7 +208,7 @@ const FlashWordQuiz: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <button
-              onClick={() => navigate('/category/mind/attention-memory')}
+              onClick={() => navigate(ROUTES.ATTENTION_MEMORY)}
               className="group flex items-center space-x-2 px-4 py-2 text-white bg-white/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-white/30 hover:shadow-md transform hover:scale-105"
             >
               <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
@@ -217,7 +218,7 @@ const FlashWordQuiz: React.FC = () => {
 
           {/* Progress Bar */}
           <div className="mb-8">
-            <MindProgressBar onShowReport={() => setShowReport(true)} />
+            <AssessmentProgressBar onShowReport={() => setShowReport(true)} />
           </div>
 
           {/* Title */}
@@ -296,7 +297,7 @@ const FlashWordQuiz: React.FC = () => {
               Try Again
             </button>
             <button
-              onClick={() => navigate('/category/mind/attention-memory')}
+              onClick={() => navigate(ROUTES.ATTENTION_MEMORY)}
               className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-colors"
             >
               Back to Cognition
@@ -316,7 +317,7 @@ const FlashWordQuiz: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between p-4">
         <button
-          onClick={() => navigate('/category/mind/attention-memory')}
+          onClick={() => navigate(ROUTES.ATTENTION_MEMORY)}
           className="group flex items-center space-x-2 px-4 py-2 text-white bg-white/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-white/30 hover:shadow-md transform hover:scale-105"
         >
           <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />

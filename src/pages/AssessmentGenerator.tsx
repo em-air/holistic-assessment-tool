@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, FileText, Clock, Users, BookOpen } from 'lucide-react';
 import { generateAssessmentWithGemini } from '../utils/assessmentApi';
 import FloatingBackground from '../components/FloatingBackground';
+import { ROUTES } from '../routes';
 
 interface AssessmentForm {
   grade: number;
@@ -81,7 +82,7 @@ const AssessmentGenerator: React.FC = () => {
       {/* Navigation */}
       <div className="relative z-10 p-6">
         <button
-          onClick={() => navigate('/category/academic-skills')}
+          onClick={() => navigate(ROUTES.CATEGORY_ACADEMIC_SKILLS)}
           className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
         >
           <ArrowLeft size={20} />
@@ -313,7 +314,7 @@ const AssessmentGenerator: React.FC = () => {
         <div className="grid grid-cols-4 h-16">
           {/* Home Button */}
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate(ROUTES.HOME)}
             className="flex flex-col items-center justify-center py-2 px-1 text-gray-500 hover:text-emerald-600 transition-colors duration-200"
           >
             <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -324,7 +325,7 @@ const AssessmentGenerator: React.FC = () => {
 
           {/* Categories Button */}
           <button
-            onClick={() => navigate('/categories')}
+            onClick={() => navigate(ROUTES.CATEGORIES)}
             className="flex flex-col items-center justify-center py-2 px-1 text-gray-500 hover:text-emerald-600 transition-colors duration-200"
           >
             <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -335,7 +336,7 @@ const AssessmentGenerator: React.FC = () => {
 
           {/* Profile Button */}
           <button
-            onClick={() => navigate('/auth')}
+            onClick={() => navigate(ROUTES.AUTH)}
             className="flex flex-col items-center justify-center py-2 px-1 text-gray-500 hover:text-emerald-600 transition-colors duration-200"
           >
             <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -7,6 +7,8 @@ import { logger } from './logger';
 export interface QuizResult {
   quizId: string;
   quizName: string;
+  /** Defaults to 'mind' when omitted */
+  category?: 'mind' | 'oral';
   subcategory: string;
   score: number;
   totalQuestions: number;
@@ -19,12 +21,17 @@ export interface QuizResult {
 
 export interface ProgressData {
   mindSectionResults: QuizResult[];
+  oralSectionResults: QuizResult[];
   overallProgress: number; // 0-100
   lastUpdated: string;
   userId?: string;
 }
 
 // Mind section quiz configurations - Only Mind category quizzes
+// Attention/Memory: Attention Questionnaire, Picture Sequence, Flash Word
+// Learning Style: Learning Style Quiz
+// Critical Thinking: Analogy Quiz, Category Quiz
+// Perception: Find Sentence Differences, Logical Sequencing, Missing Object
 export const MIND_QUIZZES = [
   {
     id: 'attention-assessment',
@@ -33,28 +40,10 @@ export const MIND_QUIZZES = [
     route: '/attention-assessment'
   },
   {
-    id: 'attention-tiles',
-    name: 'Attention Tiles',
-    subcategory: 'attention',
-    route: '/attention-quiz'
-  },
-  {
     id: 'picture-sequence',
     name: 'Picture Sequence',
     subcategory: 'memory',
     route: '/memory-assessment'
-  },
-  {
-    id: 'missing-object',
-    name: 'Missing Object (Memory)',
-    subcategory: 'memory',
-    route: '/memory-assessment'
-  },
-  {
-    id: 'number-tiles',
-    name: 'Number Tiles',
-    subcategory: 'memory',
-    route: '/memory-quiz'
   },
   {
     id: 'flash-word-quiz',
@@ -81,14 +70,8 @@ export const MIND_QUIZZES = [
     route: '/category-quiz'
   },
   {
-    id: 'missing-object-quiz',
-    name: 'Missing Object',
-    subcategory: 'perception',
-    route: '/missing-object-quiz'
-  },
-  {
     id: 'sentence-difference-quiz',
-    name: 'Sentence Differences',
+    name: 'Find Sentence Differences',
     subcategory: 'perception',
     route: '/sentence-difference-quiz'
   },
@@ -97,8 +80,28 @@ export const MIND_QUIZZES = [
     name: 'Logical Sequencing',
     subcategory: 'perception',
     route: '/logical-sequencing-quiz'
+  },
+  {
+    id: 'missing-object-quiz',
+    name: 'Missing Object',
+    subcategory: 'perception',
+    route: '/missing-object-quiz'
   }
 ];
+
+// Oral language section quiz configurations
+export const ORAL_QUIZZES = [
+  { id: 'oral-language-vocabulary', name: 'Vocabulary', subcategory: 'oral-language', route: '/oral-language' },
+  { id: 'oral-language-sentence-building', name: 'Sentence Building', subcategory: 'oral-language', route: '/oral-language' },
+  { id: 'oral-language-story-sequencing', name: 'Story Sequencing', subcategory: 'oral-language', route: '/oral-language' },
+  { id: 'story-retell', name: 'Story Retell', subcategory: 'oral-language', route: '/story-retell' },
+  { id: 'phonics-quiz', name: 'Phonics Quiz', subcategory: 'phonics', route: '/phonics-quiz' },
+  { id: 'starting-ending-sound-quiz', name: 'Starting & Ending Sounds', subcategory: 'phonics', route: '/starting-ending-sound' },
+  { id: 'blending-quiz', name: 'Blending Quiz', subcategory: 'blending-segmenting', route: '/blending-quiz' },
+  { id: 'segmenting-quiz', name: 'Segmenting Quiz', subcategory: 'blending-segmenting', route: '/segmenting-quiz' },
+];
+
+export const ALL_TRACKED_QUIZZES = [...MIND_QUIZZES, ...ORAL_QUIZZES];
 
 // Get user-specific storage key
 function getStorageKey(userId: string): string {
@@ -139,6 +142,7 @@ supabase.auth.onAuthStateChange((event, session) => {
     window.dispatchEvent(new CustomEvent('mindProgressUpdated', { 
       detail: {
         mindSectionResults: [],
+        oralSectionResults: [],
         overallProgress: 0,
         lastUpdated: new Date().toISOString()
       }
@@ -153,6 +157,9 @@ supabase.auth.onAuthStateChange((event, session) => {
 
 // Initialize on load
 initUserId();
+
+// Mutex to serialize saveQuizResultAsync calls and prevent race conditions
+let saveMutex: Promise<void> = Promise.resolve();
 
 export class ProgressTracker {
   // Get current user ID (synchronous, uses cache)
@@ -172,6 +179,7 @@ export class ProgressTracker {
     if (!userId) {
       return {
         mindSectionResults: [],
+        oralSectionResults: [],
         overallProgress: 0,
         lastUpdated: new Date().toISOString()
       };
@@ -183,7 +191,7 @@ export class ProgressTracker {
     if (stored) {
       try {
         const data = JSON.parse(stored);
-        return { ...data, userId };
+        return { oralSectionResults: [], ...data, userId };
       } catch (error) {
         logger.error('Error parsing progress data:', error);
       }
@@ -191,6 +199,7 @@ export class ProgressTracker {
     
     return {
       mindSectionResults: [],
+      oralSectionResults: [],
       overallProgress: 0,
       lastUpdated: new Date().toISOString(),
       userId
@@ -198,8 +207,9 @@ export class ProgressTracker {
   }
 
   static saveQuizResult(result: QuizResult): void {
-    // Try to get user ID, or wait for it if not ready
-    this.saveQuizResultAsync(result);
+    // Serialized: each save waits for the previous one to finish
+    // This prevents race conditions where concurrent saves overwrite each other
+    saveMutex = saveMutex.then(() => this.saveQuizResultAsync(result)).catch(() => {});
   }
 
   // Async version that ensures user ID is available
@@ -213,17 +223,22 @@ export class ProgressTracker {
     }
 
     const progress = this.getProgress();
-    
-    // Remove any existing result for the same quiz
-    progress.mindSectionResults = progress.mindSectionResults.filter(
-      r => r.quizId !== result.quizId
-    );
-    
-    // Add the new result
-    progress.mindSectionResults.push(result);
+    const category = result.category || 'mind';
+
+    if (category === 'oral') {
+      progress.oralSectionResults = progress.oralSectionResults.filter(
+        r => r.quizId !== result.quizId
+      );
+      progress.oralSectionResults.push(result);
+    } else {
+      progress.mindSectionResults = progress.mindSectionResults.filter(
+        r => r.quizId !== result.quizId
+      );
+      progress.mindSectionResults.push(result);
+    }
     
     // Update overall progress
-    progress.overallProgress = this.calculateOverallProgress(progress.mindSectionResults);
+    progress.overallProgress = this.calculateOverallProgress(progress.mindSectionResults, progress.oralSectionResults);
     progress.lastUpdated = new Date().toISOString();
     
     // Save to user-specific localStorage
@@ -243,10 +258,11 @@ export class ProgressTracker {
   private static async saveToDatabase(result: QuizResult): Promise<void> {
     try {
       const { saveQuizResult } = await import('../services/quizResultsService');
+      const category = result.category || 'mind';
       await saveQuizResult({
         quiz_id: result.quizId,
         quiz_name: result.quizName,
-        category: 'mind',
+        category: category,
         subcategory: result.subcategory,
         score: result.score,
         total_questions: result.totalQuestions,
@@ -266,6 +282,7 @@ export class ProgressTracker {
     if (!userId) {
       return {
         mindSectionResults: [],
+        oralSectionResults: [],
         overallProgress: 0,
         lastUpdated: new Date().toISOString()
       };
@@ -273,13 +290,18 @@ export class ProgressTracker {
 
     try {
       const { getQuizResults } = await import('../services/quizResultsService');
-      const response = await getQuizResults('mind');
       
-      if (response.success && response.results) {
-        // Convert database results to local format
-        const mindResults: QuizResult[] = response.results.map(r => ({
+      // Load mind and oral results in parallel
+      const [mindResponse, oralResponse] = await Promise.all([
+        getQuizResults('mind'),
+        getQuizResults('oral'),
+      ]);
+
+      const mapResults = (results: any[]): QuizResult[] =>
+        results.map(r => ({
           quizId: r.quiz_id,
           quizName: r.quiz_name,
+          category: r.category as 'mind' | 'oral',
           subcategory: r.subcategory,
           score: r.score,
           totalQuestions: r.total_questions,
@@ -290,24 +312,50 @@ export class ProgressTracker {
           additionalData: r.additional_data,
         }));
 
-        const progress: ProgressData = {
-          mindSectionResults: mindResults,
-          overallProgress: this.calculateOverallProgress(mindResults),
-          lastUpdated: new Date().toISOString(),
-          userId
-        };
+      const dbMindResults = mindResponse.success && mindResponse.results
+        ? mapResults(mindResponse.results)
+        : [];
+      const dbOralResults = oralResponse.success && oralResponse.results
+        ? mapResults(oralResponse.results)
+        : [];
 
-        // Save to localStorage for faster access
-        const storageKey = getStorageKey(userId);
-        localStorage.setItem(storageKey, JSON.stringify(progress));
+      // Merge DB results with any local results that haven't synced yet.
+      // For each quiz, keep whichever result is newer (by completedAt).
+      const localProgress = this.getProgress();
 
-        // Dispatch event to update UI
-        window.dispatchEvent(new CustomEvent('mindProgressUpdated', { 
-          detail: progress 
-        }));
+      const mergeResults = (dbResults: QuizResult[], localResults: QuizResult[]): QuizResult[] => {
+        const merged = new Map<string, QuizResult>();
+        for (const r of dbResults) merged.set(r.quizId, r);
+        for (const r of localResults) {
+          const existing = merged.get(r.quizId);
+          if (!existing || new Date(r.completedAt) > new Date(existing.completedAt)) {
+            merged.set(r.quizId, r);
+          }
+        }
+        return Array.from(merged.values());
+      };
 
-        return progress;
-      }
+      const mindResults = mergeResults(dbMindResults, localProgress.mindSectionResults);
+      const oralResults = mergeResults(dbOralResults, localProgress.oralSectionResults ?? []);
+
+      const progress: ProgressData = {
+        mindSectionResults: mindResults,
+        oralSectionResults: oralResults,
+        overallProgress: this.calculateOverallProgress(mindResults, oralResults),
+        lastUpdated: new Date().toISOString(),
+        userId
+      };
+
+      // Save merged progress to localStorage
+      const storageKey = getStorageKey(userId);
+      localStorage.setItem(storageKey, JSON.stringify(progress));
+
+      // Dispatch event to update UI
+      window.dispatchEvent(new CustomEvent('mindProgressUpdated', { 
+        detail: progress 
+      }));
+
+      return progress;
     } catch (error) {
       logger.error('Failed to load from database:', error);
     }
@@ -315,15 +363,17 @@ export class ProgressTracker {
     return this.getProgress();
   }
 
-  static calculateOverallProgress(results: QuizResult[]): number {
-    const totalQuizzes = MIND_QUIZZES.length;
-    const completedQuizzes = results.length;
+  static calculateOverallProgress(mindResults: QuizResult[], oralResults: QuizResult[] = []): number {
+    const totalQuizzes = MIND_QUIZZES.length + ORAL_QUIZZES.length;
+    const completedQuizzes = mindResults.length + oralResults.length;
     return Math.round((completedQuizzes / totalQuizzes) * 100);
   }
 
   static getQuizResult(quizId: string): QuizResult | null {
     const progress = this.getProgress();
-    return progress.mindSectionResults.find(r => r.quizId === quizId) || null;
+    return progress.mindSectionResults.find(r => r.quizId === quizId)
+      || progress.oralSectionResults.find(r => r.quizId === quizId)
+      || null;
   }
 
   static isQuizCompleted(quizId: string): boolean {
@@ -332,7 +382,7 @@ export class ProgressTracker {
 
   static getCompletedQuizzes(): QuizResult[] {
     const progress = this.getProgress();
-    return progress.mindSectionResults;
+    return [...progress.mindSectionResults, ...progress.oralSectionResults];
   }
 
   static getIncompleteQuizzes(): typeof MIND_QUIZZES {
@@ -351,10 +401,26 @@ export class ProgressTracker {
     window.dispatchEvent(new CustomEvent('mindProgressUpdated', { 
       detail: {
         mindSectionResults: [],
+        oralSectionResults: [],
         overallProgress: 0,
         lastUpdated: new Date().toISOString()
       }
     }));
+
+    // Also delete from the database so results don't reappear on reload
+    this.clearFromDatabase();
+  }
+
+  private static async clearFromDatabase(): Promise<void> {
+    try {
+      const { deleteAllResults } = await import('../services/quizResultsService');
+      const result = await deleteAllResults(['mind', 'oral']);
+      if (!result.success) {
+        logger.error('Failed to clear results from database:', result.error);
+      }
+    } catch (error) {
+      logger.error('Error clearing results from database:', error);
+    }
   }
 
   static exportProgressData(): string {

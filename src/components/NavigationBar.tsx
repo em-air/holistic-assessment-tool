@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Home, BookOpen, User, LogOut, LogIn } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { logger } from '../utils/logger';
+import { ROUTES } from '../routes';
 
 const NavigationBar: React.FC = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const NavigationBar: React.FC = () => {
     try {
       await authSignOut();
       setShowSignOutConfirm(false);
-      navigate('/');
+      navigate(ROUTES.HOME);
     } catch (error) {
       logger.error('Error signing out:', error);
     }
@@ -102,13 +103,13 @@ const NavigationBar: React.FC = () => {
               <NavButton
                 icon={Home}
                 label="Home"
-                onClick={() => navigate('/')}
+                onClick={() => navigate(ROUTES.HOME)}
                 isActiveBtn={isActive('/')}
               />
               <NavButton
                 icon={BookOpen}
                 label="Courses"
-                onClick={() => navigate('/categories')}
+                onClick={() => navigate(ROUTES.CATEGORIES)}
                 isActiveBtn={isActive('/categories') || isActive('/category') || isActive('/quiz')}
               />
               {user ? (
@@ -121,7 +122,7 @@ const NavigationBar: React.FC = () => {
                 <NavButton
                   icon={LogIn}
                   label="Register"
-                  onClick={() => navigate('/auth')}
+                  onClick={() => navigate(ROUTES.AUTH)}
                   isActiveBtn={isActive('/auth')}
                 />
               )}
@@ -132,7 +133,7 @@ const NavigationBar: React.FC = () => {
                   if (user) {
                     navigate('/profile');
                   } else {
-                    navigate('/auth');
+                    navigate(ROUTES.AUTH);
                   }
                 }}
                 isActiveBtn={isActive('/profile')}

@@ -104,6 +104,39 @@ export async function getQuizResults(category?: 'mind' | 'oral' | 'academic'): P
 }
 
 /**
+ * Delete all quiz results for the given categories from the database
+ */
+export async function deleteAllResults(categories: Array<'mind' | 'oral' | 'academic'> = ['mind', 'oral']): Promise<{ success: boolean; error?: string }> {
+  try {
+    const token = await getAccessToken();
+    if (!token) {
+      return { success: false, error: 'Not authenticated' };
+    }
+
+    const results = await Promise.allSettled(
+      categories.map(cat =>
+        fetch(`${API_BASE_URL}/api/results/category/${cat}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` },
+        })
+      )
+    );
+
+    const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok));
+    if (failed.length > 0) {
+      logger.error('Some category deletes failed:', failed);
+      return { success: false, error: `Failed to delete ${failed.length} category(ies)` };
+    }
+
+    logger.log('All quiz results deleted from database');
+    return { success: true };
+  } catch (error: any) {
+    logger.error('Error deleting all results:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
  * Sync local progress with database (upload local results that aren't in DB)
  */
 export async function syncLocalToDatabase(): Promise<{ synced: number; errors: number }> {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { ROUTES } from '../routes';
 
 interface OralLanguageOption {
   id: string;
@@ -22,7 +23,7 @@ const OralLanguageSelection: React.FC = () => {
       subtitle: 'Sentence Formation',
       description: 'Understand sentence structure and meaning from pictures',
       icon: '💬',
-      route: '/category/oral-skills/oral-language-selection/sentence-building',
+      route: ROUTES.ORAL_SENTENCE_BUILDING,
       color: 'from-green-400 to-green-600'
     },
     {
@@ -31,7 +32,7 @@ const OralLanguageSelection: React.FC = () => {
       subtitle: 'Narrative Sequencing',
       description: 'Arrange pictures in the correct story sequence',
       icon: '📖',
-      route: '/category/oral-skills/oral-language-selection/story-sequencing',
+      route: ROUTES.ORAL_STORY_SEQUENCING,
       color: 'from-purple-400 to-purple-600'
     },
     {
@@ -40,7 +41,7 @@ const OralLanguageSelection: React.FC = () => {
       subtitle: 'Narrative Skills',
       description: 'Read a story and retell it using Beginning, Middle, and End',
       icon: '📚',
-      route: '/category/oral-skills/oral-language-selection/story-retell',
+      route: ROUTES.ORAL_STORY_RETELL,
       color: 'from-indigo-400 to-indigo-600'
     }
   ];
@@ -116,7 +117,7 @@ const OralLanguageSelection: React.FC = () => {
           className="text-center mt-12"
         >
           <button
-            onClick={() => navigate('/categories')}
+            onClick={() => navigate(ROUTES.CATEGORIES)}
             className="px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-colors duration-300 shadow-md hover:shadow-lg"
           >
             ← Back to Categories

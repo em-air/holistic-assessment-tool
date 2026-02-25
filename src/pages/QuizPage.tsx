@@ -4,7 +4,8 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import QuizQuestion from '../components/QuizQuestion';
 import { assessmentCategories } from '../data/assessmentData';
 import { QuizResult } from '../types';
-import FloatingBackground from '../components/FloatingBackground'; 
+import FloatingBackground from '../components/FloatingBackground';
+import { ROUTES, categoryRoute } from '../routes';
 
 const QuizPage: React.FC = () => {
   const { categoryId, subcategoryId } = useParams();
@@ -30,7 +31,7 @@ const QuizPage: React.FC = () => {
         <div className="text-center bg-stone-100 p-8 rounded-2xl shadow-xl relative z-10">
           <h1 className="text-2xl font-bold text-stone-800 mb-4">Quiz not found</h1>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate(ROUTES.HOME)}
             className="bg-emerald-600 hover:bg-emerald-700 text-stone-100 px-6 py-3 rounded-full"
           >
             Back to Home
@@ -127,13 +128,13 @@ const QuizPage: React.FC = () => {
               </div>
               <div className="space-y-4">
                 <button
-                  onClick={() => navigate(`/category/${categoryId}`)}
+                  onClick={() => navigate(categoryRoute(categoryId!))}
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-stone-100 font-semibold py-3 px-6 rounded-full transition-colors duration-200"
                 >
                   Take Another Assessment
                 </button>
                 <button
-                  onClick={() => navigate('/')}
+                  onClick={() => navigate(ROUTES.HOME)}
                   className="w-full bg-stone-500 hover:bg-stone-600 text-stone-100 font-semibold py-3 px-6 rounded-full transition-colors duration-200"
                 >
                   Back to Dashboard
@@ -152,7 +153,7 @@ const QuizPage: React.FC = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate(`/category/${categoryId}`)}
+            onClick={() => navigate(categoryRoute(categoryId!))}
             className="flex items-center space-x-2 text-stone-600 hover:text-emerald-700"
           >
             <ArrowLeft size={20} />

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Eye, Search, List } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FloatingBackground from '../components/FloatingBackground';
+import { ROUTES } from '../routes';
 
 const PerceptionQuizSelection: React.FC = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const PerceptionQuizSelection: React.FC = () => {
       subtitle: 'Visual Memory',
       description: 'Identify which object was removed from a set of pictures',
       icon: Search,
-      route: '/category/mind/perception/missing-object',
+      route: ROUTES.PERCEPTION_MISSING_OBJECT,
       color: 'from-pink-500 to-rose-600',
       difficulty: 'All Ages'
     },
@@ -25,7 +26,7 @@ const PerceptionQuizSelection: React.FC = () => {
       subtitle: 'Text Perception',
       description: 'Identify differences between similar sentences',
       icon: Search,
-      route: '/category/mind/perception/sentence-difference',
+      route: ROUTES.PERCEPTION_SENTENCE_DIFF,
       color: 'from-green-500 to-emerald-600',
       difficulty: 'Grades 1-4'
     },
@@ -35,7 +36,7 @@ const PerceptionQuizSelection: React.FC = () => {
       subtitle: 'Sequential Processing',
       description: 'Arrange sentences in the correct logical order',
       icon: List,
-      route: '/category/mind/perception/logical-sequencing',
+      route: ROUTES.PERCEPTION_LOGICAL_SEQ,
       color: 'from-purple-500 to-pink-600',
       difficulty: 'Grades 1-4'
     }
@@ -48,7 +49,7 @@ const PerceptionQuizSelection: React.FC = () => {
       {/* Header with back button */}
       <div className="absolute top-4 left-4 z-20">
         <button
-          onClick={() => navigate('/category/mind')}
+          onClick={() => navigate(ROUTES.CATEGORY_MIND)}
           className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
         >
           <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />

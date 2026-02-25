@@ -4,10 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { LogOut, Shield, User } from 'lucide-react';
 import FloatingBackground from '../components/FloatingBackground';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { createHomepageT } from '../i18n/homepage';
+import LanguageToggle from '../components/LanguageToggle';
+import { ROUTES } from '../routes';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const { user, signOut, isAdmin, studentName } = useAuth();
+  const { language, isRTL } = useLanguage();
+  const t = createHomepageT(language);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
   const handleSignOut = async () => {
@@ -48,17 +54,19 @@ const HomePage: React.FC = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
+              {/* Language Toggle — inline, non-floating */}
+              <LanguageToggle compact />
               <button
                 onClick={() => navigate('/about')}
                 className="text-black hover:text-gray-600 font-medium px-3 py-2 transition-colors duration-200"
               >
-                About
+                {t('nav.about')}
               </button>
               <button
                 onClick={() => navigate('/contact')}
                 className="text-black hover:text-gray-600 font-medium px-3 py-2 transition-colors duration-200"
               >
-                Contact
+                {t('nav.contact')}
               </button>
               {user ? (
                 <>
@@ -67,22 +75,22 @@ const HomePage: React.FC = () => {
                     className="bg-emerald-600 text-white px-6 py-2 rounded-md font-medium hover:bg-emerald-700 transition-colors duration-200 flex items-center gap-2"
                   >
                     <User size={18} />
-                    {studentName || 'Profile'}
+                    {studentName || t('nav.profile')}
                   </button>
                   <button
                     onClick={() => setShowSignOutConfirm(true)}
                     className="bg-red-600 text-white px-6 py-2 rounded-md font-medium hover:bg-red-700 transition-colors duration-200 flex items-center gap-2"
                   >
                     <LogOut size={18} />
-                    Sign Out
+                    {t('nav.signOut')}
                   </button>
                 </>
               ) : (
                 <button
-                  onClick={() => navigate('/auth')}
+                  onClick={() => navigate(ROUTES.AUTH)}
                   className="bg-black text-white px-6 py-2 rounded-md font-medium hover:bg-gray-800 transition-colors duration-200"
                 >
-                  Register/Sign In
+                  {t('nav.register')}
                 </button>
               )}
             </div>
@@ -102,7 +110,7 @@ const HomePage: React.FC = () => {
 
               {/* Search Button */}
               <button
-                onClick={() => navigate('/categories')}
+                onClick={() => navigate(ROUTES.CATEGORIES)}
                 className="text-gray-600 hover:text-gray-800 p-2 transition-colors duration-200"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -168,23 +176,23 @@ const HomePage: React.FC = () => {
               </div>
 
               <motion.h1
-                className="text-4xl md:text-6xl font-semibold bg-gradient-to-r from-white via-gray-100 to-white bg-clip-text text-transparent mb-6 drop-shadow-lg"
+                className={`text-4xl md:text-6xl font-semibold bg-gradient-to-r from-white via-gray-100 to-white bg-clip-text text-transparent mb-6 drop-shadow-lg ${isRTL ? 'font-arabic' : ''}`}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
                 whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
               >
-                Discover Your Learning Strengths
+                {t('hero.title')}
               </motion.h1>
 
               <motion.p
-                className="text-lg md:text-xl text-white drop-shadow-md max-w-4xl mx-auto mb-8 font-normal"
+                className={`text-lg md:text-xl text-white drop-shadow-md max-w-4xl mx-auto mb-8 font-normal ${isRTL ? 'font-arabic' : ''}`}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
                 whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
               >
-                Simple, engaging tools to explore your abilities in reading, memory, attention, and more. Perfect for students aged 6-12
+                {t('hero.subtitle')}
               </motion.p>
 
               <motion.div
@@ -194,7 +202,7 @@ const HomePage: React.FC = () => {
                 className="flex flex-col items-center space-y-4"
               >
                 <motion.button
-                  onClick={() => navigate('/categories')}
+                  onClick={() => navigate(ROUTES.CATEGORIES)}
                   className="group relative bg-white/20 backdrop-blur-md text-white px-8 py-4 rounded-full text-lg font-medium border border-white/40 shadow-lg hover:shadow-xl transition-all duration-300"
                   whileHover={{
                     scale: 1.02,
@@ -204,8 +212,8 @@ const HomePage: React.FC = () => {
                   }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <span className="flex items-center space-x-2">
-                    <span>Start Assessment</span>
+                  <span className={`flex items-center space-x-2 ${isRTL ? 'font-arabic' : ''}`}>
+                    <span>{t('hero.startAssessment')}</span>
                     <motion.div
                       className="w-5 h-5 text-white"
                       initial={{ x: 0 }}
@@ -225,13 +233,13 @@ const HomePage: React.FC = () => {
                   transition={{ duration: 0.4, delay: 0.5, ease: "easeOut" }}
                   className="text-white/80 text-sm font-light"
                 >
-                  Takes about 45 minutes
+                  {t('hero.timeNote')}
                 </motion.p>
 
                 {/* Admin Dashboard Button - visible to logged in users */}
                 {user && (
                   <motion.button
-                    onClick={() => navigate('/admin/reports')}
+                    onClick={() => navigate(ROUTES.ADMIN_REPORTS)}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.6, ease: "easeOut" }}
@@ -240,7 +248,7 @@ const HomePage: React.FC = () => {
                     whileTap={{ scale: 0.98 }}
                   >
                     <Shield size={20} />
-                    <span>Admin Dashboard</span>
+                    <span>{t('hero.adminDashboard')}</span>
                   </motion.button>
                 )}
               </motion.div>
@@ -254,10 +262,10 @@ const HomePage: React.FC = () => {
               transition={{ duration: 0.4, delay: 0.5, ease: "easeOut" }}
             >
               {[
-                { number: "3", label: "Categories", icon: "📊", color: "from-blue-500 to-purple-600" },
-                { number: "12", label: "Skill Areas", icon: "🎯", color: "from-emerald-500 to-teal-600" },
-                { number: "45", label: "Minutes", icon: "⏱️", color: "from-pink-500 to-red-600" },
-                { number: "6-12", label: "Age Range", icon: "👦", color: "from-yellow-500 to-orange-600" }
+                { number: "3", label: t('stats.categories'), icon: "📊", color: "from-blue-500 to-purple-600" },
+                { number: "12", label: t('stats.skillAreas'), icon: "🎯", color: "from-emerald-500 to-teal-600" },
+                { number: "45", label: t('stats.minutes'), icon: "⏱️", color: "from-pink-500 to-red-600" },
+                { number: "6-12", label: t('stats.ageRange'), icon: "👦", color: "from-yellow-500 to-orange-600" }
               ].map((stat, index) => (
                 <motion.div
                   key={index}
@@ -300,22 +308,22 @@ const HomePage: React.FC = () => {
               {[
                 {
                   icon: "⚡",
-                  title: "Quick & Easy",
-                  desc: "Complete in 45 minutes",
+                  title: t('features.quickEasy'),
+                  desc: t('features.quickEasyDesc'),
                   gradient: "from-yellow-400 to-orange-500",
                   bgGradient: "from-yellow-50 to-orange-50"
                 },
                 {
                   icon: "👶",
-                  title: "Kid-Friendly",
-                  desc: "Designed for ages 6-12",
+                  title: t('features.kidFriendly'),
+                  desc: t('features.kidFriendlyDesc'),
                   gradient: "from-pink-400 to-purple-500",
                   bgGradient: "from-pink-50 to-purple-50"
                 },
                 {
                   icon: "📊",
-                  title: "Detailed Results",
-                  desc: "Get insights into strengths",
+                  title: t('features.detailedResults'),
+                  desc: t('features.detailedResultsDesc'),
                   gradient: "from-blue-400 to-cyan-500",
                   bgGradient: "from-blue-50 to-cyan-50"
                 }
@@ -363,9 +371,9 @@ const HomePage: React.FC = () => {
               transition={{ duration: 0.4, delay: 0.7, ease: "easeOut" }}
             >
               {[
-                { text: "Educator Approved", icon: "✅", gradient: "from-emerald-500 to-green-600" },
-                { text: "Safe & Secure", icon: "🔒", gradient: "from-blue-500 to-cyan-600" },
-                { text: "Research-Based", icon: "📚", gradient: "from-purple-500 to-pink-600" }
+                { text: t('trust.educatorApproved'), icon: "✅", gradient: "from-emerald-500 to-green-600" },
+                { text: t('trust.safeSecure'), icon: "🔒", gradient: "from-blue-500 to-cyan-600" },
+                { text: t('trust.researchBased'), icon: "📚", gradient: "from-purple-500 to-pink-600" }
               ].map((badge, index) => (
                 <motion.div
                   key={index}
@@ -397,24 +405,24 @@ const HomePage: React.FC = () => {
         <div className="grid grid-cols-4 h-16">
           {/* Home Button */}
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate(ROUTES.HOME)}
             className="flex flex-col items-center justify-center py-2 px-1 text-emerald-600 transition-colors duration-200"
           >
             <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
-            <span className="text-xs font-medium">Home</span>
+            <span className="text-xs font-medium">{t('mobileNav.home')}</span>
           </button>
 
           {/* Categories Button */}
           <button
-            onClick={() => navigate('/categories')}
+            onClick={() => navigate(ROUTES.CATEGORIES)}
             className="flex flex-col items-center justify-center py-2 px-1 text-gray-500 hover:text-emerald-600 transition-colors duration-200"
           >
             <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            <span className="text-xs font-medium">Categories</span>
+            <span className="text-xs font-medium">{t('mobileNav.categories')}</span>
           </button>
 
           {/* Profile/Auth Button */}
@@ -424,17 +432,17 @@ const HomePage: React.FC = () => {
               className="flex flex-col items-center justify-center py-2 px-1 text-red-500 hover:text-red-600 transition-colors duration-200"
             >
               <LogOut className="w-6 h-6 mb-1" />
-              <span className="text-xs font-medium">Log Out</span>
+              <span className="text-xs font-medium">{t('mobileNav.logOut')}</span>
             </button>
           ) : (
             <button
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate(ROUTES.AUTH)}
               className="flex flex-col items-center justify-center py-2 px-1 text-gray-500 hover:text-emerald-600 transition-colors duration-200"
             >
               <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-              <span className="text-xs font-medium">Register</span>
+              <span className="text-xs font-medium">{t('mobileNav.register')}</span>
             </button>
           )}
 
@@ -446,7 +454,7 @@ const HomePage: React.FC = () => {
             <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-xs font-medium">Help</span>
+            <span className="text-xs font-medium">{t('mobileNav.help')}</span>
           </button>
         </div>
       </div>
@@ -469,21 +477,21 @@ const HomePage: React.FC = () => {
               <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <LogOut className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">Sign Out</h3>
-              <p className="text-gray-600">Are you sure you want to sign out?</p>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">{t('signOut.title')}</h3>
+              <p className="text-gray-600">{t('signOut.message')}</p>
             </div>
             <div className="flex space-x-3">
               <button
                 onClick={() => setShowSignOutConfirm(false)}
                 className="flex-1 px-6 py-3 border border-gray-300 rounded-2xl text-gray-700 hover:bg-gray-50 transition-all duration-300 font-semibold"
               >
-                Cancel
+                {t('signOut.cancel')}
               </button>
               <button
                 onClick={handleSignOut}
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl hover:from-red-600 hover:to-red-700 transition-all duration-300 font-semibold shadow-lg"
               >
-                Sign Out
+                {t('signOut.confirm')}
               </button>
             </div>
           </motion.div>
