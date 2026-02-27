@@ -286,7 +286,7 @@ export const translations: Record<Language, TranslationKeys> = {
     'category.mind.title': 'Cognition',
     'category.mind.description': 'Assess memory, focus, comprehension, and critical thinking.',
     'category.oral.title': 'Oral Skills',
-    'category.oral.description': 'Evaluate oral language, reading, phonics awareness, and blending.',
+    'category.oral.description': 'Evaluate oral language, reading, beginning and ending sounds, and blending.',
     'category.academic.title': 'Academic Skills',
     'category.academic.description': 'Evaluate writing, sentence formation, spelling, and math skills.',
     'category.startCognition': 'Start Cognition Assessment',
@@ -301,7 +301,7 @@ export const translations: Record<Language, TranslationKeys> = {
     'subcategory.perception': 'Perception',
     'subcategory.oralLanguage': 'Oral Language',
     'subcategory.reading': 'Reading',
-    'subcategory.phonicsAwareness': 'Phonics Awareness',
+    'subcategory.phonicsAwareness': 'Beginning and Ending Sounds',
     'subcategory.blending': 'Blending and Segmenting',
     'subcategory.writing': 'Writing',
     'subcategory.vocabulary': 'Vocabulary',
@@ -436,7 +436,7 @@ export const translations: Record<Language, TranslationKeys> = {
     'reading.assessment': 'Assessment',
 
     // Phonics
-    'phonics.title': 'Phonics Awareness',
+    'phonics.title': 'Beginning and Ending Sounds',
     'phonics.selection': 'Select a Quiz',
 
     // Blending
@@ -517,7 +517,7 @@ export const translations: Record<Language, TranslationKeys> = {
     'category.mind.title': 'الإدراك',
     'category.mind.description': 'تقييم الذاكرة والتركيز والفهم والتفكير النقدي.',
     'category.oral.title': 'المهارات الشفوية',
-    'category.oral.description': 'تقييم اللغة الشفوية والقراءة والوعي الصوتي والمزج.',
+    'category.oral.description': 'تقييم اللغة الشفوية والقراءة وأصوات البداية والنهاية والمزج.',
     'category.academic.title': 'المهارات الأكاديمية',
     'category.academic.description': 'تقييم الكتابة وتكوين الجمل والإملاء ومهارات الرياضيات.',
     'category.startCognition': 'ابدأ تقييم الإدراك',
@@ -532,7 +532,7 @@ export const translations: Record<Language, TranslationKeys> = {
     'subcategory.perception': 'الإدراك الحسي',
     'subcategory.oralLanguage': 'اللغة الشفوية',
     'subcategory.reading': 'القراءة',
-    'subcategory.phonicsAwareness': 'الوعي الصوتي',
+    'subcategory.phonicsAwareness': 'أصوات البداية والنهاية',
     'subcategory.blending': 'المزج والتقسيم',
     'subcategory.writing': 'الكتابة',
     'subcategory.vocabulary': 'المفردات',
@@ -667,7 +667,7 @@ export const translations: Record<Language, TranslationKeys> = {
     'reading.assessment': 'تقييم',
 
     // Phonics
-    'phonics.title': 'الوعي الصوتي',
+    'phonics.title': 'أصوات البداية والنهاية',
     'phonics.selection': 'اختر اختبارًا',
 
     // Blending

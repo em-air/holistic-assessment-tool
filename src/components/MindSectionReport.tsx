@@ -88,8 +88,8 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       'critical-thinking': 'Critical Thinking',
       'perception': 'Perception',
       'oral-language': 'Oral Language',
-      'phonics': 'Phonics',
-      'phonics-awareness': 'Phonics',
+      'phonics': 'Beginning & Ending Sounds',
+      'phonics-awareness': 'Beginning & Ending Sounds',
       'blending-segmenting': 'Blending & Segmenting'
     };
     return names[subcategory] || subcategory;

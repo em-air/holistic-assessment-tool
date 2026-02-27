@@ -93,7 +93,7 @@ export const reportTranslations = {
   'sub.perception': { en: 'Perception', ar: 'الإدراك' },
   'sub.oral-language': { en: 'Oral Language', ar: 'اللغة الشفهية' },
   'sub.reading': { en: 'Reading Skills', ar: 'مهارات القراءة' },
-  'sub.phonics': { en: 'Phonics Awareness', ar: 'الوعي الصوتي' },
+  'sub.phonics': { en: 'Beginning and Ending Sounds', ar: 'أصوات البداية والنهاية' },
   'sub.blending-segmenting': { en: 'Blending & Segmenting', ar: 'الدمج والتقسيم' },
   'sub.writing': { en: 'Writing Skills', ar: 'مهارات الكتابة' },
   'sub.vocabulary': { en: 'Vocabulary', ar: 'المفردات' },

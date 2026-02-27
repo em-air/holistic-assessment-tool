@@ -4,7 +4,7 @@ import { Lock } from 'lucide-react';
 import { AssessmentCategory } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { getNumericGrade, canAccessCategory, getCategoryBlockedMessage } from '../utils/gradeUtils';
-import { ROUTES, categoryRoute, readingAssessmentRoute, phonicsQuizSelectionRoute, blendingSegmentingSelectionRoute, quizRoute } from '../routes';
+import { ROUTES, categoryRoute, readingAssessmentRoute, blendingSegmentingSelectionRoute, quizRoute } from '../routes';
 
 interface CategoryCardProps {
   category: AssessmentCategory;
@@ -107,7 +107,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
         navigate(readingAssessmentRoute(category.id));
         break;
       case 'phonics-awareness':
-        navigate(phonicsQuizSelectionRoute(category.id));
+        navigate(ROUTES.STARTING_ENDING_SOUND);
         break;
       case 'blending':
         navigate(blendingSegmentingSelectionRoute(category.id));

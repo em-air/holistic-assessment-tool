@@ -143,7 +143,7 @@ const getAnalysis = (result: any): string => {
   if (cat === 'oral-language')
     return pct >= 75 ? 'Shows strong oral language and communication skills.' : 'Developing oral language abilities — encourage storytelling and conversation.';
   if (cat === 'phonics' || cat === 'phonics-awareness')
-    return pct >= 75 ? 'Shows solid phonics and sound recognition skills.' : 'Developing phonics awareness — practice with letter-sound activities.';
+    return pct >= 75 ? 'Shows solid sound recognition skills for beginning and ending sounds.' : 'Developing sound recognition — practice with letter-sound activities.';
   if (cat === 'blending-segmenting')
     return pct >= 75 ? 'Shows strong ability to blend and segment sounds.' : 'Developing blending & segmenting — practice breaking and building words.';
   return 'Assessment completed successfully.';
@@ -175,7 +175,7 @@ const getAnalysisAr = (result: any): string => {
   if (cat === 'oral-language')
     return pct >= 75 ? 'يُظهر مهارات قوية في اللغة الشفهية والتواصل.' : 'مهارات اللغة الشفهية قيد التطوير — شجع على السرد والمحادثة.';
   if (cat === 'phonics' || cat === 'phonics-awareness')
-    return pct >= 75 ? 'يُظهر مهارات قوية في الصوتيات.' : 'الوعي الصوتي قيد التطوير — تدرب على أنشطة الحروف والأصوات.';
+    return pct >= 75 ? 'يُظهر مهارات قوية في أصوات البداية والنهاية.' : 'مهارات أصوات البداية والنهاية قيد التطوير — تدرب على أنشطة الحروف والأصوات.';
   if (cat === 'blending-segmenting')
     return pct >= 75 ? 'يُظهر قدرة قوية على دمج الأصوات وتقسيمها.' : 'مهارات الدمج والتقسيم قيد التطوير.';
   return 'تم إكمال التقييم بنجاح.';

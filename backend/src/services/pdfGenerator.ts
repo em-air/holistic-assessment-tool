@@ -130,16 +130,16 @@ const subNameEn: Record<string, string> = {
   attention: 'Attention & Focus', memory: 'Memory & Recall',
   'learning-style': 'Learning Style', 'critical-thinking': 'Critical Thinking',
   perception: 'Visual Perception', 'oral-language': 'Oral Language',
-  reading: 'Reading Skills', phonics: 'Phonics Awareness',
-  'phonics-awareness': 'Phonics Awareness', 'blending-segmenting': 'Blending & Segmenting',
+  reading: 'Reading Skills', phonics: 'Beginning and Ending Sounds',
+  'phonics-awareness': 'Beginning and Ending Sounds', 'blending-segmenting': 'Blending & Segmenting',
   writing: 'Writing Skills', vocabulary: 'Vocabulary', spelling: 'Spelling',
 };
 const subNameAr: Record<string, string> = {
   attention: reshapeArabic('الانتباه والتركيز'), memory: reshapeArabic('الذاكرة والاسترجاع'),
   'learning-style': reshapeArabic('أسلوب التعلم'), 'critical-thinking': reshapeArabic('التفكير النقدي'),
   perception: reshapeArabic('الإدراك البصري'), 'oral-language': reshapeArabic('اللغة الشفهية'),
-  reading: reshapeArabic('مهارات القراءة'), phonics: reshapeArabic('الوعي الصوتي'),
-  'phonics-awareness': reshapeArabic('الوعي الصوتي'), 'blending-segmenting': reshapeArabic('الدمج والتقسيم'),
+  reading: reshapeArabic('مهارات القراءة'), phonics: reshapeArabic('أصوات البداية والنهاية'),
+  'phonics-awareness': reshapeArabic('أصوات البداية والنهاية'), 'blending-segmenting': reshapeArabic('الدمج والتقسيم'),
   writing: reshapeArabic('مهارات الكتابة'), vocabulary: reshapeArabic('المفردات'), spelling: reshapeArabic('الإملاء'),
 };
 

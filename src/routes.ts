@@ -83,8 +83,6 @@ export const ROUTES = {
 export const ROUTE_PATTERNS = {
   CATEGORY: '/category/:categoryId',
   QUIZ: '/quiz/:categoryId/:subcategoryId',
-  PHONICS_QUIZ_SELECTION: '/phonics-quiz-selection/:categoryId',
-  PHONICS_QUIZ: '/phonics-quiz/:categoryId',
   STARTING_ENDING_SOUND_GRADE: '/starting-ending-sound-quiz/:grade',
   BLENDING_SEGMENTING_SELECTION: '/blending-segmenting-selection/:categoryId',
   BLENDING_QUIZ: '/blending-quiz/:categoryId',
@@ -107,12 +105,6 @@ export const categoryRoute = (id: string) =>
 
 export const quizRoute = (categoryId: string, subcategoryId: string) =>
   `/quiz/${categoryId}/${subcategoryId}`;
-
-export const phonicsQuizSelectionRoute = (categoryId: string) =>
-  `/phonics-quiz-selection/${categoryId}`;
-
-export const phonicsQuizRoute = (categoryId: string) =>
-  `/phonics-quiz/${categoryId}`;
 
 export const startingEndingSoundGradeRoute = (grade: string | number) =>
   `/starting-ending-sound-quiz/${grade}`;

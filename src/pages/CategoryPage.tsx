@@ -6,7 +6,7 @@ import FloatingBackground from '../components/FloatingBackground';
 import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 import '../utils/testProgressUtils'; // For testing - adds window.addTestResults() and window.clearTestResults()
-import { ROUTES, categoryRoute, quizRoute, readingAssessmentRoute, phonicsQuizSelectionRoute, blendingSegmentingSelectionRoute } from '../routes';
+import { ROUTES, categoryRoute, quizRoute, readingAssessmentRoute, blendingSegmentingSelectionRoute } from '../routes';
 
 const CategoryPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
@@ -39,7 +39,7 @@ const CategoryPage: React.FC = () => {
     } else if (subcategoryId === 'reading') {
       navigate(readingAssessmentRoute(categoryId!));
     } else if (subcategoryId === 'phonics-awareness') {
-      navigate(phonicsQuizSelectionRoute(categoryId!));
+      navigate(ROUTES.STARTING_ENDING_SOUND);
     } else if (subcategoryId === 'blending') {
       navigate(blendingSegmentingSelectionRoute(categoryId!));
     } else if (subcategoryId === 'sentence-formation') {

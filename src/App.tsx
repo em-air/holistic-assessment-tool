@@ -24,8 +24,6 @@ const QuizPage = lazy(() => import('./pages/QuizPage'));
 const AdminReports = lazy(() => import('./pages/AdminReports'));
 
 // Phonics & Sound quizzes
-const PhonicsQuiz = lazy(() => import('./pages/PhonicsQuizNew'));
-const PhonicsQuizSelection = lazy(() => import('./pages/PhonicsQuizSelection'));
 const StartingEndingSoundQuiz = lazy(() => import('./pages/StartingEndingSoundQuiz'));
 const StartingEndingSoundGradeSelector = lazy(() => import('./pages/StartingEndingSoundGradeSelector'));
 const BlendingQuiz = lazy(() => import('./pages/BlendingQuiz'));
@@ -117,8 +115,6 @@ const routeConfig: RouteEntry[] = [
   { path: ROUTE_PATTERNS.ORAL_STORY_RETELL_GRADE, Component: StoryRetellQuiz },
 
   // ── Phonics & Sound ───────────────────────────────────────────────
-  { path: ROUTE_PATTERNS.PHONICS_QUIZ_SELECTION, Component: PhonicsQuizSelection },
-  { path: ROUTE_PATTERNS.PHONICS_QUIZ, Component: PhonicsQuiz },
   { path: ROUTES.STARTING_ENDING_SOUND, Component: StartingEndingSoundGradeSelector },
   { path: ROUTE_PATTERNS.STARTING_ENDING_SOUND_GRADE, Component: StartingEndingSoundQuiz },
 

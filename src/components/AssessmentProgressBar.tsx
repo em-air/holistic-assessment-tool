@@ -27,8 +27,8 @@ const subcategoryMeta: Record<string, { label: string; color: string; bg: string
   'critical-thinking':  { label: 'Critical Thinking',  color: 'text-purple-600', bg: 'bg-purple-100' },
   'perception':         { label: 'Perception',         color: 'text-indigo-600', bg: 'bg-indigo-100' },
   'oral-language':      { label: 'Oral Language',      color: 'text-sky-600',    bg: 'bg-sky-100' },
-  'phonics':            { label: 'Phonics',            color: 'text-pink-600',   bg: 'bg-pink-100' },
-  'phonics-awareness':  { label: 'Phonics',            color: 'text-pink-600',   bg: 'bg-pink-100' },
+  'phonics':            { label: 'Beginning & Ending Sounds', color: 'text-pink-600',   bg: 'bg-pink-100' },
+  'phonics-awareness':  { label: 'Beginning & Ending Sounds', color: 'text-pink-600',   bg: 'bg-pink-100' },
   'blending-segmenting':{ label: 'Blending & Segmenting', color: 'text-teal-600', bg: 'bg-teal-100' },
 };
 
