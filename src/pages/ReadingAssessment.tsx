@@ -27,60 +27,138 @@ const TARGET_READING_RATES = {
   8: { Fall: [110, 160], Winter: [120, 180], Spring: [130, 180] }
 };
 
-const READING_TEXTS = {
-  'grades-1-4': {
-    title: 'Grades 1-4',
-    text: `The Magic Garden
+const READING_TEXTS: Record<number, { title: string; text: string }> = {
+  1: {
+    title: 'Grade 1',
+    text: `My Big Tree
 
-Once upon a time, there was a little girl named Sarah who loved to explore. Behind her house was a secret garden that no one else knew about. The garden was full of colorful flowers that danced in the wind. Red roses climbed up wooden fences, and yellow sunflowers grew as tall as trees.
+I have a big tree. It is in my yard. The tree is very tall. I like my tree a lot.
 
-Sarah visited the garden every day after school. She would sit on a small stone bench and read her favorite books. The garden was peaceful and quiet, except for the gentle buzzing of busy bees and the sweet songs of little birds.
+The tree has green leaves. The leaves are soft. Birds sit in the tree. I can hear them sing. They sing every day.
 
-One day, Sarah discovered something amazing. When she spoke kindly to the flowers, they seemed to grow bigger and brighter. The roses turned a deeper red, and the sunflowers reached even higher toward the sky. Sarah realized that her words had magic power in this special place.
+In the fall, the leaves change. They turn red. They turn yellow. They turn orange too. The leaves fall down. I like to jump in the leaves. It is so much fun.
 
-She began to tell the flowers stories about her day at school. She shared her happy moments and her sad moments too. The garden listened to every word and responded with even more beautiful blooms. Pink tulips appeared where there were none before, and purple violets carpeted the ground.
+In the winter, the tree has no leaves. It looks like it is sleeping. Snow sits on the branches. The tree is cold but strong.
 
-Soon, butterflies came to visit the magical garden. They flew from flower to flower, spreading sparkles wherever they landed. Sarah watched in wonder as the garden transformed into the most beautiful place she had ever seen.
+In the spring, new leaves grow. Little buds come out. The buds turn into leaves. The tree is green again. I am happy to see the leaves come back.
 
-From that day forward, Sarah took care of the magic garden with love and kindness. She watered the plants when they were thirsty and pulled out weeds that tried to take over. The garden rewarded her care by blooming all year long, even in winter when other gardens were sleeping.
+In the summer, the tree gives shade. I sit under the tree. It is cool and nice. I read my books there. My dog sits with me. We rest in the shade.
 
-Sarah learned that magic happens when we treat the world with kindness and love. She shared this secret with her best friend, and together they made the garden even more magical. They planted new seeds and watched them grow into amazing flowers that no one had ever seen before.
+My tree is home to many animals. Squirrels run up and down. Birds build nests. Bugs crawl on the bark. They all like the tree too.
 
-The magic garden became a place where dreams came true and friendships grew stronger. Sarah and her friend would spend hours there, reading stories, sharing secrets, and watching the flowers dance in the gentle breeze. It was their special place where anything was possible.
-
-Years later, when Sarah grew up, she still visited the magic garden. She brought her own children there and taught them the secret of speaking kindly to living things. The garden continued to bloom and grow, spreading its magic to each new generation.
-
-And so the magic garden lived on, reminding everyone who visited that the most powerful magic of all is love and kindness. The flowers still dance in the wind, the butterflies still spread their sparkles, and the magic continues to grow stronger every day.`
+I love my big tree. It is my friend. I will take care of it. My tree makes me smile every day. I am glad it is in my yard.`
   },
-  'grades-5-8': {
-    title: 'Grades 5-8',
-    text: `The Discovery of the Hidden Civilization
+  2: {
+    title: 'Grade 2',
+    text: `The Seasons on the Farm
 
-Dr. Elena Rodriguez had been an archaeologist for fifteen years, but nothing had prepared her for what she was about to discover in the remote mountains of South America. Her team had been excavating what they believed to be a small settlement when they uncovered something extraordinary that would change our understanding of ancient civilizations forever.
+My family has a small farm. We live near a big field. Every season brings something new, and we all help out.
 
-The discovery began with a single golden artifact buried beneath layers of volcanic ash. The intricate patterns carved into the metal were unlike anything found in previously known cultures from this region. The symbols appeared to be a form of advanced writing system that combined mathematical equations with astronomical observations.
+In the spring, we plant seeds in the garden. My mom digs holes, and I put the seeds in. We water them every day. Soon, little green plants start to grow. It is exciting to watch them get bigger.
 
-As the team carefully excavated the area, they revealed an entire underground city that had been perfectly preserved for over a thousand years. The volcanic eruption that had buried the settlement had also protected it from the elements, creating a time capsule of ancient life.
+In the summer, the garden is full of food. We pick tomatoes, beans, and corn. The sun is hot, but we have fun. We eat lunch under the old oak tree. The shade keeps us cool.
 
-The architecture was remarkable in its sophistication. The buildings were constructed using advanced engineering techniques that shouldn't have existed during that time period. Aqueducts carried fresh water throughout the city, and a complex ventilation system provided air circulation to the underground chambers.
+In the fall, the air gets cool. The leaves turn orange and red. We pick apples from our apple tree. My dad makes apple pie, and it smells so good. We share it with our neighbours.
 
-Most impressive were the libraries containing thousands of stone tablets covered in the mysterious script. Dr. Rodriguez's team worked tirelessly to decipher the language, and what they discovered was revolutionary. These ancient people had developed advanced knowledge in astronomy, mathematics, medicine, and agriculture that was centuries ahead of their time.
+In the winter, the farm is quiet. Snow covers the ground. We feed the animals in the barn. The chickens stay warm inside. My cat likes to sleep by the fire. We drink hot chocolate after our chores.
 
-The tablets revealed detailed star charts that accurately predicted solar eclipses and planetary movements. They contained mathematical formulas for calculating areas and volumes that weren't discovered by European scholars until much later. Medical texts described surgical procedures and herbal remedies that modern science has only recently validated.
+Every season is special on our farm. I like spring the best because I love to plant seeds and watch them grow. My brother likes fall because he loves apple pie.
 
-One particular set of tablets told the story of the civilization's downfall. The people had detected signs of the coming volcanic eruption through their astronomical observations. However, instead of fleeing, they chose to seal themselves in their underground city, believing they could wait out the disaster.
+Our farm is a busy and happy place. We work together, and we always have fun. I am lucky to live on a farm where every day is different.`
+  },
+  3: {
+    title: 'Grade 3',
+    text: `The River Behind Our School
 
-Archaeological evidence suggested that they survived for several months after the eruption, living off stored food supplies and underground water sources. The final tablets, written in increasingly desperate handwriting, documented their gradual realization that they would not survive.
+There is a small river behind our school. Every week, our class walks down to the river to learn about nature. It is one of my favourite parts of the week.
 
-Dr. Rodriguez was particularly moved by the last tablet, which appeared to be a message to future generations. It spoke of their hope that someday, people would discover their city and learn from their knowledge. They had deliberately preserved their most important discoveries in the deepest vaults of the city.
+First, we put on our rubber boots and grab our notebooks. Then, we walk along the trail to the river. Our teacher tells us to look carefully at everything around us. She says good scientists always pay attention.
 
-The discovery sparked international interest and debate among historians and archaeologists. Some questioned whether such advanced knowledge could have existed so long ago, while others argued that ancient civilizations were far more sophisticated than previously believed.
+At the river, we see many interesting things. Small fish swim in the shallow water. Frogs sit on rocks near the edge. Dragonflies fly quickly above the surface. We write down what we see in our nature journals and draw pictures too.
 
-The site became one of the most important archaeological discoveries of the century. Museums worldwide displayed artifacts from the hidden city, and the deciphered tablets provided new insights into human history and scientific development.
+One day, we found a turtle sitting on a log. It was basking in the warm sunshine. We watched it for a long time. After a while, it slowly slid into the water and disappeared. Everyone was excited to see it.
 
-Dr. Rodriguez continued to lead the excavation for several more years, uncovering new chambers and artifacts that added to the story of this remarkable civilization. Her work demonstrated that human ingenuity and scientific curiosity have existed throughout history, often in places and times we least expect to find them.
+Our teacher taught us that rivers are important for many reasons. They give water to plants and animals. They help keep the land healthy. Many creatures depend on the river to survive. Without rivers, life would be very different.
 
-The hidden city stands as a testament to the achievements of ancient peoples and reminds us that there are still many mysteries waiting to be discovered beneath the earth's surface.`
+I have learned so much from visiting the river. Nature is full of surprises. Every time we go, there is something new to discover. I can see why it is important to take care of our rivers and the animals that live there. I hope we never stop going on our nature walks.`
+  },
+  4: {
+    title: 'Grade 4',
+    text: `The Community Garden
+
+Last spring, our neighbourhood decided to build a community garden in an empty lot at the end of our street. Everyone was excited to pitch in and create something special together.
+
+First, a group of volunteers cleared the lot and removed the old weeds. Then, they built raised garden beds out of wood and filled them with rich, dark soil. Each family was given their own small plot to plant whatever they wanted. My family chose to grow tomatoes, peppers, and herbs.
+
+Planting day felt like a celebration. Kids ran around with watering cans, and neighbours who had never spoken before started sharing gardening tips. It was amazing to see so many people come together for the same goal.
+
+As the weeks went by, the garden began to bloom like a patchwork quilt of colours. Bright red tomatoes hung from their vines, and tall sunflowers stretched toward the sky as if they were trying to touch the clouds. Bees buzzed happily from flower to flower, doing their important work.
+
+The garden brought our community together in unexpected ways. People shared their harvests with one another, trading zucchini for strawberries and basil for mint. Saturday mornings became a time for neighbours to gather, chat, and enjoy the fresh air. Mr. Hernandez, who had lived on our street for years, said the garden reminded him of his childhood.
+
+By the end of summer, the garden had produced more food than anyone expected. We donated the extra vegetables to a local food bank so that families in need could enjoy fresh produce too.
+
+The community garden taught us that when people work together, even a small patch of land can become something truly special. I cannot wait to see what we grow next year.`
+  },
+  5: {
+    title: 'Grade 5',
+    text: `The Migration of Monarch Butterflies
+
+Every autumn, millions of monarch butterflies begin an incredible journey across North America. These small, delicate creatures travel up to four thousand kilometres from Canada and the United States to the mountain forests of central Mexico. It is one of the most amazing migrations in the natural world.
+
+Monarchs are not like other butterflies. Most butterflies live for only a few weeks, but the generation that migrates can live up to eight months. Scientists call this generation the "super generation" because of its extraordinary endurance and ability to navigate across vast distances without ever having made the trip before.
+
+The butterflies use a combination of the sun's position and the Earth's magnetic field to find their way south. Remarkably, the monarchs that make the journey have never been to Mexico before. They rely entirely on instinct passed down through generations, which is something scientists are still working to fully understand.
+
+When they arrive in Mexico, the monarchs cluster together by the millions on oyamel fir trees high in the mountains. The cool mountain air slows their metabolism, allowing them to conserve energy throughout the winter months. The trees become covered in a thick blanket of orange and black wings, creating a breathtaking sight that draws visitors from around the world.
+
+In the spring, the monarchs begin the long journey back north. Along the way, they lay eggs on milkweed plants, and the cycle begins again. However, it takes three or four generations of butterflies to complete the full return trip to Canada. Each new generation picks up where the last one left off.
+
+Unfortunately, monarch populations have been declining in recent years due to habitat loss and climate change. Conservation efforts, including planting milkweed gardens across Canada and the United States, are helping to protect these remarkable travellers and ensure their extraordinary migration continues for years to come.`
+  },
+  6: {
+    title: 'Grade 6',
+    text: `The Science of Sleep
+
+Sleep is something every person needs, yet many people do not fully understand why it is so important. Scientists have spent decades studying sleep, and their findings reveal that it plays a critical role in our physical health, mental well-being, and ability to learn.
+
+When you fall asleep, your brain does not simply shut down. Instead, it cycles through different stages of sleep, each serving a specific purpose. During deep sleep, your body repairs muscles, strengthens your immune system, and releases growth hormones that are essential for development. During a stage called REM sleep, which stands for Rapid Eye Movement, your brain processes emotions and consolidates memories from the day.
+
+The connection between sleep and learning is particularly significant for students. Research shows that students who get enough sleep perform considerably better on tests, retain more information, and demonstrate stronger problem-solving skills. This is because the brain uses sleep to organize and store new knowledge, almost like a librarian sorting books onto the correct shelves. Without adequate sleep, the brain struggles to hold on to what it has learned.
+
+Despite its importance, many young people are not getting enough rest. The use of electronic devices before bedtime is one major contributing factor, as the blue light emitted by screens interferes with the body's natural production of melatonin, the hormone that signals your brain it is time to sleep. As a result, falling asleep becomes more difficult, and the quality of sleep decreases.
+
+Health experts recommend that children aged six to twelve get nine to twelve hours of sleep each night. Simple habits, such as maintaining a consistent bedtime, avoiding screens for at least thirty minutes before bed, and keeping your room cool and dark, can dramatically improve sleep quality.
+
+Understanding the science of sleep empowers us to make better choices about our daily routines. By prioritizing rest, we give our brains and bodies the time they need to recover, grow, and prepare for the challenges of a new day.`
+  },
+  7: {
+    title: 'Grade 7',
+    text: `The Impact of Plastic on Our Oceans
+
+Over the past several decades, plastic pollution has become one of the most pressing environmental issues facing our planet. Although plastic was initially celebrated as a versatile and durable material when it was first widely produced in the mid-twentieth century, its inability to decompose naturally has created a growing crisis in the world's oceans that demands our attention.
+
+Every year, approximately eight million tonnes of plastic waste enter the ocean, where it accumulates in massive floating patches. The largest of these, known as the Great Pacific Garbage Patch, covers an area roughly three times the size of France. Contrary to popular belief, this patch is not a solid island of trash that one could walk across. Rather, it consists of trillions of tiny plastic fragments, called microplastics, that are suspended throughout the water column and are nearly invisible to the naked eye.
+
+The consequences of this pollution are far-reaching and deeply troubling. Marine animals, including sea turtles, whales, and seabirds, frequently mistake plastic for food. When ingested, plastic can block their digestive systems, leading to starvation and, ultimately, death. Furthermore, as plastic breaks down into increasingly smaller particles, it enters the food chain at every level. Fish consume microplastics, and those fish are then eaten by larger predators, including humans. Scientists are still investigating the long-term health effects of microplastic consumption, but early research suggests considerable cause for concern.
+
+Addressing this issue requires coordinated action at multiple levels. Governments can implement policies that restrict single-use plastics, while companies can invest in sustainable packaging alternatives. However, individual choices also matter significantly. Reducing personal plastic consumption, properly recycling, and participating in community clean-up efforts all contribute to meaningful change.
+
+The plastic crisis did not develop overnight, and it will not be solved quickly. Nevertheless, growing public awareness and collective action offer genuine hope that we can protect our oceans and marine ecosystems for future generations.`
+  },
+  8: {
+    title: 'Grade 8',
+    text: `The Ethics of Artificial Intelligence
+
+Artificial intelligence has rapidly transformed the way we live, work, and communicate, yet its growing influence raises profound ethical questions that society has only begun to confront. As AI systems become more sophisticated and are integrated into an ever-widening range of applications, the need to examine their impact on fairness, privacy, and human autonomy becomes increasingly urgent.
+
+One of the most significant concerns surrounding AI is the issue of bias. AI systems learn from vast datasets created by humans, and if those datasets contain historical biases, whether related to race, gender, or socioeconomic status, the AI will inevitably reproduce and even amplify those inequities. For example, studies have demonstrated that certain facial recognition algorithms are significantly less accurate when identifying individuals with darker skin tones, a flaw that carries serious consequences when such technology is deployed in law enforcement and security contexts.
+
+Privacy presents another complex and evolving challenge. AI-powered technologies, from voice assistants to social media algorithms, collect enormous quantities of personal data in order to function effectively. While this data enables convenience and personalization, it simultaneously creates opportunities for surveillance and manipulation that were previously unimaginable. The fundamental question of who owns this data and how it may be used remains largely unresolved in most legal frameworks around the world.
+
+Perhaps the most fundamental ethical question concerns accountability. When an AI system makes a decision that causes harm, whether a self-driving vehicle is involved in a collision or an algorithm unfairly denies someone a loan, determining who bears responsibility is extraordinarily difficult. The developer, the company, and the end user may all share some degree of accountability, yet current legal structures are not adequately equipped to navigate these unprecedented situations.
+
+Navigating the ethical landscape of artificial intelligence demands thoughtful collaboration among technologists, policymakers, educators, and citizens alike. Technology itself is neither inherently beneficial nor harmful; its impact depends entirely upon the values and intentions guiding its development and deployment. By engaging critically with these questions now, rather than waiting until the consequences become irreversible, we have the opportunity to shape AI in ways that uphold human dignity and contribute to a more just and equitable society.`
   }
 };
 
@@ -177,12 +255,8 @@ const ReadingAssessment: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Set text based on selected grade range
-    if (selectedGrade <= 4) {
-      setCurrentText(READING_TEXTS['grades-1-4'].text);
-    } else {
-      setCurrentText(READING_TEXTS['grades-5-8'].text);
-    }
+    // Set text based on selected grade
+    setCurrentText(READING_TEXTS[selectedGrade].text);
   }, [selectedGrade]);
 
   // Auto-scroll transcript when new text is added
