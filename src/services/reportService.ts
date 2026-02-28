@@ -13,6 +13,7 @@ interface GenerateReportResponse {
     created_at: string;
   };
   downloadUrl?: string;
+  downloadUrlAr?: string;
   emailSent?: boolean;
   error?: string;
 }

@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { supabaseAdmin } from '../config/supabase.js';
 import { verifySupabaseToken, requireRole, isAdmin } from '../middleware/index.js';
 import { 
+  generateEnglishPDF,
+  generateArabicPDF,
   generateReportPDF, 
   sendReportEmail, 
   uploadPDF, 
@@ -70,13 +72,27 @@ router.post('/generate', verifySupabaseToken, async (req: Request, res: Response
       generatedAt: new Date(),
     };
 
-    // Generate PDF
-    const pdfBuffer = await generateReportPDF(reportData);
+    // Generate English PDF
+    const pdfBuffer = await generateEnglishPDF(reportData);
 
-    // Upload to storage
-    const storageResult = await uploadPDF(req.user.id, pdfBuffer, report_type);
+    // Generate Arabic PDF
+    let pdfBufferAr: Buffer | null = null;
+    try {
+      pdfBufferAr = await generateArabicPDF(reportData);
+    } catch (err) {
+      console.warn('Arabic PDF generation failed (font may be unavailable):', err);
+    }
+
+    // Upload English PDF to storage
+    const storageResult = await uploadPDF(req.user.id, pdfBuffer, `en_${report_type}`);
     if (!storageResult) {
       return res.status(500).json({ error: 'Failed to upload report' });
+    }
+
+    // Upload Arabic PDF to storage
+    let storageResultAr: { path: string } | null = null;
+    if (pdfBufferAr) {
+      storageResultAr = await uploadPDF(req.user.id, pdfBufferAr, `ar_${report_type}`);
     }
 
     // Save report record
@@ -125,13 +141,15 @@ router.post('/generate', verifySupabaseToken, async (req: Request, res: Response
       }
     }
 
-    // Get download URL
+    // Get download URLs
     const downloadUrl = await getSignedUrl(storageResult.path);
+    const downloadUrlAr = storageResultAr ? await getSignedUrl(storageResultAr.path) : undefined;
 
     res.json({
       success: true,
       report,
       downloadUrl,
+      downloadUrlAr,
       emailSent: emailResult?.success || false,
     });
   } catch (error) {

@@ -137,7 +137,8 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
         setSaveStatus('success');
         logger.log('Report saved:', result.report?.id);
 
-        // Download the PDF that the backend generated
+        // Download English PDF
+        const dateSuffix = new Date().toISOString().split('T')[0];
         if (result.downloadUrl) {
           try {
             const pdfResp = await fetch(result.downloadUrl);
@@ -146,16 +147,37 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              a.download = `assessment-report-${new Date().toISOString().split('T')[0]}.pdf`;
+              a.download = `en_assessment-report-${dateSuffix}.pdf`;
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
               URL.revokeObjectURL(url);
             } else {
-              logger.error('PDF download HTTP error:', pdfResp.status);
+              logger.error('EN PDF download HTTP error:', pdfResp.status);
             }
           } catch (dlErr) {
-            logger.error('PDF download fetch error:', dlErr);
+            logger.error('EN PDF download fetch error:', dlErr);
+          }
+        }
+        // Download Arabic PDF
+        if (result.downloadUrlAr) {
+          try {
+            const pdfResp = await fetch(result.downloadUrlAr);
+            if (pdfResp.ok) {
+              const blob = await pdfResp.blob();
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `ar_assessment-report-${dateSuffix}.pdf`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            } else {
+              logger.error('AR PDF download HTTP error:', pdfResp.status);
+            }
+          } catch (dlErr) {
+            logger.error('AR PDF download fetch error:', dlErr);
           }
         }
       } else {
