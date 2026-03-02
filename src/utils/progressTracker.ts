@@ -8,7 +8,7 @@ export interface QuizResult {
   quizId: string;
   quizName: string;
   /** Defaults to 'mind' when omitted */
-  category?: 'mind' | 'oral';
+  category?: 'mind' | 'oral' | 'academic';
   subcategory: string;
   score: number;
   totalQuestions: number;
@@ -22,6 +22,7 @@ export interface QuizResult {
 export interface ProgressData {
   mindSectionResults: QuizResult[];
   oralSectionResults: QuizResult[];
+  academicSectionResults: QuizResult[];
   overallProgress: number; // 0-100
   lastUpdated: string;
   userId?: string;
@@ -101,7 +102,14 @@ export const ORAL_QUIZZES = [
   { id: 'segmenting-quiz', name: 'Segmenting Quiz', subcategory: 'blending-segmenting', route: '/segmenting-quiz' },
 ];
 
-export const ALL_TRACKED_QUIZZES = [...MIND_QUIZZES, ...ORAL_QUIZZES];
+// Academic skills quiz configurations
+export const ACADEMIC_QUIZZES = [
+  { id: 'spelling-test', name: 'Spelling Test', subcategory: 'spelling', route: '/spelling-grades' },
+  { id: 'writing-test', name: 'Writing Test', subcategory: 'writing', route: '/writing-grades' },
+  { id: 'vocabulary-matching', name: 'Vocabulary Matching', subcategory: 'vocabulary', route: '/vocabulary-matching' },
+];
+
+export const ALL_TRACKED_QUIZZES = [...MIND_QUIZZES, ...ORAL_QUIZZES, ...ACADEMIC_QUIZZES];
 
 // Get user-specific storage key
 function getStorageKey(userId: string): string {
@@ -129,6 +137,10 @@ async function ensureUserId(): Promise<string | null> {
   return initPromise;
 }
 
+// Debounce / dedup guard for loadFromDatabase – prevents rapid-fire calls
+let _loadInFlight: Promise<any> | null = null;
+let _lastLoadedUserId: string | null = null;
+
 // Listen for auth changes
 supabase.auth.onAuthStateChange((event, session) => {
   const newUserId = session?.user?.id || null;
@@ -138,20 +150,27 @@ supabase.auth.onAuthStateChange((event, session) => {
   cachedUserId = newUserId;
   
   if (event === 'SIGNED_OUT') {
+    _lastLoadedUserId = null;
     // Dispatch event to update UI
     window.dispatchEvent(new CustomEvent('mindProgressUpdated', { 
       detail: {
         mindSectionResults: [],
         oralSectionResults: [],
+        academicSectionResults: [],
         overallProgress: 0,
         lastUpdated: new Date().toISOString()
       }
     }));
   } else if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && newUserId) {
-    // Load progress for this user
-    ProgressTracker.loadFromDatabase().then(() => {
-      logger.log('Loaded progress for user:', newUserId);
-    });
+    // Skip if we already loaded for this user (avoids duplicate SIGNED_IN events)
+    if (_lastLoadedUserId === newUserId) return;
+    _lastLoadedUserId = newUserId;
+    // Load progress for this user (dedup concurrent calls)
+    if (!_loadInFlight) {
+      _loadInFlight = ProgressTracker.loadFromDatabase().then(() => {
+        logger.log('Loaded progress for user:', newUserId);
+      }).finally(() => { _loadInFlight = null; });
+    }
   }
 });
 
@@ -180,6 +199,7 @@ export class ProgressTracker {
       return {
         mindSectionResults: [],
         oralSectionResults: [],
+        academicSectionResults: [],
         overallProgress: 0,
         lastUpdated: new Date().toISOString()
       };
@@ -191,7 +211,7 @@ export class ProgressTracker {
     if (stored) {
       try {
         const data = JSON.parse(stored);
-        return { oralSectionResults: [], ...data, userId };
+        return { oralSectionResults: [], academicSectionResults: [], ...data, userId };
       } catch (error) {
         logger.error('Error parsing progress data:', error);
       }
@@ -200,6 +220,7 @@ export class ProgressTracker {
     return {
       mindSectionResults: [],
       oralSectionResults: [],
+      academicSectionResults: [],
       overallProgress: 0,
       lastUpdated: new Date().toISOString(),
       userId
@@ -225,7 +246,12 @@ export class ProgressTracker {
     const progress = this.getProgress();
     const category = result.category || 'mind';
 
-    if (category === 'oral') {
+    if (category === 'academic') {
+      progress.academicSectionResults = progress.academicSectionResults.filter(
+        r => r.quizId !== result.quizId
+      );
+      progress.academicSectionResults.push(result);
+    } else if (category === 'oral') {
       progress.oralSectionResults = progress.oralSectionResults.filter(
         r => r.quizId !== result.quizId
       );
@@ -238,7 +264,11 @@ export class ProgressTracker {
     }
     
     // Update overall progress
-    progress.overallProgress = this.calculateOverallProgress(progress.mindSectionResults, progress.oralSectionResults);
+    progress.overallProgress = this.calculateOverallProgress(
+      progress.mindSectionResults,
+      progress.oralSectionResults,
+      progress.academicSectionResults
+    );
     progress.lastUpdated = new Date().toISOString();
     
     // Save to user-specific localStorage
@@ -276,13 +306,23 @@ export class ProgressTracker {
   }
 
   // Load progress from database (for initial load after login)
+  // Uses a dedup guard so concurrent calls share the same in-flight request.
   static async loadFromDatabase(): Promise<ProgressData> {
+    if (_loadInFlight) return _loadInFlight as Promise<ProgressData>;
+    const promise = this._loadFromDatabaseImpl();
+    _loadInFlight = promise;
+    promise.finally(() => { _loadInFlight = null; });
+    return promise;
+  }
+
+  private static async _loadFromDatabaseImpl(): Promise<ProgressData> {
     const userId = this.getCurrentUserId();
     
     if (!userId) {
       return {
         mindSectionResults: [],
         oralSectionResults: [],
+        academicSectionResults: [],
         overallProgress: 0,
         lastUpdated: new Date().toISOString()
       };
@@ -291,10 +331,11 @@ export class ProgressTracker {
     try {
       const { getQuizResults } = await import('../services/quizResultsService');
       
-      // Load mind and oral results in parallel
-      const [mindResponse, oralResponse] = await Promise.all([
+      // Load mind, oral, and academic results in parallel
+      const [mindResponse, oralResponse, academicResponse] = await Promise.all([
         getQuizResults('mind'),
         getQuizResults('oral'),
+        getQuizResults('academic'),
       ]);
 
       const mapResults = (results: any[]): QuizResult[] =>
@@ -318,6 +359,9 @@ export class ProgressTracker {
       const dbOralResults = oralResponse.success && oralResponse.results
         ? mapResults(oralResponse.results)
         : [];
+      const dbAcademicResults = academicResponse.success && academicResponse.results
+        ? mapResults(academicResponse.results)
+        : [];
 
       // Merge DB results with any local results that haven't synced yet.
       // For each quiz, keep whichever result is newer (by completedAt).
@@ -337,11 +381,13 @@ export class ProgressTracker {
 
       const mindResults = mergeResults(dbMindResults, localProgress.mindSectionResults);
       const oralResults = mergeResults(dbOralResults, localProgress.oralSectionResults ?? []);
+      const academicResults = mergeResults(dbAcademicResults, localProgress.academicSectionResults ?? []);
 
       const progress: ProgressData = {
         mindSectionResults: mindResults,
         oralSectionResults: oralResults,
-        overallProgress: this.calculateOverallProgress(mindResults, oralResults),
+        academicSectionResults: academicResults,
+        overallProgress: this.calculateOverallProgress(mindResults, oralResults, academicResults),
         lastUpdated: new Date().toISOString(),
         userId
       };
@@ -363,9 +409,19 @@ export class ProgressTracker {
     return this.getProgress();
   }
 
-  static calculateOverallProgress(mindResults: QuizResult[], oralResults: QuizResult[] = []): number {
-    const totalQuizzes = MIND_QUIZZES.length + ORAL_QUIZZES.length;
-    const completedQuizzes = mindResults.length + oralResults.length;
+  static calculateOverallProgress(
+    mindResults: QuizResult[],
+    oralResults: QuizResult[] = [],
+    academicResults: QuizResult[] = []
+  ): number {
+    const totalQuizzes = MIND_QUIZZES.length + ORAL_QUIZZES.length + ACADEMIC_QUIZZES.length;
+    const mindIds = new Set(MIND_QUIZZES.map(q => q.id));
+    const oralIds = new Set(ORAL_QUIZZES.map(q => q.id));
+    const acadIds = new Set(ACADEMIC_QUIZZES.map(q => q.id));
+    const completedQuizzes =
+      mindResults.filter(r => mindIds.has(r.quizId)).length +
+      oralResults.filter(r => oralIds.has(r.quizId)).length +
+      academicResults.filter(r => acadIds.has(r.quizId)).length;
     return Math.round((completedQuizzes / totalQuizzes) * 100);
   }
 
@@ -373,6 +429,7 @@ export class ProgressTracker {
     const progress = this.getProgress();
     return progress.mindSectionResults.find(r => r.quizId === quizId)
       || progress.oralSectionResults.find(r => r.quizId === quizId)
+      || progress.academicSectionResults.find(r => r.quizId === quizId)
       || null;
   }
 
@@ -382,7 +439,7 @@ export class ProgressTracker {
 
   static getCompletedQuizzes(): QuizResult[] {
     const progress = this.getProgress();
-    return [...progress.mindSectionResults, ...progress.oralSectionResults];
+    return [...progress.mindSectionResults, ...progress.oralSectionResults, ...progress.academicSectionResults];
   }
 
   static getIncompleteQuizzes(): typeof MIND_QUIZZES {
@@ -402,6 +459,7 @@ export class ProgressTracker {
       detail: {
         mindSectionResults: [],
         oralSectionResults: [],
+        academicSectionResults: [],
         overallProgress: 0,
         lastUpdated: new Date().toISOString()
       }
@@ -414,7 +472,7 @@ export class ProgressTracker {
   private static async clearFromDatabase(): Promise<void> {
     try {
       const { deleteAllResults } = await import('../services/quizResultsService');
-      const result = await deleteAllResults(['mind', 'oral']);
+      const result = await deleteAllResults(['mind', 'oral', 'academic']);
       if (!result.success) {
         logger.error('Failed to clear results from database:', result.error);
       }

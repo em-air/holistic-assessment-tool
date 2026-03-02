@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Font,
 } from '@react-pdf/renderer';
-import { ProgressData, MIND_QUIZZES, ORAL_QUIZZES } from '../utils/progressTracker';
+import { ProgressData, MIND_QUIZZES, ORAL_QUIZZES, ACADEMIC_QUIZZES } from '../utils/progressTracker';
 import {
   getSubcategoryNameBilingual,
   getSkillDescriptionBilingual,
@@ -113,15 +113,17 @@ const s = StyleSheet.create({
 const subName: Record<string, string> = {
   attention: 'Attention', memory: 'Memory', 'learning-style': 'Learning Style',
   'critical-thinking': 'Critical Thinking', perception: 'Perception',
-  'oral-language': 'Oral Language', phonics: 'Phonics',
-  'phonics-awareness': 'Phonics', 'blending-segmenting': 'Blending & Segmenting',
+  'oral-language': 'Oral Language', phonics: 'Beginning & Ending Sounds',
+  'blending-segmenting': 'Blending & Segmenting',
+  spelling: 'Spelling', writing: 'Writing Skills', vocabulary: 'Vocabulary',
 };
 
 const catColor: Record<string, string> = {
   attention: '#eab308', memory: '#f97316', 'learning-style': '#22c55e',
   'critical-thinking': '#a855f7', perception: '#6366f1',
   'oral-language': '#0ea5e9', phonics: '#ec4899',
-  'phonics-awareness': '#ec4899', 'blending-segmenting': '#14b8a6',
+  'blending-segmenting': '#14b8a6',
+  spelling: '#7c3aed', writing: '#d97706', vocabulary: '#e11d48',
 };
 
 const perfLabel = (pct: number) =>
@@ -162,6 +164,12 @@ const getAnalysis = (result: any): string => {
     return pct >= 75 ? 'Shows solid sound recognition skills for beginning and ending sounds.' : 'Developing sound recognition — practice with letter-sound activities.';
   if (cat === 'blending-segmenting')
     return pct >= 75 ? 'Shows strong ability to blend and segment sounds.' : 'Developing blending & segmenting — practice breaking and building words.';
+  if (cat === 'spelling')
+    return pct >= 75 ? 'Shows strong spelling skills and orthographic awareness.' : 'Developing spelling skills — practice with word patterns and spelling exercises.';
+  if (cat === 'writing')
+    return pct >= 75 ? 'Demonstrates solid writing skills with good structure and expression.' : 'Developing writing skills — encourage regular writing practice.';
+  if (cat === 'vocabulary')
+    return pct >= 75 ? 'Shows strong vocabulary knowledge and word understanding.' : 'Developing vocabulary — encourage reading and word-matching activities.';
   return 'Assessment completed successfully.';
 };
 
@@ -194,6 +202,12 @@ const getAnalysisAr = (result: any): string => {
     return rtl(pct >= 75 ? 'يُظهر مهارات قوية في أصوات البداية والنهاية.' : 'مهارات أصوات البداية والنهاية قيد التطوير — تدرب على أنشطة الحروف والأصوات.');
   if (cat === 'blending-segmenting')
     return rtl(pct >= 75 ? 'يُظهر قدرة قوية على دمج الأصوات وتقسيمها.' : 'مهارات الدمج والتقسيم قيد التطوير.');
+  if (cat === 'spelling')
+    return rtl(pct >= 75 ? 'يُظهر مهارات إملائية قوية ووعياً إملائياً.' : 'مهارات الإملاء قيد التطوير — تدرب على أنماط الكلمات.');
+  if (cat === 'writing')
+    return rtl(pct >= 75 ? 'يُظهر مهارات كتابة جيدة مع بنية وتعبير جيدين.' : 'مهارات الكتابة قيد التطوير — شجع على ممارسة الكتابة.');
+  if (cat === 'vocabulary')
+    return rtl(pct >= 75 ? 'يُظهر معرفة قوية بالمفردات وفهم الكلمات.' : 'المفردات قيد التطوير — شجع على القراءة وأنشطة مطابقة الكلمات.');
   return rtl('تم إكمال التقييم بنجاح.');
 };
 
@@ -218,9 +232,10 @@ const ReportPDF: React.FC<ReportPDFProps> = ({
 }) => {
   const mindResults = progress.mindSectionResults ?? [];
   const oralResults = progress.oralSectionResults ?? [];
-  const allResults = [...mindResults, ...oralResults];
+  const academicResults = progress.academicSectionResults ?? [];
+  const allResults = [...mindResults, ...oralResults, ...academicResults];
 
-  const totalQuizzes = MIND_QUIZZES.length + ORAL_QUIZZES.length;
+  const totalQuizzes = MIND_QUIZZES.length + ORAL_QUIZZES.length + ACADEMIC_QUIZZES.length;
   const completedCount = allResults.length;
   const avgScore =
     allResults.length > 0
@@ -230,7 +245,8 @@ const ReportPDF: React.FC<ReportPDFProps> = ({
 
   const categories = [
     'attention', 'memory', 'learning-style', 'critical-thinking', 'perception',
-    'oral-language', 'phonics', 'phonics-awareness', 'blending-segmenting',
+    'oral-language', 'phonics', 'blending-segmenting',
+    'spelling', 'writing', 'vocabulary',
   ];
 
   /* Watermark node reused on each page */
@@ -273,13 +289,17 @@ const ReportPDF: React.FC<ReportPDFProps> = ({
             <Text style={s.summaryNum}>{oralResults.length}/{ORAL_QUIZZES.length}</Text>
             <Text style={s.summaryLabel}>Oral Section</Text>
           </View>
+          <View style={s.summaryCard}>
+            <Text style={s.summaryNum}>{academicResults.length}/{ACADEMIC_QUIZZES.length}</Text>
+            <Text style={s.summaryLabel}>Academic Section</Text>
+          </View>
         </View>
 
         <View style={s.parentNote}>
           <Text style={{ fontSize: 11, color: '#1e40af', marginBottom: 5, fontWeight: 'bold' }}>Dear Parent,</Text>
           <Text style={{ fontSize: 10, color: '#1e40af', lineHeight: 1.4 }}>
             This {isComplete ? 'comprehensive' : 'partial'} report provides an overview of your child's
-            performance across key cognitive and oral skill areas.{' '}
+            performance across key cognitive, oral, and academic skill areas.{' '}
             {isComplete
               ? 'Each section explains what skills were tested and how your child performed.'
               : 'Your child has completed some assessments so far. Additional assessments can be taken for a more complete evaluation.'}
@@ -320,6 +340,24 @@ const ReportPDF: React.FC<ReportPDFProps> = ({
         <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#0369a1', marginBottom: 6, marginTop: 4 }}>Oral Language Section ({oralResults.length}/{ORAL_QUIZZES.length} completed)</Text>
         <View style={{ ...s.checklistSection, backgroundColor: '#f0f9ff' }}>
           {ORAL_QUIZZES.map((q) => {
+            const done = allResults.some((r) => r.quizId === q.id);
+            const result = allResults.find((r) => r.quizId === q.id);
+            return (
+              <View key={q.id} style={s.checkItem}>
+                <Text style={s.checkIcon}>{done ? '✓' : '○'}</Text>
+                <Text style={done ? s.checkTextDone : s.checkTextPending}>
+                  {q.name} ({subName[q.subcategory] || q.subcategory})
+                  {done && result ? ` — ${result.percentage}%` : ' — not yet completed'}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+
+        {/* Academic quizzes */}
+        <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#059669', marginBottom: 6, marginTop: 4 }}>Academic Skills Section ({academicResults.length}/{ACADEMIC_QUIZZES.length} completed)</Text>
+        <View style={{ ...s.checklistSection, backgroundColor: '#ecfdf5' }}>
+          {ACADEMIC_QUIZZES.map((q) => {
             const done = allResults.some((r) => r.quizId === q.id);
             const result = allResults.find((r) => r.quizId === q.id);
             return (
@@ -446,6 +484,7 @@ const ReportPDF: React.FC<ReportPDFProps> = ({
           <View style={s.summaryCard}><Text style={s.summaryNum}>{avgScore}%</Text><Text style={s.summaryLabel}>{rtl('المعدل العام')}</Text></View>
           <View style={s.summaryCard}><Text style={s.summaryNum}>{mindResults.length}/{MIND_QUIZZES.length}</Text><Text style={s.summaryLabel}>{rtl('قسم العقل')}</Text></View>
           <View style={s.summaryCard}><Text style={s.summaryNum}>{oralResults.length}/{ORAL_QUIZZES.length}</Text><Text style={s.summaryLabel}>{rtl('قسم اللغة الشفهية')}</Text></View>
+          <View style={s.summaryCard}><Text style={s.summaryNum}>{academicResults.length}/{ACADEMIC_QUIZZES.length}</Text><Text style={s.summaryLabel}>{rtl('القسم الأكاديمي')}</Text></View>
         </View>
 
         <View style={s.parentNoteAr}>
@@ -489,6 +528,23 @@ const ReportPDF: React.FC<ReportPDFProps> = ({
         <Text style={{ fontSize: 11, fontWeight: 700, color: '#0369a1', marginBottom: 6, marginTop: 4, textAlign: 'right' }}>{rtl('قسم اللغة الشفهية')} ({oralResults.length}/{ORAL_QUIZZES.length} {rtl('مكتمل')})</Text>
         <View style={{ ...s.checklistSection, backgroundColor: '#f0f9ff' }}>
           {ORAL_QUIZZES.map((q) => {
+            const done = allResults.some((r) => r.quizId === q.id);
+            const result = allResults.find((r) => r.quizId === q.id);
+            return (
+              <View key={q.id} style={s.checkItemAr}>
+                <Text style={s.checkIconAr}>{done ? '✓' : '○'}</Text>
+                <Text style={done ? s.checkTextDone : s.checkTextPending}>
+                  {q.name} ({rtl(getSubcategoryNameBilingual(q.subcategory, 'ar'))})
+                  {done && result ? ` — ${result.percentage}%` : ' — ' + rtl('لم يكتمل بعد')}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+
+        <Text style={{ fontSize: 11, fontWeight: 700, color: '#059669', marginBottom: 6, marginTop: 4, textAlign: 'right' }}>{rtl('القسم الأكاديمي')} ({academicResults.length}/{ACADEMIC_QUIZZES.length} {rtl('مكتمل')})</Text>
+        <View style={{ ...s.checklistSection, backgroundColor: '#ecfdf5' }}>
+          {ACADEMIC_QUIZZES.map((q) => {
             const done = allResults.some((r) => r.quizId === q.id);
             const result = allResults.find((r) => r.quizId === q.id);
             return (
@@ -608,13 +664,14 @@ export const ReportPDFEnglish: React.FC<ReportPDFProps> = (props) => {
   } = props;
   const mindResults = progress.mindSectionResults ?? [];
   const oralResults = progress.oralSectionResults ?? [];
-  const allResults = [...mindResults, ...oralResults];
-  const totalQuizzes = MIND_QUIZZES.length + ORAL_QUIZZES.length;
+  const academicResults = progress.academicSectionResults ?? [];
+  const allResults = [...mindResults, ...oralResults, ...academicResults];
+  const totalQuizzes = MIND_QUIZZES.length + ORAL_QUIZZES.length + ACADEMIC_QUIZZES.length;
   const completedCount = allResults.length;
   const avgScore = allResults.length > 0
     ? Math.round(allResults.reduce((sum, r) => sum + r.percentage, 0) / allResults.length) : 0;
   const isComplete = completedCount >= totalQuizzes;
-  const categories = ['attention','memory','learning-style','critical-thinking','perception','oral-language','phonics','phonics-awareness','blending-segmenting'];
+  const categories = ['attention','memory','learning-style','critical-thinking','perception','oral-language','phonics','blending-segmenting','spelling','writing','vocabulary'];
   const Watermark = showWatermark ? (
     <View fixed style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: watermarkOpacity, justifyContent: 'center', alignItems: 'center', transform: 'rotate(-45deg)', zIndex: -1 }}>
       <Text style={{ fontSize: 110, color: '#000000', letterSpacing: 5, fontWeight: 'bold' }}>{watermarkText}</Text>
@@ -638,6 +695,7 @@ export const ReportPDFEnglish: React.FC<ReportPDFProps> = (props) => {
             <View style={s.summaryCard}><Text style={s.summaryNum}>{avgScore}%</Text><Text style={s.summaryLabel}>Overall Average</Text></View>
             <View style={s.summaryCard}><Text style={s.summaryNum}>{mindResults.length}/{MIND_QUIZZES.length}</Text><Text style={s.summaryLabel}>Mind Section</Text></View>
             <View style={s.summaryCard}><Text style={s.summaryNum}>{oralResults.length}/{ORAL_QUIZZES.length}</Text><Text style={s.summaryLabel}>Oral Section</Text></View>
+            <View style={s.summaryCard}><Text style={s.summaryNum}>{academicResults.length}/{ACADEMIC_QUIZZES.length}</Text><Text style={s.summaryLabel}>Academic Section</Text></View>
           </View>
           <View style={s.parentNote}>
             <Text style={{ fontSize: 11, color: '#1e40af', marginBottom: 5, fontWeight: 'bold' }}>Dear Parent,</Text>
@@ -673,6 +731,19 @@ export const ReportPDFEnglish: React.FC<ReportPDFProps> = (props) => {
           <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#0369a1', marginBottom: 6, marginTop: 4 }}>Oral Language Section ({oralResults.length}/{ORAL_QUIZZES.length} completed)</Text>
           <View style={{ ...s.checklistSection, backgroundColor: '#f0f9ff' }}>
             {ORAL_QUIZZES.map((q) => {
+              const done = allResults.some((r) => r.quizId === q.id);
+              const result = allResults.find((r) => r.quizId === q.id);
+              return (
+                <View key={q.id} style={s.checkItem}>
+                  <Text style={s.checkIcon}>{done ? '✓' : '○'}</Text>
+                  <Text style={done ? s.checkTextDone : s.checkTextPending}>{q.name} ({subName[q.subcategory] || q.subcategory}){done && result ? ` — ${result.percentage}%` : ' — not yet completed'}</Text>
+                </View>
+              );
+            })}
+          </View>
+          <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#059669', marginBottom: 6, marginTop: 4 }}>Academic Skills Section ({academicResults.length}/{ACADEMIC_QUIZZES.length} completed)</Text>
+          <View style={{ ...s.checklistSection, backgroundColor: '#ecfdf5' }}>
+            {ACADEMIC_QUIZZES.map((q) => {
               const done = allResults.some((r) => r.quizId === q.id);
               const result = allResults.find((r) => r.quizId === q.id);
               return (
@@ -747,13 +818,14 @@ export const ReportPDFArabic: React.FC<ReportPDFProps> = (props) => {
   } = props;
   const mindResults = progress.mindSectionResults ?? [];
   const oralResults = progress.oralSectionResults ?? [];
-  const allResults = [...mindResults, ...oralResults];
-  const totalQuizzes = MIND_QUIZZES.length + ORAL_QUIZZES.length;
+  const academicResults = progress.academicSectionResults ?? [];
+  const allResults = [...mindResults, ...oralResults, ...academicResults];
+  const totalQuizzes = MIND_QUIZZES.length + ORAL_QUIZZES.length + ACADEMIC_QUIZZES.length;
   const completedCount = allResults.length;
   const avgScore = allResults.length > 0
     ? Math.round(allResults.reduce((sum, r) => sum + r.percentage, 0) / allResults.length) : 0;
   const isComplete = completedCount >= totalQuizzes;
-  const categories = ['attention','memory','learning-style','critical-thinking','perception','oral-language','phonics','phonics-awareness','blending-segmenting'];
+  const categories = ['attention','memory','learning-style','critical-thinking','perception','oral-language','phonics','blending-segmenting','spelling','writing','vocabulary'];
   const Watermark = showWatermark ? (
     <View fixed style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: watermarkOpacity, justifyContent: 'center', alignItems: 'center', transform: 'rotate(-45deg)', zIndex: -1 }}>
       <Text style={{ fontSize: 110, color: '#000000', letterSpacing: 5, fontWeight: 'bold' }}>{watermarkText}</Text>
@@ -780,6 +852,7 @@ export const ReportPDFArabic: React.FC<ReportPDFProps> = (props) => {
             <View style={s.summaryCard}><Text style={s.summaryNum}>{avgScore}%</Text><Text style={s.summaryLabel}>{rtl('المعدل العام')}</Text></View>
             <View style={s.summaryCard}><Text style={s.summaryNum}>{mindResults.length}/{MIND_QUIZZES.length}</Text><Text style={s.summaryLabel}>{rtl('قسم العقل')}</Text></View>
             <View style={s.summaryCard}><Text style={s.summaryNum}>{oralResults.length}/{ORAL_QUIZZES.length}</Text><Text style={s.summaryLabel}>{rtl('قسم اللغة الشفهية')}</Text></View>
+            <View style={s.summaryCard}><Text style={s.summaryNum}>{academicResults.length}/{ACADEMIC_QUIZZES.length}</Text><Text style={s.summaryLabel}>{rtl('القسم الأكاديمي')}</Text></View>
           </View>
           <View style={s.parentNoteAr}>
             <Text style={{ fontSize: 11, color: '#1e40af', marginBottom: 5, fontWeight: 700, textAlign: 'right' }}>{rtl('عزيزي ولي الأمر،')}</Text>
@@ -813,6 +886,19 @@ export const ReportPDFArabic: React.FC<ReportPDFProps> = (props) => {
           <Text style={{ fontSize: 11, fontWeight: 700, color: '#0369a1', marginBottom: 6, marginTop: 4, textAlign: 'right' }}>{rtl('قسم اللغة الشفهية')} ({oralResults.length}/{ORAL_QUIZZES.length} {rtl('مكتمل')})</Text>
           <View style={{ ...s.checklistSection, backgroundColor: '#f0f9ff' }}>
             {ORAL_QUIZZES.map((q) => {
+              const done = allResults.some((r) => r.quizId === q.id);
+              const result = allResults.find((r) => r.quizId === q.id);
+              return (
+                <View key={q.id} style={s.checkItemAr}>
+                  <Text style={s.checkIconAr}>{done ? '✓' : '○'}</Text>
+                  <Text style={done ? s.checkTextDone : s.checkTextPending}>{q.name} ({rtl(getSubcategoryNameBilingual(q.subcategory, 'ar'))}){done && result ? ` — ${result.percentage}%` : ' — ' + rtl('لم يكتمل بعد')}</Text>
+                </View>
+              );
+            })}
+          </View>
+          <Text style={{ fontSize: 11, fontWeight: 700, color: '#059669', marginBottom: 6, marginTop: 4, textAlign: 'right' }}>{rtl('القسم الأكاديمي')} ({academicResults.length}/{ACADEMIC_QUIZZES.length} {rtl('مكتمل')})</Text>
+          <View style={{ ...s.checklistSection, backgroundColor: '#ecfdf5' }}>
+            {ACADEMIC_QUIZZES.map((q) => {
               const done = allResults.some((r) => r.quizId === q.id);
               const result = allResults.find((r) => r.quizId === q.id);
               return (

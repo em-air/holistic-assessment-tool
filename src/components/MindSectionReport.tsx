@@ -24,7 +24,16 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
   
   const isAuthenticated = ProgressTracker.isAuthenticated();
   const progress = ProgressTracker.getProgress();
-  const results = [...progress.mindSectionResults, ...(progress.oralSectionResults ?? [])];
+  // Deduplicate results by quizId (keep latest by completedAt)
+  const allResults = [...progress.mindSectionResults, ...(progress.oralSectionResults ?? []), ...(progress.academicSectionResults ?? [])];
+  const resultMap = new Map<string, QuizResult>();
+  for (const r of allResults) {
+    const existing = resultMap.get(r.quizId);
+    if (!existing || new Date(r.completedAt) > new Date(existing.completedAt)) {
+      resultMap.set(r.quizId, r);
+    }
+  }
+  const results = Array.from(resultMap.values());
 
   // Show login prompt if not authenticated
   if (!isAuthenticated) {
@@ -89,8 +98,10 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       'perception': 'Perception',
       'oral-language': 'Oral Language',
       'phonics': 'Beginning & Ending Sounds',
-      'phonics-awareness': 'Beginning & Ending Sounds',
-      'blending-segmenting': 'Blending & Segmenting'
+      'blending-segmenting': 'Blending & Segmenting',
+      'spelling': 'Spelling',
+      'writing': 'Writing',
+      'vocabulary': 'Vocabulary'
     };
     return names[subcategory] || subcategory;
   };
@@ -104,8 +115,10 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       'perception': 'text-indigo-600',
       'oral-language': 'text-sky-600',
       'phonics': 'text-pink-600',
-      'phonics-awareness': 'text-pink-600',
-      'blending-segmenting': 'text-teal-600'
+      'blending-segmenting': 'text-teal-600',
+      'spelling': 'text-violet-600',
+      'writing': 'text-amber-600',
+      'vocabulary': 'text-rose-600'
     };
     return colors[subcategory] || 'text-gray-600';
   };
@@ -130,8 +143,10 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       'perception': 'Perception involves how your child interprets and understands visual and spatial information. This includes recognizing patterns, understanding spatial relationships, and processing visual details.',
       'oral-language': 'Oral Language skills measure vocabulary breadth, sentence construction, story sequencing, and narrative retelling abilities essential for communication and literacy development.',
       'phonics': 'Phonics skills assess the ability to identify letter-sound relationships, recognize beginning and ending sounds, and decode words — foundational skills for reading.',
-      'phonics-awareness': 'Phonics skills assess the ability to identify letter-sound relationships, recognize beginning and ending sounds, and decode words — foundational skills for reading.',
-      'blending-segmenting': 'Blending and Segmenting skills measure the ability to combine individual sounds into words (blending) and break words into component sounds (segmenting), both critical for reading fluency.'
+      'blending-segmenting': 'Blending and Segmenting skills measure the ability to combine individual sounds into words (blending) and break words into component sounds (segmenting), both critical for reading fluency.',
+      'spelling': 'Spelling skills measure the ability to correctly write words, demonstrating phonetic knowledge and orthographic awareness.',
+      'writing': 'Writing skills assess the ability to compose text with proper structure, grammar, vocabulary usage, and creative expression.',
+      'vocabulary': 'Vocabulary skills measure word knowledge, including understanding word meanings and the ability to match words with their definitions.'
     };
     return descriptions[subcategory] || 'This skill area measures important cognitive abilities.';
   };
@@ -494,7 +509,7 @@ Assessment Results:
             <h3 className="text-xl font-bold text-gray-800 mb-6">🧠 Detailed Skill Analysis</h3>
             
             {/* Group results by skill category */}
-            {['attention', 'memory', 'learning-style', 'critical-thinking', 'perception', 'oral-language', 'phonics', 'phonics-awareness', 'blending-segmenting'].map(category => {
+            {['attention', 'memory', 'learning-style', 'critical-thinking', 'perception', 'oral-language', 'phonics', 'blending-segmenting', 'spelling', 'writing', 'vocabulary'].map(category => {
               const categoryResults = results.filter(r => remapQuizCategory(r) === category);
               if (categoryResults.length === 0) return null;
               
@@ -545,7 +560,7 @@ Assessment Results:
                         : null;
                       
                       return (
-                        <div key={result.quizId} className={`border-l-4 pl-4 ${getCategoryColor(category).replace('text-', 'border-')}`}>
+                        <div key={`${category}-${result.quizId}`} className={`border-l-4 pl-4 ${getCategoryColor(category).replace('text-', 'border-')}`}>
                           <div className="flex items-start justify-between mb-3">
                             <div>
                               <h5 className="font-semibold text-gray-800">{result.quizName} <span className="text-gray-500 font-normal">({getSubcategoryName(category)})</span></h5>
@@ -645,8 +660,8 @@ Assessment Results:
               <div>
                 <h4 className="font-semibold text-green-900 mb-2">🌟 Strengths to Celebrate:</h4>
                 <ul className="text-green-800 text-sm space-y-1 ml-4">
-                  {results.filter(r => r.percentage >= 85).map(result => (
-                    <li key={result.quizId} className="list-disc">
+                  {results.filter(r => r.percentage >= 85).map((result, idx) => (
+                    <li key={`strength-${result.quizId}-${idx}`} className="list-disc">
                       <strong>{result.quizName}:</strong> Excellent performance showing mastery in this area
                     </li>
                   ))}
@@ -659,8 +674,8 @@ Assessment Results:
               <div>
                 <h4 className="font-semibold text-green-900 mb-2">📈 Areas for Growth:</h4>
                 <ul className="text-green-800 text-sm space-y-1 ml-4">
-                  {results.filter(r => r.percentage < 75).map(result => (
-                    <li key={result.quizId} className="list-disc">
+                  {results.filter(r => r.percentage < 75).map((result, idx) => (
+                    <li key={`growth-${result.quizId}-${idx}`} className="list-disc">
                       <strong>{getSubcategoryName(remapQuizCategory(result))}:</strong> Consider additional practice and support
                     </li>
                   ))}

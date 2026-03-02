@@ -172,7 +172,7 @@ const LogicalSequencingQuiz: React.FC = () => {
     ProgressTracker.saveQuizResult({
       quizId: 'logical-sequencing-quiz',
       quizName: 'Logical Sequencing',
-      subcategory: 'logical-reasoning',
+      subcategory: 'perception',
       score: score,
       totalQuestions: questions.length,
       percentage: percentage,

@@ -2,17 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckCircle, Circle, Trash2, Loader, LogIn,
-  ChevronDown, ChevronUp, Brain, MessageSquare, Download,
+  ChevronDown, ChevronUp, Brain, MessageSquare, BookOpen, Download,
 } from 'lucide-react';
 import {
   ProgressTracker,
   MIND_QUIZZES,
   ORAL_QUIZZES,
-  ALL_TRACKED_QUIZZES,
+  ACADEMIC_QUIZZES,
   type ProgressData,
   type QuizResult,
 } from '../utils/progressTracker';
-import MindSectionReport from './MindSectionReport';
 import { generateReport } from '../services/reportService';
 import { useNavigate } from 'react-router-dom';
 import { logger } from '../utils/logger';
@@ -21,15 +20,21 @@ import { ROUTES } from '../routes';
 /* ─── helper maps ─────────────────────────────────────── */
 
 const subcategoryMeta: Record<string, { label: string; color: string; bg: string }> = {
-  'attention':          { label: 'Attention',          color: 'text-yellow-600', bg: 'bg-yellow-100' },
-  'memory':             { label: 'Memory',             color: 'text-orange-600', bg: 'bg-orange-100' },
-  'learning-style':     { label: 'Learning Style',     color: 'text-green-600',  bg: 'bg-green-100' },
-  'critical-thinking':  { label: 'Critical Thinking',  color: 'text-purple-600', bg: 'bg-purple-100' },
-  'perception':         { label: 'Perception',         color: 'text-indigo-600', bg: 'bg-indigo-100' },
-  'oral-language':      { label: 'Oral Language',      color: 'text-sky-600',    bg: 'bg-sky-100' },
-  'phonics':            { label: 'Beginning & Ending Sounds', color: 'text-pink-600',   bg: 'bg-pink-100' },
-  'phonics-awareness':  { label: 'Beginning & Ending Sounds', color: 'text-pink-600',   bg: 'bg-pink-100' },
-  'blending-segmenting':{ label: 'Blending & Segmenting', color: 'text-teal-600', bg: 'bg-teal-100' },
+  // Mind
+  'attention':          { label: 'Attention',              color: 'text-yellow-600', bg: 'bg-yellow-100' },
+  'memory':             { label: 'Memory',                 color: 'text-orange-600', bg: 'bg-orange-100' },
+  'learning-style':     { label: 'Learning Style',         color: 'text-green-600',  bg: 'bg-green-100' },
+  'critical-thinking':  { label: 'Critical Thinking',      color: 'text-purple-600', bg: 'bg-purple-100' },
+  'perception':         { label: 'Perception',             color: 'text-indigo-600', bg: 'bg-indigo-100' },
+  // Oral
+  'oral-language':      { label: 'Oral Language',          color: 'text-sky-600',    bg: 'bg-sky-100' },
+  'phonics':            { label: 'Beginning & Ending Sounds', color: 'text-pink-600', bg: 'bg-pink-100' },
+  'blending-segmenting':{ label: 'Blending & Segmenting', color: 'text-teal-600',   bg: 'bg-teal-100' },
+  // Academic
+  'spelling':           { label: 'Spelling',               color: 'text-violet-600', bg: 'bg-violet-100' },
+  'writing':            { label: 'Writing',                color: 'text-amber-600',  bg: 'bg-amber-100' },
+  'reading':            { label: 'Reading',                color: 'text-emerald-600', bg: 'bg-emerald-100' },
+  'vocabulary':         { label: 'Vocabulary',             color: 'text-rose-600',   bg: 'bg-rose-100' },
 };
 
 const getSubMeta = (sub: string) =>
@@ -38,25 +43,24 @@ const getSubMeta = (sub: string) =>
 const perfLabel = (pct: number) =>
   pct >= 90 ? 'Excellent' : pct >= 75 ? 'Good' : pct >= 60 ? 'Developing' : 'Needs Support';
 
+type CategoryTab = 'cognition' | 'oral' | 'academic';
+
 /* ─── component ───────────────────────────────────────── */
 
 interface AssessmentProgressBarProps {
   onShowReport?: () => void;
-  /** Restrict display to mind or oral only (default: both) */
-  filter?: 'mind' | 'oral' | 'all';
   className?: string;
 }
 
 const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
   onShowReport,
-  filter = 'all',
   className = '',
 }) => {
   const navigate = useNavigate();
 
   const [progress, setProgress] = useState<ProgressData>(() => ProgressTracker.getProgress());
   const [showDetails, setShowDetails] = useState(false);
-  const [detailTab, setDetailTab] = useState<'mind' | 'oral'>('mind');
+  const [detailTab, setDetailTab] = useState<CategoryTab>('cognition');
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [showClearSuccess, setShowClearSuccess] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
@@ -66,19 +70,12 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
 
   /* ── load data ─── */
   useEffect(() => {
-    const loadProgress = async () => {
-      setIsLoading(true);
-      const { supabase } = await import('../supabase-client');
-      const { data: { session } } = await supabase.auth.getSession();
-      const authenticated = !!session?.user;
-      setIsAuthenticated(authenticated);
-      if (authenticated) {
-        await ProgressTracker.loadFromDatabase();
-      }
-      setProgress(ProgressTracker.getProgress());
-      setIsLoading(false);
-    };
-    loadProgress();
+    // Read from localStorage immediately; the auth listener in
+    // progressTracker.ts already calls loadFromDatabase() once on
+    // INITIAL_SESSION/SIGNED_IN, so we don't duplicate that call here.
+    setProgress(ProgressTracker.getProgress());
+    setIsAuthenticated(ProgressTracker.isAuthenticated());
+    setIsLoading(false);
 
     const handleProgressUpdate = (event: CustomEvent) => {
       setProgress(event.detail);
@@ -91,28 +88,30 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
 
     window.addEventListener('mindProgressUpdated', handleProgressUpdate as EventListener);
     window.addEventListener('focus', handleFocus);
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) handleFocus(); });
+    const handleVisibility = () => { if (!document.hidden) handleFocus(); };
+    document.addEventListener('visibilitychange', handleVisibility);
     return () => {
       window.removeEventListener('mindProgressUpdated', handleProgressUpdate as EventListener);
       window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, []);
 
   /* ── derived data ─── */
-  const mindResults = progress.mindSectionResults;
+  const mindResults = progress.mindSectionResults ?? [];
   const oralResults = progress.oralSectionResults ?? [];
+  const academicResults = progress.academicSectionResults ?? [];
 
-  const visibleMindQuizzes = filter === 'oral' ? [] : MIND_QUIZZES;
-  const visibleOralQuizzes = filter === 'mind' ? [] : ORAL_QUIZZES;
-  const totalVisible = visibleMindQuizzes.length + visibleOralQuizzes.length;
+  const totalQuizzes = MIND_QUIZZES.length + ORAL_QUIZZES.length + ACADEMIC_QUIZZES.length;
+  const mindIds = new Set(MIND_QUIZZES.map(q => q.id));
+  const oralIds = new Set(ORAL_QUIZZES.map(q => q.id));
+  const acadIds = new Set(ACADEMIC_QUIZZES.map(q => q.id));
+  const mindCount = mindResults.filter(r => mindIds.has(r.quizId)).length;
+  const oralCount = oralResults.filter(r => oralIds.has(r.quizId)).length;
+  const academicCount = academicResults.filter(r => acadIds.has(r.quizId)).length;
+  const completedCount = mindCount + oralCount + academicCount;
 
-  const mindCompletedCount = mindResults.length;
-  const oralCompletedCount = oralResults.length;
-  const completedCount =
-    (filter === 'oral' ? 0 : mindCompletedCount) +
-    (filter === 'mind' ? 0 : oralCompletedCount);
-
-  const overallPct = totalVisible > 0 ? Math.round((completedCount / totalVisible) * 100) : 0;
+  const overallPct = totalQuizzes > 0 ? Math.round((completedCount / totalQuizzes) * 100) : 0;
   const hasAnyProgress = completedCount > 0;
 
   /* ── handlers ─── */
@@ -137,8 +136,8 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
         setSaveStatus('success');
         logger.log('Report saved:', result.report?.id);
 
-        // Download English PDF
         const dateSuffix = new Date().toISOString().split('T')[0];
+        // Download English PDF
         if (result.downloadUrl) {
           try {
             const pdfResp = await fetch(result.downloadUrl);
@@ -152,11 +151,9 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
               a.click();
               document.body.removeChild(a);
               URL.revokeObjectURL(url);
-            } else {
-              logger.error('EN PDF download HTTP error:', pdfResp.status);
             }
           } catch (dlErr) {
-            logger.error('EN PDF download fetch error:', dlErr);
+            logger.error('EN PDF download error:', dlErr);
           }
         }
         // Download Arabic PDF
@@ -173,11 +170,9 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
               a.click();
               document.body.removeChild(a);
               URL.revokeObjectURL(url);
-            } else {
-              logger.error('AR PDF download HTTP error:', pdfResp.status);
             }
           } catch (dlErr) {
-            logger.error('AR PDF download fetch error:', dlErr);
+            logger.error('AR PDF download error:', dlErr);
           }
         }
       } else {
@@ -279,6 +274,53 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
       );
     });
 
+  /* ── category mini-bar ─── */
+  const MiniBar = ({
+    icon: Icon,
+    label,
+    completed,
+    total,
+    barColor,
+    bgColor,
+    textColor,
+  }: {
+    icon: React.FC<{ size?: number; className?: string }>;
+    label: string;
+    completed: number;
+    total: number;
+    barColor: string;
+    bgColor: string;
+    textColor: string;
+  }) => {
+    const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+    return (
+      <div className={`${bgColor} rounded-xl p-3`}>
+        <div className="flex items-center space-x-2 mb-1">
+          <Icon size={14} className={textColor} />
+          <span className={`text-xs font-semibold ${textColor}`}>{label}</span>
+          <span className={`ml-auto text-xs font-bold ${textColor}`}>
+            {completed}/{total}
+          </span>
+        </div>
+        <div className={`w-full rounded-full h-1.5 ${bgColor === 'bg-indigo-50' ? 'bg-indigo-200' : bgColor === 'bg-sky-50' ? 'bg-sky-200' : 'bg-amber-200'}`}>
+          <motion.div
+            className={`h-1.5 ${barColor} rounded-full`}
+            initial={{ width: 0 }}
+            animate={{ width: `${pct}%` }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+          />
+        </div>
+      </div>
+    );
+  };
+
+  /* ── tab config ─── */
+  const tabs: { key: CategoryTab; icon: React.FC<{ size?: number; className?: string }>; label: string; completed: number; total: number; color: string }[] = [
+    { key: 'cognition', icon: Brain, label: 'Cognition', completed: mindCount, total: MIND_QUIZZES.length, color: 'indigo' },
+    { key: 'oral', icon: MessageSquare, label: 'Oral', completed: oralCount, total: ORAL_QUIZZES.length, color: 'sky' },
+    { key: 'academic', icon: BookOpen, label: 'Academic', completed: academicCount, total: ACADEMIC_QUIZZES.length, color: 'amber' },
+  ];
+
   /* ── main render ─── */
   return (
     <div className={`bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50 ${className}`}>
@@ -287,7 +329,7 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
         <div>
           <h3 className="text-lg font-bold text-gray-800">Assessment Progress</h3>
           <p className="text-sm text-gray-600">
-            {completedCount} of {totalVisible} quizzes completed
+            {completedCount} of {totalQuizzes} quizzes completed
           </p>
         </div>
         <div className="flex items-center space-x-3">
@@ -346,51 +388,36 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
         </div>
       </div>
 
-      {/* Sub-bars for mind & oral */}
-      {filter === 'all' && (
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          {/* Mind mini-bar */}
-          <div className="bg-indigo-50 rounded-xl p-3">
-            <div className="flex items-center space-x-2 mb-1">
-              <Brain size={14} className="text-indigo-600" />
-              <span className="text-xs font-semibold text-indigo-700">Mind</span>
-              <span className="ml-auto text-xs font-bold text-indigo-700">
-                {mindCompletedCount}/{MIND_QUIZZES.length}
-              </span>
-            </div>
-            <div className="w-full bg-indigo-200 rounded-full h-1.5">
-              <motion.div
-                className="h-1.5 bg-indigo-500 rounded-full"
-                initial={{ width: 0 }}
-                animate={{
-                  width: `${MIND_QUIZZES.length > 0 ? Math.round((mindCompletedCount / MIND_QUIZZES.length) * 100) : 0}%`,
-                }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-              />
-            </div>
-          </div>
-          {/* Oral mini-bar */}
-          <div className="bg-sky-50 rounded-xl p-3">
-            <div className="flex items-center space-x-2 mb-1">
-              <MessageSquare size={14} className="text-sky-600" />
-              <span className="text-xs font-semibold text-sky-700">Oral Language</span>
-              <span className="ml-auto text-xs font-bold text-sky-700">
-                {oralCompletedCount}/{ORAL_QUIZZES.length}
-              </span>
-            </div>
-            <div className="w-full bg-sky-200 rounded-full h-1.5">
-              <motion.div
-                className="h-1.5 bg-sky-500 rounded-full"
-                initial={{ width: 0 }}
-                animate={{
-                  width: `${ORAL_QUIZZES.length > 0 ? Math.round((oralCompletedCount / ORAL_QUIZZES.length) * 100) : 0}%`,
-                }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Three category mini-bars */}
+      <div className="grid grid-cols-3 gap-3 mb-4">
+        <MiniBar
+          icon={Brain}
+          label="Cognition"
+          completed={mindCount}
+          total={MIND_QUIZZES.length}
+          barColor="bg-indigo-500"
+          bgColor="bg-indigo-50"
+          textColor="text-indigo-700"
+        />
+        <MiniBar
+          icon={MessageSquare}
+          label="Oral Skills"
+          completed={oralCount}
+          total={ORAL_QUIZZES.length}
+          barColor="bg-sky-500"
+          bgColor="bg-sky-50"
+          textColor="text-sky-700"
+        />
+        <MiniBar
+          icon={BookOpen}
+          label="Academic"
+          completed={academicCount}
+          total={ACADEMIC_QUIZZES.length}
+          barColor="bg-amber-500"
+          bgColor="bg-amber-50"
+          textColor="text-amber-700"
+        />
+      </div>
 
       {/* Success message */}
       <AnimatePresence>
@@ -401,12 +428,12 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
             exit={{ opacity: 0, y: -10 }}
             className="mb-4 p-3 bg-green-100 border border-green-300 rounded-lg text-green-700 text-sm font-medium text-center"
           >
-            ✅ Progress cleared successfully!
+            Progress cleared successfully!
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Action button — generates report on server + downloads PDF */}
+      {/* Generate Report button */}
       {hasAnyProgress && (
         <div className="flex gap-3 mb-4">
           <motion.button
@@ -443,38 +470,34 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
             className="border-t border-gray-200 pt-4"
           >
             {/* Tabs */}
-            {filter === 'all' && (
-              <div className="flex space-x-2 mb-4">
-                <button
-                  onClick={() => setDetailTab('mind')}
-                  className={`flex items-center space-x-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    detailTab === 'mind'
-                      ? 'bg-indigo-100 text-indigo-700'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  <Brain size={14} />
-                  <span>Mind ({mindCompletedCount}/{MIND_QUIZZES.length})</span>
-                </button>
-                <button
-                  onClick={() => setDetailTab('oral')}
-                  className={`flex items-center space-x-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    detailTab === 'oral'
-                      ? 'bg-sky-100 text-sky-700'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  <MessageSquare size={14} />
-                  <span>Oral ({oralCompletedCount}/{ORAL_QUIZZES.length})</span>
-                </button>
-              </div>
-            )}
+            <div className="flex space-x-2 mb-4">
+              {tabs.map((t) => {
+                const active = detailTab === t.key;
+                const Icon = t.icon;
+                const colorMap: Record<string, { active: string; inactive: string }> = {
+                  indigo: { active: 'bg-indigo-100 text-indigo-700', inactive: 'text-gray-600 hover:bg-gray-100' },
+                  sky:    { active: 'bg-sky-100 text-sky-700',       inactive: 'text-gray-600 hover:bg-gray-100' },
+                  amber:  { active: 'bg-amber-100 text-amber-700',  inactive: 'text-gray-600 hover:bg-gray-100' },
+                };
+                return (
+                  <button
+                    key={t.key}
+                    onClick={() => setDetailTab(t.key)}
+                    className={`flex items-center space-x-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      active ? colorMap[t.color].active : colorMap[t.color].inactive
+                    }`}
+                  >
+                    <Icon size={14} />
+                    <span>{t.label} ({t.completed}/{t.total})</span>
+                  </button>
+                );
+              })}
+            </div>
 
             <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
-              {(filter === 'mind' || (filter === 'all' && detailTab === 'mind')) &&
-                renderQuizList(MIND_QUIZZES, mindResults)}
-              {(filter === 'oral' || (filter === 'all' && detailTab === 'oral')) &&
-                renderQuizList(ORAL_QUIZZES, oralResults)}
+              {detailTab === 'cognition' && renderQuizList(MIND_QUIZZES, mindResults)}
+              {detailTab === 'oral' && renderQuizList(ORAL_QUIZZES, oralResults)}
+              {detailTab === 'academic' && renderQuizList(ACADEMIC_QUIZZES, academicResults)}
             </div>
           </motion.div>
         )}

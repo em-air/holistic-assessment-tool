@@ -260,7 +260,7 @@ const MemoryAssessment: React.FC = () => {
         });
         setGamePhase('results');
 
-        const quizId = selectedType === 'sequence_recall' ? 'picture-sequence' : 'missing-object';
+        const quizId = selectedType === 'sequence_recall' ? 'picture-sequence' : 'missing-object-quiz';
         const quizName = selectedType === 'sequence_recall' ? 'Picture Sequence' : 'Missing Object';
 
         ProgressTracker.saveQuizResult({

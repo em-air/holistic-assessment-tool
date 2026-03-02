@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getWordsByGrade, getGradeDescription, SpellingWord } from '../data/spellingData';
-import { saveQuizResult } from '../services/quizResultsService';
+import { ProgressTracker } from '../utils/progressTracker';
 import { logger } from '../utils/logger';
 import { QuizProgressBar, QuizNavigation, QuizResultsScreen } from '../components/quiz';
 import { useSpeech } from '../hooks';
@@ -53,22 +53,19 @@ const SpellingTest = () => {
         (answers[word.id] || '').toLowerCase().trim() === word.word.toLowerCase().trim()
       ).length;
 
-      saveQuizResult({
-        quiz_id: 'spelling-test',
-        quiz_name: `Spelling Test - Grade ${grade}`,
+      ProgressTracker.saveQuizResult({
+        quizId: 'spelling-test',
+        quizName: `Spelling Test - Grade ${grade}`,
         category: 'academic',
         subcategory: 'spelling',
         score: correctCount,
-        total_questions: words.length,
-        time_spent: timeSpent,
-        grade_level: `Grade ${grade}`,
-      }).then(result => {
-        if (result.success) {
-          logger.log('Spelling Test result saved to database');
-        }
-      }).catch(err => {
-        logger.error('Failed to save Spelling Test result:', err);
+        totalQuestions: words.length,
+        percentage: words.length > 0 ? Math.round((correctCount / words.length) * 100) : 0,
+        timeSpent,
+        completedAt: new Date().toISOString(),
+        gradeLevel: `Grade ${grade}`,
       });
+      logger.log('Spelling Test result saved via ProgressTracker');
     }
   }, [showResults, answers, words, grade]);
 

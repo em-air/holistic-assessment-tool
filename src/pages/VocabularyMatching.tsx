@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import FloatingBackground from '../components/FloatingBackground';
+import { ProgressTracker } from '../utils/progressTracker';
+import { logger } from '../utils/logger';
 
 interface VocabularyItem {
   id: string;
@@ -27,6 +29,28 @@ const VocabularyMatching: React.FC = () => {
   const [score, setScore] = useState<number>(0);
   const [showResults, setShowResults] = useState<boolean>(false);
   const [completed, setCompleted] = useState<boolean>(false);
+  const startTimeRef = useRef<number>(Date.now());
+
+  // Save results to progress tracker when completed
+  useEffect(() => {
+    if (completed && showResults) {
+      const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
+      ProgressTracker.saveQuizResult({
+        quizId: 'vocabulary-matching',
+        quizName: `Vocabulary Matching - Grade ${selectedGrade}`,
+        category: 'academic',
+        subcategory: 'vocabulary',
+        score,
+        totalQuestions: 100,
+        percentage: score,
+        timeSpent,
+        completedAt: new Date().toISOString(),
+        gradeLevel: `Grade ${selectedGrade}`,
+        additionalData: { level: selectedLevel },
+      });
+      logger.log('Vocabulary Matching result saved via ProgressTracker');
+    }
+  }, [completed, showResults]);
 
   // Vocabulary data for each grade level with 3 levels each containing 5 words
   const vocabularyData: { [key: number]: { [key: number]: VocabularyItem[] } } = {
@@ -158,6 +182,7 @@ const VocabularyMatching: React.FC = () => {
     setScore(0);
     setShowResults(false);
     setCompleted(false);
+    startTimeRef.current = Date.now();
   }, [selectedGrade, selectedLevel]);
 
   // Reset to level 1 when grade changes

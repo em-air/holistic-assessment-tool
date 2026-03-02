@@ -32,6 +32,8 @@ const OralLanguageQuiz: React.FC = () => {
   const [showSparkle, setShowSparkle] = useState(false);
   const [sequenceOrder, setSequenceOrder] = useState<{[key: string]: number}>({});
   const startTimeRef = useRef<number>(Date.now());
+  // Track the original navigation categoryId (before remapping) for correct quiz ID saving
+  const [originalCategoryId, setOriginalCategoryId] = useState<string | null>(null);
 
   // Save quiz results to database when quiz is completed
   useEffect(() => {
@@ -40,10 +42,13 @@ const OralLanguageQuiz: React.FC = () => {
       const categoryScore = quizScores[selectedCategory.id as keyof QuizScores];
       const percentage = Math.round((categoryScore.correct / categoryScore.total) * 100);
       
+      // Use original categoryId for quiz ID (e.g. 'story-sequencing' not 'storytelling')
+      const saveCategoryId = originalCategoryId || selectedCategory.id;
+      
       // Save to ProgressTracker (localStorage + DB sync)
       ProgressTracker.saveQuizResult({
-        quizId: `oral-language-${selectedCategory.id}`,
-        quizName: `Oral Language - ${selectedCategory.title}`,
+        quizId: `oral-language-${saveCategoryId}`,
+        quizName: `Oral Language - ${selectedCategory.title.en}`,
         category: 'oral',
         subcategory: 'oral-language',
         score: categoryScore.correct,
@@ -53,7 +58,7 @@ const OralLanguageQuiz: React.FC = () => {
         completedAt: new Date().toISOString(),
       });
     }
-  }, [showResults, selectedCategory, quizScores]);
+  }, [showResults, selectedCategory, quizScores, originalCategoryId]);
 
   const t = oralLanguageTranslations[language];
   const isRTL = language === 'ar';
@@ -65,6 +70,8 @@ const OralLanguageQuiz: React.FC = () => {
   useEffect(() => {
     const state = location.state as { categoryId?: string } | null;
     if (state?.categoryId && !selectedCategory) {
+      // Remember the original category ID for saving (e.g. 'story-sequencing')
+      setOriginalCategoryId(state.categoryId);
       // Map story-sequencing to storytelling (the actual category ID in the data)
       const categoryId = state.categoryId === 'story-sequencing' ? 'storytelling' : state.categoryId;
       const category = oralLanguageCategories.find(c => c.id === categoryId);
@@ -125,6 +132,11 @@ const OralLanguageQuiz: React.FC = () => {
       return;
     }
     
+    // Map data category IDs to the quiz IDs expected by ProgressTracker
+    if (!originalCategoryId) {
+      setOriginalCategoryId(category.id === 'storytelling' ? 'story-sequencing' : category.id);
+    }
+    
     setSelectedCategory(category);
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
@@ -135,21 +147,9 @@ const OralLanguageQuiz: React.FC = () => {
     startTimeRef.current = Date.now();  // Reset timer when starting a quiz
   };
 
-  // Reset quiz
+  // Reset quiz — navigate back to the oral language selection screen
   const resetQuiz = () => {
-    setSelectedCategory(null);
-    setCurrentQuestionIndex(0);
-    setSelectedAnswer(null);
-    setShowFeedback(false);
-    setIsCorrect(false);
-    setShowResults(false);
-    setSequenceOrder({});
-    setQuizScores({
-      vocabulary: { correct: 0, total: 0 },
-      'sentence-building': { correct: 0, total: 0 },
-      storytelling: { correct: 0, total: 0 },
-      'story-retell': { correct: 0, total: 0 }
-    });
+    navigate(oralLanguageSelectionRoute('oral-skills'));
   };
 
   // Calculate overall performance

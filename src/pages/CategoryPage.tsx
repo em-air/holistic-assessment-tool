@@ -84,16 +84,13 @@ const CategoryPage: React.FC = () => {
           <p className="text-stone-700 text-lg max-w-2xl mx-auto">{category.description}</p>
         </div>
 
-        {/* Progress Bar for Mind/Oral Skills Section */}
-        {(categoryId === 'mind' || categoryId === 'oral-skills') && (
-          <div className="max-w-4xl mx-auto mb-8">
-            <AssessmentProgressBar
-              onShowReport={() => setShowReport(true)}
-              filter={categoryId === 'mind' ? 'mind' : 'oral'}
-              className="mb-6"
-            />
-          </div>
-        )}
+        {/* Unified Progress Bar */}
+        <div className="max-w-4xl mx-auto mb-8">
+          <AssessmentProgressBar
+            onShowReport={() => setShowReport(true)}
+            className="mb-6"
+          />
+        </div>
 
         {/* Subcategories */}
         <div className="max-w-4xl mx-auto">

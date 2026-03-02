@@ -22,7 +22,7 @@ import {
     SpellingSession,
     SpellingQuizResult,
 } from '../services/secureQuizService';
-import { saveQuizResult } from '../services/quizResultsService';
+import { ProgressTracker } from '../utils/progressTracker';
 import { logger } from '../utils/logger';
 import FloatingBackground from '../components/FloatingBackground';
 import { ROUTES } from '../routes';
@@ -136,18 +136,18 @@ const SecureSpellingTest: React.FC = () => {
             if (results) {
                 setFinalResults(results);
 
-                // Save to database
-                saveQuizResult({
-                    quiz_id: 'spelling-test-secure',
-                    quiz_name: `Spelling Test - Grade ${gradeNum}`,
+                // Save via ProgressTracker (also persists to database)
+                ProgressTracker.saveQuizResult({
+                    quizId: 'spelling-test',
+                    quizName: `Spelling Test - Grade ${gradeNum}`,
                     category: 'academic',
                     subcategory: 'spelling',
                     score: results.score,
-                    total_questions: results.totalQuestions,
-                    time_spent: results.timeSpent,
-                    grade_level: `Grade ${gradeNum}`,
-                }).catch(err => {
-                    logger.error('Failed to save quiz result:', err);
+                    totalQuestions: results.totalQuestions,
+                    percentage: results.totalQuestions > 0 ? Math.round((results.score / results.totalQuestions) * 100) : 0,
+                    timeSpent: results.timeSpent,
+                    completedAt: new Date().toISOString(),
+                    gradeLevel: `Grade ${gradeNum}`,
                 });
             }
             setShowQuizComplete(true);

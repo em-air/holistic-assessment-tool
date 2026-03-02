@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getWritingDataByGrade, WritingTopic, GradeWritingData } from '../data/writingData';
 import { evaluateWritingWithGemini, WritingEvaluation } from '../services/geminiService';
-import { saveQuizResult } from '../services/quizResultsService';
+import { ProgressTracker } from '../utils/progressTracker';
 import { ArrowLeft, Clock, Target, BookOpen, Lightbulb, CheckCircle, Star, RefreshCw, Sparkles, Brain } from 'lucide-react';
 import { logger } from '../utils/logger';
 import { ROUTES } from '../routes';
@@ -21,32 +21,30 @@ const WritingTest: React.FC = () => {
   const [wordCount, setWordCount] = useState(0);
   const startTimeRef = useRef<number>(Date.now());
 
-  // Save results to database when evaluation is complete
+  // Save results to progress tracker (and database) when evaluation is complete
   useEffect(() => {
     if (evaluation && selectedTopic && grade) {
       const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
-      
-      saveQuizResult({
-        quiz_id: 'writing-test',
-        quiz_name: `Writing Test - Grade ${grade}`,
+      const score = Math.round(evaluation.overallScore);
+
+      ProgressTracker.saveQuizResult({
+        quizId: 'writing-test',
+        quizName: `Writing Test - Grade ${grade}`,
         category: 'academic',
         subcategory: 'writing',
-        score: Math.round(evaluation.overallScore),
-        total_questions: evaluation.maxScore,
-        time_spent: timeSpent,
-        grade_level: `Grade ${grade}`,
-        additional_data: {
+        score,
+        totalQuestions: evaluation.maxScore,
+        percentage: evaluation.maxScore > 0 ? Math.round((score / evaluation.maxScore) * 100) : 0,
+        timeSpent,
+        completedAt: new Date().toISOString(),
+        gradeLevel: `Grade ${grade}`,
+        additionalData: {
           topic: selectedTopic.title,
           scores: evaluation.scores,
           wordCount,
         },
-      }).then(result => {
-        if (result.success) {
-          logger.log('Writing Test result saved to database');
-        }
-      }).catch(err => {
-        logger.error('Failed to save Writing Test result:', err);
       });
+      logger.log('Writing Test result saved via ProgressTracker');
     }
   }, [evaluation, selectedTopic, grade, wordCount]);
 

@@ -120,6 +120,30 @@ export const reportTranslations = {
     en: 'Perception involves how your child interprets and understands visual and spatial information.',
     ar: 'يتعلق الإدراك بكيفية تفسير طفلك وفهمه للمعلومات البصرية والمكانية.',
   },
+  'desc.oral-language': {
+    en: 'Oral language measures your child\'s ability to understand and use spoken language effectively.',
+    ar: 'تقيس اللغة الشفهية قدرة طفلك على فهم واستخدام اللغة المنطوقة بفعالية.',
+  },
+  'desc.phonics': {
+    en: 'Phonics assesses your child\'s knowledge of letter-sound relationships and decoding skills.',
+    ar: 'يقيّم الصوتيات معرفة طفلك بالعلاقة بين الحروف والأصوات ومهارات فك الترميز.',
+  },
+  'desc.blending-segmenting': {
+    en: 'Blending and segmenting evaluates your child\'s ability to combine and break apart sounds in words.',
+    ar: 'يقيّم الدمج والتقسيم قدرة طفلك على دمج الأصوات وتفكيكها في الكلمات.',
+  },
+  'desc.spelling': {
+    en: 'Spelling assesses your child\'s ability to correctly spell words and apply spelling patterns.',
+    ar: 'يقيّم الإملاء قدرة طفلك على تهجئة الكلمات بشكل صحيح وتطبيق أنماط الإملاء.',
+  },
+  'desc.writing': {
+    en: 'Writing evaluates your child\'s ability to express ideas clearly through written text.',
+    ar: 'يقيّم الكتابة قدرة طفلك على التعبير عن الأفكار بوضوح من خلال النص المكتوب.',
+  },
+  'desc.vocabulary': {
+    en: 'Vocabulary measures your child\'s word knowledge and ability to match words with their meanings.',
+    ar: 'تقيس المفردات معرفة طفلك بالكلمات وقدرته على مطابقة الكلمات بمعانيها.',
+  },
 
   // ── Remaining assessments ─────────────────────────────────
   remainingAssessments: {
