@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 interface QuizQuestion {
   id: string | number;
@@ -46,7 +46,9 @@ export function useQuizState<T extends QuizQuestion>({
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   
   const startTimeRef = useRef<number>(Date.now());
+  const scoreRef = useRef<number>(0);
 
+  
   const totalQuestions = questions.length;
   const currentQuestion = questions[currentQuestionIndex];
   const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
@@ -58,7 +60,11 @@ export function useQuizState<T extends QuizQuestion>({
     setHasAnswered(true);
     
     if (correct) {
-      setScore(prev => prev + points);
+      setScore(prev => {
+        const newScore = prev + points;
+        scoreRef.current = newScore;
+        return newScore;
+      });
     }
   }, []);
 
@@ -70,9 +76,9 @@ export function useQuizState<T extends QuizQuestion>({
     } else {
       setIsComplete(true);
       const finalTimeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
-      onComplete?.(score + (isCorrect ? 1 : 0), totalQuestions, finalTimeSpent);
+      onComplete?.(scoreRef.current, totalQuestions, finalTimeSpent);
     }
-  }, [currentQuestionIndex, totalQuestions, score, isCorrect, onComplete]);
+  }, [currentQuestionIndex, totalQuestions, onComplete]);
 
   const previousQuestion = useCallback(() => {
     if (currentQuestionIndex > 0) {
@@ -85,6 +91,7 @@ export function useQuizState<T extends QuizQuestion>({
   const resetQuiz = useCallback(() => {
     setCurrentQuestionIndex(0);
     setScore(0);
+    scoreRef.current = 0;
     setIsComplete(false);
     setHasAnswered(false);
     setIsCorrect(null);

@@ -11,14 +11,19 @@ const NavigationBar: React.FC = () => {
   const location = useLocation();
   const { user, signOut: authSignOut } = useAuth();
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {
+    if (isSigningOut) return;
+    setIsSigningOut(true);
     try {
       await authSignOut();
-      setShowSignOutConfirm(false);
-      navigate(ROUTES.HOME);
     } catch (error) {
       logger.error('Error signing out:', error);
+    } finally {
+      setShowSignOutConfirm(false);
+      setIsSigningOut(false);
+      navigate(ROUTES.HOME);
     }
   };
 
@@ -58,16 +63,16 @@ const NavigationBar: React.FC = () => {
   // Sign Out Confirmation Modal
   const SignOutModal = () => (
     <motion.div
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      onClick={() => { if (!isSigningOut) setShowSignOutConfirm(false); }}
     >
       <motion.div
         className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-gray-100"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
+        onClick={(e: React.MouseEvent) => e.stopPropagation()}
       >
         <div className="text-center mb-6">
           <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -79,15 +84,17 @@ const NavigationBar: React.FC = () => {
         <div className="flex space-x-3">
           <button
             onClick={() => setShowSignOutConfirm(false)}
-            className="flex-1 px-6 py-3 border border-gray-300 rounded-2xl text-gray-700 hover:bg-gray-50 transition-all duration-300 font-semibold"
+            disabled={isSigningOut}
+            className="flex-1 px-6 py-3 border border-gray-300 rounded-2xl text-gray-700 hover:bg-gray-50 transition-all duration-300 font-semibold disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleSignOut}
-            className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl hover:from-red-600 hover:to-red-700 transition-all duration-300 font-semibold shadow-lg"
+            disabled={isSigningOut}
+            className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl hover:from-red-600 hover:to-red-700 transition-all duration-300 font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Sign Out
+            {isSigningOut ? 'Signing Out...' : 'Sign Out'}
           </button>
         </div>
       </motion.div>

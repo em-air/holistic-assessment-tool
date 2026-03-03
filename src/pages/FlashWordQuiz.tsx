@@ -86,6 +86,7 @@ const FlashWordQuiz: React.FC = () => {
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [isCorrect, setIsCorrect] = useState(false);
   const [score, setScore] = useState(0);
+  const scoreRef = React.useRef(0);
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [startTime] = useState<Date>(new Date());
@@ -99,6 +100,7 @@ const FlashWordQuiz: React.FC = () => {
     setCurrentWords(words);
     setCurrentWordIndex(0);
     setScore(0);
+    scoreRef.current = 0;
     setTotalAttempts(0);
     setIsComplete(false);
     setGamePhase('ready');
@@ -152,7 +154,11 @@ const FlashWordQuiz: React.FC = () => {
     setGamePhase('feedback');
 
     if (isAnswerCorrect) {
-      setScore(prev => prev + 1);
+      setScore(prev => {
+        const newScore = prev + 1;
+        scoreRef.current = newScore;
+        return newScore;
+      });
       setFeedbackMessage('Correct! Great memory! 🌟');
 
       // Auto-advance after 1.5 seconds
@@ -179,14 +185,15 @@ const FlashWordQuiz: React.FC = () => {
 
   // Save results to progress tracker
   const saveResults = () => {
+    const finalScore = scoreRef.current;
     const timeSpent = Math.round((new Date().getTime() - startTime.getTime()) / 1000);
-    const percentage = Math.round((score / currentWords.length) * 100);
+    const percentage = Math.round((finalScore / currentWords.length) * 100);
 
     ProgressTracker.saveQuizResult({
       quizId: 'flash-word-quiz',
       quizName: 'Flash Word Quiz',
       subcategory: 'memory',
-      score: score,
+      score: finalScore,
       totalQuestions: currentWords.length,
       percentage: percentage,
       timeSpent: timeSpent,

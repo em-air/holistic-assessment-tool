@@ -212,9 +212,11 @@ const AttentionQuiz: React.FC = () => {
     setQuizType(null);
   };
 
-  const handleBackToMind = () => {
-    // Save quiz result to progress tracker if completed
-    if (gameState === 'complete' && quizType) {
+  // Save quiz result automatically when game completes
+  const hasSavedRef = React.useRef(false);
+  useEffect(() => {
+    if ((gameState === 'complete') && quizType && !hasSavedRef.current) {
+      hasSavedRef.current = true;
       const maxPossibleScore = Array.from({ length: maxLevel }, (_, i) => (i + 1) * 10).reduce((a, b) => a + b, 0);
       const percentage = Math.round((score / maxPossibleScore) * 100);
 
@@ -229,7 +231,9 @@ const AttentionQuiz: React.FC = () => {
         completedAt: new Date().toISOString()
       });
     }
+  }, [gameState, quizType, score, maxLevel, startTime]);
 
+  const handleBackToMind = () => {
     navigate(ROUTES.CATEGORY_MIND);
   };
 

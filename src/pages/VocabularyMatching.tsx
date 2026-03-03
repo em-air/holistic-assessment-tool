@@ -35,14 +35,16 @@ const VocabularyMatching: React.FC = () => {
   useEffect(() => {
     if (completed && showResults) {
       const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
+      const totalWords = vocabularyWords.length || 5;
+      const percentage = totalWords > 0 ? Math.round((score / totalWords) * 100) : 0;
       ProgressTracker.saveQuizResult({
         quizId: 'vocabulary-matching',
         quizName: `Vocabulary Matching - Grade ${selectedGrade}`,
         category: 'academic',
         subcategory: 'vocabulary',
         score,
-        totalQuestions: 100,
-        percentage: score,
+        totalQuestions: totalWords,
+        percentage,
         timeSpent,
         completedAt: new Date().toISOString(),
         gradeLevel: `Grade ${selectedGrade}`,

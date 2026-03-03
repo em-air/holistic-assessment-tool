@@ -138,9 +138,11 @@ const MemoryQuiz: React.FC = () => {
     generateTiles();
   }, [generateTiles]);
 
-  // Handle game completion and progress tracking
+  // Handle game completion and progress tracking (save exactly once)
+  const hasSavedResultRef = React.useRef(false);
   useEffect(() => {
-    if (gameState === 'complete' || gameState === 'out-of-tries') {
+    if ((gameState === 'complete' || gameState === 'out-of-tries') && !hasSavedResultRef.current) {
+      hasSavedResultRef.current = true;
       // Save progress to tracker when game completes or runs out of tries
       const maxPossibleScore = Array.from({ length: maxLevel }, (_, i) => (i + 1) * 10).reduce((a, b) => a + b, 0);
       const completedLevels = gameState === 'complete' ? maxLevel : Math.max(currentLevel - 1, 0);
@@ -161,13 +163,14 @@ const MemoryQuiz: React.FC = () => {
         }
       });
     }
-  }, [gameState, score, maxLevel, startTime, currentLevel, attemptsPerLevel]);
+  }, [gameState]);
 
   const resetGame = () => {
     setCurrentLevel(1);
     setScore(0);
     setAttemptsPerLevel({});
     setCurrentLevelAttempts(0);
+    hasSavedResultRef.current = false;
     generateTiles();
   };
 
