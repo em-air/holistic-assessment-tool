@@ -23,12 +23,7 @@ const QuizPage = lazy(() => import('./pages/QuizPage'));
 // Admin pages
 const AdminReports = lazy(() => import('./pages/AdminReports'));
 
-// Phonics & Sound quizzes
-const StartingEndingSoundQuiz = lazy(() => import('./pages/StartingEndingSoundQuiz'));
-const StartingEndingSoundGradeSelector = lazy(() => import('./pages/StartingEndingSoundGradeSelector'));
-const BlendingQuiz = lazy(() => import('./pages/BlendingQuiz'));
-const SegmentingQuiz = lazy(() => import('./pages/SegmentingQuiz'));
-const BlendingSegmentingSelection = lazy(() => import('./pages/BlendingSegmentingSelection'));
+// Phonics & Sound quizzes (removed from oral skills category)
 
 // Perception quizzes
 const PerceptionQuiz = lazy(() => import('./pages/PerceptionQuiz'));
@@ -113,15 +108,6 @@ const routeConfig: RouteEntry[] = [
   { path: ROUTES.ORAL_STORY_SEQUENCING, Component: OralLanguageQuiz },
   { path: ROUTES.ORAL_STORY_RETELL, Component: StoryRetellGradeSelector },
   { path: ROUTE_PATTERNS.ORAL_STORY_RETELL_GRADE, Component: StoryRetellQuiz },
-
-  // ── Phonics & Sound ───────────────────────────────────────────────
-  { path: ROUTES.STARTING_ENDING_SOUND, Component: StartingEndingSoundGradeSelector },
-  { path: ROUTE_PATTERNS.STARTING_ENDING_SOUND_GRADE, Component: StartingEndingSoundQuiz },
-
-  // ── Blending & Segmenting ─────────────────────────────────────────
-  { path: ROUTE_PATTERNS.BLENDING_SEGMENTING_SELECTION, Component: BlendingSegmentingSelection },
-  { path: ROUTE_PATTERNS.BLENDING_QUIZ, Component: BlendingQuiz },
-  { path: ROUTE_PATTERNS.SEGMENTING_QUIZ, Component: SegmentingQuiz },
 
   // ── Academic ──────────────────────────────────────────────────────
   { path: ROUTES.VOCABULARY_MATCHING, Component: VocabularyMatching },

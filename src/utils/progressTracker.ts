@@ -96,10 +96,6 @@ export const ORAL_QUIZZES = [
   { id: 'oral-language-sentence-building', name: 'Sentence Building', subcategory: 'oral-language', route: '/oral-language' },
   { id: 'oral-language-story-sequencing', name: 'Story Sequencing', subcategory: 'oral-language', route: '/oral-language' },
   { id: 'story-retell', name: 'Story Retell', subcategory: 'oral-language', route: '/story-retell' },
-  { id: 'phonics-quiz', name: 'Phonics Quiz', subcategory: 'phonics', route: '/phonics-quiz' },
-  { id: 'starting-ending-sound-quiz', name: 'Starting & Ending Sounds', subcategory: 'phonics', route: '/starting-ending-sound' },
-  { id: 'blending-quiz', name: 'Blending Quiz', subcategory: 'blending-segmenting', route: '/blending-quiz' },
-  { id: 'segmenting-quiz', name: 'Segmenting Quiz', subcategory: 'blending-segmenting', route: '/segmenting-quiz' },
 ];
 
 // Academic skills quiz configurations

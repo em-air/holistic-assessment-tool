@@ -6,7 +6,7 @@ import FloatingBackground from '../components/FloatingBackground';
 import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 import '../utils/testProgressUtils'; // For testing - adds window.addTestResults() and window.clearTestResults()
-import { ROUTES, categoryRoute, quizRoute, readingAssessmentRoute, blendingSegmentingSelectionRoute } from '../routes';
+import { ROUTES, categoryRoute, quizRoute, readingAssessmentRoute } from '../routes';
 
 const CategoryPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
@@ -38,10 +38,6 @@ const CategoryPage: React.FC = () => {
       navigate(ROUTES.ASSESSMENT_GENERATOR);
     } else if (subcategoryId === 'reading') {
       navigate(readingAssessmentRoute(categoryId!));
-    } else if (subcategoryId === 'phonics-awareness') {
-      navigate(ROUTES.STARTING_ENDING_SOUND);
-    } else if (subcategoryId === 'blending') {
-      navigate(blendingSegmentingSelectionRoute(categoryId!));
     } else if (subcategoryId === 'sentence-formation') {
       navigate(ROUTES.VOCABULARY_MATCHING);
     } else if (subcategoryId === 'learning-style') {
@@ -108,7 +104,7 @@ const CategoryPage: React.FC = () => {
                   <span className="text-stone-800 font-semibold">{subcategory.title}</span>
                 </div>
                 <div className="relative flex items-center space-x-3">
-                  {(subcategory.id === 'attention' || subcategory.id === 'perception' || subcategory.id === 'assessment-generator' || subcategory.id === 'reading' || subcategory.id === 'phonics-awareness' || subcategory.id === 'blending' || subcategory.id === 'sentence-formation' || subcategory.id === 'learning-style' || subcategory.id === 'oral-language' || subcategory.id === 'critical-thinking') ? (
+                  {(subcategory.id === 'attention' || subcategory.id === 'perception' || subcategory.id === 'assessment-generator' || subcategory.id === 'reading' || subcategory.id === 'sentence-formation' || subcategory.id === 'learning-style' || subcategory.id === 'oral-language' || subcategory.id === 'critical-thinking') ? (
                     <span className="text-emerald-600 text-sm font-medium">Available</span>
                   ) : (
                     <span className="text-stone-400 text-sm">Coming Soon</span>

@@ -146,7 +146,7 @@ export const assessmentCategories: AssessmentCategory[] = [
   {
     id: 'oral-skills',
     title: 'Oral Skills',
-    description: 'Evaluate oral language, reading, beginning and ending sounds, and blending.',
+    description: 'Evaluate oral language and reading skills.',
     color: 'oral',
     subcategories: [
       {
@@ -159,18 +159,6 @@ export const assessmentCategories: AssessmentCategory[] = [
         id: 'reading',
         title: 'Reading',
         color: 'bg-orange-500',
-        questions: []
-      },
-      {
-        id: 'phonics-awareness',
-        title: 'Beginning and Ending Sounds',
-        color: 'bg-yellow-500',
-        questions: []
-      },
-      {
-        id: 'blending',
-        title: 'Blending and Segmenting',
-        color: 'bg-green-500',
         questions: []
       }
     ]

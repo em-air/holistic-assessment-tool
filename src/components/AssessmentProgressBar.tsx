@@ -28,8 +28,7 @@ const subcategoryMeta: Record<string, { label: string; color: string; bg: string
   'perception':         { label: 'Perception',             color: 'text-indigo-600', bg: 'bg-indigo-100' },
   // Oral
   'oral-language':      { label: 'Oral Language',          color: 'text-sky-600',    bg: 'bg-sky-100' },
-  'phonics':            { label: 'Beginning & Ending Sounds', color: 'text-pink-600', bg: 'bg-pink-100' },
-  'blending-segmenting':{ label: 'Blending & Segmenting', color: 'text-teal-600',   bg: 'bg-teal-100' },
+
   // Academic
   'spelling':           { label: 'Spelling',               color: 'text-violet-600', bg: 'bg-violet-100' },
   'writing':            { label: 'Writing',                color: 'text-amber-600',  bg: 'bg-amber-100' },

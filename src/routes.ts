@@ -48,7 +48,7 @@ export const ROUTES = {
   ORAL_STORY_SEQUENCING: '/category/oral-skills/oral-language-selection/story-sequencing',
   ORAL_STORY_RETELL: '/category/oral-skills/oral-language-selection/story-retell',
 
-  // Phonics & Sound
+  // Phonics & Sound (kept for internal page references, removed from oral skills navigation)
   STARTING_ENDING_SOUND: '/starting-ending-sound-quiz',
 
   // ── Academic Skills ──────────────────────────────────────────────
@@ -83,10 +83,6 @@ export const ROUTES = {
 export const ROUTE_PATTERNS = {
   CATEGORY: '/category/:categoryId',
   QUIZ: '/quiz/:categoryId/:subcategoryId',
-  STARTING_ENDING_SOUND_GRADE: '/starting-ending-sound-quiz/:grade',
-  BLENDING_SEGMENTING_SELECTION: '/blending-segmenting-selection/:categoryId',
-  BLENDING_QUIZ: '/blending-quiz/:categoryId',
-  SEGMENTING_QUIZ: '/segmenting-quiz/:categoryId',
   LOGICAL_SEQUENCING_GRADE: '/logical-sequencing-quiz/:grade',
   PERCEPTION_QUIZ_SELECTION: '/perception-quiz-selection/:categoryId',
   ORAL_LANGUAGE_SELECTION_WITH_ID: '/oral-language-selection/:categoryId',
@@ -108,15 +104,6 @@ export const quizRoute = (categoryId: string, subcategoryId: string) =>
 
 export const startingEndingSoundGradeRoute = (grade: string | number) =>
   `/starting-ending-sound-quiz/${grade}`;
-
-export const blendingSegmentingSelectionRoute = (categoryId: string) =>
-  `/blending-segmenting-selection/${categoryId}`;
-
-export const blendingQuizRoute = (categoryId: string) =>
-  `/blending-quiz/${categoryId}`;
-
-export const segmentingQuizRoute = (categoryId: string) =>
-  `/segmenting-quiz/${categoryId}`;
 
 export const logicalSequencingGradeRoute = (grade: string | number) =>
   `/logical-sequencing-quiz/${grade}`;

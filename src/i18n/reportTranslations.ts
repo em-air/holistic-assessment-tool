@@ -93,8 +93,6 @@ export const reportTranslations = {
   'sub.perception': { en: 'Perception', ar: 'الإدراك' },
   'sub.oral-language': { en: 'Oral Language', ar: 'اللغة الشفهية' },
   'sub.reading': { en: 'Reading Skills', ar: 'مهارات القراءة' },
-  'sub.phonics': { en: 'Beginning and Ending Sounds', ar: 'أصوات البداية والنهاية' },
-  'sub.blending-segmenting': { en: 'Blending & Segmenting', ar: 'الدمج والتقسيم' },
   'sub.writing': { en: 'Writing Skills', ar: 'مهارات الكتابة' },
   'sub.vocabulary': { en: 'Vocabulary', ar: 'المفردات' },
   'sub.spelling': { en: 'Spelling', ar: 'الإملاء' },
@@ -123,14 +121,6 @@ export const reportTranslations = {
   'desc.oral-language': {
     en: 'Oral language measures your child\'s ability to understand and use spoken language effectively.',
     ar: 'تقيس اللغة الشفهية قدرة طفلك على فهم واستخدام اللغة المنطوقة بفعالية.',
-  },
-  'desc.phonics': {
-    en: 'Phonics assesses your child\'s knowledge of letter-sound relationships and decoding skills.',
-    ar: 'يقيّم الصوتيات معرفة طفلك بالعلاقة بين الحروف والأصوات ومهارات فك الترميز.',
-  },
-  'desc.blending-segmenting': {
-    en: 'Blending and segmenting evaluates your child\'s ability to combine and break apart sounds in words.',
-    ar: 'يقيّم الدمج والتقسيم قدرة طفلك على دمج الأصوات وتفكيكها في الكلمات.',
   },
   'desc.spelling': {
     en: 'Spelling assesses your child\'s ability to correctly spell words and apply spelling patterns.',

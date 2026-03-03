@@ -113,16 +113,14 @@ const s = StyleSheet.create({
 const subName: Record<string, string> = {
   attention: 'Attention', memory: 'Memory', 'learning-style': 'Learning Style',
   'critical-thinking': 'Critical Thinking', perception: 'Perception',
-  'oral-language': 'Oral Language', phonics: 'Beginning & Ending Sounds',
-  'blending-segmenting': 'Blending & Segmenting',
+  'oral-language': 'Oral Language',
   spelling: 'Spelling', writing: 'Writing Skills', vocabulary: 'Vocabulary',
 };
 
 const catColor: Record<string, string> = {
   attention: '#eab308', memory: '#f97316', 'learning-style': '#22c55e',
   'critical-thinking': '#a855f7', perception: '#6366f1',
-  'oral-language': '#0ea5e9', phonics: '#ec4899',
-  'blending-segmenting': '#14b8a6',
+  'oral-language': '#0ea5e9',
   spelling: '#7c3aed', writing: '#d97706', vocabulary: '#e11d48',
 };
 
@@ -160,10 +158,6 @@ const getAnalysis = (result: any): string => {
     return pct >= 75 ? 'Shows good visual perception abilities.' : 'Developing visual processing skills.';
   if (cat === 'oral-language')
     return pct >= 75 ? 'Shows strong oral language and communication skills.' : 'Developing oral language abilities — encourage storytelling and conversation.';
-  if (cat === 'phonics' || cat === 'phonics-awareness')
-    return pct >= 75 ? 'Shows solid sound recognition skills for beginning and ending sounds.' : 'Developing sound recognition — practice with letter-sound activities.';
-  if (cat === 'blending-segmenting')
-    return pct >= 75 ? 'Shows strong ability to blend and segment sounds.' : 'Developing blending & segmenting — practice breaking and building words.';
   if (cat === 'spelling')
     return pct >= 75 ? 'Shows strong spelling skills and orthographic awareness.' : 'Developing spelling skills — practice with word patterns and spelling exercises.';
   if (cat === 'writing')
@@ -198,10 +192,6 @@ const getAnalysisAr = (result: any): string => {
     return rtl(pct >= 75 ? 'يُظهر قدرات جيدة في الإدراك البصري.' : 'مهارات المعالجة البصرية قيد التطوير.');
   if (cat === 'oral-language')
     return rtl(pct >= 75 ? 'يُظهر مهارات قوية في اللغة الشفهية والتواصل.' : 'مهارات اللغة الشفهية قيد التطوير — شجع على السرد والمحادثة.');
-  if (cat === 'phonics' || cat === 'phonics-awareness')
-    return rtl(pct >= 75 ? 'يُظهر مهارات قوية في أصوات البداية والنهاية.' : 'مهارات أصوات البداية والنهاية قيد التطوير — تدرب على أنشطة الحروف والأصوات.');
-  if (cat === 'blending-segmenting')
-    return rtl(pct >= 75 ? 'يُظهر قدرة قوية على دمج الأصوات وتقسيمها.' : 'مهارات الدمج والتقسيم قيد التطوير.');
   if (cat === 'spelling')
     return rtl(pct >= 75 ? 'يُظهر مهارات إملائية قوية ووعياً إملائياً.' : 'مهارات الإملاء قيد التطوير — تدرب على أنماط الكلمات.');
   if (cat === 'writing')
@@ -245,7 +235,7 @@ const ReportPDF: React.FC<ReportPDFProps> = ({
 
   const categories = [
     'attention', 'memory', 'learning-style', 'critical-thinking', 'perception',
-    'oral-language', 'phonics', 'blending-segmenting',
+    'oral-language',
     'spelling', 'writing', 'vocabulary',
   ];
 
