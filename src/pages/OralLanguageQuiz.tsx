@@ -4,7 +4,7 @@ import { ArrowLeft, Star, Brain, Check, X, RotateCcw } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { oralLanguageCategories, oralLanguageTranslations, type QuizCategory } from '../data/oralLanguageData';
 import { ProgressTracker } from '../utils/progressTracker';
-import { ROUTES, oralLanguageSelectionRoute } from '../routes';
+import { ROUTES, categoryRoute } from '../routes';
 
 interface QuizScores {
   vocabulary: { correct: number; total: number };
@@ -34,10 +34,12 @@ const OralLanguageQuiz: React.FC = () => {
   const startTimeRef = useRef<number>(Date.now());
   // Track the original navigation categoryId (before remapping) for correct quiz ID saving
   const [originalCategoryId, setOriginalCategoryId] = useState<string | null>(null);
+  const hasSavedResultRef = useRef(false);
 
   // Save quiz results to database when quiz is completed
   useEffect(() => {
-    if (showResults && selectedCategory) {
+    if (showResults && selectedCategory && !hasSavedResultRef.current) {
+      hasSavedResultRef.current = true;
       const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
       const categoryScore = quizScores[selectedCategory.id as keyof QuizScores];
       const percentage = Math.round((categoryScore.correct / categoryScore.total) * 100);
@@ -57,6 +59,10 @@ const OralLanguageQuiz: React.FC = () => {
         timeSpent,
         completedAt: new Date().toISOString(),
       });
+    }
+    // Reset the guard when starting a new quiz
+    if (!showResults) {
+      hasSavedResultRef.current = false;
     }
   }, [showResults, selectedCategory, quizScores, originalCategoryId]);
 
@@ -147,9 +153,9 @@ const OralLanguageQuiz: React.FC = () => {
     startTimeRef.current = Date.now();  // Reset timer when starting a quiz
   };
 
-  // Reset quiz — navigate back to the oral language selection screen
+  // Reset quiz — navigate back to the oral skills category page
   const resetQuiz = () => {
-    navigate(oralLanguageSelectionRoute('oral-skills'));
+    navigate(categoryRoute('oral-skills'));
   };
 
   // Calculate overall performance
@@ -172,7 +178,7 @@ const OralLanguageQuiz: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <button
-            onClick={() => navigate(oralLanguageSelectionRoute('oral-skills'))}
+            onClick={() => navigate(categoryRoute('oral-skills'))}
               className="group flex items-center space-x-2 px-4 py-2 text-stone-600 rounded-lg transition-all duration-300 ease-out hover:text-purple-700 hover:bg-white/50 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
             >
               <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />

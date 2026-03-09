@@ -30,10 +30,12 @@ const VocabularyMatching: React.FC = () => {
   const [showResults, setShowResults] = useState<boolean>(false);
   const [completed, setCompleted] = useState<boolean>(false);
   const startTimeRef = useRef<number>(Date.now());
+  const hasSavedResultRef = useRef(false);
 
   // Save results to progress tracker when completed
   useEffect(() => {
-    if (completed && showResults) {
+    if (completed && showResults && !hasSavedResultRef.current) {
+      hasSavedResultRef.current = true;
       const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
       const totalWords = vocabularyWords.length || 5;
       const percentage = totalWords > 0 ? Math.round((score / totalWords) * 100) : 0;
@@ -52,7 +54,11 @@ const VocabularyMatching: React.FC = () => {
       });
       logger.log('Vocabulary Matching result saved via ProgressTracker');
     }
-  }, [completed, showResults]);
+    // Reset the guard when starting a new attempt
+    if (!completed) {
+      hasSavedResultRef.current = false;
+    }
+  }, [completed, showResults, score, vocabularyWords.length, selectedGrade, selectedLevel]);
 
   // Vocabulary data for each grade level with 3 levels each containing 5 words
   const vocabularyData: { [key: number]: { [key: number]: VocabularyItem[] } } = {

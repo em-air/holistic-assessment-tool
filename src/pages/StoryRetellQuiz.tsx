@@ -9,7 +9,7 @@ import {
 import { ProgressTracker } from '../utils/progressTracker';
 import FloatingBackground from '../components/FloatingBackground';
 import { logger } from '../utils/logger';
-import { ROUTES, oralLanguageSelectionRoute } from '../routes';
+import { ROUTES, categoryRoute } from '../routes';
 
 const StoryRetellQuiz: React.FC = () => {
   const navigate = useNavigate();
@@ -186,7 +186,7 @@ const StoryRetellQuiz: React.FC = () => {
               </button>
               
               <button
-                onClick={() => navigate(oralLanguageSelectionRoute('oral-skills'))}
+                onClick={() => navigate(categoryRoute('oral-skills'))}
                 className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
               >
                 Back to Oral Skills

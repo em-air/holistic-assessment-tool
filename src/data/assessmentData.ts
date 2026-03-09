@@ -150,15 +150,27 @@ export const assessmentCategories: AssessmentCategory[] = [
     color: 'oral',
     subcategories: [
       {
-        id: 'oral-language',
-        title: 'Oral Language',
+        id: 'sentence-building',
+        title: 'Sentence Building',
         color: 'bg-blue-500',
+        questions: []
+      },
+      {
+        id: 'story-retell',
+        title: 'Story Retell',
+        color: 'bg-indigo-500',
         questions: []
       },
       {
         id: 'reading',
         title: 'Reading',
         color: 'bg-orange-500',
+        questions: []
+      },
+      {
+        id: 'story-sequencing',
+        title: 'Story Sequencing',
+        color: 'bg-purple-500',
         questions: []
       }
     ]

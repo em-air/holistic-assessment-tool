@@ -125,16 +125,28 @@ async function initUserId(): Promise<string | null> {
 }
 
 // Ensure user ID is initialized (call this before operations that need user ID)
+// Includes a timeout to prevent hanging if Supabase is unresponsive
 async function ensureUserId(): Promise<string | null> {
   if (cachedUserId) return cachedUserId;
   if (!initPromise) {
     initPromise = initUserId();
   }
-  return initPromise;
+  // Add 5-second timeout to prevent blocking the save chain indefinitely
+  try {
+    const result = await Promise.race([
+      initPromise,
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+    ]);
+    return result;
+  } catch {
+    logger.error('ProgressTracker: ensureUserId failed');
+    return cachedUserId; // fall back to whatever is cached
+  }
 }
 
 // Debounce / dedup guard for loadFromDatabase – prevents rapid-fire calls
 let _loadInFlight: Promise<any> | null = null;
+let _authLoadInFlight: Promise<any> | null = null; // separate guard for auth-triggered loads
 let _lastLoadedUserId: string | null = null;
 
 // Listen for auth changes
@@ -161,11 +173,11 @@ supabase.auth.onAuthStateChange((event, session) => {
     // Skip if we already loaded for this user (avoids duplicate SIGNED_IN events)
     if (_lastLoadedUserId === newUserId) return;
     _lastLoadedUserId = newUserId;
-    // Load progress for this user (dedup concurrent calls)
-    if (!_loadInFlight) {
-      _loadInFlight = ProgressTracker.loadFromDatabase().then(() => {
+    // Load progress for this user (dedup concurrent auth-triggered loads)
+    if (!_authLoadInFlight) {
+      _authLoadInFlight = ProgressTracker.loadFromDatabase().then(() => {
         logger.log('Loaded progress for user:', newUserId);
-      }).finally(() => { _loadInFlight = null; });
+      }).finally(() => { _authLoadInFlight = null; });
     }
   }
 });
@@ -226,7 +238,16 @@ export class ProgressTracker {
   static saveQuizResult(result: QuizResult): void {
     // Serialized: each save waits for the previous one to finish
     // This prevents race conditions where concurrent saves overwrite each other
-    saveMutex = saveMutex.then(() => this.saveQuizResultAsync(result)).catch(() => {});
+    saveMutex = saveMutex.then(() => this.saveQuizResultAsync(result)).catch((err) => {
+      logger.error('ProgressTracker: saveQuizResult failed for', result.quizId, err);
+      // Even if save failed, dispatch event with current progress so UI stays in sync
+      try {
+        const currentProgress = this.getProgress();
+        window.dispatchEvent(new CustomEvent('mindProgressUpdated', { detail: currentProgress }));
+      } catch {
+        // Last resort: don't let event dispatch failure break the chain
+      }
+    });
   }
 
   // Async version that ensures user ID is available
@@ -269,36 +290,63 @@ export class ProgressTracker {
     
     // Save to user-specific localStorage
     const storageKey = getStorageKey(userId);
-    localStorage.setItem(storageKey, JSON.stringify(progress));
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(progress));
+    } catch (storageError) {
+      logger.error('ProgressTracker: localStorage write failed (quota exceeded?):', storageError);
+      // Continue anyway — the in-memory progress object is still valid
+      // and we'll still dispatch the event + try the DB save
+    }
     
     // Dispatch custom event for UI updates
     window.dispatchEvent(new CustomEvent('mindProgressUpdated', { 
       detail: progress 
     }));
 
-    // Also save to database (async, don't block)
-    this.saveToDatabase(result);
+    // Save to database — await to ensure report will include results
+    try {
+      await this.saveToDatabase(result);
+    } catch (dbError) {
+      logger.error('ProgressTracker: database save failed:', dbError);
+    }
   }
 
-  // Save quiz result to database in background
+  // Save quiz result to database with retry for reliability (reports pull from DB)
   private static async saveToDatabase(result: QuizResult): Promise<void> {
-    try {
-      const { saveQuizResult } = await import('../services/quizResultsService');
-      const category = result.category || 'mind';
-      await saveQuizResult({
-        quiz_id: result.quizId,
-        quiz_name: result.quizName,
-        category: category,
-        subcategory: result.subcategory,
-        score: result.score,
-        total_questions: result.totalQuestions,
-        time_spent: result.timeSpent,
-        grade_level: result.gradeLevel,
-        additional_data: result.additionalData,
-      });
-    } catch (error) {
-      logger.error('Failed to save to database:', error);
+    const maxRetries = 2;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const { saveQuizResult } = await import('../services/quizResultsService');
+        const category = result.category || 'mind';
+        const response = await saveQuizResult({
+          quiz_id: result.quizId,
+          quiz_name: result.quizName,
+          category: category,
+          subcategory: result.subcategory,
+          score: result.score,
+          total_questions: result.totalQuestions,
+          time_spent: result.timeSpent,
+          grade_level: result.gradeLevel,
+          additional_data: result.additionalData,
+        });
+        if (response.success) {
+          return; // saved successfully
+        }
+        // If not authenticated, don't retry
+        if (response.error === 'Not authenticated') {
+          logger.warn('ProgressTracker: DB save skipped — not authenticated');
+          return;
+        }
+        logger.warn(`ProgressTracker: DB save attempt ${attempt + 1} failed:`, response.error);
+      } catch (error) {
+        logger.error(`ProgressTracker: DB save attempt ${attempt + 1} error:`, error);
+      }
+      // Wait briefly before retrying
+      if (attempt < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+      }
     }
+    logger.error('ProgressTracker: All DB save attempts failed for', result.quizId);
   }
 
   // Load progress from database (for initial load after login)
@@ -390,7 +438,11 @@ export class ProgressTracker {
 
       // Save merged progress to localStorage
       const storageKey = getStorageKey(userId);
-      localStorage.setItem(storageKey, JSON.stringify(progress));
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(progress));
+      } catch (storageError) {
+        logger.error('ProgressTracker: localStorage write failed during DB load:', storageError);
+      }
 
       // Dispatch event to update UI
       window.dispatchEvent(new CustomEvent('mindProgressUpdated', { 

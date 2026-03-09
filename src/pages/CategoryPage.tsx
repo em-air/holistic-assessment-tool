@@ -52,6 +52,12 @@ const CategoryPage: React.FC = () => {
       navigate(ROUTES.ATTENTION_MEMORY);
     } else if (subcategoryId === 'oral-language') {
       navigate(ROUTES.ORAL_LANGUAGE_SELECTION);
+    } else if (subcategoryId === 'sentence-building') {
+      navigate(ROUTES.ORAL_SENTENCE_BUILDING, { state: { categoryId: 'sentence-building' } });
+    } else if (subcategoryId === 'story-sequencing') {
+      navigate(ROUTES.ORAL_STORY_SEQUENCING, { state: { categoryId: 'story-sequencing' } });
+    } else if (subcategoryId === 'story-retell') {
+      navigate(ROUTES.ORAL_STORY_RETELL);
     } else if (subcategoryId === 'critical-thinking') {
       navigate(ROUTES.CRITICAL_THINKING_SELECTION);
     } else {
@@ -104,7 +110,7 @@ const CategoryPage: React.FC = () => {
                   <span className="text-stone-800 font-semibold">{subcategory.title}</span>
                 </div>
                 <div className="relative flex items-center space-x-3">
-                  {(subcategory.id === 'attention' || subcategory.id === 'perception' || subcategory.id === 'assessment-generator' || subcategory.id === 'reading' || subcategory.id === 'sentence-formation' || subcategory.id === 'learning-style' || subcategory.id === 'oral-language' || subcategory.id === 'critical-thinking') ? (
+                  {(subcategory.id === 'attention' || subcategory.id === 'perception' || subcategory.id === 'assessment-generator' || subcategory.id === 'reading' || subcategory.id === 'sentence-formation' || subcategory.id === 'learning-style' || subcategory.id === 'oral-language' || subcategory.id === 'critical-thinking' || subcategory.id === 'sentence-building' || subcategory.id === 'story-sequencing' || subcategory.id === 'story-retell') ? (
                     <span className="text-emerald-600 text-sm font-medium">Available</span>
                   ) : (
                     <span className="text-stone-400 text-sm">Coming Soon</span>

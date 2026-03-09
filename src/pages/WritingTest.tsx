@@ -20,10 +20,12 @@ const WritingTest: React.FC = () => {
   const [timeStarted, setTimeStarted] = useState<Date | null>(null);
   const [wordCount, setWordCount] = useState(0);
   const startTimeRef = useRef<number>(Date.now());
+  const hasSavedResultRef = useRef(false);
 
   // Save results to progress tracker (and database) when evaluation is complete
   useEffect(() => {
-    if (evaluation && selectedTopic && grade) {
+    if (evaluation && selectedTopic && grade && !hasSavedResultRef.current) {
+      hasSavedResultRef.current = true;
       const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
       const score = Math.round(evaluation.overallScore);
 
@@ -45,6 +47,10 @@ const WritingTest: React.FC = () => {
         },
       });
       logger.log('Writing Test result saved via ProgressTracker');
+    }
+    // Reset the guard when evaluation is cleared (new test)
+    if (!evaluation) {
+      hasSavedResultRef.current = false;
     }
   }, [evaluation, selectedTopic, grade, wordCount]);
 
