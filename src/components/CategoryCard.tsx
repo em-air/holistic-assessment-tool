@@ -104,7 +104,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
         navigate(ROUTES.ORAL_LANGUAGE_SELECTION);
         break;
       case 'sentence-building':
-        navigate(ROUTES.ORAL_SENTENCE_BUILDING, { state: { categoryId: 'sentence-building' } });
+        navigate(ROUTES.ORAL_SENTENCE_BUILDING);
         break;
       case 'story-sequencing':
         navigate(ROUTES.ORAL_STORY_SEQUENCING, { state: { categoryId: 'story-sequencing' } });

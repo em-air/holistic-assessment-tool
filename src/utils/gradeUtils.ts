@@ -36,6 +36,7 @@ export const QUIZ_ACCESS_RULES: Record<string, CategoryRules> = {
     subcategories: {
       'story-retell': { maxGrade: 4 },
       'oral-language': { maxGrade: 4 },
+      'sentence-building': { maxGrade: 4 },
       'vocabulary': { maxGrade: 6 },
       'flash-words': { maxGrade: 3 },
     }
