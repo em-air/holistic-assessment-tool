@@ -1,5 +1,5 @@
 {
-  "name": "vite-react-typescript-starter",
+  "name": "holistic-assessment-tool",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -16,13 +16,10 @@
     "@google/generative-ai": "^0.24.1",
     "@react-pdf/renderer": "^4.3.1",
     "@supabase/supabase-js": "^2.52.1",
-    "@types/react-router-dom": "^5.3.3",
     "daisyui": "^5.0.46",
-    "dotenv": "^17.2.1",
     "framer-motion": "^12.23.9",
     "lucide-react": "^0.344.0",
     "mespeak": "^2.0.2",
-    "nodemailer": "^7.0.11",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.7.0"

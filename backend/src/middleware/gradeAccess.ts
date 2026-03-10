@@ -1,3 +1,4 @@
+import logger from '../lib/logger.js';
 import { Request, Response, NextFunction } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import type { GradeLevel } from '../types/database.js';
@@ -66,7 +67,7 @@ export const requireGradeAccess = async (
 
     if (error || !quizMeta) {
       // If quiz metadata doesn't exist, allow access (backward compatibility)
-      console.warn(`Quiz metadata not found for: ${quizId}`);
+      logger.warn(`Quiz metadata not found for: ${quizId}`);
       return next();
     }
 
@@ -90,7 +91,7 @@ export const requireGradeAccess = async (
 
     next();
   } catch (error) {
-    console.error('Grade access check error:', error);
+    logger.error(error, 'Grade access check error:');
     res.status(500).json({ error: 'Failed to check quiz access' });
   }
 };

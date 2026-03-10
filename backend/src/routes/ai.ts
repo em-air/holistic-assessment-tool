@@ -1,3 +1,4 @@
+import logger from '../lib/logger.js';
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -523,7 +524,7 @@ Please respond with a JSON object in this exact format:
       evaluation,
     });
   } catch (error) {
-    console.error('Error evaluating writing:', error);
+    logger.error(error, 'Error evaluating writing:');
 
     // Return fallback evaluation
     const grade = req.body?.grade || 4;
@@ -600,7 +601,7 @@ Format the response as markdown with clear section headers.`;
       assessment,
     });
   } catch (error) {
-    console.error('Error generating assessment:', error);
+    logger.error(error, 'Error generating assessment:');
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to generate assessment',

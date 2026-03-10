@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, RotateCcw, CheckCircle, XCircle, GripVertical, Lightbulb } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  SequencingQuestion, 
-  getQuestionsByGradeAndCount 
-} from '../data/logicalSequencingData';
+import type { SequencingQuestion } from '../types/quiz';
+import { supabase } from '../supabase-client';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { ProgressTracker } from '../utils/progressTracker';
 import FloatingBackground from '../components/FloatingBackground';
 import { logger } from '../utils/logger';
@@ -34,26 +34,33 @@ const LogicalSequencingQuiz: React.FC = () => {
   const [timePerQuestion, setTimePerQuestion] = useState<number[]>([]);
   const [questionStartTime, setQuestionStartTime] = useState<Date>(new Date());
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
+  const [correctOrderDisplay, setCorrectOrderDisplay] = useState<string[] | null>(null);
 
   const totalQuestions = 5;
   const currentQuestion = questions[currentQuestionIndex];
 
-  // Initialize quiz
+  // Initialize quiz — fetch from backend
   useEffect(() => {
     if (!grade) return;
     
-    try {
-      const gradeQuestions = getQuestionsByGradeAndCount(grade, totalQuestions);
-      logger.log('Loaded questions for grade:', grade, gradeQuestions);
-      setQuestions(gradeQuestions);
-      setCurrentQuestionIndex(0);
-      setScore(0);
-      setShowResult(false);
-      setTimePerQuestion([]);
-      setQuestionStartTime(new Date());
-    } catch (error) {
-      logger.error('Error loading sequencing questions:', error);
-    }
+    const fetchQuestions = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/quiz-content/logical-sequencing/grade/${grade}`);
+        const data = await response.json();
+        if (data.success && data.questions) {
+          const selected = data.questions.slice(0, totalQuestions);
+          setQuestions(selected);
+          setCurrentQuestionIndex(0);
+          setScore(0);
+          setShowResult(false);
+          setTimePerQuestion([]);
+          setQuestionStartTime(new Date());
+        }
+      } catch (error) {
+        logger.error('Error loading sequencing questions:', error);
+      }
+    };
+    fetchQuestions();
   }, [grade]);
 
   // Initialize drag items when question changes
@@ -118,22 +125,37 @@ const LogicalSequencingQuiz: React.FC = () => {
     }
   };
 
-  const checkAnswer = () => {
+  const checkAnswer = async () => {
     if (!currentQuestion || isSubmitted) return;
     
-    // Record time for this question
     const questionTime = (new Date().getTime() - questionStartTime.getTime()) / 1000;
     setTimePerQuestion([...timePerQuestion, questionTime]);
     
-    // Check if user order matches correct order
     const userOrderIndices = userOrder.map(item => item.originalIndex);
-    const correct = JSON.stringify(userOrderIndices) === JSON.stringify(currentQuestion.correctOrder);
     
-    setIsCorrect(correct);
-    setIsSubmitted(true);
-    
-    if (correct) {
-      setScore(score + 1);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+      const response = await fetch(`${API_BASE_URL}/api/quiz-content/logical-sequencing/check`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ questionId: currentQuestion.id, submittedOrder: userOrderIndices }),
+      });
+      const result = await response.json();
+      const correct = result.isCorrect;
+      setIsCorrect(correct);
+      setIsSubmitted(true);
+      if (correct) {
+        setScore(score + 1);
+      } else if (result.correctOrder) {
+        setCorrectOrderDisplay(result.correctOrder.map((idx: number) => currentQuestion.sentences[idx]));
+      }
+    } catch {
+      // Fallback: mark as submitted without validation
+      setIsSubmitted(true);
     }
   };
 
@@ -185,9 +207,7 @@ const LogicalSequencingQuiz: React.FC = () => {
   };
 
   const getCorrectOrderDisplay = () => {
-    if (!currentQuestion || !isSubmitted || isCorrect) return null;
-    
-    return currentQuestion.correctOrder.map(index => currentQuestion.sentences[index]);
+    return correctOrderDisplay;
   };
 
   if (!currentQuestion) {

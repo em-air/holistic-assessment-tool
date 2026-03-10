@@ -2,9 +2,45 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Star, Brain, Check, X, RotateCcw } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { oralLanguageCategories, oralLanguageTranslations, type QuizCategory } from '../data/oralLanguageData';
+import type { QuizCategory, OralLanguageQuestion } from '../types/quiz';
+import { oralLanguageTranslations } from '../data/oralLanguageTranslations';
+import { supabase } from '../supabase-client';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { ProgressTracker } from '../utils/progressTracker';
 import { ROUTES, categoryRoute } from '../routes';
+
+// Category metadata (UI only — no answer data)
+const oralLanguageCategories: Omit<QuizCategory, 'questions'>[] = [
+  {
+    id: 'vocabulary',
+    title: { en: 'Vocabulary', ar: 'المفردات' },
+    description: { en: 'Learn new words with pictures', ar: 'تعلم كلمات جديدة مع الصور' },
+    icon: '📖',
+    color: 'bg-gradient-to-br from-blue-500 to-blue-700',
+  },
+  {
+    id: 'sentence-building',
+    title: { en: 'Sentence Building', ar: 'بناء الجمل' },
+    description: { en: 'Build sentences from pictures', ar: 'ابنِ جمل من الصور' },
+    icon: '✍️',
+    color: 'bg-gradient-to-br from-green-500 to-green-700',
+  },
+  {
+    id: 'storytelling',
+    title: { en: 'Story Sequencing', ar: 'تسلسل القصص' },
+    description: { en: 'Put stories in order', ar: 'رتب القصص' },
+    icon: '📚',
+    color: 'bg-gradient-to-br from-purple-500 to-purple-700',
+  },
+  {
+    id: 'story-retell',
+    title: { en: 'Story Retell', ar: 'إعادة سرد القصة' },
+    description: { en: 'Retell a story', ar: 'أعد سرد القصة' },
+    icon: '🎭',
+    color: 'bg-gradient-to-br from-orange-500 to-orange-700',
+  },
+];
 
 interface QuizScores {
   vocabulary: { correct: number; total: number };
@@ -16,7 +52,7 @@ interface QuizScores {
 const OralLanguageQuiz: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [selectedCategory, setSelectedCategory] = useState<QuizCategory | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<(Omit<QuizCategory, 'questions'> & { questions: OralLanguageQuestion[] }) | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -76,9 +112,7 @@ const OralLanguageQuiz: React.FC = () => {
   useEffect(() => {
     const state = location.state as { categoryId?: string } | null;
     if (state?.categoryId && !selectedCategory) {
-      // Remember the original category ID for saving (e.g. 'story-sequencing')
       setOriginalCategoryId(state.categoryId);
-      // Map story-sequencing to storytelling (the actual category ID in the data)
       const categoryId = state.categoryId === 'story-sequencing' ? 'storytelling' : state.categoryId;
       const category = oralLanguageCategories.find(c => c.id === categoryId);
       if (category) {
@@ -87,28 +121,51 @@ const OralLanguageQuiz: React.FC = () => {
     }
   }, [location.state, selectedCategory]);
 
-  // Handle answer selection for regular questions
-  const handleAnswerSelect = (optionId: string) => {
-    if (showFeedback) return;
+  // Handle answer selection — validate via backend
+  const handleAnswerSelect = async (optionId: string) => {
+    if (showFeedback || !currentQuestion) return;
     
     setSelectedAnswer(optionId);
-    const selectedOption = currentQuestion?.options.find(opt => opt.id === optionId);
-    const correct = selectedOption?.isCorrect || false;
-    
-    setIsCorrect(correct);
-    setShowFeedback(true);
-    
-    if (correct) {
-      setShowSparkle(true);
-      setTimeout(() => setShowSparkle(false), 2000);
-    }
 
-    // Update scores
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        const response = await fetch(`${API_BASE_URL}/api/quiz-content/oral-language/validate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ questionId: currentQuestion.id, answerId: optionId }),
+        });
+        const result = await response.json();
+        const correct = result.correct || false;
+        setIsCorrect(correct);
+        setShowFeedback(true);
+        if (correct) {
+          setShowSparkle(true);
+          setTimeout(() => setShowSparkle(false), 2000);
+        }
+        if (selectedCategory) {
+          setQuizScores(prev => ({
+            ...prev,
+            [selectedCategory.id]: {
+              correct: prev[selectedCategory.id].correct + (correct ? 1 : 0),
+              total: prev[selectedCategory.id].total + 1
+            }
+          }));
+        }
+        return;
+      }
+    } catch { /* fallback below */ }
+
+    // Fallback: show feedback without server validation
+    setShowFeedback(true);
     if (selectedCategory) {
       setQuizScores(prev => ({
         ...prev,
         [selectedCategory.id]: {
-          correct: prev[selectedCategory.id].correct + (correct ? 1 : 0),
+          correct: prev[selectedCategory.id].correct,
           total: prev[selectedCategory.id].total + 1
         }
       }));
@@ -130,27 +187,41 @@ const OralLanguageQuiz: React.FC = () => {
     }
   };
 
-  // Start a specific quiz category
-  const startQuiz = (category: QuizCategory) => {
-    // If story-retell is selected, navigate to the separate Story Retell quiz
+  // Start a specific quiz category — fetch questions from API
+  const startQuiz = async (category: Omit<QuizCategory, 'questions'>) => {
     if (category.id === 'story-retell') {
       navigate(ROUTES.STORY_RETELL_QUIZ_FLAT);
       return;
     }
     
-    // Map data category IDs to the quiz IDs expected by ProgressTracker
     if (!originalCategoryId) {
       setOriginalCategoryId(category.id === 'storytelling' ? 'story-sequencing' : category.id);
     }
-    
-    setSelectedCategory(category);
+
+    // Fetch questions from backend
+    let questions: OralLanguageQuestion[] = [];
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        const response = await fetch(
+          `${API_BASE_URL}/api/quiz-content/oral-language/questions?type=${category.id}`,
+          { headers: { Authorization: `Bearer ${session.access_token}` } }
+        );
+        const data = await response.json();
+        if (data.success && data.questions) {
+          questions = data.questions;
+        }
+      }
+    } catch { /* questions will be empty */ }
+
+    setSelectedCategory({ ...category, questions });
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
     setShowFeedback(false);
     setIsCorrect(false);
     setShowResults(false);
     setSequenceOrder({});
-    startTimeRef.current = Date.now();  // Reset timer when starting a quiz
+    startTimeRef.current = Date.now();
   };
 
   // Reset quiz — navigate back to the oral skills category page

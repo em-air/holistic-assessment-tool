@@ -1,3 +1,4 @@
+import logger from '../lib/logger.js';
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { supabaseAdmin } from '../config/supabase.js';
@@ -80,7 +81,7 @@ router.post('/generate', verifySupabaseToken, async (req: Request, res: Response
     try {
       pdfBufferAr = await generateArabicPDF(reportData);
     } catch (err) {
-      console.warn('Arabic PDF generation failed (font may be unavailable):', err);
+      logger.warn(err, 'Arabic PDF generation failed (font may be unavailable):');
     }
 
     // Upload English PDF to storage
@@ -110,7 +111,7 @@ router.post('/generate', verifySupabaseToken, async (req: Request, res: Response
       .single();
 
     if (insertError) {
-      console.error('Save report error:', insertError);
+      logger.error(insertError, 'Save report error:');
       return res.status(500).json({ error: 'Failed to save report record' });
     }
 
@@ -153,7 +154,7 @@ router.post('/generate', verifySupabaseToken, async (req: Request, res: Response
       emailSent: emailResult?.success || false,
     });
   } catch (error) {
-    console.error('Generate report error:', error);
+    logger.error(error, 'Generate report error:');
     res.status(500).json({ error: 'Failed to generate report' });
   }
 });
@@ -251,29 +252,29 @@ router.post('/send-email', verifySupabaseToken, async (req: Request, res: Respon
         </head>
         <body>
           <div class="header">
-            <h1>📊 Assessment Report</h1>
+            <h1>ðŸ“Š Assessment Report</h1>
             <p>Holistic Assessment Tool - Bloom Tutoring</p>
           </div>
           <div class="content">
             <p>Hello,</p>
             <p>Here is the assessment summary for <strong>${student_name}</strong>, generated on ${new Date().toLocaleDateString()}.</p>
             
-            <h3>📈 Score Summary</h3>
+            <h3>ðŸ“ˆ Score Summary</h3>
             
             <div class="score-box">
-              <div class="score-title">🧠 Mind Skills</div>
+              <div class="score-title">ðŸ§  Mind Skills</div>
               <div class="score-value">${summary.mindScore || 0}%</div>
               <p style="color: #6b7280; font-size: 14px; margin: 5px 0 0 0;">Attention, Memory, Critical Thinking, Perception</p>
             </div>
             
             <div class="score-box">
-              <div class="score-title">🗣️ Oral Skills</div>
+              <div class="score-title">ðŸ—£ï¸ Oral Skills</div>
               <div class="score-value">${summary.oralScore || 0}%</div>
               <p style="color: #6b7280; font-size: 14px; margin: 5px 0 0 0;">Language, Reading, Phonics, Blending</p>
             </div>
             
             <div class="score-box">
-              <div class="score-title">📚 Academic Skills</div>
+              <div class="score-title">ðŸ“š Academic Skills</div>
               <div class="score-value">${summary.academicScore || 0}%</div>
               <p style="color: #6b7280; font-size: 14px; margin: 5px 0 0 0;">Writing, Vocabulary, Spelling</p>
             </div>
@@ -284,7 +285,7 @@ router.post('/send-email', verifySupabaseToken, async (req: Request, res: Respon
             
             <div class="footer">
               <p>This is an automated email from the Holistic Assessment Tool.</p>
-              <p>© ${new Date().getFullYear()} Bloom Tutoring</p>
+              <p>Â© ${new Date().getFullYear()} Bloom Tutoring</p>
             </div>
           </div>
         </body>
@@ -293,7 +294,7 @@ router.post('/send-email', verifySupabaseToken, async (req: Request, res: Respon
     });
 
     if (error) {
-      console.error('Email send error:', error);
+      logger.error(error, 'Email send error:');
       return res.status(500).json({ success: false, error: error.message });
     }
 
@@ -303,7 +304,7 @@ router.post('/send-email', verifySupabaseToken, async (req: Request, res: Respon
       emailId: data?.id,
     });
   } catch (error: any) {
-    console.error('Send email error:', error);
+    logger.error(error, 'Send email error:');
     res.status(500).json({ error: 'Failed to send email' });
   }
 });
@@ -325,7 +326,7 @@ router.get('/', verifySupabaseToken, async (req: Request, res: Response) => {
       .order('generated_at', { ascending: false });
 
     if (error) {
-      console.error('Get reports error:', error);
+      logger.error(error, 'Get reports error:');
       return res.status(500).json({ error: 'Failed to get reports' });
     }
 
@@ -335,7 +336,7 @@ router.get('/', verifySupabaseToken, async (req: Request, res: Response) => {
       count: reports?.length || 0,
     });
   } catch (error) {
-    console.error('Get reports error:', error);
+    logger.error(error, 'Get reports error:');
     res.status(500).json({ error: 'Failed to get reports' });
   }
 });
@@ -372,7 +373,7 @@ router.get('/:reportId', verifySupabaseToken, async (req: Request, res: Response
       report,
     });
   } catch (error) {
-    console.error('Get report error:', error);
+    logger.error(error, 'Get report error:');
     res.status(500).json({ error: 'Failed to get report' });
   }
 });
@@ -428,7 +429,7 @@ router.get('/:reportId/download', verifySupabaseToken, async (req: Request, res:
       expiresIn: 3600, // 1 hour
     });
   } catch (error) {
-    console.error('Download report error:', error);
+    logger.error(error, 'Download report error:');
     res.status(500).json({ error: 'Failed to get download URL' });
   }
 });
@@ -511,7 +512,7 @@ router.post('/:reportId/email', verifySupabaseToken, async (req: Request, res: R
       recipients: validation.data.recipients,
     });
   } catch (error) {
-    console.error('Email report error:', error);
+    logger.error(error, 'Email report error:');
     res.status(500).json({ error: 'Failed to email report' });
   }
 });
@@ -548,7 +549,7 @@ router.delete(
         .eq('id', reportId);
 
       if (deleteError) {
-        console.error('Delete report error:', deleteError);
+        logger.error(deleteError, 'Delete report error:');
         return res.status(500).json({ error: 'Failed to delete report' });
       }
 
@@ -557,7 +558,7 @@ router.delete(
         message: 'Report deleted successfully',
       });
     } catch (error) {
-      console.error('Delete report error:', error);
+      logger.error(error, 'Delete report error:');
       res.status(500).json({ error: 'Failed to delete report' });
     }
   }

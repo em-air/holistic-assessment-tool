@@ -1,6 +1,6 @@
 import React from 'react';
 import { Volume2, RotateCcw } from 'lucide-react';
-import { QuestionData } from '../data/startingEndingSoundData';
+import type { QuestionData } from '../types/quiz';
 import { logger } from '../utils/logger';
 
 interface SoundQuestionDisplayProps {

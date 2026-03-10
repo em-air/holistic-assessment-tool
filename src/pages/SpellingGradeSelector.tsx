@@ -2,7 +2,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
-import { spellingData } from '../data/spellingData';
+import { useState, useEffect } from 'react';
+import { supabase } from '../supabase-client';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { useAuth } from '../contexts/AuthContext';
 import {
   getNumericGrade,
@@ -12,10 +15,25 @@ import {
 } from '../utils/gradeUtils';
 import { ROUTES, spellingTestRoute } from '../routes';
 
+interface GradeInfo {
+  grade: number;
+  description: string;
+  wordCount: number;
+}
+
 const SpellingGradeSelector: React.FC = () => {
   const navigate = useNavigate();
   const { grade: userGrade, isAdmin, user } = useAuth();
   const userNumericGrade = getNumericGrade(userGrade);
+  const [grades, setGrades] = useState<GradeInfo[]>([]);
+
+  // Fetch grade list from backend
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/quiz-content/spelling/grades`)
+      .then(r => r.json())
+      .then(data => { if (data.success) setGrades(data.grades); })
+      .catch(() => {});
+  }, []);
 
   // Check if the whole category is blocked
   const categoryBlockedMessage = getCategoryBlockedMessage(userNumericGrade, 'academic');
@@ -87,7 +105,7 @@ const SpellingGradeSelector: React.FC = () => {
 
         {/* Grade Selection Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {spellingData.map((gradeData, index) => {
+          {grades.map((gradeData, index) => {
             const locked = isGradeLocked(gradeData.grade);
             const lockReason = getLockedReason(userNumericGrade, 'academic', 'spelling', gradeData.grade, isAdmin);
 
@@ -110,32 +128,27 @@ const SpellingGradeSelector: React.FC = () => {
                 title={lockReason || undefined}
               >
                 <div className="text-center relative">
-                  {/* Lock Icon for restricted grades */}
                   {locked && (
                     <div className="absolute -top-2 -right-2 bg-gray-500 text-white p-1.5 rounded-full">
                       <Lock size={14} />
                     </div>
                   )}
 
-                  {/* Grade Number */}
                   <div className={`text-white text-2xl font-bold w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg ${locked ? 'bg-gray-400' : 'bg-gradient-to-r from-blue-500 to-purple-600'
                     }`}>
                     {gradeData.grade}
                   </div>
 
-                  {/* Grade Title */}
                   <h3 className={`text-xl font-semibold mb-2 ${locked ? 'text-gray-400' : 'text-gray-800'}`}>
                     Grade {gradeData.grade}
                   </h3>
 
-                  {/* Description */}
                   <p className={`text-sm leading-relaxed ${locked ? 'text-gray-400' : 'text-gray-600'}`}>
                     {gradeData.description}
                   </p>
 
-                  {/* Word Count */}
                   <div className={`mt-3 text-xs font-medium ${locked ? 'text-gray-400' : 'text-purple-600'}`}>
-                    {gradeData.words.length} words
+                    {gradeData.wordCount} words
                   </div>
                 </div>
 

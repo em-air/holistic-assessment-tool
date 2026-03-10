@@ -1,3 +1,4 @@
+import logger from '../lib/logger.js';
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { supabaseAdmin } from '../config/supabase.js';
@@ -38,7 +39,7 @@ router.post('/', verifySupabaseToken, async (req: Request, res: Response) => {
     }
 
     const data = validationResult.data;
-    // Clamp to 0-100 — some quizzes use Likert scoring where score > total_questions
+    // Clamp to 0-100 â€” some quizzes use Likert scoring where score > total_questions
     const percentage = Math.min(100, Math.max(0, Math.round((data.score / data.total_questions) * 100)));
 
     const resultInsert: QuizResultInsert = {
@@ -66,7 +67,7 @@ router.post('/', verifySupabaseToken, async (req: Request, res: Response) => {
       .single();
 
     if (error) {
-      console.error('Save result error:', error);
+      logger.error(error, 'Save result error:');
       return res.status(500).json({ error: 'Failed to save result' });
     }
 
@@ -75,7 +76,7 @@ router.post('/', verifySupabaseToken, async (req: Request, res: Response) => {
       result,
     });
   } catch (error) {
-    console.error('Save result error:', error);
+    logger.error(error, 'Save result error:');
     res.status(500).json({ error: 'Failed to save result' });
   }
 });
@@ -97,7 +98,7 @@ router.get('/', verifySupabaseToken, async (req: Request, res: Response) => {
       .order('completed_at', { ascending: false });
 
     if (error) {
-      console.error('Get results error:', error);
+      logger.error(error, 'Get results error:');
       return res.status(500).json({ error: 'Failed to get results' });
     }
 
@@ -107,7 +108,7 @@ router.get('/', verifySupabaseToken, async (req: Request, res: Response) => {
       count: results?.length || 0,
     });
   } catch (error) {
-    console.error('Get results error:', error);
+    logger.error(error, 'Get results error:');
     res.status(500).json({ error: 'Failed to get results' });
   }
 });
@@ -136,7 +137,7 @@ router.get('/category/:category', verifySupabaseToken, async (req: Request, res:
       .order('completed_at', { ascending: false });
 
     if (error) {
-      console.error('Get category results error:', error);
+      logger.error(error, 'Get category results error:');
       return res.status(500).json({ error: 'Failed to get results' });
     }
 
@@ -147,7 +148,7 @@ router.get('/category/:category', verifySupabaseToken, async (req: Request, res:
       count: results?.length || 0,
     });
   } catch (error) {
-    console.error('Get category results error:', error);
+    logger.error(error, 'Get category results error:');
     res.status(500).json({ error: 'Failed to get results' });
   }
 });
@@ -172,7 +173,7 @@ router.get('/:quizId', verifySupabaseToken, async (req: Request, res: Response) 
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      console.error('Get result error:', error);
+      logger.error(error, 'Get result error:');
       return res.status(500).json({ error: 'Failed to get result' });
     }
 
@@ -185,7 +186,7 @@ router.get('/:quizId', verifySupabaseToken, async (req: Request, res: Response) 
       result,
     });
   } catch (error) {
-    console.error('Get result error:', error);
+    logger.error(error, 'Get result error:');
     res.status(500).json({ error: 'Failed to get result' });
   }
 });
@@ -209,7 +210,7 @@ router.delete('/:quizId', verifySupabaseToken, async (req: Request, res: Respons
       .eq('quiz_id', quizId);
 
     if (error) {
-      console.error('Delete result error:', error);
+      logger.error(error, 'Delete result error:');
       return res.status(500).json({ error: 'Failed to delete result' });
     }
 
@@ -218,7 +219,7 @@ router.delete('/:quizId', verifySupabaseToken, async (req: Request, res: Respons
       message: 'Result deleted successfully',
     });
   } catch (error) {
-    console.error('Delete result error:', error);
+    logger.error(error, 'Delete result error:');
     res.status(500).json({ error: 'Failed to delete result' });
   }
 });
@@ -246,7 +247,7 @@ router.delete('/category/:category', verifySupabaseToken, async (req: Request, r
       .eq('category', category as AssessmentCategory);
 
     if (error) {
-      console.error('Delete category results error:', error);
+      logger.error(error, 'Delete category results error:');
       return res.status(500).json({ error: 'Failed to delete results' });
     }
 
@@ -255,7 +256,7 @@ router.delete('/category/:category', verifySupabaseToken, async (req: Request, r
       message: `All ${category} results deleted successfully`,
     });
   } catch (error) {
-    console.error('Delete category results error:', error);
+    logger.error(error, 'Delete category results error:');
     res.status(500).json({ error: 'Failed to delete results' });
   }
 });

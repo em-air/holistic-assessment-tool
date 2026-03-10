@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getWordsByGrade, getGradeDescription, SpellingWord } from '../data/spellingData';
+import { supabase } from '../supabase-client';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { ProgressTracker } from '../utils/progressTracker';
 import { logger } from '../utils/logger';
 import { QuizProgressBar, QuizNavigation, QuizResultsScreen } from '../components/quiz';
@@ -19,78 +21,144 @@ import { ROUTES } from '../routes';
  * 
  * Reduced from 445 lines to ~200 lines
  */
+interface WordMeta {
+  index: number;
+  wordId: string;
+  difficulty: string;
+  hint?: string;
+}
+
+interface ServerResult {
+  wordId: string;
+  userAnswer: string | undefined;
+  correctWord: string;
+  isCorrect: boolean;
+}
+
 const SpellingTest = () => {
   const { grade } = useParams<{ grade: string }>();
   const navigate = useNavigate();
-  const [words, setWords] = useState<SpellingWord[]>([]);
+  const [wordMeta, setWordMeta] = useState<WordMeta[]>([]);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [gradeDescription, setGradeDescription] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showResults, setShowResults] = useState(false);
   const [currentAnswer, setCurrentAnswer] = useState('');
+  const [serverResults, setServerResults] = useState<ServerResult[]>([]);
+  const [serverScore, setServerScore] = useState(0);
   const startTimeRef = useRef<number>(Date.now());
 
-  // Use the speech hook
   const { speak, isSpeaking } = useSpeech({
     rate: 0.7,
     pitch: 1.2,
     preferFemaleVoice: true,
   });
 
-  // Load words for grade
+  // Start a spelling session on the backend
   useEffect(() => {
-    if (grade) {
-      const gradeWords = getWordsByGrade(parseInt(grade));
-      startTimeRef.current = Date.now();
-      setWords(gradeWords);
-    }
+    if (!grade) return;
+    const startSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) return;
+        const response = await fetch(`${API_BASE_URL}/api/quiz-content/spelling/start`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ grade: parseInt(grade), quizType: 'spelling', wordCount: 10 }),
+        });
+        const data = await response.json();
+        if (data.success) {
+          setSessionId(data.sessionId);
+          setWordMeta(data.words);
+          setGradeDescription(data.gradeDescription || '');
+          startTimeRef.current = Date.now();
+        }
+      } catch (error) {
+        logger.error('Error starting spelling session:', error);
+      }
+    };
+    startSession();
   }, [grade]);
 
   // Save quiz results when completed
   useEffect(() => {
-    if (showResults && words.length > 0 && grade) {
+    if (showResults && serverResults.length > 0 && grade) {
       const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
-      const correctCount = words.filter(word =>
-        (answers[word.id] || '').toLowerCase().trim() === word.word.toLowerCase().trim()
-      ).length;
-
       ProgressTracker.saveQuizResult({
         quizId: 'spelling-test',
         quizName: `Spelling Test - Grade ${grade}`,
         category: 'academic',
         subcategory: 'spelling',
-        score: correctCount,
-        totalQuestions: words.length,
-        percentage: words.length > 0 ? Math.round((correctCount / words.length) * 100) : 0,
+        score: serverScore,
+        totalQuestions: serverResults.length,
+        percentage: serverResults.length > 0 ? Math.round((serverScore / serverResults.length) * 100) : 0,
         timeSpent,
         completedAt: new Date().toISOString(),
         gradeLevel: `Grade ${grade}`,
       });
       logger.log('Spelling Test result saved via ProgressTracker');
     }
-  }, [showResults, answers, words, grade]);
+  }, [showResults, serverResults, serverScore, grade]);
 
   const handleAnswerChange = (wordId: string, answer: string) => {
-    if (wordId === words[currentIndex]?.id) {
+    if (wordId === wordMeta[currentIndex]?.wordId) {
       setCurrentAnswer(answer);
     }
     setAnswers(prev => ({ ...prev, [wordId]: answer }));
   };
 
   const goToNext = () => {
-    if (currentIndex < words.length - 1) {
+    if (currentIndex < wordMeta.length - 1) {
       setCurrentIndex(prev => prev + 1);
-      setCurrentAnswer(answers[words[currentIndex + 1]?.id] || '');
+      setCurrentAnswer(answers[wordMeta[currentIndex + 1]?.wordId] || '');
     }
   };
 
   const goToPrevious = () => {
     if (currentIndex > 0) {
       setCurrentIndex(prev => prev - 1);
-      setCurrentAnswer(answers[words[currentIndex - 1]?.id] || '');
+      setCurrentAnswer(answers[wordMeta[currentIndex - 1]?.wordId] || '');
     }
   };
 
-  const submitTest = () => {
+  const submitTest = async () => {
+    if (!sessionId) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+      // Submit each answer to the backend
+      for (const meta of wordMeta) {
+        const userAnswer = answers[meta.wordId] || '';
+        await fetch(`${API_BASE_URL}/api/quiz-content/spelling/submit-answer`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ sessionId, wordId: meta.wordId, answer: userAnswer }),
+        });
+      }
+      // Complete the session to get results
+      const completeRes = await fetch(`${API_BASE_URL}/api/quiz-content/spelling/complete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ sessionId }),
+      });
+      const completeData = await completeRes.json();
+      if (completeData.success) {
+        setServerResults(completeData.results);
+        setServerScore(completeData.score);
+      }
+    } catch (error) {
+      logger.error('Error completing spelling test:', error);
+    }
     setShowResults(true);
   };
 
@@ -99,11 +167,36 @@ const SpellingTest = () => {
     setAnswers({});
     setShowResults(false);
     setCurrentAnswer('');
+    setServerResults([]);
+    setServerScore(0);
     startTimeRef.current = Date.now();
+    // Re-start a new session
+    if (grade) {
+      const startNewSession = async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session?.access_token) return;
+          const response = await fetch(`${API_BASE_URL}/api/quiz-content/spelling/start`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ grade: parseInt(grade), quizType: 'spelling', wordCount: 10 }),
+          });
+          const data = await response.json();
+          if (data.success) {
+            setSessionId(data.sessionId);
+            setWordMeta(data.words);
+          }
+        } catch { /* ignore */ }
+      };
+      startNewSession();
+    }
   };
 
   // Loading state
-  if (!grade || words.length === 0) {
+  if (!grade || wordMeta.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 flex items-center justify-center">
         <div className="text-center">
@@ -120,24 +213,21 @@ const SpellingTest = () => {
     );
   }
 
-  const currentWord = words[currentIndex];
-  const correctCount = words.filter(word =>
-    (answers[word.id] || '').toLowerCase().trim() === word.word.toLowerCase().trim()
-  ).length;
+  const currentWord = wordMeta[currentIndex];
 
   // Results screen using reusable component
   if (showResults) {
-    const resultDetails = words.map(word => ({
+    const resultDetails = serverResults.map(r => ({
       label: 'Correct spelling',
-      userAnswer: answers[word.id] || '',
-      correctAnswer: word.word,
-      isCorrect: (answers[word.id] || '').toLowerCase().trim() === word.word.toLowerCase().trim(),
+      userAnswer: r.userAnswer || '',
+      correctAnswer: r.correctWord,
+      isCorrect: r.isCorrect,
     }));
 
     return (
       <QuizResultsScreen
-        score={correctCount}
-        totalQuestions={words.length}
+        score={serverScore}
+        totalQuestions={wordMeta.length}
         quizName="Spelling Test"
         grade={parseInt(grade)}
         onRetry={restartTest}
@@ -150,8 +240,8 @@ const SpellingTest = () => {
     );
   }
 
-  const answeredIndices = words
-    .map((word, index) => (answers[word.id] ? index : -1))
+  const answeredIndices = wordMeta
+    .map((meta, index) => (answers[meta.wordId] ? index : -1))
     .filter(i => i !== -1);
 
   return (
@@ -164,12 +254,11 @@ const SpellingTest = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Grade {grade} Spelling Test</h1>
-          <p className="text-gray-600 mb-4">{getGradeDescription(parseInt(grade || '1'))}</p>
+          <p className="text-gray-600 mb-4">{gradeDescription}</p>
 
-          {/* Using reusable progress bar */}
           <QuizProgressBar
             currentQuestion={currentIndex}
-            totalQuestions={words.length}
+            totalQuestions={wordMeta.length}
           />
         </motion.div>
 
@@ -190,7 +279,25 @@ const SpellingTest = () => {
 
               {/* Speaker Button */}
               <motion.button
-                onClick={() => speak(currentWord.word)}
+                onClick={async () => {
+                  if (!sessionId) return;
+                  try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session?.access_token) return;
+                    const res = await fetch(`${API_BASE_URL}/api/quiz-content/spelling/speak`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${session.access_token}`,
+                      },
+                      body: JSON.stringify({ sessionId, wordId: currentWord.wordId }),
+                    });
+                    const data = await res.json();
+                    if (data.success && data.word) {
+                      speak(data.word);
+                    }
+                  } catch { /* ignore */ }
+                }}
                 disabled={isSpeaking}
                 className={`inline-flex items-center justify-center w-20 h-20 rounded-full text-4xl mb-6 transition-all duration-200 ${isSpeaking
                     ? 'bg-purple-200 text-purple-400 cursor-not-allowed'
@@ -210,22 +317,22 @@ const SpellingTest = () => {
                 <input
                   type="text"
                   value={currentAnswer}
-                  onChange={(e) => handleAnswerChange(currentWord.id, e.target.value)}
+                  onChange={(e) => handleAnswerChange(currentWord.wordId, e.target.value)}
                   placeholder="Type your spelling here..."
                   className="w-full max-w-md px-4 py-3 text-xl text-center border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none transition-colors"
                   autoFocus
                 />
               </div>
 
-              {/* Difficulty Indicator */}
               <div className="mb-6">
                 <span
-                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${currentWord.difficulty === 'easy'
+                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                    currentWord.difficulty === 'easy'
                       ? 'bg-green-100 text-green-700'
                       : currentWord.difficulty === 'medium'
                         ? 'bg-yellow-100 text-yellow-700'
                         : 'bg-red-100 text-red-700'
-                    }`}
+                  }`}
                 >
                   {currentWord.difficulty.charAt(0).toUpperCase() + currentWord.difficulty.slice(1)} Word
                 </span>
@@ -234,15 +341,14 @@ const SpellingTest = () => {
           </motion.div>
         </AnimatePresence>
 
-        {/* Using reusable navigation */}
         <div className="mb-8">
           <QuizNavigation
             currentIndex={currentIndex}
-            totalQuestions={words.length}
+            totalQuestions={wordMeta.length}
             onPrevious={goToPrevious}
             onNext={goToNext}
             onSubmit={submitTest}
-            isLastQuestion={currentIndex === words.length - 1}
+            isLastQuestion={currentIndex === wordMeta.length - 1}
             answeredIndices={answeredIndices}
           />
         </div>

@@ -1,3 +1,4 @@
+import logger from '../lib/logger.js';
 import { Router, Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { verifySupabaseToken, requireRole, getGradeFilteredQuizzes } from '../middleware/index.js';
@@ -32,7 +33,7 @@ router.get('/students', async (req: Request, res: Response) => {
       .order('student_name', { ascending: true });
 
     if (error) {
-      console.error('Get students error:', error);
+      logger.error(error, 'Get students error:');
       return res.status(500).json({ error: 'Failed to get students' });
     }
 
@@ -42,7 +43,7 @@ router.get('/students', async (req: Request, res: Response) => {
       count: students?.length || 0,
     });
   } catch (error) {
-    console.error('Get students error:', error);
+    logger.error(error, 'Get students error:');
     res.status(500).json({ error: 'Failed to get students' });
   }
 });
@@ -91,7 +92,7 @@ router.get('/students/:studentId/progress', async (req: Request, res: Response) 
       .order('completed_at', { ascending: false });
 
     if (resultsError) {
-      console.error('Get student results error:', resultsError);
+      logger.error(resultsError, 'Get student results error:');
       return res.status(500).json({ error: 'Failed to get results' });
     }
 
@@ -163,7 +164,7 @@ router.get('/students/:studentId/progress', async (req: Request, res: Response) 
       recentResults: results?.slice(0, 10) || [],
     });
   } catch (error) {
-    console.error('Get student progress error:', error);
+    logger.error(error, 'Get student progress error:');
     res.status(500).json({ error: 'Failed to get progress' });
   }
 });
@@ -200,7 +201,7 @@ router.get('/students/:studentId/reports', async (req: Request, res: Response) =
       .order('generated_at', { ascending: false });
 
     if (error) {
-      console.error('Get student reports error:', error);
+      logger.error(error, 'Get student reports error:');
       return res.status(500).json({ error: 'Failed to get reports' });
     }
 
@@ -218,7 +219,7 @@ router.get('/students/:studentId/reports', async (req: Request, res: Response) =
       count: reportsWithUrls.length,
     });
   } catch (error) {
-    console.error('Get student reports error:', error);
+    logger.error(error, 'Get student reports error:');
     res.status(500).json({ error: 'Failed to get reports' });
   }
 });
@@ -246,7 +247,7 @@ router.get('/summary', async (req: Request, res: Response) => {
     const { data: students, error: studentsError } = await studentsQuery;
 
     if (studentsError) {
-      console.error('Get students error:', studentsError);
+      logger.error(studentsError, 'Get students error:');
       return res.status(500).json({ error: 'Failed to get students' });
     }
 
@@ -299,7 +300,7 @@ router.get('/summary', async (req: Request, res: Response) => {
       students: studentSummaries,
     });
   } catch (error) {
-    console.error('Get teacher summary error:', error);
+    logger.error(error, 'Get teacher summary error:');
     res.status(500).json({ error: 'Failed to get summary' });
   }
 });

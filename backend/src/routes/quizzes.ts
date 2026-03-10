@@ -1,3 +1,4 @@
+import logger from '../lib/logger.js';
 import { Router, Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { 
@@ -58,7 +59,7 @@ router.get('/', verifySupabaseToken, async (req: Request, res: Response) => {
       totalQuizzes: quizzes.length,
     });
   } catch (error) {
-    console.error('Get quizzes error:', error);
+    logger.error(error, 'Get quizzes error:');
     res.status(500).json({ error: 'Failed to get quizzes' });
   }
 });
@@ -90,7 +91,7 @@ router.get(
         quiz,
       });
     } catch (error) {
-      console.error('Get quiz error:', error);
+      logger.error(error, 'Get quiz error:');
       res.status(500).json({ error: 'Failed to get quiz' });
     }
   }
@@ -155,7 +156,7 @@ router.get(
         reason: hasAccess ? 'Grade match' : 'Grade not in allowed list',
       });
     } catch (error) {
-      console.error('Check quiz access error:', error);
+      logger.error(error, 'Check quiz access error:');
       res.status(500).json({ error: 'Failed to check access' });
     }
   }

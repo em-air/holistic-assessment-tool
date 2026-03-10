@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Volume2, RotateCcw } from 'lucide-react';
-import { getWordsByGrade } from '../data/startingEndingSoundData';
-import { generateQuizQuestions, AudioPlayer, calculateQuizStats } from '../utils/soundQuizUtils';
-import { QuestionData, QuizResult } from '../data/startingEndingSoundData';
+import { AudioPlayer, calculateQuizStats } from '../utils/soundQuizUtils';
+import type { QuestionData, QuizResult, SoundQuestion } from '../types/quiz';
+import { supabase } from '../supabase-client';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { ProgressTracker } from '../utils/progressTracker';
 import SoundQuestionDisplay from '../components/SoundQuestionDisplay';
 import SoundOptionButtons from '../components/SoundOptionButtons';
@@ -30,25 +32,58 @@ const StartingEndingSoundQuiz: React.FC = () => {
   const currentQuestion = questions[currentQuestionIndex];
   const totalQuestions = 10;
 
-  // Initialize quiz questions
+  // Initialize quiz questions from backend
   useEffect(() => {
-    logger.log('Initializing quiz for grade:', grade);
-    logger.log('Grade param from URL:', gradeParam);
-    try {
-      const words = getWordsByGrade(grade);
-      logger.log('Words for grade:', words.length, words);
-      if (words.length === 0) {
-        logger.error('No words found for grade:', grade);
-        return;
+    const fetchQuestions = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/quiz-content/starting-ending-sounds/grade/${grade}`);
+        const data = await response.json();
+        if (!data.success || !data.questions || data.questions.length === 0) {
+          logger.error('No words found for grade:', grade);
+          return;
+        }
+        const words: SoundQuestion[] = data.questions;
+        // Shuffle and select words
+        const shuffled = [...words].sort(() => Math.random() - 0.5);
+        const beginningCount = Math.ceil(totalQuestions / 2);
+        const endingCount = totalQuestions - beginningCount;
+        const beginningWords = shuffled.slice(0, beginningCount);
+        const endingWords = shuffled.slice(0, endingCount);
+
+        // Build question stubs and fetch options from backend
+        const questionStubs = [
+          ...beginningWords.map(w => ({ question: w, questionType: 'beginning' as const })),
+          ...endingWords.map(w => ({ question: w, questionType: 'ending' as const })),
+        ];
+
+        const questionsWithOptions: QuestionData[] = await Promise.all(
+          questionStubs.map(async (stub) => {
+            try {
+              const optRes = await fetch(`${API_BASE_URL}/api/quiz-content/starting-ending-sounds/options`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ questionId: stub.question.id, questionType: stub.questionType }),
+              });
+              const optData = await optRes.json();
+              return {
+                question: stub.question,
+                questionType: stub.questionType,
+                correctAnswer: '', // not needed — server validates
+                options: optData.success ? optData.options : [],
+              };
+            } catch {
+              return { question: stub.question, questionType: stub.questionType, correctAnswer: '', options: [] };
+            }
+          })
+        );
+        setQuestions(questionsWithOptions);
+        setQuestionStartTime(new Date());
+      } catch (error) {
+        logger.error('Error initializing quiz:', error);
       }
-      const quizQuestions = generateQuizQuestions(words, totalQuestions);
-      logger.log('Generated questions:', quizQuestions.length, quizQuestions);
-      setQuestions(quizQuestions);
-      setQuestionStartTime(new Date());
-    } catch (error) {
-      logger.error('Error initializing quiz:', error);
-    }
-  }, [grade, gradeParam]);
+    };
+    fetchQuestions();
+  }, [grade]);
 
   // Removed automatic audio playback - now only plays when listen button is clicked
 
@@ -65,31 +100,44 @@ const StartingEndingSoundQuiz: React.FC = () => {
     }
   };
 
-  const handleAnswerSelect = (answer: string) => {
+  const handleAnswerSelect = async (answer: string) => {
     if (selectedAnswer || showNext) return;
 
     setSelectedAnswer(answer);
     const questionTime = (new Date().getTime() - questionStartTime.getTime()) / 1000;
     setTimePerQuestion([...timePerQuestion, questionTime]);
 
-    const isCorrect = answer === currentQuestion.correctAnswer;
-    
-    if (isCorrect) {
-      setScore(score + 1);
-      setFeedback({ type: 'correct', message: 'Correct!' });
-    } else {
-      setFeedback({ 
-        type: 'incorrect', 
-        message: `Not quite! The ${currentQuestion.questionType} sound is "${currentQuestion.correctAnswer}"` 
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+      const response = await fetch(`${API_BASE_URL}/api/quiz-content/starting-ending-sounds/check`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          questionId: currentQuestion.question.id,
+          questionType: currentQuestion.questionType,
+          answer,
+        }),
       });
+      const result = await response.json();
+      if (result.isCorrect) {
+        setScore(score + 1);
+        setFeedback({ type: 'correct', message: 'Correct!' });
+      } else {
+        setFeedback({
+          type: 'incorrect',
+          message: `Not quite! The ${currentQuestion.questionType} sound is "${result.correctAnswer || answer}"`,
+        });
+      }
+    } catch {
+      setFeedback({ type: 'incorrect', message: 'Error checking answer' });
     }
 
     setShowNext(true);
-
-    // Auto-advance after 2 seconds
-    setTimeout(() => {
-      handleNext();
-    }, 2000);
+    setTimeout(() => { handleNext(); }, 2000);
   };
 
   const handleNext = () => {
@@ -136,10 +184,37 @@ const StartingEndingSoundQuiz: React.FC = () => {
     });
   };
 
-  const handleRestart = () => {
-    const words = getWordsByGrade(grade);
-    const quizQuestions = generateQuizQuestions(words, totalQuestions);
-    setQuestions(quizQuestions);
+  const handleRestart = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/quiz-content/starting-ending-sounds/grade/${grade}`);
+      const data = await response.json();
+      if (data.success && data.questions) {
+        const words: SoundQuestion[] = data.questions;
+        const shuffled = [...words].sort(() => Math.random() - 0.5);
+        const beginningCount = Math.ceil(totalQuestions / 2);
+        const endingCount = totalQuestions - beginningCount;
+        const questionStubs = [
+          ...shuffled.slice(0, beginningCount).map(w => ({ question: w, questionType: 'beginning' as const })),
+          ...shuffled.slice(0, endingCount).map(w => ({ question: w, questionType: 'ending' as const })),
+        ];
+        const questionsWithOptions: QuestionData[] = await Promise.all(
+          questionStubs.map(async (stub) => {
+            try {
+              const optRes = await fetch(`${API_BASE_URL}/api/quiz-content/starting-ending-sounds/options`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ questionId: stub.question.id, questionType: stub.questionType }),
+              });
+              const optData = await optRes.json();
+              return { question: stub.question, questionType: stub.questionType, correctAnswer: '', options: optData.success ? optData.options : [] };
+            } catch {
+              return { question: stub.question, questionType: stub.questionType, correctAnswer: '', options: [] };
+            }
+          })
+        );
+        setQuestions(questionsWithOptions);
+      }
+    } catch { /* ignore */ }
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
     setFeedback({ type: null, message: '' });

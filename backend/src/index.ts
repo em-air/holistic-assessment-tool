@@ -1,3 +1,4 @@
+import logger from './lib/logger.js';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -63,13 +64,38 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // Limit each IP to 1000 requests per windowMs
+// Tiered rate limiting
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
   message: { error: 'Too many requests, please try again later.' },
 });
-app.use(limiter);
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: { error: 'Too many auth attempts, please try again later.' },
+});
+
+const quizSubmitLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 60,
+  message: { error: 'Too many submissions, please slow down.' },
+});
+
+const reportLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: 'Too many report requests, please try again later.' },
+});
+
+const aiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 10,
+  message: { error: 'AI rate limit reached, please try again shortly.' },
+});
+
+app.use(globalLimiter);
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
@@ -81,21 +107,21 @@ app.get('/api/health', (req, res) => {
 });
 
 // API routes
-app.use('/api/profile', profileRoutes);
+app.use('/api/profile', authLimiter, profileRoutes);
 app.use('/api/quizzes', quizRoutes);
-app.use('/api/results', resultRoutes);
+app.use('/api/results', quizSubmitLimiter, resultRoutes);
 app.use('/api/progress', progressRoutes);
-app.use('/api/reports', reportRoutes);
+app.use('/api/reports', reportLimiter, reportRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/teacher', teacherRoutes);
-app.use('/api/ai', aiRoutes);
-app.use('/api/quiz-content', quizContentRoutes);
+app.use('/api/ai', aiLimiter, aiRoutes);
+app.use('/api/quiz-content', quizSubmitLimiter, quizContentRoutes);
 
 // Error handling middleware
 app.use((err: Error & { status?: number; errors?: unknown }, req: express.Request, res: express.Response, _next: express.NextFunction) => {
   // Only log errors in development or if they're 500-level errors
   if (process.env.NODE_ENV !== 'production' || !err.status || err.status >= 500) {
-    console.error(`[${new Date().toISOString()}] Error:`, err.message);
+    logger.error({ err }, 'Request error');
   }
   
   if (err.name === 'ZodError') {
@@ -124,8 +150,8 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   // These logs are acceptable for server startup
   if (process.env.NODE_ENV !== 'test') {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    logger.info(`ðŸš€ Server running on http://localhost:${PORT}`);
+    logger.info(`ðŸ“Š Environment: ${process.env.NODE_ENV || 'development'}`);
   }
 });
 

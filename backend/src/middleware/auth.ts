@@ -1,3 +1,4 @@
+import logger from '../lib/logger.js';
 import { Request, Response, NextFunction } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import type { Profile, UserRole, GradeLevel } from '../types/database.js';
@@ -35,13 +36,14 @@ export const verifySupabaseToken = async (
 
     if (profileError || !profile) {
       // Profile might not exist yet - create a default one
-      const newProfile: Partial<Profile> = {
+      const newProfile: Omit<Profile, 'created_at' | 'updated_at'> = {
         id: user.id,
         student_name: user.user_metadata?.studentName || null,
         age: user.user_metadata?.age || null,
         grade: user.user_metadata?.grade || null,
         parent_email: user.user_metadata?.parentEmail || user.email || null,
         role: 'student',
+        assigned_teacher_id: null,
       };
 
       const { data: createdProfile, error: createError } = await supabaseAdmin
@@ -51,7 +53,7 @@ export const verifySupabaseToken = async (
         .single();
 
       if (createError) {
-        console.error('Error creating profile:', createError);
+        logger.error(createError, 'Error creating profile:');
         return res.status(500).json({ error: 'Failed to create user profile' });
       }
 
@@ -74,7 +76,7 @@ export const verifySupabaseToken = async (
 
     next();
   } catch (error) {
-    console.error('Auth middleware error:', error);
+    logger.error(error, 'Auth middleware error:');
     res.status(500).json({ error: 'Authentication failed' });
   }
 };

@@ -1,3 +1,4 @@
+import logger from '../lib/logger.js';
 /**
  * Session Storage Abstraction
  * 
@@ -109,7 +110,7 @@ class RedisSessionStorage implements ISessionStorage {
       socket: {
         reconnectStrategy: (retries) => {
           if (retries > 10) {
-            console.error('Redis: Max retries reached, giving up');
+            logger.error('Redis: Max retries reached, giving up');
             return new Error('Max retries reached');
           }
           return Math.min(retries * 100, 3000);
@@ -118,17 +119,17 @@ class RedisSessionStorage implements ISessionStorage {
     });
 
     this.client.on('error', (err) => {
-      console.error('Redis Client Error:', err);
+      logger.error(err, 'Redis Client Error:');
       this.isConnected = false;
     });
 
     this.client.on('connect', () => {
-      console.log('Redis: Connected');
+      logger.info('Redis: Connected');
       this.isConnected = true;
     });
 
     this.client.on('reconnecting', () => {
-      console.log('Redis: Reconnecting...');
+      logger.info('Redis: Reconnecting...');
     });
 
     // Connect immediately
@@ -139,7 +140,7 @@ class RedisSessionStorage implements ISessionStorage {
     try {
       await this.client.connect();
     } catch (error) {
-      console.error('Redis: Failed to connect:', error);
+      logger.error(error, 'Redis: Failed to connect:');
     }
   }
 
@@ -149,7 +150,7 @@ class RedisSessionStorage implements ISessionStorage {
 
   async get(sessionId: string): Promise<QuizSession | null> {
     if (!this.isConnected) {
-      console.warn('Redis: Not connected, cannot get session');
+      logger.warn('Redis: Not connected, cannot get session');
       return null;
     }
 
@@ -159,14 +160,14 @@ class RedisSessionStorage implements ISessionStorage {
       
       return JSON.parse(data) as QuizSession;
     } catch (error) {
-      console.error('Redis: Error getting session:', error);
+      logger.error(error, 'Redis: Error getting session:');
       return null;
     }
   }
 
   async set(sessionId: string, session: QuizSession, ttlSeconds = 3600): Promise<void> {
     if (!this.isConnected) {
-      console.warn('Redis: Not connected, cannot set session');
+      logger.warn('Redis: Not connected, cannot set session');
       return;
     }
 
@@ -176,7 +177,7 @@ class RedisSessionStorage implements ISessionStorage {
       
       await this.client.setEx(key, ttlSeconds, data);
     } catch (error) {
-      console.error('Redis: Error setting session:', error);
+      logger.error(error, 'Redis: Error setting session:');
     }
   }
 
@@ -186,7 +187,7 @@ class RedisSessionStorage implements ISessionStorage {
     try {
       await this.client.del(this.getKey(sessionId));
     } catch (error) {
-      console.error('Redis: Error deleting session:', error);
+      logger.error(error, 'Redis: Error deleting session:');
     }
   }
 
@@ -197,7 +198,7 @@ class RedisSessionStorage implements ISessionStorage {
       const exists = await this.client.exists(this.getKey(sessionId));
       return exists > 0;
     } catch (error) {
-      console.error('Redis: Error checking session:', error);
+      logger.error(error, 'Redis: Error checking session:');
       return false;
     }
   }
@@ -248,11 +249,11 @@ class HybridSessionStorage implements ISessionStorage {
     this.useRedis = !!process.env.REDIS_URL && process.env.REDIS_URL.length > 0;
     
     if (this.useRedis) {
-      console.log('Session Storage: Using Redis with in-memory fallback');
+      logger.info('Session Storage: Using Redis with in-memory fallback');
       // Only create Redis connection if REDIS_URL is actually set
       this.redis = new RedisSessionStorage();
     } else {
-      console.log('Session Storage: Using in-memory only (no REDIS_URL set)');
+      logger.info('Session Storage: Using in-memory only (no REDIS_URL set)');
     }
   }
 
@@ -333,11 +334,11 @@ function createSessionStorage(): ISessionStorage {
   
   switch (storageType) {
     case 'redis':
-      console.log('Session Storage: Forcing Redis');
+      logger.info('Session Storage: Forcing Redis');
       return new RedisSessionStorage();
     
     case 'memory':
-      console.log('Session Storage: Forcing in-memory');
+      logger.info('Session Storage: Forcing in-memory');
       return new InMemorySessionStorage();
     
     case 'auto':
@@ -346,7 +347,7 @@ function createSessionStorage(): ISessionStorage {
       if (process.env.NODE_ENV === 'production' || process.env.REDIS_URL) {
         return new HybridSessionStorage();
       }
-      console.log('Session Storage: Using in-memory (development)');
+      logger.info('Session Storage: Using in-memory (development)');
       return new InMemorySessionStorage();
   }
 }

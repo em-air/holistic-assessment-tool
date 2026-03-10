@@ -1,8 +1,9 @@
+import logger from '../lib/logger.js';
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { supabaseAdmin } from '../config/supabase.js';
 import { verifySupabaseToken, requireRole } from '../middleware/index.js';
-import type { UserRole, QuizMetadataInsert, GradeLevel } from '../types/database.js';
+import type { UserRole, QuizMetadataInsert, GradeLevel, AssessmentCategory, ReportType } from '../types/database.js';
 
 const router = Router();
 
@@ -43,7 +44,7 @@ router.get('/users', async (req: Request, res: Response) => {
       .range(from, to);
 
     if (error) {
-      console.error('Get users error:', error);
+      logger.error(error, 'Get users error:');
       return res.status(500).json({ error: 'Failed to get users' });
     }
 
@@ -58,7 +59,7 @@ router.get('/users', async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error('Get users error:', error);
+    logger.error(error, 'Get users error:');
     res.status(500).json({ error: 'Failed to get users' });
   }
 });
@@ -79,13 +80,13 @@ router.get('/users/:userId/results', async (req: Request, res: Response) => {
       .order('completed_at', { ascending: false });
 
     if (category && ['mind', 'oral', 'academic'].includes(category)) {
-      query = query.eq('category', category);
+      query = query.eq('category', category as AssessmentCategory);
     }
 
     const { data: results, error } = await query;
 
     if (error) {
-      console.error('Get user results error:', error);
+      logger.error(error, 'Get user results error:');
       return res.status(500).json({ error: 'Failed to get results' });
     }
 
@@ -95,7 +96,7 @@ router.get('/users/:userId/results', async (req: Request, res: Response) => {
       count: results?.length || 0,
     });
   } catch (error) {
-    console.error('Get user results error:', error);
+    logger.error(error, 'Get user results error:');
     res.status(500).json({ error: 'Failed to get results' });
   }
 });
@@ -115,7 +116,7 @@ router.get('/users/:userId/reports', async (req: Request, res: Response) => {
       .order('generated_at', { ascending: false });
 
     if (error) {
-      console.error('Get user reports error:', error);
+      logger.error(error, 'Get user reports error:');
       return res.status(500).json({ error: 'Failed to get reports' });
     }
 
@@ -125,7 +126,7 @@ router.get('/users/:userId/reports', async (req: Request, res: Response) => {
       count: reports?.length || 0,
     });
   } catch (error) {
-    console.error('Get user reports error:', error);
+    logger.error(error, 'Get user reports error:');
     res.status(500).json({ error: 'Failed to get reports' });
   }
 });
@@ -163,7 +164,7 @@ router.put('/users/:userId/role', async (req: Request, res: Response) => {
       .single();
 
     if (error) {
-      console.error('Update role error:', error);
+      logger.error(error, 'Update role error:');
       return res.status(500).json({ error: 'Failed to update role' });
     }
 
@@ -173,7 +174,7 @@ router.put('/users/:userId/role', async (req: Request, res: Response) => {
       message: `Role updated to ${validation.data.role}`,
     });
   } catch (error) {
-    console.error('Update role error:', error);
+    logger.error(error, 'Update role error:');
     res.status(500).json({ error: 'Failed to update role' });
   }
 });
@@ -251,7 +252,7 @@ router.get('/analytics', async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error('Get analytics error:', error);
+    logger.error(error, 'Get analytics error:');
     res.status(500).json({ error: 'Failed to get analytics' });
   }
 });
@@ -291,7 +292,7 @@ router.post('/quizzes', async (req: Request, res: Response) => {
       .single();
 
     if (error) {
-      console.error('Create quiz error:', error);
+      logger.error(error, 'Create quiz error:');
       return res.status(500).json({ error: 'Failed to create quiz metadata' });
     }
 
@@ -300,7 +301,7 @@ router.post('/quizzes', async (req: Request, res: Response) => {
       quiz,
     });
   } catch (error) {
-    console.error('Create quiz error:', error);
+    logger.error(error, 'Create quiz error:');
     res.status(500).json({ error: 'Failed to create quiz metadata' });
   }
 });
@@ -321,7 +322,7 @@ router.delete('/quizzes/:quizId', async (req: Request, res: Response) => {
       .single();
 
     if (error) {
-      console.error('Disable quiz error:', error);
+      logger.error(error, 'Disable quiz error:');
       return res.status(500).json({ error: 'Failed to disable quiz' });
     }
 
@@ -331,7 +332,7 @@ router.delete('/quizzes/:quizId', async (req: Request, res: Response) => {
       message: 'Quiz disabled successfully',
     });
   } catch (error) {
-    console.error('Disable quiz error:', error);
+    logger.error(error, 'Disable quiz error:');
     res.status(500).json({ error: 'Failed to disable quiz' });
   }
 });
@@ -380,7 +381,7 @@ router.post('/users/:userId/assign-teacher', async (req: Request, res: Response)
       .single();
 
     if (error) {
-      console.error('Assign teacher error:', error);
+      logger.error(error, 'Assign teacher error:');
       return res.status(500).json({ error: 'Failed to assign teacher' });
     }
 
@@ -392,7 +393,7 @@ router.post('/users/:userId/assign-teacher', async (req: Request, res: Response)
         : 'Teacher assignment removed',
     });
   } catch (error) {
-    console.error('Assign teacher error:', error);
+    logger.error(error, 'Assign teacher error:');
     res.status(500).json({ error: 'Failed to assign teacher' });
   }
 });
@@ -426,7 +427,7 @@ router.get('/reports', async (req: Request, res: Response) => {
 
     // Apply filters
     if (reportType && ['mind', 'oral', 'academic', 'full'].includes(reportType)) {
-      query = query.eq('report_type', reportType);
+      query = query.eq('report_type', reportType as ReportType);
     }
     if (dateFrom) {
       query = query.gte('generated_at', dateFrom);
@@ -444,7 +445,7 @@ router.get('/reports', async (req: Request, res: Response) => {
       .range(from, to);
 
     if (error) {
-      console.error('Get all reports error:', error);
+      logger.error(error, 'Get all reports error:');
       return res.status(500).json({ error: 'Failed to get reports' });
     }
 
@@ -469,7 +470,7 @@ router.get('/reports', async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error('Get all reports error:', error);
+    logger.error(error, 'Get all reports error:');
     res.status(500).json({ error: 'Failed to get reports' });
   }
 });
@@ -509,14 +510,15 @@ router.get('/reports/:reportId/download', async (req: Request, res: Response) =>
       .order('completed_at', { ascending: false });
 
     if (resultsError) {
-      console.error('Fetch quiz results error:', resultsError);
+      logger.error(resultsError, 'Fetch quiz results error:');
     }
 
     // Generate PDF with the data
     const { generateReportPDF } = await import('../services/pdfGenerator.js');
     
+    const profileData = (report as any).profiles || { student_name: 'Student' };
     const reportData = {
-      profile: report.profiles || { student_name: 'Student' },
+      profile: profileData,
       mindResults: (quizResults || []).filter((r: any) => r.category === 'mind'),
       oralResults: (quizResults || []).filter((r: any) => r.category === 'oral'),
       academicResults: (quizResults || []).filter((r: any) => r.category === 'academic'),
@@ -526,7 +528,7 @@ router.get('/reports/:reportId/download', async (req: Request, res: Response) =>
     const pdfBuffer = await generateReportPDF(reportData);
 
     // Set headers for PDF download
-    const studentName = report.profiles?.student_name || 'Student';
+    const studentName = profileData?.student_name || 'Student';
     const dateStr = new Date(report.generated_at).toISOString().split('T')[0];
     const filename = `${studentName.replace(/\s+/g, '_')}_Report_${dateStr}.pdf`;
 
@@ -536,7 +538,7 @@ router.get('/reports/:reportId/download', async (req: Request, res: Response) =>
     
     res.send(pdfBuffer);
   } catch (error) {
-    console.error('Download report error:', error);
+    logger.error(error, 'Download report error:');
     res.status(500).json({ error: 'Failed to generate PDF' });
   }
 });

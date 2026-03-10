@@ -2,7 +2,10 @@ import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Volume2, VolumeX, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { spotTheDifferenceData, type GameLevelWithScene } from '../data/spotTheDifferenceData';
+import type { GameLevelWithScene } from '../types/quiz';
+import { supabase } from '../supabase-client';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import SimpleCartoonScene from '../components/SimpleCartoonScene';
 import { ROUTES } from '../routes';
 
@@ -44,8 +47,10 @@ const translations = {
 
 export default function SpotTheDifferenceGame() {
   const navigate = useNavigate();
+  const [levels, setLevels] = useState<GameLevelWithScene[]>([]);
   const [currentLevel, setCurrentLevel] = useState(0);
   const [foundDifferences, setFoundDifferences] = useState<Set<number>>(new Set());
+  const [totalDifferences, setTotalDifferences] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [isArabic, setIsArabic] = useState(false);
@@ -54,75 +59,79 @@ export default function SpotTheDifferenceGame() {
   const [showSparkle, setShowSparkle] = useState<{ x: number; y: number } | null>(null);
   const [wrongClick, setWrongClick] = useState<{ x: number; y: number } | null>(null);
 
-  const currentGameLevel: GameLevelWithScene = spotTheDifferenceData[currentLevel];
+  // Fetch levels from backend
+  useEffect(() => {
+    const fetchLevels = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/quiz-content/spot-the-difference/grade/1`);
+        const data = await response.json();
+        if (data.success && data.levels) {
+          setLevels(data.levels);
+          if (data.levels.length > 0 && data.levels[0].totalDifferences) {
+            setTotalDifferences(data.levels[0].totalDifferences);
+          }
+        }
+      } catch {
+        // Levels will remain empty
+      }
+    };
+    fetchLevels();
+  }, []);
+
+  const currentGameLevel: GameLevelWithScene | undefined = levels[currentLevel];
   const t = translations[isArabic ? 'ar' : 'en'];
   const isRTL = isArabic;
 
-  // Check if all differences are found
   useEffect(() => {
-    const totalDifferences = currentGameLevel?.differences?.length || 0;
     if (foundDifferences.size === totalDifferences && foundDifferences.size > 0) {
       setShowCelebration(true);
       setGameComplete(true);
-      if (soundEnabled) {
-        console.log('🎉 Level complete sound');
-      }
     }
-  }, [foundDifferences, currentGameLevel, soundEnabled]);
+  }, [foundDifferences, totalDifferences, soundEnabled]);
 
-  // Check if all levels are complete
   useEffect(() => {
-    if (currentLevel >= spotTheDifferenceData.length - 1 && gameComplete) {
+    if (currentLevel >= levels.length - 1 && gameComplete) {
       setAllLevelsComplete(true);
     }
-  }, [currentLevel, gameComplete]);
+  }, [currentLevel, gameComplete, levels.length]);
 
-  const handleSceneClick = useCallback((x: number, y: number, sceneWidth: number, sceneHeight: number) => {
-    // Convert click coordinates to relative coordinates (0-1 range)
+  const handleSceneClick = useCallback(async (x: number, y: number, sceneWidth: number, sceneHeight: number) => {
+    if (!currentGameLevel) return;
     const relativeX = x / sceneWidth;
     const relativeY = y / sceneHeight;
 
-    // Check if click is near any unfound difference
-    const tolerance = 0.05; // 5% tolerance for clicking
-    let foundMatch = false;
-
-    currentGameLevel.differences.forEach((diff, index) => {
-      if (!foundDifferences.has(index)) {
-        const diffX = diff.x;
-        const diffY = diff.y;
-        
-        const distance = Math.sqrt(
-          Math.pow(relativeX - diffX, 2) + Math.pow(relativeY - diffY, 2)
-        );
-
-        if (distance <= tolerance) {
-          foundMatch = true;
-          setFoundDifferences(prev => new Set([...prev, index]));
-          
-          // Show sparkle effect
-          setShowSparkle({ x, y });
-          setTimeout(() => setShowSparkle(null), 1000);
-
-          if (soundEnabled) {
-            console.log('✨ Found difference sound');
-          }
-        }
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+      const response = await fetch(`${API_BASE_URL}/api/quiz-content/spot-the-difference/check`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ levelId: currentGameLevel.id, clickX: relativeX, clickY: relativeY }),
+      });
+      const result = await response.json();
+      if (result.found && result.differenceIndex !== undefined) {
+        setFoundDifferences(prev => new Set([...prev, result.differenceIndex]));
+        setTotalDifferences(result.totalDifferences);
+        setShowSparkle({ x, y });
+        setTimeout(() => setShowSparkle(null), 1000);
+      } else {
+        setWrongClick({ x, y });
+        setTimeout(() => setWrongClick(null), 500);
       }
-    });
-
-    // Show wrong click feedback if no match found
-    if (!foundMatch) {
+      if (result.totalDifferences) {
+        setTotalDifferences(result.totalDifferences);
+      }
+    } catch {
       setWrongClick({ x, y });
       setTimeout(() => setWrongClick(null), 500);
-      
-      if (soundEnabled) {
-        console.log('❌ Wrong click sound');
-      }
     }
-  }, [currentGameLevel, foundDifferences, soundEnabled]);
+  }, [currentGameLevel, supabase]);
 
   const handleNextLevel = () => {
-    if (currentLevel < spotTheDifferenceData.length - 1) {
+    if (currentLevel < levels.length - 1) {
       setCurrentLevel(prev => prev + 1);
       setFoundDifferences(new Set());
       setShowCelebration(false);
@@ -188,6 +197,8 @@ export default function SpotTheDifferenceGame() {
       {/* Game Content */}
       <div className="max-w-6xl mx-auto p-6">
         {/* Level Info */}
+        {currentGameLevel ? (
+        <>
         <div className="text-center mb-6">
           <div className="bg-white rounded-lg p-4 shadow-md inline-block">
             <h2 className="text-xl font-semibold text-gray-800 mb-2">
@@ -199,7 +210,7 @@ export default function SpotTheDifferenceGame() {
             <div className="flex items-center justify-center gap-2 text-lg">
               <span className="text-green-600 font-bold">{foundDifferences.size}</span>
               <span className="text-gray-500">{t.of}</span>
-              <span className="text-blue-600 font-bold">{currentGameLevel.differences.length}</span>
+              <span className="text-blue-600 font-bold">{totalDifferences}</span>
               <span className="text-gray-500">{t.differences}</span>
             </div>
           </div>
@@ -356,6 +367,13 @@ export default function SpotTheDifferenceGame() {
             {t.playAgain}
           </button>
         </div>
+        </>
+        ) : (
+          <div className="text-center p-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading levels...</p>
+          </div>
+        )}
       </div>
     </div>
   );
