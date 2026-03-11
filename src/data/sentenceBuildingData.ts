@@ -88,7 +88,7 @@ export const grade2Questions: SentenceBuildingQuestion[] = [
     id: 'g2_sb_1',
     level: 2,
     question: 'Which sentence best describes what the child is doing and where?',
-    image: 'https://cdn.pixabay.com/photo/2016/11/29/03/36/child-1867463_1280.jpg',
+    image: 'https://cdn.pixabay.com/photo/2020/11/10/21/00/boy-5731001_1280.jpg',
     options: [
       { id: 'a', text: 'The child is resting in the living room.', isCorrect: false },
       { id: 'b', text: 'The child is quietly reading a book indoors.', isCorrect: true },
@@ -104,7 +104,7 @@ export const grade2Questions: SentenceBuildingQuestion[] = [
     id: 'g2_sb_2',
     level: 2,
     question: 'Pick the sentence that best tells what the children are doing and how they feel.',
-    image: 'https://cdn.pixabay.com/photo/2016/11/22/19/25/children-1850141_1280.jpg',
+    image: 'https://cdn.pixabay.com/photo/2022/11/22/22/11/child-7610744_1280.jpg',
     options: [
       { id: 'a', text: 'The children are racing each other to win.', isCorrect: false },
       { id: 'b', text: 'The children are happily playing together outside.', isCorrect: true },
@@ -120,7 +120,7 @@ export const grade2Questions: SentenceBuildingQuestion[] = [
     id: 'g2_sb_3',
     level: 2,
     question: 'Choose the sentence that tells both what is happening and what tools are being used.',
-    image: 'https://cdn.pixabay.com/photo/2017/06/24/02/56/art-2437545_1280.jpg',
+    image: 'https://cdn.pixabay.com/photo/2019/04/27/07/48/painting-4159435_1280.jpg',
     options: [
       { id: 'a', text: 'Someone is drawing with a pencil on paper.', isCorrect: false },
       { id: 'b', text: 'Someone is painting a picture using brushes and colours.', isCorrect: true },
@@ -136,12 +136,12 @@ export const grade2Questions: SentenceBuildingQuestion[] = [
     id: 'g2_sb_4',
     level: 2,
     question: 'Which sentence describes both what the dog is doing and where?',
-    image: 'https://cdn.pixabay.com/photo/2020/03/31/19/20/dog-4988985_1280.jpg',
+    image: 'https://cdn.pixabay.com/photo/2015/06/30/20/58/dog-826827_1280.jpg',
     options: [
       { id: 'a', text: 'The dog is playing fetch in the garden.', isCorrect: false },
       { id: 'b', text: 'The dog is walking slowly on the path.', isCorrect: false },
-      { id: 'c', text: 'The dog is running quickly across the ground.', isCorrect: true },
-      { id: 'd', text: 'The dog is jumping over a fence.', isCorrect: false }
+      { id: 'c', text: 'The dog is running quickly across the ground.', isCorrect: false },
+      { id: 'd', text: 'The dog is jumping over a fence.', isCorrect: true }
     ],
     feedback: {
       correct: 'Yes! The dog is running quickly — not walking or jumping.',
@@ -152,7 +152,7 @@ export const grade2Questions: SentenceBuildingQuestion[] = [
     id: 'g2_sb_5',
     level: 2,
     question: 'Which sentence best describes what is happening between the two people?',
-    image: 'https://cdn.pixabay.com/photo/2017/02/15/00/48/father-and-son-2067399_1280.jpg',
+    image: 'https://cdn.pixabay.com/photo/2016/08/31/14/23/father-1633655_1280.jpg',
     options: [
       { id: 'a', text: 'The man is teaching the boy a lesson.', isCorrect: false },
       { id: 'b', text: 'The father and son are enjoying time together.', isCorrect: true },
@@ -173,10 +173,10 @@ export const grade3Questions: SentenceBuildingQuestion[] = [
     id: 'g3_sb_1',
     level: 3,
     question: 'Look at the picture. What will most likely happen next, and why?',
-    image: 'https://cdn.pixabay.com/photo/2016/10/16/16/33/rain-1745486_1280.jpg',
+    image: 'https://cdn.pixabay.com/photo/2017/08/07/16/18/cold-2605359_1280.jpg',
     options: [
       { id: 'a', text: 'The children will go swimming because they love water.', isCorrect: false },
-      { id: 'b', text: 'The children will keep playing because rain is fun.', isCorrect: false },
+      { id: 'b', text: 'The children will go inside because it is snowing.', isCorrect: false },
       { id: 'c', text: 'The children will go inside or find an umbrella because it is raining.', isCorrect: true },
       { id: 'd', text: 'The children will water the garden since it needs rain.', isCorrect: false }
     ],
@@ -189,12 +189,12 @@ export const grade3Questions: SentenceBuildingQuestion[] = [
     id: 'g3_sb_2',
     level: 3,
     question: 'Which sentence has the correct structure and gives the most detail?',
-    image: 'https://cdn.pixabay.com/photo/2017/08/07/14/02/cat-2604214_1280.jpg',
+    image: 'https://cdn.pixabay.com/photo/2016/11/24/22/45/cat-1857404_1280.jpg',
     options: [
       { id: 'a', text: 'On the wooden fence, sat the cat quietly.', isCorrect: false },
-      { id: 'b', text: 'The cat sat quietly on the fence while it watched the birds fly by.', isCorrect: true },
+      { id: 'b', text: 'The cat sat quietly while it watched the birds rest.', isCorrect: true },
       { id: 'c', text: 'Sat the cat on fence and birds watched.', isCorrect: false },
-      { id: 'd', text: 'The fence had a cat and the birds was flying.', isCorrect: false }
+      { id: 'd', text: 'The fence had a cat and the birds was resting.', isCorrect: false }
     ],
     feedback: {
       correct: 'Perfect! This sentence has correct structure, detail, and proper tense.',
@@ -205,7 +205,7 @@ export const grade3Questions: SentenceBuildingQuestion[] = [
     id: 'g3_sb_3',
     level: 3,
     question: 'Look at the girl\'s face. Which sentence best explains both how she feels and a possible reason?',
-    image: 'https://cdn.pixabay.com/photo/2017/06/23/04/49/sad-2433730_1280.jpg',
+    image: 'https://cdn.pixabay.com/photo/2013/11/22/17/25/baby-215867_1280.jpg',
     options: [
       { id: 'a', text: 'The girl feels bored because she has nothing to do.', isCorrect: false },
       { id: 'b', text: 'The girl looks upset because something made her feel sad.', isCorrect: true },
@@ -221,11 +221,11 @@ export const grade3Questions: SentenceBuildingQuestion[] = [
     id: 'g3_sb_4',
     level: 3,
     question: 'The woman is smiling at her desk. Which sentence gives the best reason using "because"?',
-    image: 'https://cdn.pixabay.com/photo/2015/01/08/18/30/entrepreneur-593371_1280.jpg',
+    image: 'https://images.unsplash.com/photo-1699811250982-2c9548495946?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     options: [
       { id: 'a', text: 'The woman is smiling because she is at her desk.', isCorrect: false },
-      { id: 'b', text: 'The woman feels proud because she completed an important task.', isCorrect: true },
-      { id: 'c', text: 'The woman is happy because the weather is nice today.', isCorrect: false },
+      { id: 'b', text: 'The woman feels proud because she completed an important task.', isCorrect: false },
+      { id: 'c', text: 'The woman is happy because the weather is nice today.', isCorrect: true },
       { id: 'd', text: 'The woman is laughing because someone told her a joke.', isCorrect: false }
     ],
     feedback: {
@@ -237,7 +237,7 @@ export const grade3Questions: SentenceBuildingQuestion[] = [
     id: 'g3_sb_5',
     level: 3,
     question: 'Combine these two ideas into one correct sentence: "The bird is sitting on the branch." "It begins to sing a beautiful song."',
-    image: 'https://cdn.pixabay.com/photo/2018/08/22/22/51/bird-3624167_1280.jpg',
+    image: 'https://cdn.pixabay.com/photo/2024/03/16/10/02/spring-8636733_1280.jpg',
     options: [
       { id: 'a', text: 'The bird sat on the branch and began to sing a beautiful song.', isCorrect: true },
       { id: 'b', text: 'Sitting on the branch, began singing a beautiful song the bird.', isCorrect: false },
@@ -258,7 +258,7 @@ export const grade4Questions: SentenceBuildingQuestion[] = [
     id: 'g4_sb_1',
     level: 4,
     question: 'Which sentence best combines these contrasting ideas? "The boy was exhausted from practice." "He refused to stop running."',
-    image: 'https://cdn.pixabay.com/photo/2015/01/26/22/40/child-613199_1280.jpg',
+    image: 'https://images.unsplash.com/photo-1720799359616-04f900b1e1eb?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dGlyZWQlMjBjaGlsZCUyMHJ1bm5pbmd8ZW58MHx8MHx8fDA%3D',
     options: [
       { id: 'a', text: 'The boy was exhausted from practice and he refused to stop running.', isCorrect: false },
       { id: 'b', text: 'Even though the boy was exhausted from practice, he refused to stop running.', isCorrect: true },
@@ -274,11 +274,11 @@ export const grade4Questions: SentenceBuildingQuestion[] = [
     id: 'g4_sb_2',
     level: 4,
     question: 'Read the passage: "The sky turned dark grey. The wind picked up speed and howled through the trees. Leaves and small branches flew across the road." Which concluding sentence fits best and uses the most precise language?',
-    image: 'https://cdn.pixabay.com/photo/2018/01/30/17/47/dramatic-3119548_1280.jpg',
+    image: 'https://images.unsplash.com/photo-1766791788361-62ca76b2fb0b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fHN0b3JtJTIwYXBwcm9hY2hpbmd8ZW58MHx8MHx8fDA%3D',
     options: [
       { id: 'a', text: 'It was getting a bit windy outside.', isCorrect: false },
       { id: 'b', text: 'A severe storm was approaching the area quickly.', isCorrect: true },
-      { id: 'c', text: 'The weather was going to change soon.', isCorrect: false },
+      { id: 'c', text: 'It was about to snow.', isCorrect: false },
       { id: 'd', text: 'It looked like it might rain later in the afternoon.', isCorrect: false }
     ],
     feedback: {
@@ -290,7 +290,7 @@ export const grade4Questions: SentenceBuildingQuestion[] = [
     id: 'g4_sb_3',
     level: 4,
     question: 'Which sentence contains a simile, and which contains a metaphor? Pick the one that uses a simile.',
-    image: 'https://cdn.pixabay.com/photo/2014/11/21/17/19/cheetah-540624_1280.jpg',
+    image: 'https://cdn.pixabay.com/photo/2017/10/17/05/31/cheetah-2859581_1280.jpg',
     options: [
       { id: 'a', text: 'The cheetah was a bolt of lightning streaking across the savanna.', isCorrect: false },
       { id: 'b', text: 'The cheetah moved like a flash of lightning as it chased its prey across the plains.', isCorrect: true },
@@ -305,13 +305,13 @@ export const grade4Questions: SentenceBuildingQuestion[] = [
   {
     id: 'g4_sb_4',
     level: 4,
-    question: 'Rearrange these words into the best sentence: "every / the / his / morning / watered / carefully / farmer / vegetables / before / sunrise"',
-    image: 'https://cdn.pixabay.com/photo/2016/08/11/08/04/vegetables-1584999_1280.jpg',
+    question: 'Rearrange these words into the best sentence: "every / the / his / morning / watered / carefully / farmer / vegetables"',
+    image: 'https://images.unsplash.com/photo-1584196661066-e4698a1c6ab1?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZmFybWVyJTIwd2F0ZXJpbmclMjB2ZWdldGFibGVzfGVufDB8fDB8fHww   ',
     options: [
-      { id: 'a', text: 'Every morning the farmer watered carefully his vegetables before sunrise.', isCorrect: false },
-      { id: 'b', text: 'The farmer carefully watered his vegetables every morning before sunrise.', isCorrect: true },
-      { id: 'c', text: 'Before sunrise every morning carefully the farmer his vegetables watered.', isCorrect: false },
-      { id: 'd', text: 'Every morning before sunrise his vegetables the farmer carefully watered.', isCorrect: false }
+      { id: 'a', text: 'Every morning the farmer watered carefully his vegetables.', isCorrect: false },
+      { id: 'b', text: 'The farmer carefully watered his vegetables every morning.', isCorrect: true },
+      { id: 'c', text: 'Every morning the farmer his vegetables carefully watered.', isCorrect: false },
+      { id: 'd', text: 'The farmer his vegetables every morning carefully watered.', isCorrect: false }
     ],
     feedback: {
       correct: 'Perfect! This sentence places the subject, adverb, verb, object, and time phrases in correct English order.',
@@ -322,7 +322,7 @@ export const grade4Questions: SentenceBuildingQuestion[] = [
     id: 'g4_sb_5',
     level: 4,
     question: '"Maria had studied hard for weeks. On the day of the test, she smiled as she read the questions. But when she reached the last page, her smile faded." What can you infer?',
-    image: 'https://cdn.pixabay.com/photo/2015/11/19/21/14/glasses-1052023_1280.jpg',
+    image: 'https://images.unsplash.com/photo-1756032433560-56547efed550?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     options: [
       { id: 'a', text: 'Maria was confident throughout the entire test.', isCorrect: false },
       { id: 'b', text: 'Maria found the last section surprising or difficult even though she had prepared well.', isCorrect: true },
