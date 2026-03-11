@@ -78,6 +78,36 @@ export const grade1Questions: SentenceBuildingQuestion[] = [
       correct: 'Great thinking! Dogs need food when they are hungry.',
       incorrect: 'Think about why animals need food!'
     }
+  },
+  {
+    id: 'g1_sb_4',
+    level: 1,
+    question: 'What is the weather like in the picture?',
+    image: 'https://cdn.pixabay.com/photo/2014/03/24/20/39/clouds-295695_1280.jpg',
+    options: [
+      { id: 'a', text: 'It is sunny', isCorrect: true },
+      { id: 'b', text: 'It is raining', isCorrect: false },
+      { id: 'c', text: 'It is snowing', isCorrect: false }
+    ],
+    feedback: {
+      correct: 'That\'s right! The sun is shining — it is a sunny day.',
+      incorrect: 'Look at the sky — the sun is out, so it is sunny!'
+    }
+  },
+  {
+    id: 'g1_sb_5',
+    level: 1,
+    question: 'What are the children doing in the picture?',
+    image: 'https://cdn.pixabay.com/photo/2019/10/04/19/26/children-4526384_1280.jpg',
+    options: [
+      { id: 'a', text: 'They are sleeping', isCorrect: false },
+      { id: 'b', text: 'They are eating lunch', isCorrect: false },
+      { id: 'c', text: 'They are drawing pictures', isCorrect: true }
+    ],
+    feedback: {
+      correct: 'Well done! The children are drawing pictures with crayons.',
+      incorrect: 'Look at their hands — they are holding crayons and drawing!'
+    }
   }
 ];
 
@@ -220,10 +250,10 @@ export const grade3Questions: SentenceBuildingQuestion[] = [
   {
     id: 'g3_sb_4',
     level: 3,
-    question: 'The woman is smiling at her desk. Which sentence gives the best reason using "because"?',
+    question: 'The woman is smiling. Which sentence gives the best reason using "because"?',
     image: 'https://images.unsplash.com/photo-1699811250982-2c9548495946?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     options: [
-      { id: 'a', text: 'The woman is smiling because she is at her desk.', isCorrect: false },
+      { id: 'a', text: 'The woman is smiling because she is at work.', isCorrect: false },
       { id: 'b', text: 'The woman feels proud because she completed an important task.', isCorrect: false },
       { id: 'c', text: 'The woman is happy because the weather is nice today.', isCorrect: true },
       { id: 'd', text: 'The woman is laughing because someone told her a joke.', isCorrect: false }
