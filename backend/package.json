@@ -12,10 +12,13 @@
     "start": "node dist/index.js",
     "seed": "tsx scripts/seed-quizzes.ts",
     "seed:admins": "tsx scripts/seed-admins.ts",
-    "seed:students": "tsx scripts/seed-students.ts"
+    "seed:students": "tsx scripts/seed-students.ts",
+    "typecheck": "tsc --noEmit",
+    "test:ci": "npm run test --if-present"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
+    "@sentry/node": "^10.43.0",
     "@supabase/supabase-js": "^2.52.1",
     "arabic-reshaper": "^1.1.0",
     "cors": "^2.8.5",

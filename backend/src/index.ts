@@ -1,4 +1,5 @@
 import logger from './lib/logger.js';
+import { initSentry, captureException } from './lib/sentry.js';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -7,6 +8,7 @@ import dotenv from 'dotenv';
 
 // Load environment variables
 dotenv.config();
+initSentry();
 
 // Import routes
 import profileRoutes from './routes/profile.js';
@@ -122,6 +124,17 @@ app.use((err: Error & { status?: number; errors?: unknown }, req: express.Reques
   // Only log errors in development or if they're 500-level errors
   if (process.env.NODE_ENV !== 'production' || !err.status || err.status >= 500) {
     logger.error({ err }, 'Request error');
+  }
+
+  if (err.name !== 'ZodError' && (!err.status || err.status >= 500)) {
+    const requestWithUser = req as express.Request & { user?: { role?: string } };
+    captureException(err, {
+      route: req.originalUrl,
+      method: req.method,
+      requestId: req.get('x-request-id') || undefined,
+      userRole: requestWithUser.user?.role,
+      origin: req.get('origin') || undefined,
+    });
   }
   
   if (err.name === 'ZodError') {
