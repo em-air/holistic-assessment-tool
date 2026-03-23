@@ -1,3 +1,4 @@
+import logger from '../lib/logger.js';
 /**
  * Secure Quiz Content Routes
  * 
@@ -46,6 +47,10 @@ import {
   calculateLearningStyle 
 } from '../data/learningStylesData.js';
 import { writingData, getWritingDataByGrade } from '../data/writingData.js';
+import { 
+  getOralLanguageQuestions, 
+  validateOralLanguageAnswer 
+} from '../data/oralLanguageData.js';
 import { sessionStorage, QuizSession } from '../lib/sessionStorage.js';
 
 // Import namespaced quiz data for new types
@@ -76,6 +81,91 @@ const submitAnswerSchema = z.object({
 
 const completeSessionSchema = z.object({
   sessionId: z.string(),
+});
+
+// Validation schemas for quiz POST handlers
+const speakSchema = z.object({
+  sessionId: z.string(),
+  wordId: z.string(),
+});
+
+const blendingValidateSchema = z.object({
+  questionId: z.number(),
+  answer: z.string(),
+});
+
+const storyRetellValidateSchema = z.object({
+  storyId: z.number(),
+  beginningId: z.string(),
+  middleId: z.string(),
+  endId: z.string(),
+});
+
+const vocabularyValidateSchema = z.object({
+  wordId: z.string(),
+  answerId: z.string(),
+});
+
+const criticalThinkingValidateSchema = z.object({
+  questionId: z.string(),
+  answerId: z.string(),
+});
+
+const learningStylesCalculateSchema = z.object({
+  answers: z.record(z.string(), z.string()),
+});
+
+const logicalSequencingCheckSchema = z.object({
+  questionId: z.number(),
+  submittedOrder: z.array(z.number()),
+});
+
+const soundOptionsSchema = z.object({
+  questionId: z.number(),
+  questionType: z.enum(['beginning', 'ending']),
+});
+
+const soundCheckSchema = z.object({
+  questionId: z.number(),
+  questionType: z.enum(['beginning', 'ending']),
+  answer: z.string(),
+});
+
+const spotDifferenceCheckSchema = z.object({
+  levelId: z.number(),
+  clickX: z.number(),
+  clickY: z.number(),
+});
+
+const attentionControlCalculateSchema = z.object({
+  responses: z.record(z.string(), z.number()),
+});
+
+const sentenceDifferenceCheckSchema = z.object({
+  questionId: z.number(),
+  answer: z.string(),
+});
+
+const oralLanguageValidateSchema = z.object({
+  questionId: z.string(),
+  answerId: z.string(),
+});
+
+const memoryGenerateSchema = z.object({
+  type: z.enum(['sequence_recall', 'missing_object']),
+  difficulty: z.number(),
+});
+
+const memoryCheckSchema = z.object({
+  type: z.enum(['sequence_recall', 'missing_object']),
+  submittedAnswer: z.unknown(),
+  questionRef: z.string(),
+});
+
+const memoryEvaluateSchema = z.object({
+  correctAnswers: z.number().int().min(0),
+  totalQuestions: z.number().int().min(1),
+  difficulty: z.number(),
 });
 
 /**
@@ -133,7 +223,7 @@ router.post('/spelling/start', verifySupabaseToken, async (req: Request, res: Re
       })),
     });
   } catch (error) {
-    console.error('Start spelling session error:', error);
+    logger.error(error, 'Start spelling session error:');
     res.status(500).json({ error: 'Failed to start session' });
   }
 });
@@ -148,7 +238,11 @@ router.post('/spelling/speak', verifySupabaseToken, async (req: Request, res: Re
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
-    const { sessionId, wordId } = req.body;
+    const validation = speakSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
+    }
+    const { sessionId, wordId } = validation.data;
     
     // Validate session using storage abstraction
     const session = await sessionStorage.get(sessionId);
@@ -178,7 +272,7 @@ router.post('/spelling/speak', verifySupabaseToken, async (req: Request, res: Re
       word, // The actual word for TTS
     });
   } catch (error) {
-    console.error('Spelling speak error:', error);
+    logger.error(error, 'Spelling speak error:');
     res.status(500).json({ error: 'Failed to get word audio' });
   }
 });
@@ -234,7 +328,7 @@ router.post('/spelling/submit-answer', verifySupabaseToken, async (req: Request,
       totalWords: session.questionIds.length,
     });
   } catch (error) {
-    console.error('Submit answer error:', error);
+    logger.error(error, 'Submit answer error:');
     res.status(500).json({ error: 'Failed to submit answer' });
   }
 });
@@ -308,7 +402,7 @@ router.post('/spelling/complete', verifySupabaseToken, async (req: Request, res:
       results,
     });
   } catch (error) {
-    console.error('Complete session error:', error);
+    logger.error(error, 'Complete session error:');
     res.status(500).json({ error: 'Failed to complete session' });
   }
 });
@@ -330,7 +424,7 @@ router.get('/spelling/grades', async (_req: Request, res: Response) => {
       grades,
     });
   } catch (error) {
-    console.error('Get grades error:', error);
+    logger.error(error, 'Get grades error:');
     res.status(500).json({ error: 'Failed to get grades' });
   }
 });
@@ -349,7 +443,7 @@ router.get('/blending/grades', async (_req: Request, res: Response) => {
       grades: getBlendingGrades(),
     });
   } catch (error) {
-    console.error('Get blending grades error:', error);
+    logger.error(error, 'Get blending grades error:');
     res.status(500).json({ error: 'Failed to get grades' });
   }
 });
@@ -374,7 +468,7 @@ router.get('/blending/questions/:grade', verifySupabaseToken, async (req: Reques
       questions: safeQuestions,
     });
   } catch (error) {
-    console.error('Get blending questions error:', error);
+    logger.error(error, 'Get blending questions error:');
     res.status(500).json({ error: 'Failed to get questions' });
   }
 });
@@ -384,7 +478,11 @@ router.get('/blending/questions/:grade', verifySupabaseToken, async (req: Reques
  */
 router.post('/blending/validate', verifySupabaseToken, async (req: Request, res: Response) => {
   try {
-    const { questionId, answer } = req.body;
+    const validation = blendingValidateSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
+    }
+    const { questionId, answer } = validation.data;
     const result = validateBlendingAnswer(questionId, answer);
     
     res.json({
@@ -392,7 +490,7 @@ router.post('/blending/validate', verifySupabaseToken, async (req: Request, res:
       ...result,
     });
   } catch (error) {
-    console.error('Validate blending answer error:', error);
+    logger.error(error, 'Validate blending answer error:');
     res.status(500).json({ error: 'Failed to validate' });
   }
 });
@@ -417,7 +515,7 @@ router.get('/writing/grades', async (_req: Request, res: Response) => {
       grades,
     });
   } catch (error) {
-    console.error('Get writing grades error:', error);
+    logger.error(error, 'Get writing grades error:');
     res.status(500).json({ error: 'Failed to get grades' });
   }
 });
@@ -442,7 +540,7 @@ router.get('/writing/topics/:grade', verifySupabaseToken, async (req: Request, r
       rubric: gradeData.rubric,
     });
   } catch (error) {
-    console.error('Get writing topics error:', error);
+    logger.error(error, 'Get writing topics error:');
     res.status(500).json({ error: 'Failed to get topics' });
   }
 });
@@ -466,7 +564,7 @@ router.get('/story-retell/grades', async (_req: Request, res: Response) => {
       grades,
     });
   } catch (error) {
-    console.error('Get story retell grades error:', error);
+    logger.error(error, 'Get story retell grades error:');
     res.status(500).json({ error: 'Failed to get grades' });
   }
 });
@@ -497,7 +595,7 @@ router.get('/story-retell/stories/:grade', verifySupabaseToken, async (req: Requ
       stories: safeStories,
     });
   } catch (error) {
-    console.error('Get stories error:', error);
+    logger.error(error, 'Get stories error:');
     res.status(500).json({ error: 'Failed to get stories' });
   }
 });
@@ -507,7 +605,11 @@ router.get('/story-retell/stories/:grade', verifySupabaseToken, async (req: Requ
  */
 router.post('/story-retell/validate', verifySupabaseToken, async (req: Request, res: Response) => {
   try {
-    const { storyId, beginningId, middleId, endId } = req.body;
+    const validation = storyRetellValidateSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
+    }
+    const { storyId, beginningId, middleId, endId } = validation.data;
     const result = validateStoryRetellAnswers(storyId, { beginningId, middleId, endId });
     
     res.json({
@@ -515,7 +617,7 @@ router.post('/story-retell/validate', verifySupabaseToken, async (req: Request, 
       ...result,
     });
   } catch (error) {
-    console.error('Validate story retell error:', error);
+    logger.error(error, 'Validate story retell error:');
     res.status(500).json({ error: 'Failed to validate' });
   }
 });
@@ -546,7 +648,7 @@ router.get('/vocabulary/words/:level', verifySupabaseToken, async (req: Request,
       words: safeWords,
     });
   } catch (error) {
-    console.error('Get vocabulary words error:', error);
+    logger.error(error, 'Get vocabulary words error:');
     res.status(500).json({ error: 'Failed to get words' });
   }
 });
@@ -556,7 +658,11 @@ router.get('/vocabulary/words/:level', verifySupabaseToken, async (req: Request,
  */
 router.post('/vocabulary/validate', verifySupabaseToken, async (req: Request, res: Response) => {
   try {
-    const { wordId, answerId } = req.body;
+    const validation = vocabularyValidateSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
+    }
+    const { wordId, answerId } = validation.data;
     const result = validateVocabularyAnswer(wordId, answerId);
     
     res.json({
@@ -564,7 +670,7 @@ router.post('/vocabulary/validate', verifySupabaseToken, async (req: Request, re
       ...result,
     });
   } catch (error) {
-    console.error('Validate vocabulary error:', error);
+    logger.error(error, 'Validate vocabulary error:');
     res.status(500).json({ error: 'Failed to validate' });
   }
 });
@@ -600,7 +706,7 @@ router.get('/critical-thinking/questions', verifySupabaseToken, async (req: Requ
       questions: safeQuestions,
     });
   } catch (error) {
-    console.error('Get critical thinking questions error:', error);
+    logger.error(error, 'Get critical thinking questions error:');
     res.status(500).json({ error: 'Failed to get questions' });
   }
 });
@@ -610,7 +716,11 @@ router.get('/critical-thinking/questions', verifySupabaseToken, async (req: Requ
  */
 router.post('/critical-thinking/validate', verifySupabaseToken, async (req: Request, res: Response) => {
   try {
-    const { questionId, answerId } = req.body;
+    const validation = criticalThinkingValidateSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
+    }
+    const { questionId, answerId } = validation.data;
     const result = validateCriticalThinkingAnswer(questionId, answerId);
     
     res.json({
@@ -618,7 +728,7 @@ router.post('/critical-thinking/validate', verifySupabaseToken, async (req: Requ
       ...result,
     });
   } catch (error) {
-    console.error('Validate critical thinking error:', error);
+    logger.error(error, 'Validate critical thinking error:');
     res.status(500).json({ error: 'Failed to validate' });
   }
 });
@@ -639,7 +749,7 @@ router.get('/learning-styles/questions', async (_req: Request, res: Response) =>
       questions,
     });
   } catch (error) {
-    console.error('Get learning styles questions error:', error);
+    logger.error(error, 'Get learning styles questions error:');
     res.status(500).json({ error: 'Failed to get questions' });
   }
 });
@@ -649,15 +759,19 @@ router.get('/learning-styles/questions', async (_req: Request, res: Response) =>
  */
 router.post('/learning-styles/calculate', verifySupabaseToken, async (req: Request, res: Response) => {
   try {
-    const { answers } = req.body;
-    const result = calculateLearningStyle(answers);
+    const validation = learningStylesCalculateSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
+    }
+    const { answers } = validation.data;
+    const result = calculateLearningStyle(answers as unknown as Record<number, string>);
     
     res.json({
       success: true,
       ...result,
     });
   } catch (error) {
-    console.error('Calculate learning styles error:', error);
+    logger.error(error, 'Calculate learning styles error:');
     res.status(500).json({ error: 'Failed to calculate' });
   }
 });
@@ -764,7 +878,7 @@ router.get('/all-quizzes', async (_req: Request, res: Response) => {
       ],
     });
   } catch (error) {
-    console.error('Get all quizzes error:', error);
+    logger.error(error, 'Get all quizzes error:');
     res.status(500).json({ error: 'Failed to get quizzes' });
   }
 });
@@ -792,7 +906,7 @@ router.get('/logical-sequencing/grade/:grade', async (req: Request, res: Respons
       totalQuestions: questions.length,
     });
   } catch (error) {
-    console.error('Get logical sequencing error:', error);
+    logger.error(error, 'Get logical sequencing error:');
     res.status(500).json({ error: 'Failed to get questions' });
   }
 });
@@ -803,11 +917,11 @@ router.get('/logical-sequencing/grade/:grade', async (req: Request, res: Respons
  */
 router.post('/logical-sequencing/check', verifySupabaseToken, async (req: Request, res: Response) => {
   try {
-    const { questionId, submittedOrder } = req.body;
-    
-    if (!questionId || !submittedOrder) {
-      return res.status(400).json({ error: 'Missing questionId or submittedOrder' });
+    const validation = logicalSequencingCheckSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
     }
+    const { questionId, submittedOrder } = validation.data;
 
     const isCorrect = LogicalSequencingData.checkAnswer(questionId, submittedOrder);
     const correctOrder = LogicalSequencingData.getCorrectOrder(questionId);
@@ -818,7 +932,7 @@ router.post('/logical-sequencing/check', verifySupabaseToken, async (req: Reques
       correctOrder: isCorrect ? undefined : correctOrder, // Only reveal if wrong
     });
   } catch (error) {
-    console.error('Check logical sequencing error:', error);
+    logger.error(error, 'Check logical sequencing error:');
     res.status(500).json({ error: 'Failed to check answer' });
   }
 });
@@ -846,7 +960,7 @@ router.get('/starting-ending-sounds/grade/:grade', async (req: Request, res: Res
       totalQuestions: questions.length,
     });
   } catch (error) {
-    console.error('Get starting/ending sounds error:', error);
+    logger.error(error, 'Get starting/ending sounds error:');
     res.status(500).json({ error: 'Failed to get questions' });
   }
 });
@@ -857,11 +971,11 @@ router.get('/starting-ending-sounds/grade/:grade', async (req: Request, res: Res
  */
 router.post('/starting-ending-sounds/options', async (req: Request, res: Response) => {
   try {
-    const { questionId, questionType } = req.body;
-    
-    if (!questionId || !questionType) {
-      return res.status(400).json({ error: 'Missing questionId or questionType' });
+    const validation = soundOptionsSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
     }
+    const { questionId, questionType } = validation.data;
 
     const allWords = StartingEndingSoundData.getAllWords();
     const question = allWords.find(q => q.id === questionId);
@@ -877,7 +991,7 @@ router.post('/starting-ending-sounds/options', async (req: Request, res: Respons
       options,
     });
   } catch (error) {
-    console.error('Get sound options error:', error);
+    logger.error(error, 'Get sound options error:');
     res.status(500).json({ error: 'Failed to get options' });
   }
 });
@@ -888,11 +1002,11 @@ router.post('/starting-ending-sounds/options', async (req: Request, res: Respons
  */
 router.post('/starting-ending-sounds/check', verifySupabaseToken, async (req: Request, res: Response) => {
   try {
-    const { questionId, questionType, answer } = req.body;
-    
-    if (!questionId || !questionType || !answer) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    const validation = soundCheckSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
     }
+    const { questionId, questionType, answer } = validation.data;
 
     const isCorrect = StartingEndingSoundData.checkAnswer(questionId, questionType, answer);
     const allWords = StartingEndingSoundData.getAllWords();
@@ -905,7 +1019,7 @@ router.post('/starting-ending-sounds/check', verifySupabaseToken, async (req: Re
       correctAnswer: isCorrect ? undefined : correctAnswer,
     });
   } catch (error) {
-    console.error('Check sound answer error:', error);
+    logger.error(error, 'Check sound answer error:');
     res.status(500).json({ error: 'Failed to check answer' });
   }
 });
@@ -936,7 +1050,7 @@ router.get('/spot-the-difference/grade/:grade', async (req: Request, res: Respon
       totalLevels: levels.length,
     });
   } catch (error) {
-    console.error('Get spot the difference error:', error);
+    logger.error(error, 'Get spot the difference error:');
     res.status(500).json({ error: 'Failed to get levels' });
   }
 });
@@ -947,11 +1061,11 @@ router.get('/spot-the-difference/grade/:grade', async (req: Request, res: Respon
  */
 router.post('/spot-the-difference/check', verifySupabaseToken, async (req: Request, res: Response) => {
   try {
-    const { levelId, clickX, clickY } = req.body;
-    
-    if (levelId === undefined || clickX === undefined || clickY === undefined) {
-      return res.status(400).json({ error: 'Missing levelId, clickX, or clickY' });
+    const validation = spotDifferenceCheckSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
     }
+    const { levelId, clickX, clickY } = validation.data;
 
     const result = SpotTheDifferenceData.checkDifference(levelId, clickX, clickY);
     const totalDifferences = SpotTheDifferenceData.getDifferenceCount(levelId);
@@ -963,7 +1077,7 @@ router.post('/spot-the-difference/check', verifySupabaseToken, async (req: Reque
       totalDifferences,
     });
   } catch (error) {
-    console.error('Check spot difference error:', error);
+    logger.error(error, 'Check spot difference error:');
     res.status(500).json({ error: 'Failed to check difference' });
   }
 });
@@ -984,7 +1098,7 @@ router.get('/attention-control/questions', async (_req: Request, res: Response) 
       ratingLabels: AttentionControlData.kidFriendlyRatingLabels,
     });
   } catch (error) {
-    console.error('Get attention control error:', error);
+    logger.error(error, 'Get attention control error:');
     res.status(500).json({ error: 'Failed to get questions' });
   }
 });
@@ -995,13 +1109,13 @@ router.get('/attention-control/questions', async (_req: Request, res: Response) 
  */
 router.post('/attention-control/calculate', verifySupabaseToken, async (req: Request, res: Response) => {
   try {
-    const { responses } = req.body;
-    
-    if (!responses || typeof responses !== 'object') {
-      return res.status(400).json({ error: 'Missing responses object' });
+    const validation = attentionControlCalculateSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
     }
+    const { responses } = validation.data;
 
-    const scores = AttentionControlData.calculateAttentionScores(responses);
+    const scores = AttentionControlData.calculateAttentionScores(responses as unknown as Record<number, number>);
     const interpretation = AttentionControlData.interpretScores(scores);
     const recommendations = AttentionControlData.getRecommendations(interpretation);
 
@@ -1012,7 +1126,7 @@ router.post('/attention-control/calculate', verifySupabaseToken, async (req: Req
       recommendations,
     });
   } catch (error) {
-    console.error('Calculate attention scores error:', error);
+    logger.error(error, 'Calculate attention scores error:');
     res.status(500).json({ error: 'Failed to calculate scores' });
   }
 });
@@ -1034,7 +1148,7 @@ router.get('/sentence-difference/questions', async (_req: Request, res: Response
       totalQuestions: questions.length,
     });
   } catch (error) {
-    console.error('Get sentence difference error:', error);
+    logger.error(error, 'Get sentence difference error:');
     res.status(500).json({ error: 'Failed to get questions' });
   }
 });
@@ -1045,11 +1159,11 @@ router.get('/sentence-difference/questions', async (_req: Request, res: Response
  */
 router.post('/sentence-difference/check', verifySupabaseToken, async (req: Request, res: Response) => {
   try {
-    const { questionId, answer } = req.body;
-    
-    if (!questionId || !answer) {
-      return res.status(400).json({ error: 'Missing questionId or answer' });
+    const validation = sentenceDifferenceCheckSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
     }
+    const { questionId, answer } = validation.data;
 
     const isCorrect = SentenceDifferenceData.checkAnswer(questionId, answer);
     const question = SentenceDifferenceData.sentenceDifferenceQuestions.find(q => q.id === questionId);
@@ -1060,8 +1174,69 @@ router.post('/sentence-difference/check', verifySupabaseToken, async (req: Reque
       correctAnswer: isCorrect ? undefined : question?.correctAnswer,
     });
   } catch (error) {
-    console.error('Check sentence difference error:', error);
+    logger.error(error, 'Check sentence difference error:');
     res.status(500).json({ error: 'Failed to check answer' });
+  }
+});
+
+// ============================================
+// ORAL LANGUAGE ROUTES
+// ============================================
+
+/**
+ * GET /api/quiz-content/oral-language/questions
+ * Get oral language questions (without isCorrect flag)
+ */
+router.get('/oral-language/questions', verifySupabaseToken, async (req: Request, res: Response) => {
+  try {
+    const type = req.query.type as string | undefined;
+    const level = req.query.level ? parseInt(req.query.level as string) : undefined;
+
+    const questions = getOralLanguageQuestions(
+      type as 'vocabulary' | 'sentence-building' | 'storytelling' | undefined,
+      level
+    );
+
+    // Strip isCorrect from options
+    const safeQuestions = questions.map(q => ({
+      id: q.id,
+      type: q.type,
+      level: q.level,
+      question: q.question,
+      image: q.image,
+      options: q.options.map(o => ({ id: o.id, text: o.text })),
+    }));
+
+    res.json({
+      success: true,
+      questions: safeQuestions,
+    });
+  } catch (error) {
+    logger.error(error, 'Get oral language questions error:');
+    res.status(500).json({ error: 'Failed to get questions' });
+  }
+});
+
+/**
+ * POST /api/quiz-content/oral-language/validate
+ * Validate an oral language answer
+ */
+router.post('/oral-language/validate', verifySupabaseToken, async (req: Request, res: Response) => {
+  try {
+    const validation = oralLanguageValidateSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
+    }
+    const { questionId, answerId } = validation.data;
+    const result = validateOralLanguageAnswer(questionId, answerId);
+
+    res.json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    logger.error(error, 'Validate oral language error:');
+    res.status(500).json({ error: 'Failed to validate' });
   }
 });
 
@@ -1075,10 +1250,15 @@ router.post('/sentence-difference/check', verifySupabaseToken, async (req: Reque
  */
 router.post('/memory-assessment/generate', verifySupabaseToken, async (req: Request, res: Response) => {
   try {
-    const { type, difficulty } = req.body;
-    
-    if (!type || !difficulty) {
-      return res.status(400).json({ error: 'Missing type or difficulty' });
+    const validation = memoryGenerateSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
+    }
+    const { type, difficulty } = validation.data;
+
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
     let question;
@@ -1093,14 +1273,24 @@ router.post('/memory-assessment/generate', verifySupabaseToken, async (req: Requ
     // Remove answers before sending to frontend
     const { correctSequence, missingItemId, ...safeQuestion } = question;
 
+    // Store correct answers server-side in session storage
+    const sessionKey = `memory-${userId}-${Date.now()}`;
+    await sessionStorage.set(sessionKey, {
+      userId,
+      quizType: 'memory-assessment',
+      questionIds: [],
+      answers: { correctSequence, missingItemId, type },
+      startTime: Date.now(),
+      isComplete: false,
+    }, 3600);
+
     res.json({
       success: true,
       question: safeQuestion,
-      // Store answers in session for later validation
-      _internal: { correctSequence, missingItemId },
+      questionRef: sessionKey,
     });
   } catch (error) {
-    console.error('Generate memory question error:', error);
+    logger.error(error, 'Generate memory question error:');
     res.status(500).json({ error: 'Failed to generate question' });
   }
 });
@@ -1111,17 +1301,27 @@ router.post('/memory-assessment/generate', verifySupabaseToken, async (req: Requ
  */
 router.post('/memory-assessment/check', verifySupabaseToken, async (req: Request, res: Response) => {
   try {
-    const { type, submittedAnswer, correctAnswer } = req.body;
-    
-    if (!type || submittedAnswer === undefined || correctAnswer === undefined) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    const validation = memoryCheckSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
+    }
+    const { type, submittedAnswer, questionRef } = validation.data;
+
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const sessionData = await sessionStorage.get(questionRef);
+    if (!sessionData || sessionData.userId !== userId) {
+      return res.status(400).json({ error: 'Invalid or expired question reference' });
     }
 
     let isCorrect = false;
-    if (type === 'sequence_recall') {
-      isCorrect = MemoryAssessmentData.checkSequenceAnswer(submittedAnswer, correctAnswer);
-    } else if (type === 'missing_object') {
-      isCorrect = MemoryAssessmentData.checkMissingObjectAnswer(submittedAnswer, correctAnswer);
+    if (type === 'sequence_recall' && sessionData.answers.correctSequence) {
+      isCorrect = MemoryAssessmentData.checkSequenceAnswer(submittedAnswer as string[], sessionData.answers.correctSequence as string[]);
+    } else if (type === 'missing_object' && sessionData.answers.missingItemId) {
+      isCorrect = MemoryAssessmentData.checkMissingObjectAnswer(submittedAnswer as string, sessionData.answers.missingItemId as string);
     }
 
     res.json({
@@ -1129,7 +1329,7 @@ router.post('/memory-assessment/check', verifySupabaseToken, async (req: Request
       isCorrect,
     });
   } catch (error) {
-    console.error('Check memory answer error:', error);
+    logger.error(error, 'Check memory answer error:');
     res.status(500).json({ error: 'Failed to check answer' });
   }
 });
@@ -1140,11 +1340,11 @@ router.post('/memory-assessment/check', verifySupabaseToken, async (req: Request
  */
 router.post('/memory-assessment/evaluate', verifySupabaseToken, async (req: Request, res: Response) => {
   try {
-    const { correctAnswers, totalQuestions, difficulty } = req.body;
-    
-    if (correctAnswers === undefined || !totalQuestions || !difficulty) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    const validation = memoryEvaluateSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
     }
+    const { correctAnswers, totalQuestions, difficulty } = validation.data;
 
     const evaluation = MemoryAssessmentData.evaluatePerformance(correctAnswers, totalQuestions, difficulty);
 
@@ -1153,7 +1353,7 @@ router.post('/memory-assessment/evaluate', verifySupabaseToken, async (req: Requ
       evaluation,
     });
   } catch (error) {
-    console.error('Evaluate memory assessment error:', error);
+    logger.error(error, 'Evaluate memory assessment error:');
     res.status(500).json({ error: 'Failed to evaluate' });
   }
 });

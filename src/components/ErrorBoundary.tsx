@@ -1,4 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
+import { captureFrontendException } from '../lib/sentry';
 
 interface Props {
     children: ReactNode;
@@ -28,7 +29,9 @@ class ErrorBoundary extends Component<Props, State> {
 
     public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
         console.error('ErrorBoundary caught an error:', error, errorInfo);
-        // TODO: Send to error tracking service (e.g., Sentry)
+        captureFrontendException(error, {
+            componentStack: errorInfo.componentStack,
+        });
     }
 
     private handleRetry = () => {
@@ -68,7 +71,7 @@ class ErrorBoundary extends Component<Props, State> {
                         <p className="text-gray-600 mb-4">
                             We're sorry, but something unexpected happened. Don't worry, your progress is saved!
                         </p>
-                        {process.env.NODE_ENV === 'development' && this.state.error && (
+                        {import.meta.env.DEV && this.state.error && (
                             <details className="mb-4 text-left">
                                 <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
                                     Error Details (Dev Only)

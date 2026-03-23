@@ -25,9 +25,6 @@ interface SequenceQuestion {
   items: MemoryItem[];
   allChoices?: MemoryItem[];
   difficulty: 1 | 2 | 3 | 4 | 5;
-  // Answers stored server-side only
-  correctSequence?: string[];
-  missingItemId?: string;
 }
 
 interface PerformanceResult {
@@ -59,7 +56,7 @@ const MemoryAssessment: React.FC = () => {
   const [difficulty, setDifficulty] = useState(1);
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
-  const [currentCorrectAnswer, setCurrentCorrectAnswer] = useState<string[] | string | null>(null);
+  const [currentQuestionRef, setCurrentQuestionRef] = useState<string | null>(null);
 
   // User interaction state
   const [userSequence, setUserSequence] = useState<string[]>([]);
@@ -96,9 +93,9 @@ const MemoryAssessment: React.FC = () => {
       const data = await response.json();
       if (data.success && data.question) {
         setCurrentQuestion(data.question);
-        // Store the correct answer from _internal (only available on this session)
-        if (data._internal) {
-          setCurrentCorrectAnswer(data._internal.correctSequence || data._internal.missingItemId);
+        // Store the server-side question reference for answer checking
+        if (data.questionRef) {
+          setCurrentQuestionRef(data.questionRef);
         }
         return data.question;
       }
@@ -193,35 +190,51 @@ const MemoryAssessment: React.FC = () => {
     }
   };
 
-  // Check if answer is correct
-  const checkAnswer = (answer: string[]) => {
-    if (!currentQuestion) return;
+  // Check if answer is correct (server-side validation)
+  const checkAnswer = async (answer: string[]) => {
+    if (!currentQuestion || !currentQuestionRef) return;
 
-    let correct = false;
-
-    if (currentQuestion.type === 'missing_object') {
-      correct = answer[0] === currentCorrectAnswer;
-    } else {
-      correct = JSON.stringify(answer) === JSON.stringify(currentCorrectAnswer);
-    }
-
-    setIsCorrect(correct);
-    if (correct) setCorrectAnswers(prev => prev + 1);
-    setQuestionsAnswered(prev => prev + 1);
-    setGamePhase('feedback');
-
-    // Auto-advance after feedback
-    setTimeout(() => {
-      if (questionsAnswered + 1 >= 5) {
-        // Complete assessment after 5 questions
-        completeAssessment();
-      } else {
-        // Continue with next question, increase difficulty every 2 questions
-        const newDifficulty = Math.min(Math.floor((questionsAnswered + 1) / 2) + 1, 5);
-        setDifficulty(newDifficulty);
-        generateNewQuestion(selectedType!, newDifficulty);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        logger.error('No session found for check API call');
+        return;
       }
-    }, 2000);
+
+      const response = await fetch(`${API_BASE_URL}/api/quiz-content/memory-assessment/check`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          type: currentQuestion.type,
+          submittedAnswer: currentQuestion.type === 'missing_object' ? answer[0] : answer,
+          questionRef: currentQuestionRef,
+        }),
+      });
+
+      const data = await response.json();
+      const correct = data.success && data.isCorrect;
+
+      setIsCorrect(correct);
+      if (correct) setCorrectAnswers(prev => prev + 1);
+      setQuestionsAnswered(prev => prev + 1);
+      setGamePhase('feedback');
+
+      // Auto-advance after feedback
+      setTimeout(() => {
+        if (questionsAnswered + 1 >= 5) {
+          completeAssessment();
+        } else {
+          const newDifficulty = Math.min(Math.floor((questionsAnswered + 1) / 2) + 1, 5);
+          setDifficulty(newDifficulty);
+          generateNewQuestion(selectedType!, newDifficulty);
+        }
+      }, 2000);
+    } catch (err) {
+      console.error('Error checking answer:', err);
+    }
   };
 
   // Complete assessment

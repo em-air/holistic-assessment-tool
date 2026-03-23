@@ -1,3 +1,4 @@
+import logger from '../lib/logger.js';
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { supabaseAdmin } from '../config/supabase.js';
@@ -32,7 +33,7 @@ router.get('/', verifySupabaseToken, async (req: Request, res: Response) => {
       profile: req.user.profile,
     });
   } catch (error) {
-    console.error('Get profile error:', error);
+    logger.error(error, 'Get profile error:');
     res.status(500).json({ error: 'Failed to get profile' });
   }
 });
@@ -68,7 +69,7 @@ router.put('/', verifySupabaseToken, async (req: Request, res: Response) => {
       .single();
 
     if (error) {
-      console.error('Update profile error:', error);
+      logger.error(error, 'Update profile error:');
       return res.status(500).json({ error: 'Failed to update profile' });
     }
 
@@ -77,7 +78,7 @@ router.put('/', verifySupabaseToken, async (req: Request, res: Response) => {
       profile,
     });
   } catch (error) {
-    console.error('Update profile error:', error);
+    logger.error(error, 'Update profile error:');
     res.status(500).json({ error: 'Failed to update profile' });
   }
 });
@@ -124,7 +125,7 @@ router.get(
         profile,
       });
     } catch (error) {
-      console.error('Get user profile error:', error);
+      logger.error(error, 'Get user profile error:');
       res.status(500).json({ error: 'Failed to get profile' });
     }
   }

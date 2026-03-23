@@ -1,3 +1,4 @@
+import logger from '../lib/logger.js';
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { supabaseAdmin } from '../config/supabase.js';
@@ -29,7 +30,7 @@ router.get('/', verifySupabaseToken, async (req: Request, res: Response) => {
       .eq('user_id', req.user.id);
 
     if (error) {
-      console.error('Get progress error:', error);
+      logger.error(error, 'Get progress error:');
       return res.status(500).json({ error: 'Failed to get progress' });
     }
 
@@ -78,7 +79,7 @@ router.get('/', verifySupabaseToken, async (req: Request, res: Response) => {
       userGrade: req.user.grade,
     });
   } catch (error) {
-    console.error('Get progress error:', error);
+    logger.error(error, 'Get progress error:');
     res.status(500).json({ error: 'Failed to get progress' });
   }
 });
@@ -107,7 +108,7 @@ router.get('/detailed', verifySupabaseToken, async (req: Request, res: Response)
       .order('completed_at', { ascending: false });
 
     if (error) {
-      console.error('Get detailed progress error:', error);
+      logger.error(error, 'Get detailed progress error:');
       return res.status(500).json({ error: 'Failed to get progress' });
     }
 
@@ -175,7 +176,7 @@ router.get('/detailed', verifySupabaseToken, async (req: Request, res: Response)
       userGrade: req.user.grade,
     });
   } catch (error) {
-    console.error('Get detailed progress error:', error);
+    logger.error(error, 'Get detailed progress error:');
     res.status(500).json({ error: 'Failed to get progress' });
   }
 });
@@ -212,7 +213,7 @@ router.post('/sessions', verifySupabaseToken, async (req: Request, res: Response
       .single();
 
     if (error) {
-      console.error('Create session error:', error);
+      logger.error(error, 'Create session error:');
       return res.status(500).json({ error: 'Failed to create session' });
     }
 
@@ -221,7 +222,7 @@ router.post('/sessions', verifySupabaseToken, async (req: Request, res: Response
       session,
     });
   } catch (error) {
-    console.error('Create session error:', error);
+    logger.error(error, 'Create session error:');
     res.status(500).json({ error: 'Failed to create session' });
   }
 });
@@ -246,7 +247,7 @@ router.get('/sessions/active', verifySupabaseToken, async (req: Request, res: Re
       .maybeSingle();
 
     if (error) {
-      console.error('Get active session error:', error);
+      logger.error(error, 'Get active session error:');
       return res.status(500).json({ error: 'Failed to get session' });
     }
 
@@ -256,7 +257,7 @@ router.get('/sessions/active', verifySupabaseToken, async (req: Request, res: Re
       hasActiveSession: !!session,
     });
   } catch (error) {
-    console.error('Get active session error:', error);
+    logger.error(error, 'Get active session error:');
     res.status(500).json({ error: 'Failed to get session' });
   }
 });
@@ -300,7 +301,7 @@ router.put('/sessions/:sessionId', verifySupabaseToken, async (req: Request, res
       .single();
 
     if (error) {
-      console.error('Update session error:', error);
+      logger.error(error, 'Update session error:');
       return res.status(500).json({ error: 'Failed to update session' });
     }
 
@@ -309,7 +310,7 @@ router.put('/sessions/:sessionId', verifySupabaseToken, async (req: Request, res
       session,
     });
   } catch (error) {
-    console.error('Update session error:', error);
+    logger.error(error, 'Update session error:');
     res.status(500).json({ error: 'Failed to update session' });
   }
 });

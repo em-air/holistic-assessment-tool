@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Book, CheckCircle, Lightbulb, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
-import {
-  StoryRetellQuestion,
-  getStoriesForGrade
-} from '../data/storyRetellData';
+import type { StoryRetellQuestion } from '../types/quiz';
+import { supabase } from '../supabase-client';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { ProgressTracker } from '../utils/progressTracker';
 import FloatingBackground from '../components/FloatingBackground';
 import { logger } from '../utils/logger';
@@ -31,26 +31,35 @@ const StoryRetellQuiz: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState({ correct: 0, total: 0 });
+  const [answerFeedback, setAnswerFeedback] = useState<{ beginningCorrect?: boolean; middleCorrect?: boolean; endCorrect?: boolean }>({});
   const startTimeRef = useRef<number>(Date.now());
 
-  const totalStories = 3; // Number of stories per grade
   const currentStory = stories[currentStoryIndex];
 
-  // Initialize quiz
+  // Initialize quiz — fetch stories from backend
   useEffect(() => {
     if (!grade) return;
 
-    try {
-      const gradeStories = getStoriesForGrade(grade, totalStories);
-      startTimeRef.current = Date.now();  // Reset timer when quiz loads
-      logger.log('Loaded stories for grade:', grade, gradeStories);
-      setStories(gradeStories);
-      setCurrentStoryIndex(0);
-      setScore({ correct: 0, total: 0 });
-      setShowResult(false);
-    } catch (error) {
-      logger.error('Error loading story retell questions:', error);
-    }
+    const fetchStories = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) return;
+        const response = await fetch(`${API_BASE_URL}/api/quiz-content/story-retell/stories/${grade}`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        const data = await response.json();
+        if (data.success && data.stories) {
+          startTimeRef.current = Date.now();
+          setStories(data.stories);
+          setCurrentStoryIndex(0);
+          setScore({ correct: 0, total: 0 });
+          setShowResult(false);
+        }
+      } catch (error) {
+        logger.error('Error loading story retell questions:', error);
+      }
+    };
+    fetchStories();
   }, [grade]);
 
   // Reset form when story changes
@@ -62,6 +71,7 @@ const StoryRetellQuiz: React.FC = () => {
       setSelectedMiddle(null);
       setSelectedEnd(null);
       setIsSubmitted(false);
+      setAnswerFeedback({});
     }
   }, [currentStory]);
 
@@ -74,26 +84,43 @@ const StoryRetellQuiz: React.FC = () => {
     setShowStory(!showStory);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!currentStory || isSubmitted) return;
     
-    // Validate that all sections are selected
     if (!selectedBeginning || !selectedMiddle || !selectedEnd) {
       alert('Please select an option for Beginning, Middle, and End');
       return;
     }
 
-    // Check if answers are correct
-    const beginningCorrect = currentStory.beginningOptions.find(opt => opt.id === selectedBeginning)?.isCorrect || false;
-    const middleCorrect = currentStory.middleOptions.find(opt => opt.id === selectedMiddle)?.isCorrect || false;
-    const endCorrect = currentStory.endOptions.find(opt => opt.id === selectedEnd)?.isCorrect || false;
-    
-    const correctCount = (beginningCorrect ? 1 : 0) + (middleCorrect ? 1 : 0) + (endCorrect ? 1 : 0);
-    
-    setScore(prev => ({
-      correct: prev.correct + correctCount,
-      total: prev.total + 3
-    }));
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+      const response = await fetch(`${API_BASE_URL}/api/quiz-content/story-retell/validate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          storyId: currentStory.id,
+          beginningId: selectedBeginning,
+          middleId: selectedMiddle,
+          endId: selectedEnd,
+        }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        const correctCount = (result.beginningCorrect ? 1 : 0) + (result.middleCorrect ? 1 : 0) + (result.endCorrect ? 1 : 0);
+        setScore(prev => ({ correct: prev.correct + correctCount, total: prev.total + 3 }));
+        setAnswerFeedback({
+          beginningCorrect: result.beginningCorrect,
+          middleCorrect: result.middleCorrect,
+          endCorrect: result.endCorrect,
+        });
+      }
+    } catch (error) {
+      logger.error('Error validating story retell:', error);
+    }
     
     setIsSubmitted(true);
   };
@@ -326,8 +353,9 @@ const StoryRetellQuiz: React.FC = () => {
                             selectedBeginning === option.id
                               ? 'border-green-500 bg-green-50'
                               : 'border-gray-200 hover:border-green-300 hover:bg-gray-50'
-                          } ${isSubmitted && option.isCorrect ? 'border-green-600 bg-green-100' : ''}
-                          ${isSubmitted && selectedBeginning === option.id && !option.isCorrect ? 'border-red-500 bg-red-50' : ''}`}
+                          } ${isSubmitted && answerFeedback.beginningCorrect !== undefined && selectedBeginning === option.id
+                              ? (answerFeedback.beginningCorrect ? 'border-green-600 bg-green-100' : 'border-red-500 bg-red-50')
+                              : ''}`}
                         >
                           <input
                             type="radio"
@@ -339,7 +367,7 @@ const StoryRetellQuiz: React.FC = () => {
                             className="mt-1 mr-3"
                           />
                           <span className="flex-1 text-gray-700">{option.text}</span>
-                          {isSubmitted && option.isCorrect && <CheckCircle className="text-green-600 ml-2" size={20} />}
+                          {isSubmitted && answerFeedback.beginningCorrect && selectedBeginning === option.id && <CheckCircle className="text-green-600 ml-2" size={20} />}
                         </label>
                       ))}
                     </div>
@@ -364,8 +392,9 @@ const StoryRetellQuiz: React.FC = () => {
                             selectedMiddle === option.id
                               ? 'border-blue-500 bg-blue-50'
                               : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
-                          } ${isSubmitted && option.isCorrect ? 'border-blue-600 bg-blue-100' : ''}
-                          ${isSubmitted && selectedMiddle === option.id && !option.isCorrect ? 'border-red-500 bg-red-50' : ''}`}
+                          } ${isSubmitted && answerFeedback.middleCorrect !== undefined && selectedMiddle === option.id
+                              ? (answerFeedback.middleCorrect ? 'border-blue-600 bg-blue-100' : 'border-red-500 bg-red-50')
+                              : ''}`}
                         >
                           <input
                             type="radio"
@@ -377,7 +406,7 @@ const StoryRetellQuiz: React.FC = () => {
                             className="mt-1 mr-3"
                           />
                           <span className="flex-1 text-gray-700">{option.text}</span>
-                          {isSubmitted && option.isCorrect && <CheckCircle className="text-blue-600 ml-2" size={20} />}
+                          {isSubmitted && answerFeedback.middleCorrect && selectedMiddle === option.id && <CheckCircle className="text-blue-600 ml-2" size={20} />}
                         </label>
                       ))}
                     </div>
@@ -402,8 +431,9 @@ const StoryRetellQuiz: React.FC = () => {
                             selectedEnd === option.id
                               ? 'border-purple-500 bg-purple-50'
                               : 'border-gray-200 hover:border-purple-300 hover:bg-gray-50'
-                          } ${isSubmitted && option.isCorrect ? 'border-purple-600 bg-purple-100' : ''}
-                          ${isSubmitted && selectedEnd === option.id && !option.isCorrect ? 'border-red-500 bg-red-50' : ''}`}
+                          } ${isSubmitted && answerFeedback.endCorrect !== undefined && selectedEnd === option.id
+                              ? (answerFeedback.endCorrect ? 'border-purple-600 bg-purple-100' : 'border-red-500 bg-red-50')
+                              : ''}`}
                         >
                           <input
                             type="radio"
@@ -415,7 +445,7 @@ const StoryRetellQuiz: React.FC = () => {
                             className="mt-1 mr-3"
                           />
                           <span className="flex-1 text-gray-700">{option.text}</span>
-                          {isSubmitted && option.isCorrect && <CheckCircle className="text-purple-600 ml-2" size={20} />}
+                          {isSubmitted && answerFeedback.endCorrect && selectedEnd === option.id && <CheckCircle className="text-purple-600 ml-2" size={20} />}
                         </label>
                       ))}
                     </div>

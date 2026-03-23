@@ -2,7 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, CheckCircle, XCircle, Trophy, RotateCcw, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { categoryQuestions, gradeOptions, type GradeLevel, type CategoryQuestion, type CategoryItem } from '../data/criticalThinkingData';
+import type { GradeLevel, CategoryQuestion, CategoryItem } from '../types/quiz';
+import { supabase } from '../supabase-client';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+const gradeOptions = [
+  { value: 'grade1', label: 'Grade 1', description: 'Basic relationships and simple concepts' },
+  { value: 'grade2', label: 'Grade 2', description: 'Comparative logic and everyday connections' },
+  { value: 'grade3', label: 'Grade 3', description: 'Age, size, and order reasoning' },
+  { value: 'grade4', label: 'Grade 4', description: 'Abstract reasoning and complex relationships' }
+];
 import { ProgressTracker } from '../utils/progressTracker';
 import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
@@ -25,10 +35,10 @@ const CategoryQuiz: React.FC = () => {
   const [draggedItem, setDraggedItem] = useState<CategoryItem | null>(null);
   const [startTime, setStartTime] = useState<number>(Date.now());
   const [showReport, setShowReport] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Always start with grade selection (don't auto-load from localStorage)
   useEffect(() => {
-    // Clear any previously stored grade to ensure grade selection shows
     localStorage.removeItem('selectedGrade');
     setSelectedGrade(null);
   }, []);
@@ -43,10 +53,24 @@ const CategoryQuiz: React.FC = () => {
     }
   }, [currentQuestionIndex, questions]);
 
-  const handleGradeSelect = (grade: GradeLevel) => {
+  const handleGradeSelect = async (grade: GradeLevel) => {
     setSelectedGrade(grade);
-    setQuestions(categoryQuestions[grade]);
-    // Only store for current session, will be cleared on page reload
+    setIsLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+      const response = await fetch(`${API_BASE_URL}/api/quiz-content/critical-thinking/questions?type=category`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const data = await response.json();
+      if (data.success && data.questions) {
+        setQuestions(data.questions);
+      }
+    } catch (err) {
+      console.error('Error fetching questions:', err);
+    } finally {
+      setIsLoading(false);
+    }
     sessionStorage.setItem('selectedGrade', grade);
     resetQuiz();
   };
@@ -100,15 +124,37 @@ const CategoryQuiz: React.FC = () => {
     }
   };
 
-  const checkAnswers = () => {
+  const checkAnswers = async () => {
     const currentQuestion = questions[currentQuestionIndex];
     let correctCount = 0;
 
-    droppedItems.forEach(item => {
-      if (item.droppedIn === item.correctCategory) {
-        correctCount++;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        // Validate each dropped item via the backend
+        for (const item of droppedItems) {
+          const response = await fetch(`${API_BASE_URL}/api/quiz-content/critical-thinking/validate`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ questionId: currentQuestion.id, answerId: item.id, category: item.droppedIn }),
+          });
+          const result = await response.json();
+          if (result.correct) {
+            correctCount++;
+          }
+        }
       }
-    });
+    } catch {
+      // Fallback: count based on local correctCategory if available
+      droppedItems.forEach(item => {
+        if (item.correctCategory && item.droppedIn === item.correctCategory) {
+          correctCount++;
+        }
+      });
+    }
 
     if (correctCount === currentQuestion.items.length) {
       setScore(prev => prev + 1);

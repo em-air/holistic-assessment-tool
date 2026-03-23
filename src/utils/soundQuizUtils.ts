@@ -1,5 +1,14 @@
-import { SoundQuestion, QuestionData, commonSounds } from '../data/startingEndingSoundData';
+import { SoundQuestion, QuestionData } from '../types/quiz';
 import { logger } from './logger';
+
+// Common sound distractors for generating incorrect options
+const commonSounds = [
+  'b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z',
+  'a', 'e', 'i', 'o', 'u',
+  'sh', 'ch', 'th', 'wh', 'ph', 'ck',
+  'bl', 'br', 'cl', 'cr', 'dr', 'fl', 'fr', 'gl', 'gr', 'pl', 'pr', 'sc', 'sk', 'sl', 'sm', 'sn', 'sp', 'st', 'sw', 'tr', 'tw',
+  'ng', 'nk', 'mp', 'nd', 'nt', 'st', 'sk', 'sp', 'lk', 'lp', 'lt', 'ft', 'pt'
+];
 
 /**
  * Extracts beginning sound from a word

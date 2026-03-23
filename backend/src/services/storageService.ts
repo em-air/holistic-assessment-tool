@@ -1,3 +1,4 @@
+import logger from '../lib/logger.js';
 import { supabaseAdmin } from '../config/supabase.js';
 
 const REPORTS_BUCKET = process.env.REPORTS_BUCKET || 'reports';
@@ -22,7 +23,7 @@ export async function uploadPDF(
       });
 
     if (error) {
-      console.error('Storage upload error:', error);
+      logger.error(error, 'Storage upload error:');
       return null;
     }
 
@@ -36,7 +37,7 @@ export async function uploadPDF(
       publicUrl: urlData.publicUrl,
     };
   } catch (error) {
-    console.error('Storage service error:', error);
+    logger.error(error, 'Storage service error:');
     return null;
   }
 }
@@ -51,13 +52,13 @@ export async function getSignedUrl(filePath: string, expiresIn = 3600): Promise<
       .createSignedUrl(filePath, expiresIn);
 
     if (error) {
-      console.error('Signed URL error:', error);
+      logger.error(error, 'Signed URL error:');
       return null;
     }
 
     return data.signedUrl;
   } catch (error) {
-    console.error('Get signed URL error:', error);
+    logger.error(error, 'Get signed URL error:');
     return null;
   }
 }
@@ -72,13 +73,13 @@ export async function deletePDF(filePath: string): Promise<boolean> {
       .remove([filePath]);
 
     if (error) {
-      console.error('Storage delete error:', error);
+      logger.error(error, 'Storage delete error:');
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error('Delete PDF error:', error);
+    logger.error(error, 'Delete PDF error:');
     return false;
   }
 }
@@ -93,13 +94,13 @@ export async function listUserReports(userId: string): Promise<string[]> {
       .list(userId);
 
     if (error) {
-      console.error('List reports error:', error);
+      logger.error(error, 'List reports error:');
       return [];
     }
 
     return data.map(file => `${userId}/${file.name}`);
   } catch (error) {
-    console.error('List user reports error:', error);
+    logger.error(error, 'List user reports error:');
     return [];
   }
 }

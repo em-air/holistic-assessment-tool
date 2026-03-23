@@ -1,3 +1,4 @@
+import logger from '../lib/logger.js';
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -36,7 +37,7 @@ export async function sendReportEmail(params: SendReportEmailParams): Promise<{ 
         <body>
           <div class="container">
             <div class="header">
-              <h1>📊 Assessment Report</h1>
+              <h1>ðŸ“Š Assessment Report</h1>
               <p>Holistic Assessment Tool</p>
             </div>
             <div class="content">
@@ -54,16 +55,16 @@ export async function sendReportEmail(params: SendReportEmailParams): Promise<{ 
               
               <p>This report includes detailed analysis of:</p>
               <ul>
-                <li>🧠 <strong>Mind Skills</strong> - Attention, Memory, Critical Thinking, Perception</li>
-                <li>🗣️ <strong>Oral Skills</strong> - Language, Reading, Phonics, Blending</li>
-                <li>📚 <strong>Academic Skills</strong> - Writing, Vocabulary, Spelling</li>
+                <li>ðŸ§  <strong>Mind Skills</strong> - Attention, Memory, Critical Thinking, Perception</li>
+                <li>ðŸ—£ï¸ <strong>Oral Skills</strong> - Language, Reading, Phonics, Blending</li>
+                <li>ðŸ“š <strong>Academic Skills</strong> - Writing, Vocabulary, Spelling</li>
               </ul>
               
               <p>Please review the recommendations section for personalized suggestions to support your child's learning journey.</p>
               
               <div class="footer">
                 <p>This is an automated email from the Holistic Assessment Tool.</p>
-                <p>© ${new Date().getFullYear()} Bloom Tutoring</p>
+                <p>Â© ${new Date().getFullYear()} Bloom Tutoring</p>
               </div>
             </div>
           </div>
@@ -77,13 +78,13 @@ export async function sendReportEmail(params: SendReportEmailParams): Promise<{ 
     });
 
     if (error) {
-      console.error('Email send error:', error);
+      logger.error(error, 'Email send error:');
       return { success: false, error: error.message };
     }
 
     return { success: true, id: data?.id };
   } catch (error: any) {
-    console.error('Email service error:', error);
+    logger.error(error, 'Email service error:');
     return { success: false, error: error.message };
   }
 }
