@@ -296,7 +296,7 @@ const OralLanguageQuiz: React.FC = () => {
                   </p>
                   <div className="bg-white/20 rounded-lg p-3">
                     <span className="text-sm font-medium">
-                      {category.questions.length} {t.question}s
+                      {t.startQuiz}
                     </span>
                   </div>
                 </div>
@@ -357,6 +357,32 @@ const OralLanguageQuiz: React.FC = () => {
               </div>
             </div>
           </motion.div>
+        </div>
+      </div>
+    );
+  }
+
+  // No questions loaded - show error state
+  if (!selectedCategory.questions || selectedCategory.questions.length === 0) {
+    return (
+      <div className={`min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-2xl mx-auto text-center">
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
+              <h2 className="text-2xl font-bold text-stone-800 mb-4">
+                Unable to Load Questions
+              </h2>
+              <p className="text-stone-600 mb-6">
+                Sorry, we couldn't load the quiz questions. Please try again later.
+              </p>
+              <button
+                onClick={resetQuiz}
+                className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors duration-300"
+              >
+                {t.backToSelection}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -525,10 +551,11 @@ const OralLanguageQuiz: React.FC = () => {
                     </div>
                   )}
                 </div>
-              ) : (
+              ) : currentQuestion.options ? (
                 // Regular question with image and options
                 <div>
                   {/* Image */}
+                  {currentQuestion.image && (
                   <div className="relative mb-6">
                     <img
                       src={currentQuestion.image}
@@ -536,6 +563,7 @@ const OralLanguageQuiz: React.FC = () => {
                       className="w-full max-w-md mx-auto rounded-lg shadow-lg"
                     />
                   </div>
+                  )}
                   
                   {/* Answer Options */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -573,6 +601,11 @@ const OralLanguageQuiz: React.FC = () => {
                       );
                     })}
                   </div>
+                </div>
+              ) : (
+                // Fallback for invalid question data
+                <div className="text-center p-4 text-stone-600">
+                  <p>Question data is unavailable. Please try again later.</p>
                 </div>
               )}
               

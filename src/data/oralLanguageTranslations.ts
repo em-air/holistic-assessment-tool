@@ -21,7 +21,8 @@ export const oralLanguageTranslations = {
     backToSelection: "Back",
     excellent: "Excellent work!",
     good: "Good job!",
-    keepTrying: "Keep practicing!"
+    keepTrying: "Keep practicing!",
+    startQuiz: "Start Quiz"
   },
   ar: {
     title: "تقييم اللغة الشفهية",
@@ -39,6 +40,7 @@ export const oralLanguageTranslations = {
     backToSelection: "العودة إلى الاختيار",
     excellent: "عمل ممتاز!",
     good: "أحسنت!",
-    keepTrying: "استمر في التدريب!"
+    keepTrying: "استمر في التدريب!",
+    startQuiz: "ابدأ الاختبار"
   }
 };
