@@ -83,19 +83,19 @@ export const oralLanguageQuestions: OralLanguageQuestion[] = [
     sequenceImages: [
       {
         id: 'wake_up',
-        image: 'https://i.postimg.cc/jD4fXB28/st1-1.png',
+        image: 'https://images.pexels.com/photos/7504649/pexels-photo-7504649.jpeg',
         correctOrder: 1,
         description: 'Child waking up in bed'
       },
       {
         id: 'go_to_school',
-        image: 'https://i.postimg.cc/dhjCBg3z/st1-3.png',
+        image: 'https://cdn.pixabay.com/photo/2016/09/12/23/59/student-1666118_1280.jpg',
         correctOrder: 3,
         description: 'Child walking to school'
       },
       {
         id: 'brush_teeth',
-        image: 'https://i.postimg.cc/CRs8N953/st1-2.png',
+        image: 'https://images.pexels.com/photos/7086233/pexels-photo-7086233.jpeg',
         correctOrder: 2,
         description: 'Child brushing teeth'
       }
@@ -116,21 +116,21 @@ export const oralLanguageQuestions: OralLanguageQuestion[] = [
     sequenceImages: [
       {
         id: 'add_filling',
-        image: 'https://images.unsplash.com/photo-1717048888698-277377758ff1?auto=format&fit=crop&q=80&w=600',
+        image: 'https://images.unsplash.com/photo-1717048888698-277377758ff1?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170',
         correctOrder: 2,
         description: 'Adding peanut butter and jam'
       },
       {
         id: 'get_bread',
-        image: 'https://plus.unsplash.com/premium_photo-1700767194982-b72f275582bd?auto=format&fit=crop&q=60&w=600',
+        image: 'https://plus.unsplash.com/premium_photo-1700767194982-b72f275582bd?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aG9sZGluZyUyMGJyZWFkfGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=600',
         correctOrder: 1,
         description: 'Taking bread from the bag'
       },
       {
         id: 'eat_sandwich',
-        image: 'https://images.unsplash.com/photo-1553909489-cd47e0907980?auto=format&fit=crop&q=80&w=600',
+        image: 'https://plus.unsplash.com/premium_photo-1679166276587-0085a4bf7aef?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8ZWF0aW5nJTIwc2FuZHdpY2h8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&q=60&w=600',
         correctOrder: 3,
-        description: 'Eating the finished sandwich'
+        description: 'Child eating the finished sandwich'
       }
     ],
     correctSequence: ['get_bread', 'add_filling', 'eat_sandwich'],
@@ -148,28 +148,28 @@ export const oralLanguageQuestions: OralLanguageQuestion[] = [
     options: [],
     sequenceImages: [
       {
-        id: 'water_plant',
-        image: 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&q=80&w=600',
+        id: 'flower_grows',
+        image: 'https://images.unsplash.com/photo-1592683249810-bdf5c51eaf0a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170',
         correctOrder: 3,
-        description: 'Watering the plant'
-      },
-      {
-        id: 'dig_hole',
-        image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&q=80&w=600',
-        correctOrder: 1,
-        description: 'Digging a hole in the soil'
+        description: 'Beautiful flower blooming'
       },
       {
         id: 'plant_seed',
-        image: 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&q=80&w=600',
+        image: 'https://images.pexels.com/photos/169523/pexels-photo-169523.jpeg',
+        correctOrder: 1,
+        description: 'Putting seed in the soil'
+      },
+      {
+        id: 'water_plant',
+        image: 'https://images.unsplash.com/photo-1599277100479-3252d492a19a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1112',
         correctOrder: 2,
-        description: 'Planting the seed'
+        description: 'Watering the planted seed'
       }
     ],
-    correctSequence: ['dig_hole', 'plant_seed', 'water_plant'],
+    correctSequence: ['plant_seed', 'water_plant', 'flower_grows'],
     feedback: {
       correct: 'Excellent! You know how to plant a flower!',
-      incorrect: 'First dig a hole, then plant the seed, then water it!'
+      incorrect: 'First plant the seed, then water it, then watch it grow!'
     }
   }
 ];
