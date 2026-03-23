@@ -44,6 +44,27 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       sourcemap: enableSentrySourceMaps,
+      // Chunk size warning limit
+      chunkSizeWarningLimit: 1000,
+      rollupOptions: {
+        output: {
+          // Manual chunk splitting for better caching
+          manualChunks: {
+            // React core - rarely changes
+            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+            // UI libraries
+            'vendor-ui': ['framer-motion', 'lucide-react', '@dnd-kit/core', '@dnd-kit/sortable'],
+            // PDF generation - large, used only on report pages
+            'vendor-pdf': ['@react-pdf/renderer'],
+            // Supabase client
+            'vendor-supabase': ['@supabase/supabase-js'],
+          },
+        },
+      },
+      // Use esbuild for minification (faster, built-in)
+      minify: 'esbuild',
+      // esbuild options for production
+      target: 'es2020',
     },
   }
 })

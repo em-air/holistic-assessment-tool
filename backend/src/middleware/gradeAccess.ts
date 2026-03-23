@@ -1,6 +1,7 @@
 import logger from '../lib/logger.js';
 import { Request, Response, NextFunction } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
+import { cache, CacheKeys, CacheTTL } from '../lib/cache.js';
 import type { GradeLevel } from '../types/database.js';
 import { isAdmin, isTeacher } from './auth.js';
 
@@ -98,31 +99,62 @@ export const requireGradeAccess = async (
 
 /**
  * Get all quizzes filtered by user's grade
+ * Uses caching to reduce database load
  */
 export const getGradeFilteredQuizzes = async (
   userGrade: GradeLevel | null,
   userRole: string
 ) => {
-  const { data: quizzes, error } = await supabaseAdmin
-    .from('quiz_metadata')
-    .select('*')
-    .eq('is_active', true);
-
-  if (error) {
-    throw error;
-  }
-
-  // Admin and teacher see all quizzes
+  // Admin and teacher see all quizzes - use cached all quizzes
   if (userRole === 'admin' || userRole === 'teacher') {
+    const cacheKey = CacheKeys.QUIZ_METADATA;
+    let quizzes = cache.get<any[]>(cacheKey);
+    
+    if (!quizzes) {
+      const { data, error } = await supabaseAdmin
+        .from('quiz_metadata')
+        .select('*')
+        .eq('is_active', true)
+        .order('category')
+        .order('subcategory');
+
+      if (error) {
+        throw error;
+      }
+      
+      quizzes = data || [];
+      cache.set(cacheKey, quizzes, CacheTTL.QUIZ_METADATA);
+    }
+    
     return quizzes;
   }
 
-  // Filter quizzes for student by their grade
+  // Student without grade can't access any quizzes
   if (!userGrade) {
     return [];
   }
 
-  return quizzes?.filter(quiz => 
-    (quiz.allowed_grades as GradeLevel[]).includes(userGrade)
-  ) || [];
+  // Use grade-specific cache key for students
+  const cacheKey = CacheKeys.QUIZ_BY_GRADE(userGrade);
+  let filteredQuizzes = cache.get<any[]>(cacheKey);
+  
+  if (!filteredQuizzes) {
+    // Use PostgreSQL array contains operator for efficient filtering
+    const { data, error } = await supabaseAdmin
+      .from('quiz_metadata')
+      .select('*')
+      .eq('is_active', true)
+      .contains('allowed_grades', [userGrade])
+      .order('category')
+      .order('subcategory');
+
+    if (error) {
+      throw error;
+    }
+    
+    filteredQuizzes = data || [];
+    cache.set(cacheKey, filteredQuizzes, CacheTTL.QUIZ_METADATA);
+  }
+
+  return filteredQuizzes;
 };

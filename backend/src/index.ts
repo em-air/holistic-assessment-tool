@@ -1,14 +1,19 @@
 import logger from './lib/logger.js';
 import { initSentry, captureException } from './lib/sentry.js';
+import { setupGracefulShutdown, createHealthCheck } from './lib/shutdown.js';
+import { cache } from './lib/cache.js';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import rateLimit from 'express-rate-limit';
-import dotenv from 'dotenv';
+import { env, isProduction, features } from './config/env.js';
+import { requestIdMiddleware, requestLoggingMiddleware, performanceMiddleware } from './middleware/requestLogging.js';
 
-// Load environment variables
-dotenv.config();
-initSentry();
+// Initialize Sentry if configured
+if (features.sentry) {
+  initSentry();
+}
 
 // Import routes
 import profileRoutes from './routes/profile.js';
@@ -22,18 +27,29 @@ import aiRoutes from './routes/ai.js';
 import quizContentRoutes from './routes/quizContent.js';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = env.PORT;
+
+// Railway runs behind a reverse proxy; trust proxy headers for correct client IP handling.
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet());
+
+// Response compression
+app.use(compression());
+
+// Request ID and logging middleware
+app.use(requestIdMiddleware);
+app.use(requestLoggingMiddleware);
+app.use(performanceMiddleware);
 
 // CORS configuration - strict origin checking
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  process.env.FRONTEND_URL,
+  env.FRONTEND_URL,
   // Add Vercel preview URL patterns if needed
-  ...(process.env.VERCEL_PREVIEW_URLS?.split(',') || []),
+  ...(env.VERCEL_PREVIEW_URLS?.split(',') || []),
 ].filter(Boolean) as string[];
 
 app.use(cors({
@@ -54,7 +70,7 @@ app.use(cors({
     } else {
       // In production, reject unknown origins
       // In development, allow but log
-      if (process.env.NODE_ENV === 'production') {
+      if (isProduction) {
         callback(new Error(`Origin ${origin} not allowed by CORS`));
       } else {
         callback(null, true);
@@ -103,10 +119,10 @@ app.use(globalLimiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+// Enhanced health check endpoint
+const healthCheck = createHealthCheck();
+app.get('/api/health', healthCheck.handler);
+app.get('/health', healthCheck.handler); // Alternative path for load balancers
 
 // API routes
 app.use('/api/profile', authLimiter, profileRoutes);
@@ -122,8 +138,8 @@ app.use('/api/quiz-content', quizSubmitLimiter, quizContentRoutes);
 // Error handling middleware
 app.use((err: Error & { status?: number; errors?: unknown }, req: express.Request, res: express.Response, _next: express.NextFunction) => {
   // Only log errors in development or if they're 500-level errors
-  if (process.env.NODE_ENV !== 'production' || !err.status || err.status >= 500) {
-    logger.error({ err }, 'Request error');
+  if (!isProduction || !err.status || err.status >= 500) {
+    logger.error({ err, requestId: req.requestId }, 'Request error');
   }
 
   if (err.name !== 'ZodError' && (!err.status || err.status >= 500)) {
@@ -131,7 +147,7 @@ app.use((err: Error & { status?: number; errors?: unknown }, req: express.Reques
     captureException(err, {
       route: req.originalUrl,
       method: req.method,
-      requestId: req.get('x-request-id') || undefined,
+      requestId: req.requestId || undefined,
       userRole: requestWithUser.user?.role,
       origin: req.get('origin') || undefined,
     });
@@ -141,31 +157,44 @@ app.use((err: Error & { status?: number; errors?: unknown }, req: express.Reques
     return res.status(400).json({
       error: 'Validation error',
       details: err.errors,
+      requestId: req.requestId,
     });
   }
 
   // Don't expose error details in production
-  const message = process.env.NODE_ENV === 'production' && (!err.status || err.status >= 500)
+  const message = isProduction && (!err.status || err.status >= 500)
     ? 'Internal server error'
     : err.message;
 
   res.status(err.status || 500).json({
     error: message,
+    requestId: req.requestId,
   });
 });
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ error: 'Not found' });
+  res.status(404).json({ error: 'Not found', requestId: req.requestId });
 });
 
-// Start server
-app.listen(PORT, () => {
-  // These logs are acceptable for server startup
-  if (process.env.NODE_ENV !== 'test') {
-    logger.info(`ðŸš€ Server running on http://localhost:${PORT}`);
-    logger.info(`ðŸ“Š Environment: ${process.env.NODE_ENV || 'development'}`);
+// Start server with graceful shutdown
+const server = app.listen(PORT, () => {
+  if (env.NODE_ENV !== 'test') {
+    logger.info(`Server running on http://localhost:${PORT}`);
+    logger.info(`Environment: ${env.NODE_ENV}`);
+    logger.info(`Features: ${Object.entries(features).filter(([, v]) => v).map(([k]) => k).join(', ') || 'none'}`);
   }
+});
+
+// Setup graceful shutdown
+setupGracefulShutdown(server, {
+  timeout: 30000,
+  cleanupHandlers: [
+    async () => {
+      logger.info('Cleaning up cache...');
+      cache.destroy();
+    },
+  ],
 });
 
 export default app;
