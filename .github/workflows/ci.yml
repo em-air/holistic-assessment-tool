@@ -41,6 +41,14 @@ jobs:
       - name: Test
         run: npm run test:ci
 
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: coverage/
+          retention-days: 14
+
   backend-quality:
     runs-on: ubuntu-latest
     steps:
@@ -69,6 +77,14 @@ jobs:
       - name: Test
         run: npm run test:ci
         working-directory: backend
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/coverage/
+          retention-days: 14
 
   ci-status:
     runs-on: ubuntu-latest

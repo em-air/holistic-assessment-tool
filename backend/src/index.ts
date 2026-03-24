@@ -33,7 +33,33 @@ const PORT = env.PORT;
 app.set('trust proxy', 1);
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:', 'blob:', 'https://*.supabase.co'],
+      connectSrc: [
+        "'self'",
+        env.FRONTEND_URL || 'http://localhost:5173',
+        env.SUPABASE_URL,
+        'https://*.sentry.io',
+      ].filter(Boolean) as string[],
+      fontSrc: ["'self'", 'data:'],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Allow loading cross-origin resources (fonts, images)
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true,
+  },
+}));
 
 // Response compression
 app.use(compression());

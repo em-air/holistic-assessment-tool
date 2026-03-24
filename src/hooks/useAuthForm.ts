@@ -91,8 +91,30 @@ export function useAuthForm() {
 
       if (!formData.password) {
         newErrors.password = 'Password is required';
-      } else if (formData.password.length < 6) {
-        newErrors.password = 'Password must be at least 6 characters';
+      } else {
+        // Strong password validation
+        const password = formData.password;
+        const passwordErrors: string[] = [];
+        
+        if (password.length < 12) {
+          passwordErrors.push('at least 12 characters');
+        }
+        if (!/[A-Z]/.test(password)) {
+          passwordErrors.push('one uppercase letter');
+        }
+        if (!/[a-z]/.test(password)) {
+          passwordErrors.push('one lowercase letter');
+        }
+        if (!/[0-9]/.test(password)) {
+          passwordErrors.push('one number');
+        }
+        if (!/[!@#$%^&*(),.?":{}|<>_\-+=[\]\\;'/`~]/.test(password)) {
+          passwordErrors.push('one special character');
+        }
+        
+        if (passwordErrors.length > 0) {
+          newErrors.password = `Password must contain ${passwordErrors.join(', ')}`;
+        }
       }
 
       if (formData.password !== formData.confirmPassword) {
