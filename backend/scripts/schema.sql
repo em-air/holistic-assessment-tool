@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   age INTEGER CHECK (age >= 5 AND age <= 18),
   grade TEXT CHECK (grade IN ('Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8')),
   parent_email TEXT,
+  student_email TEXT,
   role TEXT NOT NULL DEFAULT 'student' CHECK (role IN ('student', 'teacher', 'admin')),
   assigned_teacher_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -204,13 +205,14 @@ CREATE POLICY "Teachers can view assigned student reports" ON public.reports
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, student_name, age, grade, parent_email, role)
+  INSERT INTO public.profiles (id, student_name, age, grade, parent_email, student_email, role)
   VALUES (
     NEW.id,
     NEW.raw_user_meta_data->>'studentName',
     (NEW.raw_user_meta_data->>'age')::INTEGER,
     NEW.raw_user_meta_data->>'grade',
     COALESCE(NEW.raw_user_meta_data->>'parentEmail', NEW.email),
+    NEW.raw_user_meta_data->>'studentEmail',
     'student'
   );
   RETURN NEW;

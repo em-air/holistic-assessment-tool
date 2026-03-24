@@ -42,6 +42,7 @@ export const verifySupabaseToken = async (
         age: user.user_metadata?.age || null,
         grade: user.user_metadata?.grade || null,
         parent_email: user.user_metadata?.parentEmail || user.email || null,
+        student_email: user.user_metadata?.studentEmail || null,
         role: 'student',
         assigned_teacher_id: null,
       };

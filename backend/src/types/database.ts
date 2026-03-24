@@ -18,6 +18,7 @@ export type Profile = {
   age: number | null;
   grade: GradeLevel | null;
   parent_email: string | null;
+  student_email: string | null;
   role: UserRole;
   assigned_teacher_id: string | null;
   created_at: string;
@@ -29,6 +30,7 @@ export type ProfileUpdate = {
   age?: number;
   grade?: GradeLevel;
   parent_email?: string;
+  student_email?: string;
   role?: UserRole;
   assigned_teacher_id?: string | null;
 };
