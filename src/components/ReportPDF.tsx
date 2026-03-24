@@ -19,13 +19,10 @@ import {
 
 // Note: English pages use built-in 'Helvetica' — no CDN font needed
 
-// Arabic font — served locally from public/fonts/ to avoid CDN failures
+// Arabic font — TTF served from public/fonts/ (WOFF files were too small / incomplete)
 Font.register({
   family: 'NotoSansArabic',
-  fonts: [
-    { src: '/fonts/NotoSansArabic-Regular.woff', fontWeight: 400 },
-    { src: '/fonts/NotoSansArabic-Bold.woff', fontWeight: 700 },
-  ],
+  src: '/fonts/NotoSansArabic-Regular.ttf',
 });
 
 // Disable hyphenation (prevents word-breaking issues in Arabic)

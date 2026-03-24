@@ -105,8 +105,8 @@ const OralLanguageQuiz: React.FC = () => {
   const t = oralLanguageTranslations[language];
   const isRTL = language === 'ar';
 
-  const currentQuestion = selectedCategory?.questions[currentQuestionIndex];
-  const isLastQuestion = selectedCategory && currentQuestionIndex === selectedCategory.questions.length - 1;
+  const currentQuestion = selectedCategory?.questions?.[currentQuestionIndex];
+  const isLastQuestion = selectedCategory && currentQuestionIndex === (selectedCategory.questions?.length ?? 0) - 1;
 
   // Auto-select category from navigation state
   useEffect(() => {
@@ -214,6 +214,12 @@ const OralLanguageQuiz: React.FC = () => {
       }
     } catch { /* questions will be empty */ }
 
+    if (!questions || questions.length === 0) {
+      // Fallback: show an error or navigate back
+      alert(language === 'ar' ? 'لم يتم تحميل الأسئلة. حاول مرة أخرى.' : 'Failed to load questions. Please try again.');
+      return;
+    }
+
     setSelectedCategory({ ...category, questions });
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
@@ -296,7 +302,7 @@ const OralLanguageQuiz: React.FC = () => {
                   </p>
                   <div className="bg-white/20 rounded-lg p-3">
                     <span className="text-sm font-medium">
-                      {category.questions.length} {t.question}s
+                      {t.question}s
                     </span>
                   </div>
                 </div>
@@ -383,7 +389,7 @@ const OralLanguageQuiz: React.FC = () => {
               <span>{selectedCategory.title[language]}</span>
             </div>
             <div className="bg-white/20 rounded-full px-3 py-1">
-              {currentQuestionIndex + 1} {t.of} {selectedCategory.questions.length}
+              {currentQuestionIndex + 1} {t.of} {selectedCategory.questions?.length ?? 0}
             </div>
           </div>
         </div>
