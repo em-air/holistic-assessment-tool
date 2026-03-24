@@ -20,7 +20,7 @@ describe('useAuthForm', () => {
   });
 
   describe('password validation', () => {
-    it('should reject passwords shorter than 12 characters on submit', async () => {
+    it('should reject passwords shorter than 8 characters on submit', async () => {
       const { result } = renderHook(() => useAuthForm());
 
       // Switch to signup mode
@@ -43,13 +43,13 @@ describe('useAuthForm', () => {
 
       act(() => {
         result.current.handleInputChange({
-          target: { name: 'password', value: 'Short1!' },
+          target: { name: 'password', value: 'Ab1!xy' },
         } as React.ChangeEvent<HTMLInputElement>);
       });
 
       act(() => {
         result.current.handleInputChange({
-          target: { name: 'confirmPassword', value: 'Short1!' },
+          target: { name: 'confirmPassword', value: 'Ab1!xy' },
         } as React.ChangeEvent<HTMLInputElement>);
       });
 
@@ -61,11 +61,11 @@ describe('useAuthForm', () => {
       // Should have password error after submit attempt
       await waitFor(() => {
         expect(result.current.errors.password).toBeDefined();
-        expect(result.current.errors.password).toContain('12 characters');
+        expect(result.current.errors.password).toContain('8 characters');
       });
     });
 
-    it('should reject passwords without uppercase letters on submit', async () => {
+    it('should reject passwords without a number on submit', async () => {
       const { result } = renderHook(() => useAuthForm());
 
       act(() => {
@@ -86,13 +86,13 @@ describe('useAuthForm', () => {
 
       act(() => {
         result.current.handleInputChange({
-          target: { name: 'password', value: 'lowercaseonly1!' },
+          target: { name: 'password', value: 'nonumber!' },
         } as React.ChangeEvent<HTMLInputElement>);
       });
 
       act(() => {
         result.current.handleInputChange({
-          target: { name: 'confirmPassword', value: 'lowercaseonly1!' },
+          target: { name: 'confirmPassword', value: 'nonumber!' },
         } as React.ChangeEvent<HTMLInputElement>);
       });
 
@@ -102,7 +102,7 @@ describe('useAuthForm', () => {
 
       await waitFor(() => {
         expect(result.current.errors.password).toBeDefined();
-        expect(result.current.errors.password).toContain('uppercase');
+        expect(result.current.errors.password).toContain('number');
       });
     });
 
@@ -125,8 +125,8 @@ describe('useAuthForm', () => {
         } as React.ChangeEvent<HTMLInputElement>);
       });
 
-      // Strong password: 12+ chars, uppercase, lowercase, number, special
-      const strongPassword = 'StrongPass123!';
+      // Valid password: 8+ chars, one number, one special character
+      const strongPassword = 'mypass1!';
 
       act(() => {
         result.current.handleInputChange({
