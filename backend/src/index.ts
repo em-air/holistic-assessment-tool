@@ -69,6 +69,14 @@ app.use(requestIdMiddleware);
 app.use(requestLoggingMiddleware);
 app.use(performanceMiddleware);
 
+// Response compression
+app.use(compression());
+
+// Request ID and logging middleware
+app.use(requestIdMiddleware);
+app.use(requestLoggingMiddleware);
+app.use(performanceMiddleware);
+
 // CORS configuration - strict origin checking
 const allowedOrigins = [
   'http://localhost:5173',

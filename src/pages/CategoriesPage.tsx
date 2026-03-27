@@ -19,14 +19,16 @@ const CategoriesPage: React.FC = () => {
     setIsSigningOut(true);
     try {
       await signOut();
+      // Wait a moment to ensure Supabase has cleared sessionStorage
+      await new Promise(resolve => setTimeout(resolve, 100));
     } catch (error) {
       // signOut already handles errors internally, but guard just in case
     } finally {
       setShowSignOutConfirm(false);
       setIsSigningOut(false);
-      // Force page reload to clear all state
-      window.location.href = window.location.pathname;
     }
+    // Navigate to home after sign out completes (outside finally to ensure signOut finished)
+    navigate(ROUTES.HOME);
   };
 
   return (

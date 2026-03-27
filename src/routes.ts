@@ -86,6 +86,7 @@ export const ROUTE_PATTERNS = {
   LOGICAL_SEQUENCING_GRADE: '/logical-sequencing-quiz/:grade',
   PERCEPTION_QUIZ_SELECTION: '/perception-quiz-selection/:categoryId',
   ORAL_LANGUAGE_SELECTION_WITH_ID: '/oral-language-selection/:categoryId',
+  ORAL_SENTENCE_BUILDING_GRADE: '/category/oral-skills/sentence-building/:grade',
   ORAL_STORY_RETELL_GRADE: '/category/oral-skills/story-retell/:grade',
   READING_ASSESSMENT: '/reading-assessment/:categoryId',
   SPELLING_TEST: '/spelling-test/:grade',
@@ -113,6 +114,9 @@ export const perceptionQuizSelectionRoute = (categoryId: string) =>
 
 export const oralLanguageSelectionRoute = (categoryId: string) =>
   `/oral-language-selection/${categoryId}`;
+
+export const oralSentenceBuildingGradeRoute = (grade: string | number) =>
+  `/category/oral-skills/sentence-building/${grade}`;
 
 export const oralStoryRetellGradeRoute = (grade: string | number) =>
   `/category/oral-skills/story-retell/${grade}`;

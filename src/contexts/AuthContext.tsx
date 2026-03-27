@@ -92,11 +92,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signOut = async () => {
     try {
+      // Clear local state first to trigger UI updates immediately
+      setUser(null);
+      setProfile(null);
+      // Then sign out from Supabase (clears sessionStorage)
       await supabase.auth.signOut();
     } catch (error) {
       logger.error('Error during sign out:', error);
-    } finally {
-      // Always clear local state, even if the Supabase call failed
+      // Ensure state is cleared even if Supabase call fails
       setUser(null);
       setProfile(null);
     }

@@ -1197,7 +1197,7 @@ router.get('/oral-language/questions', verifySupabaseToken, async (req: Request,
       level
     );
 
-    // Strip isCorrect from options
+    // Strip isCorrect from options, but include sequenceImages for storytelling
     const safeQuestions = questions.map(q => ({
       id: q.id,
       type: q.type,
@@ -1205,6 +1205,12 @@ router.get('/oral-language/questions', verifySupabaseToken, async (req: Request,
       question: q.question,
       image: q.image,
       options: q.options.map(o => ({ id: o.id, text: o.text })),
+      // Include storytelling-specific fields
+      ...(q.type === 'storytelling' && q.sequenceImages ? {
+        sequenceImages: q.sequenceImages,
+        correctSequence: q.correctSequence,
+        feedback: q.feedback,
+      } : {}),
     }));
 
     res.json({

@@ -48,6 +48,8 @@ const OralLanguageQuiz = lazy(() => import('./pages/OralLanguageQuiz'));
 const OralLanguageSelection = lazy(() => import('./pages/OralLanguageSelection'));
 const StoryRetellQuiz = lazy(() => import('./pages/StoryRetellQuiz'));
 const StoryRetellGradeSelector = lazy(() => import('./pages/StoryRetellGradeSelector'));
+const SentenceBuildingGradeSelector = lazy(() => import('./pages/SentenceBuildingGradeSelector'));
+const SentenceBuildingQuiz = lazy(() => import('./pages/SentenceBuildingQuiz'));
 const VocabularyMatching = lazy(() => import('./pages/VocabularyMatching'));
 const FlashWordQuiz = lazy(() => import('./pages/FlashWordQuiz'));
 
@@ -104,7 +106,8 @@ const routeConfig: RouteEntry[] = [
 
   // ── Oral Skills ───────────────────────────────────────────────────
   { path: ROUTES.ORAL_LANGUAGE_SELECTION, Component: OralLanguageSelection },
-  { path: ROUTES.ORAL_SENTENCE_BUILDING, Component: OralLanguageQuiz },
+  { path: ROUTES.ORAL_SENTENCE_BUILDING, Component: SentenceBuildingGradeSelector },
+  { path: ROUTE_PATTERNS.ORAL_SENTENCE_BUILDING_GRADE, Component: SentenceBuildingQuiz },
   { path: ROUTES.ORAL_STORY_SEQUENCING, Component: OralLanguageQuiz },
   { path: ROUTES.ORAL_STORY_RETELL, Component: StoryRetellGradeSelector },
   { path: ROUTE_PATTERNS.ORAL_STORY_RETELL_GRADE, Component: StoryRetellQuiz },

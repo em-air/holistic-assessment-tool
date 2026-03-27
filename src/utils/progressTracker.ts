@@ -256,7 +256,10 @@ export class ProgressTracker {
     const userId = await ensureUserId();
     
     if (!userId) {
-      logger.warn('Cannot save quiz result: User not authenticated');
+      logger.warn('Cannot save quiz result: User not authenticated - quiz result will not persist');
+      // Dispatch event with current progress so UI can refresh (prompts user to sign in)
+      const currentProgress = this.getProgress();
+      window.dispatchEvent(new CustomEvent('mindProgressUpdated', { detail: currentProgress }));
       return;
     }
 
