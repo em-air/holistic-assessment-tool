@@ -4,30 +4,23 @@ import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import type { Profile, QuizResult } from '../types/database.js';
 
-// @ts-ignore â€” arabic-reshaper has no type declarations
+// @ts-ignore — arabic-reshaper has no type declarations
 import ArabicReshaper from 'arabic-reshaper';
 
-// â”€â”€ Arabic font cache â”€â”€
+// ── Arabic font cache ──
 let _arabicFontCache: Buffer | null = null;
 
 /**
  * Reshape Arabic text for PDFKit rendering.
- * 1. Converts regular Arabic (U+0600-U+06FF) â†’ Presentation Forms B (U+FE70-U+FEFF)
+ * 1. Converts regular Arabic (U+0600-U+06FF) → Presentation Forms B (U+FE70-U+FEFF)
  *    so PDFKit renders connected glyphs correctly.
  * 2. Reverses the character sequence so PDFKit's left-to-right renderer
  *    produces the correct right-to-left visual order.
- *    Without this reversal, multi-word Arabic text appears with its words
- *    in the wrong order (e.g. "Ø§Ù„ØªÙ‚ÙŠÙŠÙ… ØªÙ‚Ø±ÙŠØ±" instead of "ØªÙ‚Ø±ÙŠØ± Ø§Ù„ØªÙ‚ÙŠÙŠÙ…").
  */
 function reshapeArabic(text: string): string {
   if (!text) return text;
   try {
     const reshaped = ArabicReshaper.convertArabic(text);
-    // Reverse word order for correct RTL display in PDFKit's LTR engine.
-    // Each word's glyphs are already shaped (Presentation Forms B), but the
-    // words themselves are in logical (LTR) order.  Reversing makes the
-    // left-to-right renderer place the last logical word on the left and the
-    // first on the right â€” exactly how Arabic text should appear visually.
     return reshaped
       .split('\n')
       .map((line: string) => line.split(' ').reverse().join(' '))
@@ -74,7 +67,7 @@ async function getArabicFontBuffer(): Promise<Buffer | null> {
   return null;
 }
 
-// â”€â”€ Public types â”€â”€
+// ── Public types ──
 export interface ReportData {
   profile: Profile;
   mindResults: QuizResult[];
@@ -83,7 +76,7 @@ export interface ReportData {
   generatedAt: Date;
 }
 
-// â”€â”€ Color palette â”€â”€
+// ── Color palette ──
 const C = {
   primary:     '#4f46e5',
   primaryLt:   '#eef2ff',
@@ -110,10 +103,10 @@ const C = {
 };
 
 function perfLevel(pct: number) {
-  if (pct >= 90) return { label: 'Excellent',        labelAr: reshapeArabic('Ù…Ù…ØªØ§Ø²'),       color: C.success, bg: C.successLt };
-  if (pct >= 75) return { label: 'Good',             labelAr: reshapeArabic('Ø¬ÙŠØ¯'),         color: C.blue,    bg: C.blueLt };
-  if (pct >= 60) return { label: 'Satisfactory',     labelAr: reshapeArabic('Ù…ÙØ±Ø¶Ù'),       color: C.warning, bg: C.warningLt };
-  return               { label: 'Needs Improvement', labelAr: reshapeArabic('ÙŠØ­ØªØ§Ø¬ ØªØ­Ø³ÙŠÙ†'), color: C.danger,  bg: C.dangerLt };
+  if (pct >= 90) return { label: 'Excellent',        labelAr: reshapeArabic('ممتاز'),       color: C.success, bg: C.successLt };
+  if (pct >= 75) return { label: 'Good',             labelAr: reshapeArabic('جيد'),         color: C.blue,    bg: C.blueLt };
+  if (pct >= 60) return { label: 'Satisfactory',     labelAr: reshapeArabic('مرضي'),       color: C.warning, bg: C.warningLt };
+  return               { label: 'Needs Improvement', labelAr: reshapeArabic('يحتاج تحسين'), color: C.danger,  bg: C.dangerLt };
 }
 
 function parseAdditionalData(data: any): Record<string, any> | null {
@@ -128,9 +121,9 @@ function attnLabelEn(pct: number) {
   return 'Developing Focus';
 }
 function attnLabelAr(pct: number) {
-  if (pct >= 75) return reshapeArabic('ØªØ±ÙƒÙŠØ² Ù‚ÙˆÙŠ');
-  if (pct >= 60) return reshapeArabic('ØªØ±ÙƒÙŠØ² Ù…ØªÙˆØ³Ø·');
-  return reshapeArabic('ØªØ±ÙƒÙŠØ² Ù‚ÙŠØ¯ Ø§Ù„ØªØ·ÙˆÙŠØ±');
+  if (pct >= 75) return reshapeArabic('تركيز قوي');
+  if (pct >= 60) return reshapeArabic('تركيز متوسط');
+  return reshapeArabic('تركيز قيد التطوير');
 }
 
 const styleEn: Record<string, string> = {
@@ -138,8 +131,8 @@ const styleEn: Record<string, string> = {
   'reading-writing': 'Reading/Writing Learner', kinesthetic: 'Kinesthetic Learner',
 };
 const styleAr: Record<string, string> = {
-  visual: reshapeArabic('Ù…ØªØ¹Ù„Ù… Ø¨ØµØ±ÙŠ'), auditory: reshapeArabic('Ù…ØªØ¹Ù„Ù… Ø³Ù…Ø¹ÙŠ'),
-  'reading-writing': reshapeArabic('Ù…ØªØ¹Ù„Ù… Ù‚Ø±Ø§Ø¦ÙŠ/ÙƒØªØ§Ø¨ÙŠ'), kinesthetic: reshapeArabic('Ù…ØªØ¹Ù„Ù… Ø­Ø±ÙƒÙŠ'),
+  visual: reshapeArabic('متعلم بصري'), auditory: reshapeArabic('متعلم سمعي'),
+  'reading-writing': reshapeArabic('متعلم قرائي/كتابي'), kinesthetic: reshapeArabic('متعلم حركي'),
 };
 
 const subNameEn: Record<string, string> = {
@@ -151,15 +144,15 @@ const subNameEn: Record<string, string> = {
   writing: 'Writing Skills', vocabulary: 'Vocabulary', spelling: 'Spelling',
 };
 const subNameAr: Record<string, string> = {
-  attention: reshapeArabic('Ø§Ù„Ø§Ù†ØªØ¨Ø§Ù‡ ÙˆØ§Ù„ØªØ±ÙƒÙŠØ²'), memory: reshapeArabic('Ø§Ù„Ø°Ø§ÙƒØ±Ø© ÙˆØ§Ù„Ø§Ø³ØªØ±Ø¬Ø§Ø¹'),
-  'learning-style': reshapeArabic('Ø£Ø³Ù„ÙˆØ¨ Ø§Ù„ØªØ¹Ù„Ù…'), 'critical-thinking': reshapeArabic('Ø§Ù„ØªÙÙƒÙŠØ± Ø§Ù„Ù†Ù‚Ø¯ÙŠ'),
-  perception: reshapeArabic('Ø§Ù„Ø¥Ø¯Ø±Ø§Ùƒ Ø§Ù„Ø¨ØµØ±ÙŠ'), 'oral-language': reshapeArabic('Ø§Ù„Ù„ØºØ© Ø§Ù„Ø´ÙÙ‡ÙŠØ©'),
-  reading: reshapeArabic('Ù…Ù‡Ø§Ø±Ø§Øª Ø§Ù„Ù‚Ø±Ø§Ø¡Ø©'), phonics: reshapeArabic('Ø£ØµÙˆØ§Øª Ø§Ù„Ø¨Ø¯Ø§ÙŠØ© ÙˆØ§Ù„Ù†Ù‡Ø§ÙŠØ©'),
-  'phonics-awareness': reshapeArabic('Ø£ØµÙˆØ§Øª Ø§Ù„Ø¨Ø¯Ø§ÙŠØ© ÙˆØ§Ù„Ù†Ù‡Ø§ÙŠØ©'), 'blending-segmenting': reshapeArabic('Ø§Ù„Ø¯Ù…Ø¬ ÙˆØ§Ù„ØªÙ‚Ø³ÙŠÙ…'),
-  writing: reshapeArabic('Ù…Ù‡Ø§Ø±Ø§Øª Ø§Ù„ÙƒØªØ§Ø¨Ø©'), vocabulary: reshapeArabic('Ø§Ù„Ù…ÙØ±Ø¯Ø§Øª'), spelling: reshapeArabic('Ø§Ù„Ø¥Ù…Ù„Ø§Ø¡'),
+  attention: reshapeArabic('الانتباه والتركيز'), memory: reshapeArabic('الذاكرة والاسترجاع'),
+  'learning-style': reshapeArabic('أسلوب التعلم'), 'critical-thinking': reshapeArabic('التفكير النقدي'),
+  perception: reshapeArabic('الإدراك البصري'), 'oral-language': reshapeArabic('اللغة الشفهية'),
+  reading: reshapeArabic('مهارات القراءة'), phonics: reshapeArabic('أصوات البداية والنهاية'),
+  'phonics-awareness': reshapeArabic('أصوات البداية والنهاية'), 'blending-segmenting': reshapeArabic('الدمج والتقسيم'),
+  writing: reshapeArabic('مهارات الكتابة'), vocabulary: reshapeArabic('المفردات'), spelling: reshapeArabic('الإملاء'),
 };
 
-// â•â•â•â•â•â• Helpers â•â•â•â•â•â•
+// ═════ Helpers ═════
 
 function groupBySub(results: QuizResult[]) {
   const map: Record<string, QuizResult[]> = {};
@@ -169,7 +162,6 @@ function groupBySub(results: QuizResult[]) {
   return map;
 }
 
-/** English score string, e.g. "3/5 (80%)" */
 function scoreStr(r: QuizResult) {
   return `${r.score}/${r.total_questions} (${r.percentage}%)`;
 }
@@ -197,9 +189,9 @@ function qualitativeAr(sub: string, result: QuizResult): string | null {
   return null;
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════════════
 //  Shared doc creation + drawing helpers
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════════════
 interface DocSetup {
   doc: InstanceType<typeof PDFDocument>;
   pageW: number;
@@ -224,8 +216,8 @@ function createDocSetup(data: ReportData, arabicFont: Buffer | null): DocSetup {
     margins: { top: 50, bottom: 60, left: 50, right: 50 },
     autoFirstPage: true,
     info: {
-      Title: `Assessment Report â€“ ${data.profile.student_name || 'Student'}`,
-      Author: 'Holistic Assessment Tool â€“ Bloom Tutoring',
+      Title: `Assessment Report — ${data.profile.student_name || 'Student'}`,
+      Author: 'Holistic Assessment Tool — Bloom Tutoring',
       Subject: 'Cognitive & Language Skills Assessment',
     },
   });
@@ -244,7 +236,7 @@ function createDocSetup(data: ReportData, arabicFont: Buffer | null): DocSetup {
     const savedMargin = doc.page.margins.bottom;
     doc.page.margins.bottom = 0;
     const txt = isArabic && arabicFont
-      ? reshapeArabic('ØµØ§Ø¯Ø± Ù…Ù† Ø£Ø¯Ø§Ø© Ø§Ù„ØªÙ‚ÙŠÙŠÙ… Ø§Ù„Ø´Ø§Ù…Ù„ | Ø¨Ù„ÙˆÙ… Ù„Ù„ØªØ¹Ù„ÙŠÙ…')
+      ? reshapeArabic('صادر من أداة التقييم الشامل | بلوم للتعليم')
       : 'Generated by Holistic Assessment Tool  |  Bloom Tutoring';
     if (isArabic && arabicFont) doc.font('Arabic');
     else doc.font('Helvetica');
@@ -361,9 +353,9 @@ function createDocSetup(data: ReportData, arabicFont: Buffer | null): DocSetup {
   return { doc, pageW, W, L, R, PAGE_BOTTOM, resetCursor, pageFooter, card, progressBar, divider, ensureSpace, drawScoreHelvetica, renderSectionEn, renderSectionAr };
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════════════
 //  ENGLISH PDF GENERATION
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════════════
 export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
@@ -378,7 +370,7 @@ export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
       const overallAvg = totalCount > 0 ? Math.round(allResults.reduce((s, r) => s + r.percentage, 0) / totalCount) : 0;
       const totalTime = allResults.reduce((s, r) => s + (r.time_spent || 0), 0);
 
-      // â•â•â• ENGLISH COVER â•â•â•
+      // ═══ ENGLISH COVER ═══
       let y = 80;
       doc.save(); doc.rect(0, 0, pageW, 6).fill(C.primary); doc.restore();
       doc.font('Helvetica').fontSize(9).fillColor(C.gray400).text('BLOOM TUTORING', L, 20, { width: W, align: 'right', characterSpacing: 2, lineBreak: false });
@@ -460,9 +452,9 @@ export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
       y += 36;
       const highPerf = allResults.filter(r => r.percentage >= 85);
       if (highPerf.length > 0) {
-        for (const r of highPerf) { y = ensureSpace(y, 20); doc.font('Helvetica').fontSize(10).fillColor(C.gray700).text(`â€¢  ${r.quiz_name}: Excellent performance`, L + 14, y, { width: W - 28, lineBreak: false }); y += 18; }
+        for (const r of highPerf) { y = ensureSpace(y, 20); doc.font('Helvetica').fontSize(10).fillColor(C.gray700).text(`\u2022  ${r.quiz_name}: Excellent performance`, L + 14, y, { width: W - 28, lineBreak: false }); y += 18; }
       } else if (allResults.length > 0) {
-        doc.font('Helvetica').fontSize(10).fillColor(C.gray700).text('â€¢  Your child is developing skills across all assessed areas.', L + 14, y, { width: W - 28, lineBreak: false }); y += 18;
+        doc.font('Helvetica').fontSize(10).fillColor(C.gray700).text('\u2022  Your child is developing skills across all assessed areas.', L + 14, y, { width: W - 28, lineBreak: false }); y += 18;
       }
       y += 10;
 
@@ -472,9 +464,9 @@ export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
       y += 36;
       const lowPerf = allResults.filter(r => r.percentage < 75);
       if (lowPerf.length > 0) {
-        for (const r of lowPerf) { y = ensureSpace(y, 20); const sub = subNameEn[r.subcategory] || r.subcategory; doc.font('Helvetica').fontSize(10).fillColor(C.gray700).text(`â€¢  ${sub}: Consider additional practice and support`, L + 14, y, { width: W - 28, lineBreak: false }); y += 18; }
+        for (const r of lowPerf) { y = ensureSpace(y, 20); const sub = subNameEn[r.subcategory] || r.subcategory; doc.font('Helvetica').fontSize(10).fillColor(C.gray700).text(`\u2022  ${sub}: Consider additional practice and support`, L + 14, y, { width: W - 28, lineBreak: false }); y += 18; }
       } else if (allResults.length > 0) {
-        doc.font('Helvetica').fontSize(10).fillColor(C.gray700).text('â€¢  Consistent performance across all areas â€” great job!', L + 14, y, { width: W - 28, lineBreak: false }); y += 18;
+        doc.font('Helvetica').fontSize(10).fillColor(C.gray700).text('\u2022  Consistent performance across all areas \u2014 great job!', L + 14, y, { width: W - 28, lineBreak: false }); y += 18;
       }
       y += 10;
 
@@ -489,7 +481,7 @@ export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
         "Discuss results with your child's teacher for additional support.",
         'Re-assess periodically to track improvement over time.',
       ];
-      for (const act of activities) { y = ensureSpace(y, 20); doc.font('Helvetica').fontSize(10).fillColor(C.gray700).text(`â€¢  ${act}`, L + 14, y, { width: W - 28, lineBreak: false }); y += 18; }
+      for (const act of activities) { y = ensureSpace(y, 20); doc.font('Helvetica').fontSize(10).fillColor(C.gray700).text(`\u2022  ${act}`, L + 14, y, { width: W - 28, lineBreak: false }); y += 18; }
       pageFooter();
 
       doc.end();
@@ -497,9 +489,9 @@ export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
   });
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════════════
 //  ARABIC PDF GENERATION
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════════════
 export async function generateArabicPDF(data: ReportData): Promise<Buffer> {
   const arabicFont = await getArabicFontBuffer();
   if (!arabicFont) throw new Error('Arabic font not available');
@@ -518,35 +510,35 @@ export async function generateArabicPDF(data: ReportData): Promise<Buffer> {
       const totalTime = allResults.reduce((s, r) => s + (r.time_spent || 0), 0);
       const boxW = (W - 30) / 4;
 
-      // â•â•â• ARABIC COVER â•â•â•
+      // ═══ ARABIC COVER ═══
       doc.save(); doc.rect(0, 0, pageW, 6).fill(C.primary); doc.restore();
       let y = 80;
 
-      doc.font('Arabic').fontSize(9).fillColor(C.gray400).text(reshapeArabic('Ø¨Ù„ÙˆÙ… Ù„Ù„ØªØ¹Ù„ÙŠÙ…'), L, 20, { width: W, align: 'left', lineBreak: false });
-      doc.font('Arabic').fontSize(30).fillColor(C.primary).text(reshapeArabic('ØªÙ‚Ø±ÙŠØ± Ø§Ù„ØªÙ‚ÙŠÙŠÙ…'), L, y, { width: W, align: 'center', lineBreak: false });
+      doc.font('Arabic').fontSize(9).fillColor(C.gray400).text(reshapeArabic('بلوم للتعليم'), L, 20, { width: W, align: 'left', lineBreak: false });
+      doc.font('Arabic').fontSize(30).fillColor(C.primary).text(reshapeArabic('تقرير التقييم'), L, y, { width: W, align: 'center', lineBreak: false });
       y += 55;
 
       const arNameH = data.profile.grade ? 70 : 50;
       const arNameY = card(y, arNameH, C.primaryLt);
-      doc.font('Arabic').fontSize(20).fillColor(C.gray900).text(data.profile.student_name || reshapeArabic('Ø§Ù„Ø·Ø§Ù„Ø¨'), L, arNameY, { width: W, align: 'center', lineBreak: false });
+      doc.font('Arabic').fontSize(20).fillColor(C.gray900).text(data.profile.student_name || reshapeArabic('الطالب'), L, arNameY, { width: W, align: 'center', lineBreak: false });
       if (data.profile.grade) {
         doc.font('Arabic').fontSize(13).fillColor(C.gray500).text(data.profile.grade, L, arNameY + 28, { width: W, align: 'center', lineBreak: false });
       }
       y += arNameH + 12;
 
       const dateStr = data.generatedAt.toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' });
-      doc.font('Arabic').fontSize(11).fillColor(C.gray500).text(reshapeArabic('ØªØ§Ø±ÙŠØ® Ø§Ù„Ø¥ØµØ¯Ø§Ø±') + ':  ' + dateStr, L, y, { width: W, align: 'center', lineBreak: false });
+      doc.font('Arabic').fontSize(11).fillColor(C.gray500).text(reshapeArabic('تاريخ الإصدار') + ':  ' + dateStr, L, y, { width: W, align: 'center', lineBreak: false });
       y += 35;
       y = divider(y);
 
-      doc.font('Arabic').fontSize(14).fillColor(C.gray900).text(reshapeArabic('Ù…Ù„Ø®Øµ Ø§Ù„ØªÙ‚ÙŠÙŠÙ…'), L, y, { width: W, align: 'right', lineBreak: false });
+      doc.font('Arabic').fontSize(14).fillColor(C.gray900).text(reshapeArabic('ملخص التقييم'), L, y, { width: W, align: 'right', lineBreak: false });
       y += 28;
 
       const arStatLabels = [
-        { val: String(totalCount), lbl: reshapeArabic('Ø§Ù„Ø§Ø®ØªØ¨Ø§Ø±Ø§Øª Ø§Ù„Ù…ÙƒØªÙ…Ù„Ø©'), accent: C.primary },
-        { val: `${overallAvg}%`, lbl: reshapeArabic('Ø§Ù„Ø¯Ø±Ø¬Ø© Ø§Ù„ÙƒÙ„ÙŠØ©'), accent: C.primary },
-        { val: String(data.mindResults.length), lbl: reshapeArabic('Ø§Ù„Ù…Ù‡Ø§Ø±Ø§Øª Ø§Ù„Ø°Ù‡Ù†ÙŠØ©'), accent: C.secondary },
-        { val: `${Math.round(totalTime / 60)}`, lbl: reshapeArabic('Ø§Ù„ÙˆÙ‚Øª Ø§Ù„Ù…Ø³ØªØºØ±Ù‚'), accent: C.emerald },
+        { val: String(totalCount), lbl: reshapeArabic('الاختبارات المكتملة'), accent: C.primary },
+        { val: `${overallAvg}%`, lbl: reshapeArabic('الدرجة الكلية'), accent: C.primary },
+        { val: String(data.mindResults.length), lbl: reshapeArabic('المهارات الذهنية'), accent: C.secondary },
+        { val: `${Math.round(totalTime / 60)}`, lbl: reshapeArabic('الوقت المستغرق'), accent: C.emerald },
       ];
       for (let i = 0; i < arStatLabels.length; i++) {
         const x = L + i * (boxW + 10);
@@ -558,14 +550,14 @@ export async function generateArabicPDF(data: ReportData): Promise<Buffer> {
 
       const arPl = perfLevel(overallAvg);
       doc.save(); doc.roundedRect(L, y, W, 44, 6).fill(arPl.bg); doc.restore();
-      doc.font('Arabic').fontSize(12).fillColor(C.gray700).text(reshapeArabic('Ø§Ù„Ø£Ø¯Ø§Ø¡ Ø§Ù„Ø¹Ø§Ù…'), L + 14, y + 8, { width: W - 28, align: 'right', lineBreak: false });
+      doc.font('Arabic').fontSize(12).fillColor(C.gray700).text(reshapeArabic('الأداء العام'), L + 14, y + 8, { width: W - 28, align: 'right', lineBreak: false });
       doc.font('Arabic').fontSize(12).fillColor(arPl.color).text(arPl.labelAr, L + 14, y + 8, { width: W / 2, lineBreak: false });
       progressBar(L + 14, y + 30, 140, overallAvg, arPl.color);
       y += 58;
 
-      const parentNoteAr1 = reshapeArabic('Ø¹Ø²ÙŠØ²ÙŠ ÙˆÙ„ÙŠ Ø§Ù„Ø£Ù…Ø±ØŒ');
-      const parentNoteAr2 = reshapeArabic('ÙŠÙ‚Ø¯Ù… Ù‡Ø°Ø§ Ø§Ù„ØªÙ‚Ø±ÙŠØ± Ù†Ø¸Ø±Ø© Ø¹Ø§Ù…Ø© Ø¹Ù„Ù‰ ØªÙ‚ÙŠÙŠÙ… Ø§Ù„Ù…Ù‡Ø§Ø±Ø§Øª Ø§Ù„Ø¥Ø¯Ø±Ø§ÙƒÙŠØ© Ù„Ø·ÙÙ„Ùƒ.');
-      const parentNoteAr3 = reshapeArabic('ØªØ¹ÙƒØ³ Ø§Ù„Ø¯Ø±Ø¬Ø§Øª Ø§Ù„Ø£Ø¯Ø§Ø¡ ÙÙŠ Ù…Ø®ØªÙ„Ù Ø§Ù„Ù…Ø¬Ø§Ù„Ø§Øª Ø¨Ù…Ø§ ÙÙŠ Ø°Ù„Ùƒ Ø§Ù„Ø§Ù†ØªØ¨Ø§Ù‡ ÙˆØ§Ù„Ø°Ø§ÙƒØ±Ø© ÙˆØ§Ù„ØªÙÙƒÙŠØ± Ø§Ù„Ù†Ù‚Ø¯ÙŠ ÙˆØ§Ù„Ù…Ù‡Ø§Ø±Ø§Øª Ø§Ù„Ù„ØºÙˆÙŠØ©.');
+      const parentNoteAr1 = reshapeArabic('عزيزي ولي الأمر،');
+      const parentNoteAr2 = reshapeArabic('يقدم هذا التقرير نظرة عامة على تقييم المهارات الإدراكية لطفلك.');
+      const parentNoteAr3 = reshapeArabic('تعكس الدرجات الأداء في مختلف المجالات بما في ذلك الانتباه والذاكرة والتفكير النقدي والمهارات اللغوية.');
       const fullParentAr = parentNoteAr1 + '\n\n' + parentNoteAr2 + ' ' + parentNoteAr3;
       doc.font('Arabic').fontSize(10);
       const parentNoteArH = doc.heightOfString(fullParentAr, { width: W - 32, align: 'right' });
@@ -579,61 +571,61 @@ export async function generateArabicPDF(data: ReportData): Promise<Buffer> {
       // Mind Skills (Arabic)
       if (data.mindResults.length > 0) {
         doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill(C.primary); doc.restore();
-        y = 50; y = renderSectionAr(y, reshapeArabic('ØªÙ‚ÙŠÙŠÙ… Ø§Ù„Ù…Ù‡Ø§Ø±Ø§Øª Ø§Ù„Ø°Ù‡Ù†ÙŠØ©'), C.primary, data.mindResults, subNameAr); pageFooter(true);
+        y = 50; y = renderSectionAr(y, reshapeArabic('تقييم المهارات الذهنية'), C.primary, data.mindResults, subNameAr); pageFooter(true);
       }
       // Oral Skills (Arabic)
       if (data.oralResults.length > 0) {
         doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill(C.secondary); doc.restore();
-        y = 50; y = renderSectionAr(y, reshapeArabic('ØªÙ‚ÙŠÙŠÙ… Ø§Ù„Ù…Ù‡Ø§Ø±Ø§Øª Ø§Ù„Ø´ÙÙ‡ÙŠØ©'), C.secondary, data.oralResults, subNameAr); pageFooter(true);
+        y = 50; y = renderSectionAr(y, reshapeArabic('تقييم المهارات الشفهية'), C.secondary, data.oralResults, subNameAr); pageFooter(true);
       }
       // Academic Skills (Arabic)
       if (data.academicResults.length > 0) {
         doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill(C.emerald); doc.restore();
-        y = 50; y = renderSectionAr(y, reshapeArabic('ØªÙ‚ÙŠÙŠÙ… Ø§Ù„Ù…Ù‡Ø§Ø±Ø§Øª Ø§Ù„Ø£ÙƒØ§Ø¯ÙŠÙ…ÙŠØ©'), C.emerald, data.academicResults, subNameAr); pageFooter(true);
+        y = 50; y = renderSectionAr(y, reshapeArabic('تقييم المهارات الأكاديمية'), C.emerald, data.academicResults, subNameAr); pageFooter(true);
       }
 
-      // Arabic Recommendations
+      // Recommendations (Arabic)
       doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill(C.success); doc.restore();
       y = 50;
-      doc.font('Arabic').fontSize(18).fillColor(C.success).text(reshapeArabic('Ø§Ù„ØªÙˆØµÙŠØ§Øª'), L, y, { width: W, align: 'right', lineBreak: false });
-      y += 8; doc.moveTo(R, y + 18).lineTo(R - 140, y + 18).lineWidth(2.5).strokeColor(C.success).stroke(); y += 30;
+      doc.font('Arabic').fontSize(18).fillColor(C.success).text(reshapeArabic('التوصيات'), L, y, { width: W, align: 'right', lineBreak: false });
+      y += 8; doc.moveTo(R, y + 18).lineTo(R - 160, y + 18).lineWidth(2.5).strokeColor(C.success).stroke(); y += 30;
 
       y = ensureSpace(y, 60, true);
       doc.save(); doc.roundedRect(L, y, W, 28, 4).fill(C.successLt); doc.restore();
-      doc.font('Arabic').fontSize(12).fillColor(C.success).text(reshapeArabic('Ù†Ù‚Ø§Ø· Ø§Ù„Ù‚ÙˆØ© Ø§Ù„Ù…Ø­Ø¯Ø¯Ø©'), L + 14, y + 7, { width: W - 28, align: 'right', lineBreak: false });
+      doc.font('Arabic').fontSize(12).fillColor(C.success).text(reshapeArabic('نقاط القوة المحددة'), L + 14, y + 7, { width: W - 28, align: 'right', lineBreak: false });
       y += 36;
-      const highPerf = allResults.filter(r => r.percentage >= 85);
-      if (highPerf.length > 0) {
-        for (const r of highPerf) { y = ensureSpace(y, 20, true); doc.font('Arabic').fontSize(10).fillColor(C.gray700).text(reshapeArabic('Ø£Ø¯Ø§Ø¡ Ù…Ù…ØªØ§Ø²') + ':  ' + r.quiz_name + '  â€¢', L + 14, y, { width: W - 28, align: 'right', lineBreak: false }); y += 18; }
+      const highPerfAr = allResults.filter(r => r.percentage >= 85);
+      if (highPerfAr.length > 0) {
+        for (const r of highPerfAr) { y = ensureSpace(y, 20, true); doc.font('Arabic').fontSize(10).fillColor(C.gray700).text(reshapeArabic('أداء ممتاز') + ': ' + r.quiz_name + '  \u2022', L + 14, y, { width: W - 28, align: 'right', lineBreak: false }); y += 18; }
       } else if (allResults.length > 0) {
-        doc.font('Arabic').fontSize(10).fillColor(C.gray700).text(reshapeArabic('Ø·ÙÙ„Ùƒ ÙŠØ·ÙˆØ± Ù…Ù‡Ø§Ø±Ø§ØªÙ‡ ÙÙŠ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø¬Ø§Ù„Ø§Øª Ø§Ù„ØªÙŠ ØªÙ… ØªÙ‚ÙŠÙŠÙ…Ù‡Ø§') + '  â€¢', L + 14, y, { width: W - 28, align: 'right', lineBreak: false }); y += 18;
+        doc.font('Arabic').fontSize(10).fillColor(C.gray700).text(reshapeArabic('طفلك يطور مهاراته في جميع المجالات التي تم تقييمها') + '  \u2022', L + 14, y, { width: W - 28, align: 'right', lineBreak: false }); y += 18;
       }
       y += 10;
 
       y = ensureSpace(y, 60, true);
       doc.save(); doc.roundedRect(L, y, W, 28, 4).fill(C.warningLt); doc.restore();
-      doc.font('Arabic').fontSize(12).fillColor(C.warning).text(reshapeArabic('Ù…Ø¬Ø§Ù„Ø§Øª Ø§Ù„Ù†Ù…Ùˆ'), L + 14, y + 7, { width: W - 28, align: 'right', lineBreak: false });
+      doc.font('Arabic').fontSize(12).fillColor(C.warning).text(reshapeArabic('مجالات النمو'), L + 14, y + 7, { width: W - 28, align: 'right', lineBreak: false });
       y += 36;
-      const lowPerf = allResults.filter(r => r.percentage < 75);
-      if (lowPerf.length > 0) {
-        for (const r of lowPerf) { y = ensureSpace(y, 20, true); const arSub = subNameAr[r.subcategory] || r.subcategory; doc.font('Arabic').fontSize(10).fillColor(C.gray700).text(reshapeArabic('ÙŠØ­ØªØ§Ø¬ Ù…Ø²ÙŠØ¯Ø§Ù‹ Ù…Ù† Ø§Ù„Ù…Ù…Ø§Ø±Ø³Ø©') + ':  ' + arSub + '  â€¢', L + 14, y, { width: W - 28, align: 'right', lineBreak: false }); y += 18; }
+      const lowPerfAr = allResults.filter(r => r.percentage < 75);
+      if (lowPerfAr.length > 0) {
+        for (const r of lowPerfAr) { y = ensureSpace(y, 20, true); const sub = subNameAr[r.subcategory] || r.subcategory; doc.font('Arabic').fontSize(10).fillColor(C.gray700).text(reshapeArabic('يحتاج مزيداً من الممارسة') + ': ' + sub + '  \u2022', L + 14, y, { width: W - 28, align: 'right', lineBreak: false }); y += 18; }
       } else if (allResults.length > 0) {
-        doc.font('Arabic').fontSize(10).fillColor(C.gray700).text(reshapeArabic('Ø£Ø¯Ø§Ø¡ Ù…ØªØ³Ù‚ ÙÙŠ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø¬Ø§Ù„Ø§Øª') + '  â€¢', L + 14, y, { width: W - 28, align: 'right', lineBreak: false }); y += 18;
+        doc.font('Arabic').fontSize(10).fillColor(C.gray700).text(reshapeArabic('أداء متسق في جميع المجالات') + '  \u2022', L + 14, y, { width: W - 28, align: 'right', lineBreak: false }); y += 18;
       }
       y += 10;
 
       y = ensureSpace(y, 120, true);
       doc.save(); doc.roundedRect(L, y, W, 28, 4).fill(C.blueLt); doc.restore();
-      doc.font('Arabic').fontSize(12).fillColor(C.blue).text(reshapeArabic('Ø§Ù„Ø£Ù†Ø´Ø·Ø© Ø§Ù„Ù…Ù‚ØªØ±Ø­Ø©'), L + 14, y + 7, { width: W - 28, align: 'right', lineBreak: false });
+      doc.font('Arabic').fontSize(12).fillColor(C.blue).text(reshapeArabic('الأنشطة المقترحة'), L + 14, y + 7, { width: W - 28, align: 'right', lineBreak: false });
       y += 36;
-      const arActs = [
-        reshapeArabic('Ø´Ø¬Ø¹ Ø¹Ù„Ù‰ Ø§Ù„Ù…Ù…Ø§Ø±Ø³Ø© Ø§Ù„Ù…Ù†ØªØ¸Ù…Ø© ÙÙŠ Ø§Ù„Ù…Ø¬Ø§Ù„Ø§Øª Ø§Ù„Ø¶Ø¹ÙŠÙØ©'),
-        reshapeArabic('Ø§Ø­ØªÙÙ„ Ø¨Ø§Ù„Ù†Ø¬Ø§Ø­Ø§Øª ÙˆØ­Ø§ÙØ¸ Ø¹Ù„Ù‰ Ø§Ù„Ø¯Ø§ÙØ¹ Ù„Ù„ØªØ¹Ù„Ù…'),
-        reshapeArabic('Ø§Ø³ØªØ®Ø¯Ù… Ø§Ù„Ø£Ù„Ø¹Ø§Ø¨ Ø§Ù„ØªØ¹Ù„ÙŠÙ…ÙŠØ© Ù„ØªØ·ÙˆÙŠØ± Ø§Ù„Ù…Ù‡Ø§Ø±Ø§Øª'),
-        reshapeArabic('Ù†Ø§Ù‚Ø´ Ø§Ù„Ù†ØªØ§Ø¦Ø¬ Ù…Ø¹ Ù…Ø¹Ù„Ù… Ø·ÙÙ„Ùƒ Ù„Ù„Ø¯Ø¹Ù… Ø§Ù„Ø¥Ø¶Ø§ÙÙŠ'),
-        reshapeArabic('Ø£Ø¹Ø¯ Ø§Ù„ØªÙ‚ÙŠÙŠÙ… Ø¨Ø´ÙƒÙ„ Ø¯ÙˆØ±ÙŠ Ù„ØªØªØ¨Ø¹ Ø§Ù„ØªØ­Ø³Ù†'),
+      const activitiesAr = [
+        'شجع على الممارسة المنتظمة في المجالات الضعيفة',
+        'احتفل بالنجاحات وحافظ على الدافع للتعلم',
+        'استخدم الألعاب التعليمية لتطوير المهارات',
+        'ناقش النتائج مع معلم طفلك للدعم الإضافي',
+        'أعد التقييم بشكل دوري لتتبع التحسن',
       ];
-      for (const act of arActs) { y = ensureSpace(y, 20, true); doc.font('Arabic').fontSize(10).fillColor(C.gray700).text(act + '  â€¢', L + 14, y, { width: W - 28, align: 'right', lineBreak: false }); y += 18; }
+      for (const act of activitiesAr) { y = ensureSpace(y, 20, true); doc.font('Arabic').fontSize(10).fillColor(C.gray700).text(reshapeArabic(act) + '  \u2022', L + 14, y, { width: W - 28, align: 'right', lineBreak: false }); y += 18; }
       pageFooter(true);
 
       doc.end();
@@ -641,7 +633,5 @@ export async function generateArabicPDF(data: ReportData): Promise<Buffer> {
   });
 }
 
-/** @deprecated Use generateEnglishPDF + generateArabicPDF instead */
-export async function generateReportPDF(data: ReportData): Promise<Buffer> {
-  return generateEnglishPDF(data);
-}
+/** Alias kept for backward compatibility (admin routes use this name). */
+export const generateReportPDF = generateEnglishPDF;
