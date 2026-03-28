@@ -2,6 +2,7 @@ import logger from './lib/logger.js';
 import { initSentry, captureException } from './lib/sentry.js';
 import { setupGracefulShutdown, createHealthCheck } from './lib/shutdown.js';
 import { cache } from './lib/cache.js';
+import { supabaseAdmin } from './config/supabase.js';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -60,14 +61,6 @@ app.use(helmet({
     preload: true,
   },
 }));
-
-// Response compression
-app.use(compression());
-
-// Request ID and logging middleware
-app.use(requestIdMiddleware);
-app.use(requestLoggingMiddleware);
-app.use(performanceMiddleware);
 
 // Response compression
 app.use(compression());
@@ -153,12 +146,23 @@ app.use(globalLimiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Enhanced health check endpoint
-const healthCheck = createHealthCheck();
+// Enhanced health check endpoint with deep dependency checks
+const healthCheck = createHealthCheck({ supabase: supabaseAdmin, cache });
 app.get('/api/health', healthCheck.handler);
 app.get('/health', healthCheck.handler); // Alternative path for load balancers
 
-// API routes
+// API routes — v1 is the canonical prefix; /api/ kept for backward compatibility
+app.use('/api/v1/profile', authLimiter, profileRoutes);
+app.use('/api/v1/quizzes', quizRoutes);
+app.use('/api/v1/results', quizSubmitLimiter, resultRoutes);
+app.use('/api/v1/progress', progressRoutes);
+app.use('/api/v1/reports', reportLimiter, reportRoutes);
+app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/teacher', teacherRoutes);
+app.use('/api/v1/ai', aiLimiter, aiRoutes);
+app.use('/api/v1/quiz-content', quizSubmitLimiter, quizContentRoutes);
+
+// Backward-compatible unversioned routes (mirror v1)
 app.use('/api/profile', authLimiter, profileRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/results', quizSubmitLimiter, resultRoutes);

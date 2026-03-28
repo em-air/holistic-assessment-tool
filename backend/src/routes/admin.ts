@@ -2,7 +2,7 @@ import logger from '../lib/logger.js';
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { supabaseAdmin } from '../config/supabase.js';
-import { verifySupabaseToken, requireRole } from '../middleware/index.js';
+import { verifySupabaseToken, requireRole, logAudit } from '../middleware/index.js';
 import type { UserRole, QuizMetadataInsert, GradeLevel, AssessmentCategory, ReportType } from '../types/database.js';
 
 const router = Router();
@@ -173,6 +173,8 @@ router.put('/users/:userId/role', async (req: Request, res: Response) => {
       profile,
       message: `Role updated to ${validation.data.role}`,
     });
+
+    logAudit(req, { action: 'role_change', resourceType: 'user', resourceId: userId, details: { newRole: validation.data.role } });
   } catch (error) {
     logger.error(error, 'Update role error:');
     res.status(500).json({ error: 'Failed to update role' });
@@ -300,6 +302,8 @@ router.post('/quizzes', async (req: Request, res: Response) => {
       success: true,
       quiz,
     });
+
+    logAudit(req, { action: 'quiz_upsert', resourceType: 'quiz', resourceId: quizData.quiz_id, details: { category: quizData.category } });
   } catch (error) {
     logger.error(error, 'Create quiz error:');
     res.status(500).json({ error: 'Failed to create quiz metadata' });
@@ -331,6 +335,8 @@ router.delete('/quizzes/:quizId', async (req: Request, res: Response) => {
       quiz,
       message: 'Quiz disabled successfully',
     });
+
+    logAudit(req, { action: 'quiz_disable', resourceType: 'quiz', resourceId: quizId });
   } catch (error) {
     logger.error(error, 'Disable quiz error:');
     res.status(500).json({ error: 'Failed to disable quiz' });
@@ -392,6 +398,8 @@ router.post('/users/:userId/assign-teacher', async (req: Request, res: Response)
         ? 'Teacher assigned successfully' 
         : 'Teacher assignment removed',
     });
+
+    logAudit(req, { action: 'teacher_assign', resourceType: 'user', resourceId: userId, details: { teacherId: validation.data.teacher_id } });
   } catch (error) {
     logger.error(error, 'Assign teacher error:');
     res.status(500).json({ error: 'Failed to assign teacher' });

@@ -3,3 +3,4 @@ export { requireGradeAccess, canAccessGrade, parseGradeNumber, getGradeFilteredQ
 export { requestIdMiddleware, requestLoggingMiddleware, performanceMiddleware } from './requestLogging.js';
 export { validate, validateAll, validateBody, validateQuery, validateParams, commonSchemas } from './validation.js';
 export { cacheControl, cachePresets, noCache, conditionalCache, etagSupport } from './cacheControl.js';
+export { logAudit, auditMiddleware } from './audit.js';

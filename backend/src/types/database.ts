@@ -122,6 +122,29 @@ export type QuizMetadataInsert = {
   is_active?: boolean;
 };
 
+// Audit Logs table
+export type AuditLog = {
+  id: string;
+  user_id: string | null;
+  action: string;
+  resource_type: string;
+  resource_id: string | null;
+  details: Record<string, unknown>;
+  ip_address: string | null;
+  user_agent: string | null;
+  created_at: string;
+};
+
+export type AuditLogInsert = {
+  user_id?: string | null;
+  action: string;
+  resource_type: string;
+  resource_id?: string | null;
+  details?: Record<string, unknown>;
+  ip_address?: string | null;
+  user_agent?: string | null;
+};
+
 // Category Progress
 export type CategoryProgress = {
   category: AssessmentCategory;
@@ -162,6 +185,12 @@ export type Database = {
         Row: QuizMetadata;
         Insert: QuizMetadataInsert;
         Update: Partial<QuizMetadataInsert>;
+        Relationships: [];
+      };
+      audit_logs: {
+        Row: AuditLog;
+        Insert: AuditLogInsert;
+        Update: Partial<AuditLogInsert>;
         Relationships: [];
       };
     };

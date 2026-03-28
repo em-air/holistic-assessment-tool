@@ -124,31 +124,60 @@ export function setupGracefulShutdown(
 /**
  * Creates a health check endpoint that returns server status
  * Returns 503 during shutdown to signal load balancers
+ * Includes deep dependency checks (database, cache)
  */
-export function createHealthCheck() {
+export function createHealthCheck(deps?: { supabase?: any; cache?: any }) {
   let isHealthy = true;
 
   // Mark as unhealthy on shutdown signals
   process.on('SIGTERM', () => { isHealthy = false; });
   process.on('SIGINT', () => { isHealthy = false; });
 
+  async function checkDatabase(): Promise<{ ok: boolean; latencyMs: number }> {
+    if (!deps?.supabase) return { ok: true, latencyMs: 0 };
+    const start = Date.now();
+    try {
+      const { error } = await deps.supabase.from('profiles').select('id').limit(1);
+      return { ok: !error, latencyMs: Date.now() - start };
+    } catch {
+      return { ok: false, latencyMs: Date.now() - start };
+    }
+  }
+
+  async function checkCache(): Promise<{ ok: boolean; type: string }> {
+    if (!deps?.cache) return { ok: true, type: 'none' };
+    try {
+      const type = deps.cache.getStats?.().type ?? 'unknown';
+      return { ok: true, type };
+    } catch {
+      return { ok: false, type: 'unknown' };
+    }
+  }
+
   return {
     isHealthy: () => isHealthy,
     setUnhealthy: () => { isHealthy = false; },
-    handler: (req: any, res: any) => {
-      if (isHealthy) {
-        res.json({
-          status: 'ok',
-          timestamp: new Date().toISOString(),
-          uptime: process.uptime(),
-          memory: process.memoryUsage(),
-        });
-      } else {
-        res.status(503).json({
+    handler: async (req: any, res: any) => {
+      if (!isHealthy) {
+        return res.status(503).json({
           status: 'shutting_down',
           timestamp: new Date().toISOString(),
         });
       }
+
+      const [db, cacheStatus] = await Promise.all([checkDatabase(), checkCache()]);
+      const allOk = db.ok && cacheStatus.ok;
+
+      res.status(allOk ? 200 : 503).json({
+        status: allOk ? 'ok' : 'degraded',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        checks: {
+          database: db,
+          cache: cacheStatus,
+        },
+        memory: process.memoryUsage(),
+      });
     },
   };
 }
