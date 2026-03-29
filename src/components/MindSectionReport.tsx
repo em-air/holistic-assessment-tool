@@ -1,10 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { X, Download, Share2, Brain, Award, Mail, Database, CheckCircle, LogIn } from 'lucide-react';
+import { X, Download, Share2, Brain, Award, Database, CheckCircle, LogIn } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { ProgressTracker, MIND_QUIZZES, ORAL_QUIZZES, ALL_TRACKED_QUIZZES, QuizResult } from '../utils/progressTracker';
 import { ReportPDFEnglish, ReportPDFArabic } from './ReportPDF';
-import EmailReportModal from './EmailReportModal';
+
 import { generateReport } from '../services/reportService';
 import { useNavigate } from 'react-router-dom';
 import { logger } from '../utils/logger';
@@ -20,7 +20,7 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
   const [isSavingToDatabase, setIsSavingToDatabase] = React.useState(false);
   const [savedToDatabase, setSavedToDatabase] = React.useState(false);
   const [saveError, setSaveError] = React.useState<string | null>(null);
-  const [showEmailModal, setShowEmailModal] = React.useState(false);
+
   
   const isAuthenticated = ProgressTracker.isAuthenticated();
   const progress = ProgressTracker.getProgress();
@@ -240,7 +240,6 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       
       const result = await generateReport({
         reportType: 'full',
-        sendEmail: false,
       });
       
       if (result.success) {
@@ -403,13 +402,6 @@ Assessment Results:
               </p>
             </div>
             <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setShowEmailModal(true)}
-                className="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors duration-200"
-                title="Email Report"
-              >
-                <Mail size={20} />
-              </button>
               <button
                 onClick={saveReportToDatabase}
                 disabled={isSavingToDatabase || savedToDatabase}
@@ -709,13 +701,6 @@ Assessment Results:
         </div>
       </motion.div>
 
-      {/* Email Report Modal */}
-      {showEmailModal && (
-        <EmailReportModal
-          onClose={() => setShowEmailModal(false)}
-          progress={progress}
-        />
-      )}
     </motion.div>
   );
 };

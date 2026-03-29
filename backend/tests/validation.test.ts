@@ -22,8 +22,6 @@ const roleSchema = z.object({
 
 const generateReportSchema = z.object({
   report_type: z.enum(['mind', 'oral', 'academic', 'full']).default('full'),
-  send_email: z.boolean().optional().default(false),
-  email_recipients: z.array(z.string().email()).optional(),
 });
 
 describe('Quiz Result Validation', () => {
@@ -170,7 +168,6 @@ describe('Report Generation Validation', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.report_type).toBe('full');
-        expect(result.data.send_email).toBe(false);
       }
     });
 
@@ -186,18 +183,6 @@ describe('Report Generation Validation', () => {
     it('should reject invalid report type', () => {
       const result = generateReportSchema.safeParse({ report_type: 'invalid' });
       expect(result.success).toBe(false);
-    });
-
-    it('should validate email recipients format', () => {
-      const validEmails = generateReportSchema.safeParse({
-        email_recipients: ['valid@email.com', 'another@test.org'],
-      });
-      expect(validEmails.success).toBe(true);
-
-      const invalidEmails = generateReportSchema.safeParse({
-        email_recipients: ['invalid-email', 'valid@email.com'],
-      });
-      expect(invalidEmails.success).toBe(false);
     });
   });
 });

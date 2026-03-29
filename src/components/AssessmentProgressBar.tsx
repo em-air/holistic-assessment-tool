@@ -130,7 +130,7 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
     setIsGeneratingReport(true);
     setSaveStatus('idle');
     try {
-      const result = await generateReport({ reportType: 'full', sendEmail: false });
+      const result = await generateReport({ reportType: 'full' });
       if (result.success) {
         setSaveStatus('success');
         logger.log('Report saved:', result.report?.id);

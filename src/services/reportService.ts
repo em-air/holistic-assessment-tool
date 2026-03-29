@@ -14,13 +14,6 @@ interface GenerateReportResponse {
   };
   downloadUrl?: string;
   downloadUrlAr?: string;
-  emailSent?: boolean;
-  error?: string;
-}
-
-interface SendEmailResponse {
-  success: boolean;
-  message?: string;
   error?: string;
 }
 
@@ -37,8 +30,6 @@ async function getAccessToken(): Promise<string | null> {
  */
 export async function generateReport(options: {
   reportType?: 'mind' | 'oral' | 'academic' | 'full';
-  sendEmail?: boolean;
-  emailRecipients?: string[];
 }): Promise<GenerateReportResponse> {
   try {
     const token = await getAccessToken();
@@ -54,8 +45,6 @@ export async function generateReport(options: {
       },
       body: JSON.stringify({
         report_type: options.reportType || 'full',
-        send_email: options.sendEmail || false,
-        email_recipients: options.emailRecipients || [],
       }),
     });
 
@@ -71,58 +60,6 @@ export async function generateReport(options: {
     return data;
   } catch (error: any) {
     logger.error('Generate report error:', error);
-    return { 
-      success: false, 
-      error: error.message || 'Failed to connect to server' 
-    };
-  }
-}
-
-/**
- * Send a text-only email report (no PDF attachment)
- * This calls the backend which sends a formatted email with report summary
- */
-export async function sendTextReport(options: {
-  studentName: string;
-  recipientEmail: string;
-  reportSummary?: {
-    mindScore?: number;
-    oralScore?: number;
-    academicScore?: number;
-    totalQuizzes?: number;
-  };
-}): Promise<SendEmailResponse> {
-  try {
-    const token = await getAccessToken();
-    if (!token) {
-      return { success: false, error: 'Not authenticated. Please sign in.' };
-    }
-
-    const response = await fetch(`${API_BASE_URL}/api/reports/send-email`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        student_name: options.studentName,
-        recipient_email: options.recipientEmail,
-        report_summary: options.reportSummary,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      return { 
-        success: false, 
-        error: errorData.error || `Server error: ${response.status}` 
-      };
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error: any) {
-    logger.error('Send email error:', error);
     return { 
       success: false, 
       error: error.message || 'Failed to connect to server' 

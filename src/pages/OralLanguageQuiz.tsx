@@ -64,6 +64,7 @@ const OralLanguageQuiz: React.FC = () => {
     'story-retell': { correct: 0, total: 0 }
   });
   const [showResults, setShowResults] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [language, setLanguage] = useState<'en' | 'ar'>('en');
   const [showSparkle, setShowSparkle] = useState(false);
   const [sequenceOrder, setSequenceOrder] = useState<{[key: string]: number}>({});
@@ -108,18 +109,30 @@ const OralLanguageQuiz: React.FC = () => {
   const currentQuestion = selectedCategory?.questions?.[currentQuestionIndex];
   const isLastQuestion = selectedCategory && currentQuestionIndex === (selectedCategory.questions?.length ?? 0) - 1;
 
-  // Auto-select category from navigation state
+  // Auto-select category from route path or navigation state
   useEffect(() => {
-    const state = location.state as { categoryId?: string } | null;
-    if (state?.categoryId && !selectedCategory) {
-      setOriginalCategoryId(state.categoryId);
-      const categoryId = state.categoryId === 'story-sequencing' ? 'storytelling' : state.categoryId;
+    if (selectedCategory) return;
+
+    // Detect quiz type from URL path (works on refresh too)
+    let categoryId: string | null = null;
+    if (location.pathname.includes('story-sequencing')) {
+      categoryId = 'storytelling';
+      setOriginalCategoryId('story-sequencing');
+    } else {
+      const state = location.state as { categoryId?: string } | null;
+      if (state?.categoryId) {
+        setOriginalCategoryId(state.categoryId);
+        categoryId = state.categoryId === 'story-sequencing' ? 'storytelling' : state.categoryId;
+      }
+    }
+
+    if (categoryId) {
       const category = oralLanguageCategories.find(c => c.id === categoryId);
       if (category) {
         startQuiz(category);
       }
     }
-  }, [location.state, selectedCategory]);
+  }, [location.pathname, location.state, selectedCategory]);
 
   // Handle answer selection — validate via backend
   const handleAnswerSelect = async (optionId: string) => {
@@ -198,6 +211,8 @@ const OralLanguageQuiz: React.FC = () => {
       setOriginalCategoryId(category.id === 'storytelling' ? 'story-sequencing' : category.id);
     }
 
+    setIsLoading(true);
+
     // Fetch questions from backend
     let questions: OralLanguageQuestion[] = [];
     try {
@@ -214,9 +229,11 @@ const OralLanguageQuiz: React.FC = () => {
       }
     } catch { /* questions will be empty */ }
 
+    setIsLoading(false);
+
     if (!questions || questions.length === 0) {
-      // Fallback: show an error or navigate back
-      alert(language === 'ar' ? 'لم يتم تحميل الأسئلة. حاول مرة أخرى.' : 'Failed to load questions. Please try again.');
+      // Navigate back instead of showing the selection page
+      navigate(categoryRoute('oral-skills'));
       return;
     }
 
@@ -247,68 +264,13 @@ const OralLanguageQuiz: React.FC = () => {
     return t.keepTrying;
   };
 
-  // Category Selection Screen
+  // Loading or no category — show spinner (selection page is no longer needed)
   if (!selectedCategory) {
     return (
-      <div className={`min-h-screen bg-gradient-to-br from-blue-300 via-purple-400 to-pink-500 py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
-        <div className="container mx-auto px-4 relative z-10">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <button
-            onClick={() => navigate(categoryRoute('oral-skills'))}
-              className="group flex items-center space-x-2 px-4 py-2 text-stone-600 rounded-lg transition-all duration-300 ease-out hover:text-purple-700 hover:bg-white/50 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
-            >
-              <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
-              <span className="font-medium">{t.backToCategories}</span>
-            </button>
-            
-            {/* Language Toggle */}
-            <button
-              onClick={() => setLanguage(lang => lang === 'en' ? 'ar' : 'en')}
-              className="px-4 py-2 bg-white/20 rounded-lg text-white font-medium hover:bg-white/30 transition-colors duration-300"
-            >
-              {language === 'en' ? 'عربي' : 'English'}
-            </button>
-          </div>
-
-          {/* Title */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-700 to-pink-600 bg-clip-text text-transparent mb-4">
-              {t.title}
-            </h1>
-            <p className="text-stone-700 text-lg max-w-2xl mx-auto">
-              {t.subtitle}
-            </p>
-          </div>
-
-          {/* Quiz Category Cards */}
-          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-            {oralLanguageCategories.map((category, index) => (
-              <motion.div
-                key={category.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className={`group ${category.color} rounded-2xl p-6 shadow-xl border border-white/20 cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-2xl`}
-                onClick={() => startQuiz(category)}
-              >
-                <div className="text-center text-white">
-                  <div className="text-4xl mb-4">{category.icon}</div>
-                  <h2 className="text-xl font-bold mb-2">
-                    {category.title[language]}
-                  </h2>
-                  <p className="text-white/90 text-sm mb-4">
-                    {category.description[language]}
-                  </p>
-                  <div className="bg-white/20 rounded-lg p-3">
-                    <span className="text-sm font-medium">
-                      {t.startQuiz}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-300 via-purple-400 to-pink-500 flex items-center justify-center">
+        <div className="text-center text-white">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mx-auto mb-4"></div>
+          <p className="text-lg font-medium">Loading quiz...</p>
         </div>
       </div>
     );

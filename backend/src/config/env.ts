@@ -26,9 +26,6 @@ const envSchema = z.object({
   // Redis (optional - for caching)
   REDIS_URL: z.string().url().optional(),
 
-  // Email (optional - for report sending)
-  RESEND_API_KEY: z.string().optional(),
-
   // AI (optional - for AI features)
   GOOGLE_AI_API_KEY: z.string().optional(),
 
@@ -73,7 +70,6 @@ export const isTest = env.NODE_ENV === 'test';
 // Feature flags based on optional env vars
 export const features = {
   redis: !!env.REDIS_URL,
-  email: !!env.RESEND_API_KEY,
   ai: !!env.GOOGLE_AI_API_KEY,
   sentry: !!env.SENTRY_DSN,
 };
