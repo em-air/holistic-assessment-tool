@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import FloatingBackground from '../components/FloatingBackground';
 import { logger } from '../utils/logger';
 import { ROUTES, categoryRoute } from '../routes';
+import { ProgressTracker } from '../utils/progressTracker';
 
 interface ReadingResult {
   wordsPerMinute: number;
@@ -467,6 +468,22 @@ const ReadingAssessment: React.FC = () => {
       targetRange: `${TARGET_READING_RATES[bestGrade as keyof typeof TARGET_READING_RATES][bestSeason][0]}-${TARGET_READING_RATES[bestGrade as keyof typeof TARGET_READING_RATES][bestSeason][1]} wpm`,
       feedback
     };
+
+    // Save reading assessment result to the oral section progress tracker
+    const percentage = level === 'Above Target' ? 100 : level === 'At Target' ? 80 : 50;
+    ProgressTracker.saveQuizResult({
+      quizId: 'oral-language-reading',
+      quizName: 'Reading Assessment',
+      category: 'oral',
+      subcategory: 'oral-language',
+      score: wordsPerMinute,
+      totalQuestions: 1,
+      percentage,
+      timeSpent: 60 - timeLeft,
+      completedAt: new Date().toISOString(),
+      gradeLevel: String(selectedGrade),
+      additionalData: { wordsPerMinute, level, grade: bestGrade, season: bestSeason },
+    });
 
     setResults(result);
     setShowResults(true);
