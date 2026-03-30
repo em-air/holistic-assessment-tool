@@ -61,6 +61,7 @@ const WritingTest = lazy(() => import('./pages/WritingTest'));
 const ReadingAssessment = lazy(() => import('./pages/ReadingAssessment'));
 const AssessmentGenerator = lazy(() => import('./pages/AssessmentGenerator'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 
 const base = import.meta.env.VITE_BASE_PATH || '/holistic-assessment-tool';
 
@@ -80,6 +81,7 @@ const routeConfig: RouteEntry[] = [
   // ── Core ──────────────────────────────────────────────────────────
   { path: ROUTES.HOME, Component: Homepage },
   { path: ROUTES.AUTH, Component: AuthPage },
+  { path: ROUTES.PROFILE, Component: ProfilePage },
   { path: ROUTES.ADMIN_REPORTS, Component: AdminReports, adminOnly: true },
   { path: ROUTES.CATEGORIES, Component: CategoriesPage },
   { path: ROUTE_PATTERNS.CATEGORY, Component: CategoryPage },

@@ -16,6 +16,7 @@ export const ROUTES = {
   // ── Core ──────────────────────────────────────────────────────────
   HOME: '/',
   AUTH: '/auth',
+  PROFILE: '/profile',
   CATEGORIES: '/categories',
   ADMIN_REPORTS: '/admin/reports',
 

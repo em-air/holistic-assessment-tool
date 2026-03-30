@@ -80,7 +80,7 @@ const HomePage: React.FC = () => {
               {user ? (
                 <>
                   <button
-                    onClick={() => navigate('/profile')}
+                    onClick={() => navigate(ROUTES.PROFILE)}
                     className="bg-emerald-600 text-white px-6 py-2 rounded-md font-medium hover:bg-emerald-700 transition-colors duration-200 flex items-center gap-2"
                   >
                     <User size={18} />
