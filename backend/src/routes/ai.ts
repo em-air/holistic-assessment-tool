@@ -3,12 +3,13 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { verifySupabaseToken } from '../middleware/index.js';
+import { env } from '../config/env.js';
 
 const router = Router();
 
 // Initialize Gemini AI - API key is now safely on the server
 const getGeminiModel = () => {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY environment variable is not set');
   }

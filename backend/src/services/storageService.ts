@@ -1,7 +1,8 @@
 import logger from '../lib/logger.js';
 import { supabaseAdmin } from '../config/supabase.js';
+import { env } from '../config/env.js';
 
-const REPORTS_BUCKET = process.env.REPORTS_BUCKET || 'reports';
+const REPORTS_BUCKET = env.REPORTS_BUCKET;
 
 /**
  * Upload PDF to Supabase Storage

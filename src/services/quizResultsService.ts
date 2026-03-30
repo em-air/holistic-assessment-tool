@@ -3,10 +3,8 @@
  * Syncs quiz results between frontend and backend database
  */
 
-import { supabase } from '../supabase-client';
+import { api } from './apiClient';
 import { logger } from '../utils/logger';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export interface QuizResultData {
   quiz_id: string;
@@ -17,7 +15,7 @@ export interface QuizResultData {
   total_questions: number;
   time_spent?: number;
   grade_level?: string;
-  additional_data?: Record<string, any>;
+  additional_data?: Record<string, unknown>;
 }
 
 export interface SavedQuizResult extends QuizResultData {
@@ -28,45 +26,21 @@ export interface SavedQuizResult extends QuizResultData {
 }
 
 /**
- * Get the current user's access token
- */
-async function getAccessToken(): Promise<string | null> {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.access_token || null;
-}
-
-/**
  * Save a quiz result to the database
  */
 export async function saveQuizResult(result: QuizResultData): Promise<{ success: boolean; result?: SavedQuizResult; error?: string }> {
   try {
-    const token = await getAccessToken();
-    if (!token) {
-      logger.log('Not authenticated - skipping database save');
-      return { success: false, error: 'Not authenticated' };
+    const response = await api.post<{ success: boolean; result: SavedQuizResult }>('/api/results', result);
+    if (!response.success) {
+      logger.error('Failed to save quiz result:', response.error);
+      return { success: false, error: response.error?.message || 'Failed to save result' };
     }
-
-    const response = await fetch(`${API_BASE_URL}/api/results`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(result),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      logger.error('Failed to save quiz result:', errorData);
-      return { success: false, error: errorData.error || 'Failed to save result' };
-    }
-
-    const data = await response.json();
-    logger.log('Quiz result saved to database:', data.result?.id);
-    return { success: true, result: data.result };
-  } catch (error: any) {
+    logger.log('Quiz result saved to database:', response.data?.result?.id);
+    return { success: true, result: response.data?.result };
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
     logger.error('Error saving quiz result:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: msg };
   }
 }
 
@@ -75,31 +49,16 @@ export async function saveQuizResult(result: QuizResultData): Promise<{ success:
  */
 export async function getQuizResults(category?: 'mind' | 'oral' | 'academic'): Promise<{ success: boolean; results?: SavedQuizResult[]; error?: string }> {
   try {
-    const token = await getAccessToken();
-    if (!token) {
-      return { success: false, error: 'Not authenticated' };
+    const endpoint = category ? `/api/results?category=${category}` : '/api/results';
+    const response = await api.get<{ results: SavedQuizResult[] }>(endpoint);
+    if (!response.success) {
+      return { success: false, error: response.error?.message || 'Failed to get results' };
     }
-
-    const url = category 
-      ? `${API_BASE_URL}/api/results?category=${category}`
-      : `${API_BASE_URL}/api/results`;
-
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      return { success: false, error: errorData.error || 'Failed to get results' };
-    }
-
-    const data = await response.json();
-    return { success: true, results: data.results };
-  } catch (error: any) {
+    return { success: true, results: response.data?.results };
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
     logger.error('Error fetching quiz results:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: msg };
   }
 }
 
@@ -108,21 +67,11 @@ export async function getQuizResults(category?: 'mind' | 'oral' | 'academic'): P
  */
 export async function deleteAllResults(categories: Array<'mind' | 'oral' | 'academic'> = ['mind', 'oral']): Promise<{ success: boolean; error?: string }> {
   try {
-    const token = await getAccessToken();
-    if (!token) {
-      return { success: false, error: 'Not authenticated' };
-    }
-
     const results = await Promise.allSettled(
-      categories.map(cat =>
-        fetch(`${API_BASE_URL}/api/results/category/${cat}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` },
-        })
-      )
+      categories.map(cat => api.delete(`/api/results/category/${cat}`))
     );
 
-    const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok));
+    const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success));
     if (failed.length > 0) {
       logger.error('Some category deletes failed:', failed);
       return { success: false, error: `Failed to delete ${failed.length} category(ies)` };
@@ -130,9 +79,10 @@ export async function deleteAllResults(categories: Array<'mind' | 'oral' | 'acad
 
     logger.log('All quiz results deleted from database');
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
     logger.error('Error deleting all results:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: msg };
   }
 }
 
@@ -140,11 +90,6 @@ export async function deleteAllResults(categories: Array<'mind' | 'oral' | 'acad
  * Sync local progress with database (upload local results that aren't in DB)
  */
 export async function syncLocalToDatabase(): Promise<{ synced: number; errors: number }> {
-  const token = await getAccessToken();
-  if (!token) {
-    return { synced: 0, errors: 0 };
-  }
-
   // Get local progress
   const localProgress = localStorage.getItem('mind-section-progress');
   if (!localProgress) {

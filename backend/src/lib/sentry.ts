@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/node';
+import { env } from '../config/env.js';
 
 const SENSITIVE_KEYS = new Set([
   'student_name',
@@ -93,20 +94,20 @@ function sanitizeEvent<T extends Record<string, unknown>>(event: T): T {
 }
 
 export function initSentry(): void {
-  if (sentryInitialized || process.env.NODE_ENV === 'test') {
+  if (sentryInitialized || env.NODE_ENV === 'test') {
     return;
   }
 
-  const dsn = process.env.SENTRY_DSN;
+  const dsn = env.SENTRY_DSN;
   if (!dsn) {
     return;
   }
 
   Sentry.init({
     dsn,
-    environment: process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development',
-    release: process.env.SENTRY_RELEASE,
-    tracesSampleRate: parseSampleRate(process.env.SENTRY_TRACES_SAMPLE_RATE),
+    environment: env.SENTRY_ENVIRONMENT || env.NODE_ENV,
+    release: env.SENTRY_RELEASE,
+    tracesSampleRate: parseSampleRate(env.SENTRY_TRACES_SAMPLE_RATE),
     beforeSend(event) {
       return sanitizeEvent(event as unknown as Record<string, unknown>) as unknown as typeof event;
     },

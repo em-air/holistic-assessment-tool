@@ -120,7 +120,14 @@ router.get('/detailed', verifySupabaseToken, async (req: Request, res: Response)
 
     for (const category of categories) {
       const categoryQuizzes = availableQuizzes.filter(q => q.category === category);
-      const subcategories: Record<string, any> = {};
+      const subcategories: Record<string, {
+        name: string;
+        quizzes: Array<{ quiz_id: string; quiz_name: string; completed: boolean; score: number | null; completedAt: string | null }>;
+        completed: number;
+        total: number;
+        averageScore: number;
+        percentage?: number;
+      }> = {};
 
       for (const quiz of categoryQuizzes) {
         if (!subcategories[quiz.subcategory]) {
@@ -149,18 +156,18 @@ router.get('/detailed', verifySupabaseToken, async (req: Request, res: Response)
       }
 
       // Calculate average scores for subcategories
-      for (const subcat of Object.values(subcategories) as any[]) {
-        const completedQuizzes = subcat.quizzes.filter((q: any) => q.completed);
+      for (const subcat of Object.values(subcategories)) {
+        const completedQuizzes = subcat.quizzes.filter(q => q.completed);
         subcat.averageScore = completedQuizzes.length > 0
-          ? Math.round(completedQuizzes.reduce((sum: number, q: any) => sum + q.score, 0) / completedQuizzes.length)
+          ? Math.round(completedQuizzes.reduce((sum, q) => sum + (q.score ?? 0), 0) / completedQuizzes.length)
           : 0;
         subcat.percentage = subcat.total > 0
           ? Math.round((subcat.completed / subcat.total) * 100)
           : 0;
       }
 
-      const categoryCompleted = Object.values(subcategories).reduce((sum: number, s: any) => sum + s.completed, 0);
-      const categoryTotal = Object.values(subcategories).reduce((sum: number, s: any) => sum + s.total, 0);
+      const categoryCompleted = Object.values(subcategories).reduce((sum, s) => sum + s.completed, 0);
+      const categoryTotal = Object.values(subcategories).reduce((sum, s) => sum + s.total, 0);
 
       detailed[category] = {
         subcategories,

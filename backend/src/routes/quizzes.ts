@@ -1,16 +1,22 @@
 import logger from '../lib/logger.js';
 import { Router, Request, Response } from 'express';
+import { z } from 'zod';
 import { supabaseAdmin } from '../config/supabase.js';
+import { cache, CacheTTL } from '../lib/cache.js';
 import { 
   verifySupabaseToken, 
   requireGradeAccess, 
   getGradeFilteredQuizzes,
   isAdmin,
-  isTeacher 
+  isTeacher,
+  validateParams,
+  commonSchemas
 } from '../middleware/index.js';
 import type { GradeLevel } from '../types/database.js';
 
 const router = Router();
+
+const quizIdParams = z.object({ quizId: z.string().min(1) });
 
 /**
  * GET /api/quizzes
@@ -71,10 +77,17 @@ router.get('/', verifySupabaseToken, async (req: Request, res: Response) => {
 router.get(
   '/:quizId',
   verifySupabaseToken,
+  validateParams(quizIdParams),
   requireGradeAccess,
   async (req: Request, res: Response) => {
     try {
       const { quizId } = req.params;
+
+      const cacheKey = `quiz:single:${quizId}`;
+      const cached = cache.get(cacheKey);
+      if (cached) {
+        return res.json({ success: true, quiz: cached });
+      }
 
       const { data: quiz, error } = await supabaseAdmin
         .from('quiz_metadata')
@@ -85,6 +98,8 @@ router.get(
       if (error || !quiz) {
         return res.status(404).json({ error: 'Quiz not found' });
       }
+
+      cache.set(cacheKey, quiz, CacheTTL.QUIZ_METADATA);
 
       res.json({
         success: true,
@@ -104,6 +119,7 @@ router.get(
 router.get(
   '/:quizId/access',
   verifySupabaseToken,
+  validateParams(quizIdParams),
   async (req: Request, res: Response) => {
     try {
       if (!req.user) {

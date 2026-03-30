@@ -1,8 +1,11 @@
 import logger from '../lib/logger.js';
 import { Router, Request, Response } from 'express';
+import { z } from 'zod';
 import { supabaseAdmin } from '../config/supabase.js';
-import { verifySupabaseToken, requireRole, getGradeFilteredQuizzes } from '../middleware/index.js';
+import { verifySupabaseToken, requireRole, getGradeFilteredQuizzes, validateParams, commonSchemas } from '../middleware/index.js';
 import { getSignedUrl } from '../services/index.js';
+
+const studentIdParams = z.object({ studentId: commonSchemas.uuid });
 
 const router = Router();
 
@@ -52,7 +55,7 @@ router.get('/students', async (req: Request, res: Response) => {
  * GET /api/teacher/students/:studentId/progress
  * View student's progress
  */
-router.get('/students/:studentId/progress', async (req: Request, res: Response) => {
+router.get('/students/:studentId/progress', validateParams(studentIdParams), async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Not authenticated' });
@@ -173,7 +176,7 @@ router.get('/students/:studentId/progress', async (req: Request, res: Response) 
  * GET /api/teacher/students/:studentId/reports
  * View/download student's reports
  */
-router.get('/students/:studentId/reports', async (req: Request, res: Response) => {
+router.get('/students/:studentId/reports', validateParams(studentIdParams), async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Not authenticated' });

@@ -2,7 +2,7 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { supabaseAdmin } from '../config/supabase.js';
-import { verifySupabaseToken, requireRole, isAdmin } from '../middleware/index.js';
+import { verifySupabaseToken, requireRole, isAdmin, validateParams, commonSchemas } from '../middleware/index.js';
 import { 
   generateEnglishPDF,
   generateArabicPDF,
@@ -15,6 +15,7 @@ import type { ReportInsert, ReportType } from '../types/database.js';
 
 const router = Router();
 
+const reportIdParams = z.object({ reportId: commonSchemas.uuid });
 /**
  * POST /api/reports/generate
  * Generate PDF report (mind + oral + academic)
@@ -164,7 +165,7 @@ router.get('/', verifySupabaseToken, async (req: Request, res: Response) => {
  * GET /api/reports/:reportId
  * Get report metadata
  */
-router.get('/:reportId', verifySupabaseToken, async (req: Request, res: Response) => {
+router.get('/:reportId', verifySupabaseToken, validateParams(reportIdParams), async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Not authenticated' });
@@ -201,7 +202,7 @@ router.get('/:reportId', verifySupabaseToken, async (req: Request, res: Response
  * GET /api/reports/:reportId/download
  * Get signed download URL for report PDF
  */
-router.get('/:reportId/download', verifySupabaseToken, async (req: Request, res: Response) => {
+router.get('/:reportId/download', verifySupabaseToken, validateParams(reportIdParams), async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Not authenticated' });
@@ -261,6 +262,7 @@ router.delete(
   '/:reportId',
   verifySupabaseToken,
   requireRole(['admin']),
+  validateParams(reportIdParams),
   async (req: Request, res: Response) => {
     try {
       const { reportId } = req.params;

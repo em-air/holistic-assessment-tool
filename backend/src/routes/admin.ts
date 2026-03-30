@@ -2,8 +2,12 @@ import logger from '../lib/logger.js';
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { supabaseAdmin } from '../config/supabase.js';
-import { verifySupabaseToken, requireRole, logAudit } from '../middleware/index.js';
-import type { UserRole, QuizMetadataInsert, GradeLevel, AssessmentCategory, ReportType } from '../types/database.js';
+import { verifySupabaseToken, requireRole, logAudit, validateParams, commonSchemas } from '../middleware/index.js';
+import type { UserRole, QuizMetadataInsert, GradeLevel, AssessmentCategory, ReportType, Profile } from '../types/database.js';
+
+const userIdParams = z.object({ userId: commonSchemas.uuid });
+const quizIdParams = z.object({ quizId: z.string().min(1) });
+const reportIdParams = z.object({ reportId: commonSchemas.uuid });
 
 const router = Router();
 
@@ -68,7 +72,7 @@ router.get('/users', async (req: Request, res: Response) => {
  * GET /api/admin/users/:userId/results
  * Get any user's quiz results
  */
-router.get('/users/:userId/results', async (req: Request, res: Response) => {
+router.get('/users/:userId/results', validateParams(userIdParams), async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const category = req.query.category as string | undefined;
@@ -105,7 +109,7 @@ router.get('/users/:userId/results', async (req: Request, res: Response) => {
  * GET /api/admin/users/:userId/reports
  * Get any user's reports
  */
-router.get('/users/:userId/reports', async (req: Request, res: Response) => {
+router.get('/users/:userId/reports', validateParams(userIdParams), async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
 
@@ -135,7 +139,7 @@ router.get('/users/:userId/reports', async (req: Request, res: Response) => {
  * PUT /api/admin/users/:userId/role
  * Change user role
  */
-router.put('/users/:userId/role', async (req: Request, res: Response) => {
+router.put('/users/:userId/role', validateParams(userIdParams), async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
 
@@ -314,7 +318,7 @@ router.post('/quizzes', async (req: Request, res: Response) => {
  * DELETE /api/admin/quizzes/:quizId
  * Disable a quiz (soft delete)
  */
-router.delete('/quizzes/:quizId', async (req: Request, res: Response) => {
+router.delete('/quizzes/:quizId', validateParams(quizIdParams), async (req: Request, res: Response) => {
   try {
     const { quizId } = req.params;
 
@@ -347,7 +351,7 @@ router.delete('/quizzes/:quizId', async (req: Request, res: Response) => {
  * POST /api/admin/users/:userId/assign-teacher
  * Assign a teacher to a student
  */
-router.post('/users/:userId/assign-teacher', async (req: Request, res: Response) => {
+router.post('/users/:userId/assign-teacher', validateParams(userIdParams), async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
 
@@ -487,7 +491,7 @@ router.get('/reports', async (req: Request, res: Response) => {
  * GET /api/admin/reports/:reportId/download
  * Generate and download PDF for a report
  */
-router.get('/reports/:reportId/download', async (req: Request, res: Response) => {
+router.get('/reports/:reportId/download', validateParams(reportIdParams), async (req: Request, res: Response) => {
   try {
     const { reportId } = req.params;
 
@@ -524,12 +528,12 @@ router.get('/reports/:reportId/download', async (req: Request, res: Response) =>
     // Generate PDF with the data
     const { generateReportPDF } = await import('../services/pdfGenerator.js');
     
-    const profileData = (report as any).profiles || { student_name: 'Student' };
+    const profileData = (report as Record<string, unknown>).profiles as Profile | undefined ?? { student_name: 'Student' } as Profile;
     const reportData = {
       profile: profileData,
-      mindResults: (quizResults || []).filter((r: any) => r.category === 'mind'),
-      oralResults: (quizResults || []).filter((r: any) => r.category === 'oral'),
-      academicResults: (quizResults || []).filter((r: any) => r.category === 'academic'),
+      mindResults: (quizResults || []).filter(r => r.category === 'mind'),
+      oralResults: (quizResults || []).filter(r => r.category === 'oral'),
+      academicResults: (quizResults || []).filter(r => r.category === 'academic'),
       generatedAt: new Date(report.generated_at),
     };
 

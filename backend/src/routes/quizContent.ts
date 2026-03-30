@@ -1262,7 +1262,7 @@ router.post('/memory-assessment/generate', verifySupabaseToken, async (req: Requ
     }
     const { type, difficulty } = validation.data;
 
-    const userId = (req as any).user?.id;
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -1313,7 +1313,7 @@ router.post('/memory-assessment/check', verifySupabaseToken, async (req: Request
     }
     const { type, submittedAnswer, questionRef } = validation.data;
 
-    const userId = (req as any).user?.id;
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }

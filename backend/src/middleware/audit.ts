@@ -15,7 +15,7 @@ export interface AuditEntry {
  */
 export async function logAudit(req: Request, entry: AuditEntry): Promise<void> {
   try {
-    const userId = (req as any).user?.id ?? null;
+    const userId = req.user?.id ?? null;
     await supabaseAdmin.from('audit_logs').insert({
       user_id: userId,
       action: entry.action,

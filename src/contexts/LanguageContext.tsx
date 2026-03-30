@@ -40,10 +40,10 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   const isRTL = language === 'ar';
   const dir = isRTL ? 'rtl' : 'ltr';
 
-  // Persist language choice (no document-level dir change — only Homepage translates text)
   useEffect(() => {
     document.documentElement.lang = language;
-  }, [language]);
+    document.documentElement.dir = dir;
+  }, [language, dir]);
 
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);

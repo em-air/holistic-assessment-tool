@@ -2,7 +2,7 @@ import logger from '../lib/logger.js';
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { supabaseAdmin } from '../config/supabase.js';
-import { verifySupabaseToken, requireRole, isAdmin } from '../middleware/index.js';
+import { verifySupabaseToken, requireRole, isAdmin, validateParams, commonSchemas } from '../middleware/index.js';
 import type { ProfileUpdate, GradeLevel } from '../types/database.js';
 
 const router = Router();
@@ -91,6 +91,7 @@ router.get(
   '/:userId',
   verifySupabaseToken,
   requireRole(['admin', 'teacher']),
+  validateParams(z.object({ userId: commonSchemas.uuid })),
   async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;

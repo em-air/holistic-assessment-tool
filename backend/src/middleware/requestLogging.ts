@@ -58,7 +58,7 @@ export const requestLoggingMiddleware = (
       duration: `${duration}ms`,
       userAgent: req.get('user-agent'),
       ip: req.ip,
-      userId: (req as any).user?.id,
+      userId: req.user?.id,
     };
 
     // Log at different levels based on status code

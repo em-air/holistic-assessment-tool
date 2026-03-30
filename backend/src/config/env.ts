@@ -31,6 +31,18 @@ const envSchema = z.object({
 
   // Sentry (optional - for error tracking)
   SENTRY_DSN: z.string().url().optional(),
+  SENTRY_ENVIRONMENT: z.string().optional(),
+  SENTRY_RELEASE: z.string().optional(),
+  SENTRY_TRACES_SAMPLE_RATE: z.string().optional(),
+
+  // Storage
+  REPORTS_BUCKET: z.string().default('reports'),
+
+  // AI — alternative key name used from ai.ts
+  GEMINI_API_KEY: z.string().optional(),
+
+  // Session
+  SESSION_STORAGE: z.enum(['auto', 'memory', 'redis']).default('auto'),
 });
 
 export type Env = z.infer<typeof envSchema>;

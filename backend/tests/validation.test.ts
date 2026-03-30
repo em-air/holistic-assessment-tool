@@ -186,3 +186,60 @@ describe('Report Generation Validation', () => {
     });
   });
 });
+
+// ─── Param Validation Schemas ──────────────────────────────────────
+// These mirror the UUID-based param schemas added to routes/*.ts
+
+const uuidParamSchema = z.object({
+  id: z.string().uuid('Invalid UUID format'),
+});
+
+const quizIdParamSchema = z.object({
+  quizId: z.string().min(1),
+});
+
+describe('Param Validation', () => {
+  describe('UUID params (userId, reportId, studentId)', () => {
+    it('should accept valid UUID', () => {
+      const result = uuidParamSchema.safeParse({ id: '550e8400-e29b-41d4-a716-446655440000' });
+      expect(result.success).toBe(true);
+    });
+
+    it('should reject empty string', () => {
+      const result = uuidParamSchema.safeParse({ id: '' });
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject non-UUID string', () => {
+      const result = uuidParamSchema.safeParse({ id: 'not-a-uuid' });
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject SQL injection in UUID param', () => {
+      const result = uuidParamSchema.safeParse({ id: "'; DROP TABLE users; --" });
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject path traversal in UUID param', () => {
+      const result = uuidParamSchema.safeParse({ id: '../../../etc/passwd' });
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('quizId params (string, not UUID)', () => {
+    it('should accept valid quiz ID string', () => {
+      const result = quizIdParamSchema.safeParse({ quizId: 'spelling-quiz' });
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept UUID as quiz ID', () => {
+      const result = quizIdParamSchema.safeParse({ quizId: '550e8400-e29b-41d4-a716-446655440000' });
+      expect(result.success).toBe(true);
+    });
+
+    it('should reject empty quiz ID', () => {
+      const result = quizIdParamSchema.safeParse({ quizId: '' });
+      expect(result.success).toBe(false);
+    });
+  });
+});

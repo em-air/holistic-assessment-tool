@@ -2,7 +2,8 @@ import logger from '../lib/logger.js';
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { supabaseAdmin } from '../config/supabase.js';
-import { verifySupabaseToken, requireGradeAccess } from '../middleware/index.js';
+import { verifySupabaseToken, requireGradeAccess, validateParams, commonSchemas } from '../middleware/index.js';
+import { deepSanitize } from '../lib/sanitize.js';
 import type { QuizResultInsert, AssessmentCategory } from '../types/database.js';
 
 const router = Router();
@@ -53,7 +54,7 @@ router.post('/', verifySupabaseToken, async (req: Request, res: Response) => {
       percentage,
       time_spent: data.time_spent || 0,
       grade_level: data.grade_level || req.user.grade,
-      additional_data: data.additional_data || {},
+      additional_data: data.additional_data ? deepSanitize(data.additional_data as Record<string, unknown>) : {},
     };
 
     // Upsert - update if quiz already taken, insert if new
@@ -157,7 +158,7 @@ router.get('/category/:category', verifySupabaseToken, async (req: Request, res:
  * GET /api/results/:quizId
  * Get specific quiz result
  */
-router.get('/:quizId', verifySupabaseToken, async (req: Request, res: Response) => {
+router.get('/:quizId', verifySupabaseToken, validateParams(z.object({ quizId: commonSchemas.uuid })), async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Not authenticated' });
@@ -195,7 +196,7 @@ router.get('/:quizId', verifySupabaseToken, async (req: Request, res: Response) 
  * DELETE /api/results/:quizId
  * Delete/reset a quiz result (for retakes)
  */
-router.delete('/:quizId', verifySupabaseToken, async (req: Request, res: Response) => {
+router.delete('/:quizId', verifySupabaseToken, validateParams(z.object({ quizId: commonSchemas.uuid })), async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Not authenticated' });

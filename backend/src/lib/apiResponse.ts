@@ -134,7 +134,7 @@ export class ApiResponse {
         code,
         message,
       },
-      requestId: (res.req as any)?.requestId,
+      requestId: (res.req as Express.Request)?.requestId,
     };
 
     if (details) {

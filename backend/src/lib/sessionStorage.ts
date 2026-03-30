@@ -1,4 +1,5 @@
 import logger from '../lib/logger.js';
+import { env } from '../config/env.js';
 /**
  * Session Storage Abstraction
  * 
@@ -330,7 +331,7 @@ class HybridSessionStorage implements ISessionStorage {
  * Create session storage based on environment
  */
 function createSessionStorage(): ISessionStorage {
-  const storageType = process.env.SESSION_STORAGE || 'auto';
+  const storageType = env.SESSION_STORAGE;
   
   switch (storageType) {
     case 'redis':
