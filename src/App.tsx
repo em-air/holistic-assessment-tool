@@ -60,6 +60,7 @@ const WritingGradeSelector = lazy(() => import('./pages/WritingGradeSelector'));
 const WritingTest = lazy(() => import('./pages/WritingTest'));
 const ReadingAssessment = lazy(() => import('./pages/ReadingAssessment'));
 const AssessmentGenerator = lazy(() => import('./pages/AssessmentGenerator'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 const base = import.meta.env.VITE_BASE_PATH || '/holistic-assessment-tool';
 
@@ -173,6 +174,15 @@ function AnimatedRoutes() {
             />
           );
         })}
+        {/* Catch-all: must be last */}
+        <Route
+          path="*"
+          element={
+            <motion.div {...motionProps}>
+              <NotFoundPage />
+            </motion.div>
+          }
+        />
       </Routes>
     </AnimatePresence>
   );

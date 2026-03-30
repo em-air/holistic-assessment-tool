@@ -92,11 +92,17 @@ router.get('/', verifySupabaseToken, async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
-    const { data: results, error } = await supabaseAdmin
+    // Pagination params – default page 1, limit 50, max 200
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(200, Math.max(1, parseInt(req.query.limit as string) || 50));
+    const offset = (page - 1) * limit;
+
+    const { data: results, error, count } = await supabaseAdmin
       .from('quiz_results')
-      .select('*')
+      .select('*', { count: 'exact' })
       .eq('user_id', req.user.id)
-      .order('completed_at', { ascending: false });
+      .order('completed_at', { ascending: false })
+      .range(offset, offset + limit - 1);
 
     if (error) {
       logger.error(error, 'Get results error:');
@@ -107,6 +113,13 @@ router.get('/', verifySupabaseToken, async (req: Request, res: Response) => {
       success: true,
       results: results || [],
       count: results?.length || 0,
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit),
+        hasMore: offset + limit < (count || 0),
+      },
     });
   } catch (error) {
     logger.error(error, 'Get results error:');
@@ -158,7 +171,7 @@ router.get('/category/:category', verifySupabaseToken, async (req: Request, res:
  * GET /api/results/:quizId
  * Get specific quiz result
  */
-router.get('/:quizId', verifySupabaseToken, validateParams(z.object({ quizId: commonSchemas.uuid })), async (req: Request, res: Response) => {
+router.get('/:quizId', verifySupabaseToken, validateParams(z.object({ quizId: z.string().min(1) })), async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Not authenticated' });
@@ -196,7 +209,7 @@ router.get('/:quizId', verifySupabaseToken, validateParams(z.object({ quizId: co
  * DELETE /api/results/:quizId
  * Delete/reset a quiz result (for retakes)
  */
-router.delete('/:quizId', verifySupabaseToken, validateParams(z.object({ quizId: commonSchemas.uuid })), async (req: Request, res: Response) => {
+router.delete('/:quizId', verifySupabaseToken, validateParams(z.object({ quizId: z.string().min(1) })), async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Not authenticated' });

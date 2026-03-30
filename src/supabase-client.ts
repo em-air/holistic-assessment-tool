@@ -48,15 +48,55 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
 // ============================================
 // AUTH FUNCTIONS
 // ============================================
-export const signUp = async (email: string, password: string, userData: any) => {
-  return await supabase.auth.signUp({
+
+/**
+ * Typed registration data — `role` is intentionally excluded to prevent
+ * privilege escalation via user_metadata. Roles are set server-side only.
+ */
+export interface UserRegistrationData {
+  studentName?: string;
+  age?: number;
+  grade?: string;
+  parentEmail?: string;
+  studentEmail?: string | null;
+}
+
+export const signUp = async (email: string, password: string, userData: UserRegistrationData) => {
+  // Destructure to ensure no `role` field leaks into user_metadata
+  const { studentName, age, grade, parentEmail, studentEmail } = userData;
+  const safeMetadata = { studentName, age, grade, parentEmail, studentEmail };
+
+  const result = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: userData,
-      emailRedirectTo: undefined
-    }
+      data: safeMetadata,
+      emailRedirectTo: undefined,
+    },
   });
+
+  // If sign-up succeeded and we have a user, create the profile row immediately.
+  // The backend auth middleware no longer auto-creates profiles on first request,
+  // so the profile must exist before any authenticated API call is made.
+  if (!result.error && result.data.user) {
+    const userId = result.data.user.id;
+    await supabase
+      .from('profiles')
+      .upsert({
+        id: userId,
+        student_name: studentName || null,
+        age: age || null,
+        grade: grade || null,
+        parent_email: parentEmail || email,
+        student_email: studentEmail || null,
+        role: 'student', // always 'student' for self-registration
+        assigned_teacher_id: null,
+      }, { onConflict: 'id', ignoreDuplicates: true });
+    // Note: we ignore profile upsert errors here — the auth succeeded and
+    // the backend will surface the PROFILE_MISSING error on the next API call.
+  }
+
+  return result;
 };
 
 export const signIn = async (email: string, password: string) => {

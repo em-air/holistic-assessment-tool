@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 interface ProtectedRouteProps {
@@ -67,12 +67,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
                             : allowedRoles.map(r => `${r}s`).join(' and ')
                         } only.
                     </p>
-                    <a
-                        href="/"
+                    <Link
+                        to="/"
                         className="inline-block px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-md hover:shadow-lg"
                     >
                         Return to Home
-                    </a>
+                    </Link>
                 </div>
             </div>
         );

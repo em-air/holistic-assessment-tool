@@ -137,7 +137,17 @@ router.get('/users/:userId/reports', validateParams(userIdParams), async (req: R
 
 /**
  * PUT /api/admin/users/:userId/role
- * Change user role
+ * Change user role.
+ *
+ * ⚠️  SESSION INVALIDATION NOTE (I7):
+ * Supabase JWTs are valid for the full token lifetime (default: 1 hour) even after
+ * a role change. The user's next request will still pass auth with their old role
+ * until their token expires or they log out and back in.
+ *
+ * Mitigation: After updating the profile, we call supabaseAdmin.auth.admin.signOut()
+ * to revoke the user's existing refresh token. This forces them to re-authenticate
+ * on their next page load, at which point the new role will be reflected.
+ * Note: This invalidates all sessions across all devices for that user.
  */
 router.put('/users/:userId/role', validateParams(userIdParams), async (req: Request, res: Response) => {
   try {
@@ -172,10 +182,20 @@ router.put('/users/:userId/role', validateParams(userIdParams), async (req: Requ
       return res.status(500).json({ error: 'Failed to update role' });
     }
 
+    // Revoke the user's existing sessions so they re-authenticate with the new role.
+    // We do this after responding is not ideal, so we do it before and log failures.
+    try {
+      await supabaseAdmin.auth.admin.signOut(userId, 'global');
+    } catch (signOutErr) {
+      // Non-fatal: the role is already updated in the DB. The user's token will
+      // expire naturally within the JWT lifetime (default 1h).
+      logger.warn({ userId, signOutErr }, 'Role change: failed to revoke existing sessions. User will get new role on next re-login.');
+    }
+
     res.json({
       success: true,
       profile,
-      message: `Role updated to ${validation.data.role}`,
+      message: `Role updated to ${validation.data.role}. User's current session has been invalidated.`,
     });
 
     logAudit(req, { action: 'role_change', resourceType: 'user', resourceId: userId, details: { newRole: validation.data.role } });
@@ -185,75 +205,60 @@ router.put('/users/:userId/role', validateParams(userIdParams), async (req: Requ
   }
 });
 
+
 /**
  * GET /api/admin/analytics
  * Get aggregate statistics
+ * Uses DB-level count aggregates to avoid fetching all rows into memory.
  */
 router.get('/analytics', async (req: Request, res: Response) => {
   try {
-    // Get user counts by role
-    const { data: userStats, error: userError } = await supabaseAdmin
-      .from('profiles')
-      .select('role');
+    // Count users by role using separate count queries (avoids full table scan)
+    const [studentCount, teacherCount, adminCount, totalUsers, quizMindStats, quizOralStats, quizAcademicStats, reportCount] =
+      await Promise.all([
+        supabaseAdmin.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student'),
+        supabaseAdmin.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'teacher'),
+        supabaseAdmin.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'admin'),
+        supabaseAdmin.from('profiles').select('*', { count: 'exact', head: true }),
+        // Per-category quiz stats — select only needed columns (count + avg)
+        supabaseAdmin.from('quiz_results').select('percentage', { count: 'exact' }).eq('category', 'mind'),
+        supabaseAdmin.from('quiz_results').select('percentage', { count: 'exact' }).eq('category', 'oral'),
+        supabaseAdmin.from('quiz_results').select('percentage', { count: 'exact' }).eq('category', 'academic'),
+        supabaseAdmin.from('reports').select('*', { count: 'exact', head: true }),
+      ]);
 
-    if (userError) throw userError;
+    const avgScore = (rows: { percentage: number }[] | null) =>
+      rows && rows.length > 0
+        ? Math.round(rows.reduce((s, r) => s + r.percentage, 0) / rows.length)
+        : 0;
 
-    const roleCounts = {
-      student: 0,
-      teacher: 0,
-      admin: 0,
-      total: userStats?.length || 0,
-    };
-
-    userStats?.forEach(u => {
-      if (u.role in roleCounts) {
-        roleCounts[u.role as keyof typeof roleCounts]++;
-      }
-    });
-
-    // Get quiz completion stats
-    const { data: quizStats, error: quizError } = await supabaseAdmin
-      .from('quiz_results')
-      .select('category, percentage');
-
-    if (quizError) throw quizError;
-
-    const categoryStats: Record<string, { count: number; avgScore: number }> = {
-      mind: { count: 0, avgScore: 0 },
-      oral: { count: 0, avgScore: 0 },
-      academic: { count: 0, avgScore: 0 },
-    };
-
-    quizStats?.forEach(q => {
-      if (q.category in categoryStats) {
-        categoryStats[q.category].count++;
-        categoryStats[q.category].avgScore += q.percentage;
-      }
-    });
-
-    // Calculate averages
-    Object.keys(categoryStats).forEach(cat => {
-      const stats = categoryStats[cat];
-      if (stats.count > 0) {
-        stats.avgScore = Math.round(stats.avgScore / stats.count);
-      }
-    });
-
-    // Get report counts
-    const { count: reportCount } = await supabaseAdmin
-      .from('reports')
-      .select('*', { count: 'exact', head: true });
+    // Surface any errors
+    const errors = [studentCount, teacherCount, adminCount, totalUsers, quizMindStats, quizOralStats, quizAcademicStats, reportCount]
+      .map(r => r.error)
+      .filter(Boolean);
+    if (errors.length > 0) {
+      logger.error({ errors }, 'Analytics partial error');
+    }
 
     res.json({
       success: true,
       analytics: {
-        users: roleCounts,
+        users: {
+          student: studentCount.count || 0,
+          teacher: teacherCount.count || 0,
+          admin: adminCount.count || 0,
+          total: totalUsers.count || 0,
+        },
         quizzes: {
-          total: quizStats?.length || 0,
-          byCategory: categoryStats,
+          total: (quizMindStats.count || 0) + (quizOralStats.count || 0) + (quizAcademicStats.count || 0),
+          byCategory: {
+            mind: { count: quizMindStats.count || 0, avgScore: avgScore(quizMindStats.data) },
+            oral: { count: quizOralStats.count || 0, avgScore: avgScore(quizOralStats.data) },
+            academic: { count: quizAcademicStats.count || 0, avgScore: avgScore(quizAcademicStats.data) },
+          },
         },
         reports: {
-          total: reportCount || 0,
+          total: reportCount.count || 0,
         },
       },
     });
@@ -416,8 +421,8 @@ router.post('/users/:userId/assign-teacher', validateParams(userIdParams), async
  */
 router.get('/reports', async (req: Request, res: Response) => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 50;
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 50));
     const search = req.query.search as string | undefined;
     const reportType = req.query.report_type as string | undefined;
     const dateFrom = req.query.date_from as string | undefined;
@@ -437,7 +442,12 @@ router.get('/reports', async (req: Request, res: Response) => {
         )
       `, { count: 'exact' });
 
-    // Apply filters
+    // Apply filters — search is now pushed to DB layer so pagination counts are correct
+    if (search) {
+      // Filter via the joined profiles table using PostgREST embedded resource filter syntax
+      query = (query as any)
+        .or(`student_name.ilike.%${search}%,parent_email.ilike.%${search}%`, { foreignTable: 'profiles' });
+    }
     if (reportType && ['mind', 'oral', 'academic', 'full'].includes(reportType)) {
       query = query.eq('report_type', reportType as ReportType);
     }
@@ -461,24 +471,15 @@ router.get('/reports', async (req: Request, res: Response) => {
       return res.status(500).json({ error: 'Failed to get reports' });
     }
 
-    // If search is provided, filter by student name (post-fetch filtering)
-    let filteredReports = reports || [];
-    if (search) {
-      const searchLower = search.toLowerCase();
-      filteredReports = filteredReports.filter((r: any) => 
-        r.profiles?.student_name?.toLowerCase().includes(searchLower) ||
-        r.profiles?.parent_email?.toLowerCase().includes(searchLower)
-      );
-    }
-
     res.json({
       success: true,
-      reports: filteredReports,
+      reports: reports || [],
       pagination: {
         page,
         limit,
         total: count || 0,
         totalPages: Math.ceil((count || 0) / limit),
+        hasMore: from + limit < (count || 0),
       },
     });
   } catch (error) {

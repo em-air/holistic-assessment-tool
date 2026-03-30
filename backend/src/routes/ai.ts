@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { verifySupabaseToken } from '../middleware/index.js';
 import { env } from '../config/env.js';
+import { sanitizeString } from '../lib/sanitize.js';
 
 const router = Router();
 
@@ -19,18 +20,24 @@ const getGeminiModel = () => {
 
 // Validation schemas
 const evaluateWritingSchema = z.object({
-  studentResponse: z.string().min(1, 'Student response is required'),
+  studentResponse: z
+    .string()
+    .min(1, 'Student response is required')
+    .max(10000, 'Student response must be 10,000 characters or fewer'),
   grade: z.number().int().min(1).max(8),
-  prompt: z.string().min(1, 'Writing prompt is required'),
+  prompt: z
+    .string()
+    .min(1, 'Writing prompt is required')
+    .max(2000, 'Writing prompt must be 2,000 characters or fewer'),
 });
 
 const generateAssessmentSchema = z.object({
   grade: z.number().int().min(1).max(12),
-  curriculum: z.string().min(1),
-  subject: z.string().min(1),
+  curriculum: z.string().min(1).max(200),
+  subject: z.string().min(1).max(200),
   difficulty: z.enum(['easy', 'intermediate', 'hard']),
   duration: z.number().int().min(5).max(180),
-  topics: z.array(z.string()),
+  topics: z.array(z.string().max(200)).max(20),
   includeAnswerKey: z.boolean(),
 });
 
@@ -418,7 +425,10 @@ router.post('/evaluate-writing', verifySupabaseToken, async (req: Request, res: 
       });
     }
 
-    const { studentResponse, grade, prompt } = validationResult.data;
+    const { studentResponse: rawResponse, grade, prompt: rawPrompt } = validationResult.data;
+    // Sanitize student-supplied text before embedding in the AI prompt
+    const studentResponse = sanitizeString(rawResponse);
+    const prompt = sanitizeString(rawPrompt);
     const rubric = GRADE_RUBRICS[grade];
 
     if (!rubric) {

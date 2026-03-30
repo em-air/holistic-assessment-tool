@@ -8,6 +8,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
+import timeout from 'connect-timeout';
 import { env, isProduction, features } from './config/env.js';
 import { requestIdMiddleware, requestLoggingMiddleware, performanceMiddleware } from './middleware/requestLogging.js';
 
@@ -64,6 +65,20 @@ app.use(helmet({
 
 // Response compression
 app.use(compression());
+
+// Request timeout — prevents slow external calls from holding workers indefinitely.
+// AI/report routes get 60 s; everything else gets 30 s.
+// connect-timeout sends a 503 and emits 'timeout' on req so subsequent middleware can bail out.
+const haltOnTimedout = (req: express.Request, _res: express.Response, next: express.NextFunction) => {
+  if (!req.timedout) next();
+};
+
+app.use('/api/v1/ai', timeout('60s'), haltOnTimedout);
+app.use('/api/ai', timeout('60s'), haltOnTimedout);
+app.use('/api/v1/reports', timeout('60s'), haltOnTimedout);
+app.use('/api/reports', timeout('60s'), haltOnTimedout);
+app.use(timeout('30s'));
+app.use(haltOnTimedout);
 
 // Request ID and logging middleware
 app.use(requestIdMiddleware);

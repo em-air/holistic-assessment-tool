@@ -1,4 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { captureFrontendException } from '../lib/sentry';
 
 interface Props {
@@ -88,12 +89,12 @@ class ErrorBoundary extends Component<Props, State> {
                             >
                                 Try Again
                             </button>
-                            <a
-                                href="/"
+                            <Link
+                                to="/"
                                 className="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-all duration-200"
                             >
                                 Go Home
-                            </a>
+                            </Link>
                         </div>
                     </div>
                 </div>

@@ -40,8 +40,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Fetch profile when user changes
   const fetchProfile = async (userId: string) => {
     const profileData = await getProfile(userId);
-    logger.log('Fetched profile:', profileData); // Debug log
-    logger.log('User role:', profileData?.role); // Debug log
     setProfile(profileData);
     return profileData;
   };

@@ -4,7 +4,16 @@ import { supabaseAdmin } from '../config/supabase.js';
 import type { Profile, UserRole, GradeLevel } from '../types/database.js';
 
 /**
- * Middleware to verify Supabase JWT token and attach user to request
+ * Middleware to verify Supabase JWT token and attach user to request.
+ *
+ * Profile creation is intentionally NOT performed here.
+ * Profiles must be created at registration time (via the AuthPage sign-up
+ * flow or a Supabase `on_auth_user_created` trigger in the database).
+ * Creating a profile here would cause a DB write on every request burst
+ * for new users and introduce race conditions under concurrent load.
+ *
+ * If a profile is missing, we return 401 so the client can redirect to
+ * the registration/profile-setup flow.
  */
 export const verifySupabaseToken = async (
   req: Request,
@@ -35,45 +44,24 @@ export const verifySupabaseToken = async (
       .single();
 
     if (profileError || !profile) {
-      // Profile might not exist yet - create a default one
-      const newProfile: Omit<Profile, 'created_at' | 'updated_at'> = {
-        id: user.id,
-        student_name: user.user_metadata?.studentName || null,
-        age: user.user_metadata?.age || null,
-        grade: user.user_metadata?.grade || null,
-        parent_email: user.user_metadata?.parentEmail || user.email || null,
-        student_email: user.user_metadata?.studentEmail || null,
-        role: 'student',
-        assigned_teacher_id: null,
-      };
-
-      const { data: createdProfile, error: createError } = await supabaseAdmin
-        .from('profiles')
-        .upsert(newProfile)
-        .select()
-        .single();
-
-      if (createError) {
-        logger.error(createError, 'Error creating profile:');
-        return res.status(500).json({ error: 'Failed to create user profile' });
-      }
-
-      req.user = {
-        id: user.id,
-        email: user.email,
-        role: createdProfile.role as UserRole,
-        grade: createdProfile.grade as GradeLevel | null,
-        profile: createdProfile as Profile,
-      };
-    } else {
-      req.user = {
-        id: user.id,
-        email: user.email,
-        role: profile.role as UserRole,
-        grade: profile.grade as GradeLevel | null,
-        profile: profile as Profile,
-      };
+      // Profile doesn't exist — this means registration was incomplete.
+      // Do NOT create it here; that would cause a write on every request
+      // for all new users and introduces concurrency issues.
+      // The client should complete the profile-setup / registration flow.
+      logger.warn({ userId: user.id }, 'Auth: profile missing — registration incomplete');
+      return res.status(401).json({ 
+        error: 'User profile not found. Please complete registration.',
+        code: 'PROFILE_MISSING',
+      });
     }
+
+    req.user = {
+      id: user.id,
+      email: user.email,
+      role: profile.role as UserRole,
+      grade: profile.grade as GradeLevel | null,
+      profile: profile as Profile,
+    };
 
     next();
   } catch (error) {
