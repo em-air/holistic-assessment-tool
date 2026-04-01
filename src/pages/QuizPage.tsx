@@ -31,7 +31,7 @@ const QuizPage: React.FC = () => {
         <div className="text-center bg-stone-100 p-8 rounded-2xl shadow-xl relative z-10">
           <h1 className="text-2xl font-bold text-stone-800 mb-4">Quiz not found</h1>
           <button
-            onClick={() => navigate(ROUTES.HOME)}
+            onClick={() => navigate(ROUTES.HOME, { replace: true })}
             className="bg-emerald-600 hover:bg-emerald-700 text-stone-100 px-6 py-3 rounded-full"
           >
             Back to Home
@@ -128,13 +128,13 @@ const QuizPage: React.FC = () => {
               </div>
               <div className="space-y-4">
                 <button
-                  onClick={() => navigate(categoryRoute(categoryId!))}
+                  onClick={() => navigate(categoryRoute(categoryId!), { replace: true })}
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-stone-100 font-semibold py-3 px-6 rounded-full transition-colors duration-200"
                 >
                   Take Another Assessment
                 </button>
                 <button
-                  onClick={() => navigate(ROUTES.HOME)}
+                  onClick={() => navigate(ROUTES.HOME, { replace: true })}
                   className="w-full bg-stone-500 hover:bg-stone-600 text-stone-100 font-semibold py-3 px-6 rounded-full transition-colors duration-200"
                 >
                   Back to Dashboard

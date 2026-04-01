@@ -28,7 +28,7 @@ const CategoriesPage: React.FC = () => {
       setIsSigningOut(false);
     }
     // Navigate to home after sign out completes (outside finally to ensure signOut finished)
-    navigate(ROUTES.HOME);
+    navigate(ROUTES.HOME, { replace: true });
   };
 
   return (

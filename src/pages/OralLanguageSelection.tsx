@@ -117,7 +117,7 @@ const OralLanguageSelection: React.FC = () => {
           className="text-center mt-12"
         >
           <button
-            onClick={() => navigate(ROUTES.CATEGORIES)}
+            onClick={() => navigate(ROUTES.CATEGORIES, { replace: true })}
             className="px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-colors duration-300 shadow-md hover:shadow-lg"
           >
             ← Back to Categories
