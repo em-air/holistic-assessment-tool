@@ -242,7 +242,7 @@ const CategoryQuiz: React.FC = () => {
 
             <div className="text-center">
               <button
-                onClick={() => navigate(ROUTES.CRITICAL_THINKING_SELECTION, { replace: true })}
+                onClick={() => navigate(-1)}
                 className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-colors duration-200"
               >
                 Back
@@ -327,7 +327,7 @@ const CategoryQuiz: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate(ROUTES.CRITICAL_THINKING_SELECTION, { replace: true })}
+            onClick={() => navigate(-1)}
             className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:bg-white/20 transition-colors duration-200"
           >
             <ArrowLeft size={20} />

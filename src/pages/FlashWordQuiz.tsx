@@ -211,7 +211,7 @@ const FlashWordQuiz: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <button
-              onClick={() => navigate(ROUTES.ATTENTION_MEMORY, { replace: true })}
+              onClick={() => navigate(-1)}
               className="group flex items-center space-x-2 px-4 py-2 text-white bg-white/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-white/30 hover:shadow-md transform hover:scale-105"
             >
               <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
@@ -320,7 +320,7 @@ const FlashWordQuiz: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between p-4">
         <button
-          onClick={() => navigate(ROUTES.ATTENTION_MEMORY, { replace: true })}
+          onClick={() => navigate(-1)}
           className="group flex items-center space-x-2 px-4 py-2 text-white bg-white/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-white/30 hover:shadow-md transform hover:scale-105"
         >
           <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />

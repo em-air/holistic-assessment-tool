@@ -244,7 +244,7 @@ const AttentionQuiz: React.FC = () => {
   }, [gameState, quizType, score, maxLevel, startTime]);
 
   const handleBackToMind = () => {
-    navigate(ROUTES.CATEGORY_MIND, { replace: true });
+    navigate(-1);
   };
 
   const startQuiz = (type: 'attention' | 'memory' | 'sequence') => {

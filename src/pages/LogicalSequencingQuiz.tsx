@@ -286,7 +286,7 @@ const LogicalSequencingQuiz: React.FC = () => {
       {/* Header */}
       <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-center">
         <button
-          onClick={() => navigate(ROUTES.LOGICAL_SEQUENCING_GRADES, { replace: true })}
+          onClick={() => navigate(-1)}
           className="flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg hover:bg-black/30 transition-colors"
         >
           <ArrowLeft size={20} />

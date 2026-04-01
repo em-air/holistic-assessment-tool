@@ -233,7 +233,7 @@ const OralLanguageQuiz: React.FC = () => {
 
     if (!questions || questions.length === 0) {
       // Navigate back instead of showing the selection page
-      navigate(categoryRoute('oral-skills'), { replace: true });
+      navigate(-1);
       return;
     }
 
