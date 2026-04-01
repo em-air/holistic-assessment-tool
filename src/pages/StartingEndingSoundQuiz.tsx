@@ -245,7 +245,7 @@ const StartingEndingSoundQuiz: React.FC = () => {
         <div className="bg-white rounded-3xl shadow-lg p-8 text-center">
           <div className="text-xl text-red-600 mb-4">Error Loading Question</div>
           <button 
-            onClick={() => navigate(ROUTES.STARTING_ENDING_SOUND)}
+            onClick={() => navigate(ROUTES.STARTING_ENDING_SOUND, { replace: true })}
             className="bg-blue-500 text-white px-4 py-2 rounded-lg"
           >
             Try Again
@@ -290,7 +290,7 @@ const StartingEndingSoundQuiz: React.FC = () => {
               <span>Try Again</span>
             </button>
             <button
-              onClick={() => navigate(ROUTES.STARTING_ENDING_SOUND)}
+              onClick={() => navigate(ROUTES.STARTING_ENDING_SOUND, { replace: true })}
               className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-full text-lg transition-colors shadow-lg"
             >
               Continue
@@ -306,7 +306,7 @@ const StartingEndingSoundQuiz: React.FC = () => {
       {/* Header with back button */}
       <div className="absolute top-4 left-4 z-20">
         <button
-          onClick={() => navigate(ROUTES.STARTING_ENDING_SOUND)}
+          onClick={() => navigate(ROUTES.STARTING_ENDING_SOUND, { replace: true })}
           className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
         >
           <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />

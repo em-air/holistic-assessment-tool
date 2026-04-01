@@ -289,7 +289,7 @@ const SegmentingQuiz: React.FC = () => {
         
         <div className="relative z-10 p-6">
           <button
-            onClick={() => navigate(categoryRoute(categoryId!))}
+            onClick={() => navigate(categoryRoute(categoryId!), { replace: true })}
             className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
           >
             <ArrowLeft size={20} />
@@ -338,7 +338,7 @@ const SegmentingQuiz: React.FC = () => {
         
         <div className="relative z-10 p-6">
           <button
-            onClick={() => navigate(categoryRoute(categoryId!))}
+            onClick={() => navigate(categoryRoute(categoryId!), { replace: true })}
             className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
           >
             <ArrowLeft size={20} />
@@ -379,7 +379,7 @@ const SegmentingQuiz: React.FC = () => {
               </button>
               
               <button
-                onClick={() => navigate(ROUTES.CATEGORIES)}
+                onClick={() => navigate(ROUTES.CATEGORIES, { replace: true })}
                 className="w-full bg-gray-500 hover:bg-gray-600 text-white py-3 px-6 rounded-lg font-bold transition-colors duration-200"
               >
                 Back to Categories
@@ -398,7 +398,7 @@ const SegmentingQuiz: React.FC = () => {
       
       <div className="relative z-10 p-6">
         <button
-          onClick={() => navigate(categoryRoute(categoryId!))}
+          onClick={() => navigate(categoryRoute(categoryId!), { replace: true })}
           className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
         >
           <ArrowLeft size={20} />

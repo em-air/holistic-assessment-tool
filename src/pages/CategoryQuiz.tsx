@@ -36,6 +36,8 @@ const CategoryQuiz: React.FC = () => {
   const [startTime, setStartTime] = useState<number>(Date.now());
   const [showReport, setShowReport] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+  const [validationResults, setValidationResults] = useState<Record<string, { correct: boolean; correctCategory: string }>>({}); 
 
   // Always start with grade selection (don't auto-load from localStorage)
   useEffect(() => {
@@ -50,6 +52,7 @@ const CategoryQuiz: React.FC = () => {
       setAvailableItems([...currentQuestion.items]);
       setDroppedItems([]);
       setShowResults(false);
+      setValidationResults({});
     }
   }, [currentQuestionIndex, questions]);
 
@@ -59,7 +62,7 @@ const CategoryQuiz: React.FC = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) return;
-      const response = await fetch(`${API_BASE_URL}/api/quiz-content/critical-thinking/questions?type=category`, {
+      const response = await fetch(`${API_BASE_URL}/api/quiz-content/critical-thinking/category-questions?grade=${grade}`, {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       const data = await response.json();
@@ -125,42 +128,54 @@ const CategoryQuiz: React.FC = () => {
   };
 
   const checkAnswers = async () => {
+    if (availableItems.length > 0 || isChecking) return;
+
+    setIsChecking(true);
     const currentQuestion = questions[currentQuestionIndex];
     let correctCount = 0;
+    const results: Record<string, { correct: boolean; correctCategory: string }> = {};
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.access_token) {
-        // Validate each dropped item via the backend
         for (const item of droppedItems) {
-          const response = await fetch(`${API_BASE_URL}/api/quiz-content/critical-thinking/validate`, {
+          const response = await fetch(`${API_BASE_URL}/api/quiz-content/critical-thinking/category-validate`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${session.access_token}`,
             },
-            body: JSON.stringify({ questionId: currentQuestion.id, answerId: item.id, category: item.droppedIn }),
+            body: JSON.stringify({
+              questionId: currentQuestion.id,
+              itemId: item.id,
+              droppedCategory: item.droppedIn,
+              grade: selectedGrade,
+            }),
           });
           const result = await response.json();
+          results[item.id] = {
+            correct: result.correct ?? false,
+            correctCategory: result.correctCategory ?? '',
+          };
           if (result.correct) {
             correctCount++;
           }
         }
       }
     } catch {
-      // Fallback: count based on local correctCategory if available
+      // Fallback: mark all as unknown
       droppedItems.forEach(item => {
-        if (item.correctCategory && item.droppedIn === item.correctCategory) {
-          correctCount++;
-        }
+        results[item.id] = { correct: false, correctCategory: '' };
       });
     }
 
-    if (correctCount === currentQuestion.items.length) {
+    if (correctCount === droppedItems.length && droppedItems.length > 0) {
       setScore(prev => prev + 1);
     }
 
+    setValidationResults(results);
     setShowResults(true);
+    setIsChecking(false);
   };
 
   const handleNext = () => {
@@ -227,7 +242,7 @@ const CategoryQuiz: React.FC = () => {
 
             <div className="text-center">
               <button
-                onClick={() => navigate(ROUTES.CRITICAL_THINKING_SELECTION)}
+                onClick={() => navigate(ROUTES.CRITICAL_THINKING_SELECTION, { replace: true })}
                 className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-colors duration-200"
               >
                 Back
@@ -293,7 +308,7 @@ const CategoryQuiz: React.FC = () => {
                 Change Grade
               </button>
               <button
-                onClick={() => navigate(ROUTES.CRITICAL_THINKING_SELECTION)}
+                onClick={() => navigate(ROUTES.CRITICAL_THINKING_SELECTION, { replace: true })}
                 className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-colors duration-200"
               >
                 Back
@@ -312,7 +327,7 @@ const CategoryQuiz: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate(ROUTES.CRITICAL_THINKING_SELECTION)}
+            onClick={() => navigate(ROUTES.CRITICAL_THINKING_SELECTION, { replace: true })}
             className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:bg-white/20 transition-colors duration-200"
           >
             <ArrowLeft size={20} />
@@ -417,7 +432,8 @@ const CategoryQuiz: React.FC = () => {
                         let itemClass = "w-full p-3 rounded-lg border-2 text-center font-medium transition-all duration-200 cursor-pointer ";
 
                         if (showResults) {
-                          if (item.correctCategory === category) {
+                          const vr = validationResults[item.id];
+                          if (vr?.correct) {
                             itemClass += "bg-green-100 border-green-400 text-green-800";
                           } else {
                             itemClass += "bg-red-100 border-red-400 text-red-800";
@@ -446,7 +462,7 @@ const CategoryQuiz: React.FC = () => {
                               <span>{item.name}</span>
                               {showResults && (
                                 <>
-                                  {item.correctCategory === category ? (
+                                  {validationResults[item.id]?.correct ? (
                                     <CheckCircle size={16} className="text-green-600" />
                                   ) : (
                                     <XCircle size={16} className="text-red-600" />
@@ -474,20 +490,20 @@ const CategoryQuiz: React.FC = () => {
               {!showResults ? (
                 <button
                   onClick={checkAnswers}
-                  disabled={!allItemsPlaced}
-                  className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${allItemsPlaced
+                  disabled={!allItemsPlaced || isChecking}
+                  className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${allItemsPlaced && !isChecking
                     ? 'bg-gradient-to-r from-teal-500 to-green-500 text-white hover:shadow-lg'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                 >
-                  Check Answers
+                  {isChecking ? 'Checking…' : 'Check Answers'}
                 </button>
               ) : (
                 <div className="space-y-4">
                   {/* Results Summary */}
                   <div className="bg-gray-50 rounded-xl p-4 mb-4">
                     <div className="flex items-center justify-center gap-2 mb-2">
-                      {score > currentQuestionIndex ? (
+                      {Object.values(validationResults).length > 0 && Object.values(validationResults).every(v => v.correct) ? (
                         <>
                           <CheckCircle size={24} className="text-green-600" />
                           <span className="text-green-800 font-semibold">Perfect Sorting!</span>

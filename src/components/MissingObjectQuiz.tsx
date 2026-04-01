@@ -134,7 +134,7 @@ const MissingObjectQuiz: React.FC = () => {
     });
 
     // Route back to mind category
-    navigate(ROUTES.CATEGORY_MIND);
+    navigate(ROUTES.CATEGORY_MIND, { replace: true });
   };
 
   const resetForRetry = () => {
