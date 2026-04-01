@@ -460,24 +460,12 @@ const LogicalSequencingQuiz: React.FC = () => {
                   <span>Submit Order</span>
                 </button>
               ) : (
-                <div className="flex space-x-3">
-                  {!isCorrect && (
-                    <button
-                      onClick={retryQuestion}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200 flex items-center space-x-2"
-                    >
-                      <RotateCcw size={20} />
-                      <span>Try Again</span>
-                    </button>
-                  )}
-                  
-                  <button
-                    onClick={nextQuestion}
-                    className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
-                  >
-                    {currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'Finish Quiz'}
-                  </button>
-                </div>
+                <button
+                  onClick={nextQuestion}
+                  className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
+                >
+                  {currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'Finish Quiz'}
+                </button>
               )}
             </div>
           </motion.div>

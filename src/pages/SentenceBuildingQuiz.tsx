@@ -287,7 +287,7 @@ const SentenceBuildingQuiz: React.FC = () => {
                   <div className="flex items-center justify-center gap-2 mb-2">
                     {isCorrect ? <Check className="w-5 h-5" /> : <X className="w-5 h-5" />}
                     <span className="font-bold">
-                      {isCorrect ? 'Correct!' : 'Try again!'}
+                      {isCorrect ? 'Correct!' : 'Incorrect'}
                     </span>
                   </div>
                   <p className="text-sm">

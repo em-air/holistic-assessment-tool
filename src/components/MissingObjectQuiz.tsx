@@ -97,15 +97,16 @@ const MissingObjectQuiz: React.FC = () => {
     if (answer === currentQuestion.correctAnswer) {
       setFeedbackMessage("great job! that's right.");
       setScore(score + 1);
-      setShowNext(true);
-
-      // Auto-advance after 1.5 seconds
-      setTimeout(() => {
-        handleNext();
-      }, 1500);
     } else {
-      setFeedbackMessage("not quite, try again.");
+      setFeedbackMessage(`not quite. the answer was: ${currentQuestion.correctAnswer}`);
     }
+
+    setShowNext(true);
+
+    // Auto-advance after 1.5 seconds
+    setTimeout(() => {
+      handleNext();
+    }, 1500);
   };
 
   const handleNext = () => {
@@ -142,12 +143,9 @@ const MissingObjectQuiz: React.FC = () => {
   };
 
   useEffect(() => {
-    // Reset for retry if incorrect answer
-    if (feedbackMessage === "not quite, try again." && selectedAnswer) {
-      const timer = setTimeout(() => {
-        resetForRetry();
-      }, 1000);
-      return () => clearTimeout(timer);
+    // Reset state when feedback clears
+    if (!feedbackMessage && selectedAnswer) {
+      resetForRetry();
     }
   }, [feedbackMessage, selectedAnswer]);
 
@@ -218,18 +216,19 @@ const MissingObjectQuiz: React.FC = () => {
           {currentQuestion.options.map((option) => {
             let buttonClass = "w-full p-4 text-left rounded-2xl border-2 transition-all duration-200 text-lg font-medium ";
             
-            if (selectedAnswer === option) {
+            if (selectedAnswer) {
               if (option === currentQuestion.correctAnswer) {
                 buttonClass += "bg-green-100 border-green-500 text-green-700";
-              } else {
+              } else if (selectedAnswer === option) {
                 buttonClass += "bg-red-100 border-red-500 text-red-700";
+              } else {
+                buttonClass += "bg-gray-50 border-gray-200 text-gray-400";
               }
             } else {
               buttonClass += "bg-gray-50 border-gray-200 hover:bg-blue-50 hover:border-blue-300 cursor-pointer text-gray-800";
             }
 
-            // Disable clicking if already answered correctly
-            const isDisabled = !!(selectedAnswer && selectedAnswer === currentQuestion.correctAnswer);
+            const isDisabled = !!selectedAnswer;
 
             return (
               <button

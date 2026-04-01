@@ -17,7 +17,7 @@ interface QuizFeedbackProps {
 export const QuizFeedback = ({
     isCorrect,
     correctMessage = 'Excellent! Great job!',
-    incorrectMessage = 'Not quite right. Try again!',
+    incorrectMessage = 'Not quite right.',
     points,
     customContent,
 }: QuizFeedbackProps) => {

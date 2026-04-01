@@ -172,14 +172,12 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
         const { levelsCompleted, endReason, attemptsPerLevel } = result.additionalData;
         const totalAttempts = Object.values(attemptsPerLevel || {}).reduce((sum: number, attempts: any) => sum + attempts, 0);
         
-        if (endReason === 'out-of-tries') {
-          analysis = `Your child completed ${levelsCompleted} out of 6 memory levels before running out of attempts. They made ${totalAttempts} total attempts, showing persistence. Memory games require practice - encourage them to try again as repetition improves memory skills.`;
-        } else if (result.percentage >= 90) {
+        if (result.percentage >= 90) {
           analysis = `Excellent memory performance! Your child completed all 6 levels with ${totalAttempts} total attempts. They demonstrate strong visual memory and pattern recognition skills.`;
         } else if (result.percentage >= 75) {
           analysis = `Good memory skills shown. Your child completed the memory challenge with ${totalAttempts} attempts, displaying solid visual memory abilities with room for improvement.`;
         } else {
-          analysis = `Your child shows developing memory skills. They made ${totalAttempts} attempts across ${levelsCompleted} levels. Regular practice with memory games can strengthen these important cognitive abilities.`;
+          analysis = `Your child shows developing memory skills. They completed ${levelsCompleted} levels correctly out of 6. Regular practice with memory games can strengthen these important cognitive abilities.`;
         }
       } else {
         // Standard memory analysis

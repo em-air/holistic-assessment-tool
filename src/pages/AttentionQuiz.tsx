@@ -133,7 +133,7 @@ const AttentionQuiz: React.FC = () => {
         }, 2000);
       }
     } else {
-      // Wrong selection
+      // Wrong selection — mark as incorrect and advance to next level
       setTiles(prev => prev.map(t =>
         t.id === tileId ? { ...t, isSelected: true, isCorrect: false, isRevealed: true } : t
       ));
@@ -141,7 +141,12 @@ const AttentionQuiz: React.FC = () => {
       setGameState('result');
 
       setTimeout(() => {
-        generateTiles(); // Restart same level
+        if (currentLevel < maxLevel) {
+          setCurrentLevel(prev => prev + 1);
+          generateTiles();
+        } else {
+          setGameState('complete');
+        }
       }, 2000);
     }
   }, [gamePhase, gameState, tiles, selectedTiles, currentTileCount, currentLevel, maxLevel, generateTiles]);
@@ -178,7 +183,7 @@ const AttentionQuiz: React.FC = () => {
         }, 2000);
       }
     } else {
-      // Wrong selection
+      // Wrong selection — mark as incorrect and advance to next level
       setSequenceTiles(prev => prev.map(t =>
         t.id === tileId ? { ...t, isFlipped: false, isWrong: true } : t
       ));
@@ -186,7 +191,12 @@ const AttentionQuiz: React.FC = () => {
       setGameState('result');
 
       setTimeout(() => {
-        generateSequenceTiles(); // Restart same level
+        if (currentLevel < maxLevel) {
+          setCurrentLevel(prev => prev + 1);
+          generateSequenceTiles();
+        } else {
+          setGameState('complete');
+        }
       }, 2000);
     }
   }, [sequencePhase, gameState, sequenceTiles, sequenceGuess, sequenceNumbers, currentLevel, maxLevel, generateSequenceTiles]);
@@ -600,8 +610,8 @@ const AttentionQuiz: React.FC = () => {
               ) : (
                 <div className="text-red-500">
                   <X className="w-12 h-12 mx-auto mb-3" />
-                  <h3 className="text-2xl font-bold mb-2">Try Again!</h3>
-                  <p className="text-lg">Select tiles in numerical order: 1 → 2 → 3 → 4 → 5 → 6</p>
+                  <h3 className="text-2xl font-bold mb-2">Incorrect</h3>
+                  <p className="text-lg">Moving to the next level...</p>
                 </div>
               )}
             </div>
