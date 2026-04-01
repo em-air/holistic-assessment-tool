@@ -40,7 +40,9 @@ import {
 } from '../data/storyRetellData.js';
 import { 
   getCriticalThinkingQuestions, 
-  validateCriticalThinkingAnswer 
+  validateCriticalThinkingAnswer,
+  getCategoryQuestions,
+  validateCategoryItemPlacement
 } from '../data/criticalThinkingData.js';
 import { 
   getLearningStyleQuestions, 
@@ -109,6 +111,13 @@ const vocabularyValidateSchema = z.object({
 const criticalThinkingValidateSchema = z.object({
   questionId: z.string(),
   answerId: z.string(),
+});
+
+const categoryQuizValidateSchema = z.object({
+  questionId: z.string(),
+  itemId: z.string(),
+  droppedCategory: z.string(),
+  grade: z.string(),
 });
 
 const learningStylesCalculateSchema = z.object({
@@ -730,6 +739,51 @@ router.post('/critical-thinking/validate', verifySupabaseToken, async (req: Requ
   } catch (error) {
     logger.error(error, 'Validate critical thinking error:');
     res.status(500).json({ error: 'Failed to validate' });
+  }
+});
+
+/**
+ * GET /api/quiz-content/critical-thinking/category-questions
+ * Returns drag-and-drop category questions by grade (without answer keys)
+ */
+router.get('/critical-thinking/category-questions', verifySupabaseToken, async (req: Request, res: Response) => {
+  try {
+    const grade = req.query.grade as string;
+    if (!grade || !['grade1', 'grade2', 'grade3', 'grade4'].includes(grade)) {
+      return res.status(400).json({ error: 'Invalid or missing grade parameter' });
+    }
+
+    const questions = getCategoryQuestions(grade);
+    res.json({
+      success: true,
+      questions,
+    });
+  } catch (error) {
+    logger.error(error, 'Get category questions error:');
+    res.status(500).json({ error: 'Failed to get category questions' });
+  }
+});
+
+/**
+ * POST /api/quiz-content/critical-thinking/category-validate
+ * Validates a single category item placement
+ */
+router.post('/critical-thinking/category-validate', verifySupabaseToken, async (req: Request, res: Response) => {
+  try {
+    const validation = categoryQuizValidateSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
+    }
+    const { questionId, itemId, droppedCategory, grade } = validation.data;
+    const result = validateCategoryItemPlacement(questionId, itemId, droppedCategory, grade);
+
+    res.json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    logger.error(error, 'Validate category item error:');
+    res.status(500).json({ error: 'Failed to validate category item' });
   }
 });
 

@@ -8,6 +8,8 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { ProgressTracker, MIND_QUIZZES, ORAL_QUIZZES, ACADEMIC_QUIZZES } from '../utils/progressTracker';
 import { getMyReports, downloadReport, type ProfileReport } from '../services/profileService';
+import { generateReport } from '../services/reportService';
+import { logger } from '../utils/logger';
 import { ROUTES } from '../routes';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -368,6 +370,8 @@ const ProfilePage: React.FC = () => {
   const [reportsLoading, setReportsLoading] = useState(true);
   const [reportsError, setReportsError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [reportStatus, setReportStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   // ── Redirect if not logged in ──────────────────────────────────────────────
   useEffect(() => {
@@ -413,6 +417,67 @@ const ProfilePage: React.FC = () => {
       fetchReports(),
     ]);
     setRefreshing(false);
+  };
+
+  const handleGenerateReport = async () => {
+    setIsGeneratingReport(true);
+    setReportStatus('idle');
+    try {
+      const result = await generateReport({ reportType: 'full' });
+      if (result.success) {
+        setReportStatus('success');
+        logger.log('Report saved:', result.report?.id);
+
+        const dateSuffix = new Date().toISOString().split('T')[0];
+        if (result.downloadUrl) {
+          try {
+            const pdfResp = await fetch(result.downloadUrl);
+            if (pdfResp.ok) {
+              const blob = await pdfResp.blob();
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `en_assessment-report-${dateSuffix}.pdf`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            }
+          } catch (dlErr) {
+            logger.error('EN PDF download error:', dlErr);
+          }
+        }
+        if (result.downloadUrlAr) {
+          try {
+            const pdfResp = await fetch(result.downloadUrlAr);
+            if (pdfResp.ok) {
+              const blob = await pdfResp.blob();
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `ar_assessment-report-${dateSuffix}.pdf`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            }
+          } catch (dlErr) {
+            logger.error('AR PDF download error:', dlErr);
+          }
+        }
+        // Refresh reports list to include the newly generated report
+        await fetchReports();
+      } else {
+        setReportStatus('error');
+        logger.error('Report failed:', result.error);
+      }
+    } catch (err) {
+      setReportStatus('error');
+      logger.error('Report error:', err);
+    } finally {
+      setIsGeneratingReport(false);
+      setTimeout(() => setReportStatus('idle'), 3000);
+    }
   };
 
   // ── Build category stats ──────────────────────────────────────────────────
@@ -532,13 +597,13 @@ const ProfilePage: React.FC = () => {
           className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden"
         >
           {/* Accent strip */}
-          <div className="h-2 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400" />
+          <div className="h-2 bg-emerald-500" />
 
           <div className="p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
               {/* Avatar */}
               <div className="flex-shrink-0">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-md">
+                <div className="w-20 h-20 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-md">
                   <span className="text-2xl font-extrabold text-white tracking-wide">{initials}</span>
                 </div>
               </div>
@@ -591,7 +656,7 @@ const ProfilePage: React.FC = () => {
               </div>
               <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full"
+                  className="h-full bg-emerald-500 rounded-full"
                   initial={{ width: 0 }}
                   animate={{ width: `${overallPct}%` }}
                   transition={{ duration: 1.1, ease: [0.34, 1.56, 0.64, 1], delay: 0.2 }}
@@ -661,11 +726,35 @@ const ProfilePage: React.FC = () => {
         <section aria-label="Downloadable reports">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-slate-800">My Reports</h2>
-            {reports.length > 0 && (
-              <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">
-                {reports.length} {reports.length === 1 ? 'report' : 'reports'}
-              </span>
-            )}
+            <div className="flex items-center gap-3">
+              {reports.length > 0 && (
+                <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">
+                  {reports.length} {reports.length === 1 ? 'report' : 'reports'}
+                </span>
+              )}
+              <button
+                onClick={handleGenerateReport}
+                disabled={isGeneratingReport}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white text-sm font-semibold rounded-xl shadow-sm hover:bg-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isGeneratingReport ? (
+                  <RefreshCw size={14} className="animate-spin" />
+                ) : reportStatus === 'success' ? (
+                  <CheckCircle size={14} />
+                ) : reportStatus === 'error' ? (
+                  <AlertCircle size={14} />
+                ) : (
+                  <FileText size={14} />
+                )}
+                {isGeneratingReport
+                  ? 'Generating…'
+                  : reportStatus === 'success'
+                  ? 'Report Saved!'
+                  : reportStatus === 'error'
+                  ? 'Failed – Retry'
+                  : 'Generate Report'}
+              </button>
+            </div>
           </div>
 
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm">
@@ -705,9 +794,14 @@ const ProfilePage: React.FC = () => {
               </div>
             ) : (
               <div className="p-4 space-y-2">
-                {reports.map((r, i) => (
+                {reports.slice(0, 3).map((r, i) => (
                   <ReportRow key={r.id} report={r} index={i} />
                 ))}
+                {reports.length > 3 && (
+                  <p className="text-xs text-center text-slate-400 pt-2">
+                    Showing latest 3 of {reports.length} reports
+                  </p>
+                )}
               </div>
             )}
           </div>
