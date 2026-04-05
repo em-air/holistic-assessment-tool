@@ -5,14 +5,23 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 /**
+ * Treat empty strings as undefined so optional/default fields work on Railway
+ */
+const emptyToUndefined = (val: unknown) =>
+  typeof val === 'string' && val.trim() === '' ? undefined : val;
+
+/**
  * Environment variable validation schema
  * Validates all required environment variables at startup
  */
 const envSchema = z.object({
   // Server
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  PORT: z.string().transform(Number).default('3001'),
-  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
+  NODE_ENV: z.preprocess(
+    emptyToUndefined,
+    z.enum(['development', 'production', 'test']).default('development'),
+  ),
+  PORT: z.preprocess(emptyToUndefined, z.string().transform(Number).default('3001')),
+  LOG_LEVEL: z.preprocess(emptyToUndefined, z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info')),
 
   // Supabase
   SUPABASE_URL: z.string().url('SUPABASE_URL must be a valid URL'),
@@ -20,29 +29,29 @@ const envSchema = z.object({
   SUPABASE_ANON_KEY: z.string().min(1, 'SUPABASE_ANON_KEY is required'),
 
   // CORS
-  FRONTEND_URL: z.string().url().optional(),
-  VERCEL_PREVIEW_URLS: z.string().optional(),
+  FRONTEND_URL: z.preprocess(emptyToUndefined, z.string().url().optional()),
+  VERCEL_PREVIEW_URLS: z.preprocess(emptyToUndefined, z.string().optional()),
 
   // Redis (optional - for caching)
-  REDIS_URL: z.string().url().optional(),
+  REDIS_URL: z.preprocess(emptyToUndefined, z.string().url().optional()),
 
   // AI (optional - for AI features)
-  GOOGLE_AI_API_KEY: z.string().optional(),
+  GOOGLE_AI_API_KEY: z.preprocess(emptyToUndefined, z.string().optional()),
 
   // Sentry (optional - for error tracking)
-  SENTRY_DSN: z.string().url().optional(),
-  SENTRY_ENVIRONMENT: z.string().optional(),
-  SENTRY_RELEASE: z.string().optional(),
-  SENTRY_TRACES_SAMPLE_RATE: z.string().optional(),
+  SENTRY_DSN: z.preprocess(emptyToUndefined, z.string().url().optional()),
+  SENTRY_ENVIRONMENT: z.preprocess(emptyToUndefined, z.string().optional()),
+  SENTRY_RELEASE: z.preprocess(emptyToUndefined, z.string().optional()),
+  SENTRY_TRACES_SAMPLE_RATE: z.preprocess(emptyToUndefined, z.string().optional()),
 
   // Storage
-  REPORTS_BUCKET: z.string().default('reports'),
+  REPORTS_BUCKET: z.preprocess(emptyToUndefined, z.string().default('reports')),
 
   // AI — alternative key name used from ai.ts
-  GEMINI_API_KEY: z.string().optional(),
+  GEMINI_API_KEY: z.preprocess(emptyToUndefined, z.string().optional()),
 
   // Session
-  SESSION_STORAGE: z.enum(['auto', 'memory', 'redis']).default('auto'),
+  SESSION_STORAGE: z.preprocess(emptyToUndefined, z.enum(['auto', 'memory', 'redis']).default('auto')),
 });
 
 export type Env = z.infer<typeof envSchema>;

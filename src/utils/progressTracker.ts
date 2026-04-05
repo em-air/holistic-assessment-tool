@@ -93,6 +93,7 @@ export const MIND_QUIZZES = [
 // Oral language section quiz configurations
 export const ORAL_QUIZZES = [
   { id: 'oral-language-reading', name: 'Reading', subcategory: 'oral-language', route: '/reading-assessment' },
+  { id: 'oral-language-vocabulary', name: 'Vocabulary', subcategory: 'oral-language', route: '/oral-language' },
   { id: 'oral-language-sentence-building', name: 'Sentence Building', subcategory: 'oral-language', route: '/oral-language' },
   { id: 'oral-language-story-sequencing', name: 'Story Sequencing', subcategory: 'oral-language', route: '/oral-language' },
   { id: 'story-retell', name: 'Story Retell', subcategory: 'oral-language', route: '/story-retell' },
