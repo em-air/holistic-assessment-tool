@@ -37,7 +37,7 @@ const SentenceBuildingQuiz: React.FC = () => {
       const percentage = Math.round((score / questions.length) * 100);
 
       ProgressTracker.saveQuizResult({
-        quizId: `oral-language-sentence-building-grade-${grade}`,
+        quizId: 'oral-language-sentence-building',
         quizName: `Sentence Building - Grade ${grade}`,
         category: 'oral',
         subcategory: 'oral-language',
