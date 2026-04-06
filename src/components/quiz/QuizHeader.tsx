@@ -64,8 +64,7 @@ export const QuizHeader = ({
             {showReset && onReset ? (
                 <motion.button
                     onClick={onReset}
-                    className={`group relative px-4 py-2 bg-gradient-to-r ${gradientColors} text-white rounded-full font-medium overflow-hidden transition-all duration-300 ease-out hover:shadow-lg`}
-                    whileHover={{ scale: 1.02 }}
+                    className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-full font-semibold shadow-md hover:shadow-lg transition-all"
                     whileTap={{ scale: 0.98 }}
                 >
                     <span className="flex items-center gap-2">

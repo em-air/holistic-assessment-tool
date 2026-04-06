@@ -341,7 +341,7 @@ const MemoryQuiz: React.FC = () => {
                 </button>
                 <button
                   onClick={() => navigate(ROUTES.ATTENTION_QUIZ_FLAT, { replace: true })}
-                  className="px-8 py-3 bg-gradient-to-r from-stone-500 to-stone-600 text-white rounded-full font-bold hover:shadow-lg transition-all duration-300"
+                  className="px-8 py-3 bg-stone-600 hover:bg-stone-700 text-white rounded-full font-bold shadow-sm transition-all duration-300"
                 >
                   Back to Selection
                 </button>

@@ -31,7 +31,14 @@ const CategoriesPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-emerald-500 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 relative overflow-hidden">
+      {/* Floating Background Shapes */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+        <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 -left-16 w-72 h-72 bg-teal-300/15 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 right-1/4 w-56 h-56 bg-emerald-300/10 rounded-full blur-3xl" />
+      </div>
+
       {/* Top Navigation Bar */}
       <nav className="relative z-50 bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -156,11 +163,11 @@ const CategoriesPage: React.FC = () => {
 
               {/* Stats Cards */}
               <div className="hidden md:flex space-x-4">
-                <div className="bg-white rounded-xl p-4 shadow-card border border-slate-100 text-center min-w-[100px]">
+                <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 shadow-card border border-white/40 text-center min-w-[100px]">
                   <div className="text-2xl font-medium text-emerald-600">{assessmentCategories.length}</div>
                   <div className="text-xs text-gray-600">Categories</div>
                 </div>
-                <div className="bg-white rounded-xl p-4 shadow-card border border-slate-100 text-center min-w-[100px]">
+                <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 shadow-card border border-white/40 text-center min-w-[100px]">
                   <div className="text-2xl font-medium text-green-600">12</div>
                   <div className="text-xs text-gray-600">Completed</div>
                 </div>
@@ -196,7 +203,7 @@ const CategoriesPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.4 }}
           >
-            <div className="bg-white rounded-xl p-6 shadow-card border border-slate-100">
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 shadow-card border border-white/40">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -208,7 +215,7 @@ const CategoriesPage: React.FC = () => {
               <p className="text-gray-600 text-sm">Monitor your learning journey with detailed analytics and progress reports.</p>
             </div>
 
-            <div className="bg-white rounded-xl p-6 shadow-card border border-slate-100">
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 shadow-card border border-white/40">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -153,7 +153,7 @@ const CriticalThinkingPage: React.FC = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(quiz.route)}
-                className={`w-full py-4 bg-gradient-to-r ${quiz.color} text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-card transition-all duration-300`}
+                className="w-full py-4 bg-violet-600 hover:bg-violet-700 text-white rounded-2xl font-bold text-lg shadow-sm transition-all duration-300"
               >
                 Start {quiz.title}
               </motion.button>

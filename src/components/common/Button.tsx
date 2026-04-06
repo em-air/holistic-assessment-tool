@@ -10,9 +10,9 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles = {
-    primary: 'bg-violet-600 text-white hover:bg-violet-700 shadow-sm hover:shadow-md',
-    secondary: 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shadow-sm',
-    danger: 'bg-red-600 text-white hover:bg-red-700 shadow-sm',
+    primary: 'bg-violet-600 text-white hover:bg-violet-700 shadow-md hover:shadow-lg',
+    secondary: 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shadow-sm hover:shadow-md',
+    danger: 'bg-red-600 text-white hover:bg-red-700 shadow-md hover:shadow-lg',
     ghost: 'text-slate-600 hover:text-slate-800 hover:bg-white/50',
 };
 

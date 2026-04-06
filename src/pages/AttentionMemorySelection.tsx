@@ -119,7 +119,7 @@ const AttentionMemorySelection: React.FC = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(option.route)}
-                className={`w-full px-4 py-3 bg-gradient-to-r ${option.color} text-white font-semibold rounded-xl shadow-lg hover:shadow-card transition-all duration-200`}
+                className="w-full px-4 py-3 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-xl shadow-sm transition-all duration-200"
               >
                 Start Quiz
               </motion.button>

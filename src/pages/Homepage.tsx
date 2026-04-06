@@ -32,7 +32,15 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-emerald-500 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 relative overflow-hidden">
+      {/* Floating Background Shapes */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+        <div className="absolute -top-20 -left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 -right-16 w-96 h-96 bg-teal-300/15 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 left-1/4 w-64 h-64 bg-emerald-300/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
+      </div>
+
       {/* Navigation Bar */}
       <nav className="relative z-20 bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -134,7 +142,7 @@ const HomePage: React.FC = () => {
         <div className="max-w-6xl mx-auto">
           {/* Hero Card */}
           <motion.div
-            className="bg-white rounded-2xl shadow-elevated p-8 md:p-12 mb-8 border border-slate-100"
+            className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-elevated p-8 md:p-12 mb-8 border border-white/40"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
@@ -195,7 +203,7 @@ const HomePage: React.FC = () => {
               >
                 <motion.button
                   onClick={() => navigate(ROUTES.CATEGORIES)}
-                  className="group relative bg-emerald-600 text-white px-8 py-4 rounded-xl text-lg font-medium shadow-sm hover:bg-emerald-700 hover:shadow-md transition-all duration-200"
+                  className="group relative bg-emerald-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:bg-emerald-700 hover:shadow-xl transition-all duration-200"
                   whileHover={{}}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -256,7 +264,7 @@ const HomePage: React.FC = () => {
               ].map((stat, index) => (
                 <motion.div
                   key={index}
-                  className="bg-white rounded-xl p-4 md:p-6 text-center border border-slate-100 shadow-card hover:shadow-card-hover transition-shadow duration-200"
+                  className="bg-white/70 backdrop-blur-sm rounded-xl p-4 md:p-6 text-center border border-white/40 shadow-card hover:shadow-card-hover transition-shadow duration-200"
                 >
                   <div className={`w-10 h-10 mx-auto mb-3 ${stat.color} rounded-xl flex items-center justify-center`}>
                     <span className="text-white text-lg">{stat.icon}</span>
@@ -307,7 +315,7 @@ const HomePage: React.FC = () => {
               ].map((feature, index) => (
                 <div
                   key={index}
-                  className={`${feature.bg} rounded-xl p-6 border border-slate-100 text-center shadow-card hover:shadow-card-hover transition-shadow duration-200`}
+                  className={`${feature.bg}/70 backdrop-blur-sm rounded-xl p-6 border border-white/40 text-center shadow-card hover:shadow-card-hover transition-shadow duration-200`}
                 >
                   <div
                     className={`w-16 h-16 mx-auto mb-4 ${feature.iconBg} rounded-xl flex items-center justify-center`}
@@ -342,7 +350,7 @@ const HomePage: React.FC = () => {
               ].map((badge, index) => (
                 <div
                   key={index}
-                  className="bg-white px-6 py-3 rounded-full border border-slate-100 shadow-card"
+                  className="bg-white/70 backdrop-blur-sm px-6 py-3 rounded-full border border-white/40 shadow-card"
                 >
                   <span
                     className={`${badge.color} font-medium text-sm md:text-base flex items-center gap-2`}

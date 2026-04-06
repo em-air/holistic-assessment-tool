@@ -17,28 +17,28 @@ const oralLanguageCategories: Omit<QuizCategory, 'questions'>[] = [
     title: { en: 'Vocabulary', ar: 'المفردات' },
     description: { en: 'Learn new words with pictures', ar: 'تعلم كلمات جديدة مع الصور' },
     icon: '📖',
-    color: 'bg-gradient-to-br from-blue-500 to-blue-700',
+    color: 'bg-blue-600',
   },
   {
     id: 'sentence-building',
     title: { en: 'Sentence Building', ar: 'بناء الجمل' },
     description: { en: 'Build sentences from pictures', ar: 'ابنِ جمل من الصور' },
     icon: '✍️',
-    color: 'bg-gradient-to-br from-green-500 to-green-700',
+    color: 'bg-green-600',
   },
   {
     id: 'storytelling',
     title: { en: 'Story Sequencing', ar: 'تسلسل القصص' },
     description: { en: 'Put stories in order', ar: 'رتب القصص' },
     icon: '📚',
-    color: 'bg-gradient-to-br from-purple-500 to-purple-700',
+    color: 'bg-purple-600',
   },
   {
     id: 'story-retell',
     title: { en: 'Story Retell', ar: 'إعادة سرد القصة' },
     description: { en: 'Retell a story', ar: 'أعد سرد القصة' },
     icon: '🎭',
-    color: 'bg-gradient-to-br from-orange-500 to-orange-700',
+    color: 'bg-orange-600',
   },
 ];
 

@@ -101,7 +101,7 @@ const OralLanguageSelection: React.FC = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`w-full bg-gradient-to-r ${option.color} text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300`}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold shadow-sm transition-all duration-300"
               >
                 Start Assessment
               </motion.button>

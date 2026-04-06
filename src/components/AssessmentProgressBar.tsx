@@ -211,7 +211,7 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
           </p>
           <button
             onClick={() => navigate(ROUTES.AUTH)}
-            className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg"
+            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors duration-200 shadow-sm"
           >
             Sign In / Register
           </button>
@@ -440,10 +440,10 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
             animate={{ opacity: 1, y: 0 }}
             onClick={handleGenerateReport}
             disabled={isGeneratingReport}
-            className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed ${
+            className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-colors duration-200 flex items-center justify-center space-x-2 shadow-sm disabled:opacity-70 disabled:cursor-not-allowed ${
               overallPct === 100
-                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700'
-                : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700'
+                ? 'bg-green-600 hover:bg-green-700 text-white'
+                : 'bg-violet-600 hover:bg-violet-700 text-white'
             }`}
           >
             {isGeneratingReport ? (

@@ -68,11 +68,9 @@ export const LoginForm = ({
             <motion.button
                 type="submit"
                 disabled={isLoading}
-                className="group relative w-full px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-medium shadow-lg overflow-hidden transition-all duration-300 ease-out hover:shadow-xl hover:shadow-violet-500/25 transform hover:scale-105 hover:-translate-y-1 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
-                whileHover={!isLoading ? { scale: 1.02 } : {}}
+                className="w-full px-8 py-4 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                 whileTap={!isLoading ? { scale: 0.98 } : {}}
             >
-                <div className="absolute inset-0 bg-gradient-to-r from-violet-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <div className="relative flex items-center justify-center space-x-2">
                     {isLoading ? (
                         <>

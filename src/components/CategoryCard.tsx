@@ -22,17 +22,17 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
 
   const getCardBgColor = (color: string, blocked: boolean = false) => {
     if (blocked) {
-      return 'bg-gray-100 border border-gray-300 opacity-60';
+      return 'bg-gray-100/80 border border-gray-300 opacity-60';
     }
     switch (color) {
       case 'mind':
-        return 'bg-purple-50 hover:bg-purple-100 border border-purple-200 hover:border-purple-300';
+        return 'bg-white/70 backdrop-blur-sm hover:bg-white/85 border border-white/40 hover:border-purple-200';
       case 'oral':
-        return 'bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 hover:border-emerald-300';
+        return 'bg-white/70 backdrop-blur-sm hover:bg-white/85 border border-white/40 hover:border-emerald-200';
       case 'academic':
-        return 'bg-orange-50 hover:bg-orange-100 border border-orange-200 hover:border-orange-300';
+        return 'bg-white/70 backdrop-blur-sm hover:bg-white/85 border border-white/40 hover:border-orange-200';
       default:
-        return 'bg-blue-50 hover:bg-blue-100 border border-blue-200 hover:border-blue-300';
+        return 'bg-white/70 backdrop-blur-sm hover:bg-white/85 border border-white/40 hover:border-blue-200';
     }
   };
 
@@ -188,7 +188,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
         <button
           onClick={handleStartAssessment}
           disabled={isBlocked}
-          className={`group/btn relative w-full ${isBlocked ? 'bg-gray-400 cursor-not-allowed' : getButtonColor(category.color)} text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 shadow-sm ${!isBlocked && 'hover:shadow-md'} text-sm overflow-hidden`}
+          className={`group/btn relative w-full ${isBlocked ? 'bg-gray-400 cursor-not-allowed' : getButtonColor(category.color)} text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-md ${!isBlocked && 'hover:shadow-lg hover:brightness-110'} text-sm overflow-hidden`}
         >
           <div className="flex items-center justify-center space-x-2">
             {isBlocked ? (
