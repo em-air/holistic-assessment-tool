@@ -535,7 +535,8 @@ Please respond with a JSON object in this exact format:
       evaluation,
     });
   } catch (error) {
-    logger.error(error, 'Error evaluating writing:');
+    const errMsg = error instanceof Error ? error.message : String(error);
+    logger.error({ err: error, errorMessage: errMsg }, 'Error evaluating writing — returning fallback');
 
     // Return fallback evaluation
     const grade = req.body?.grade || 4;

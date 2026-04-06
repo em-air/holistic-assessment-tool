@@ -78,6 +78,9 @@ export async function evaluateWritingWithGemini(
     const data = await response.json();
     
     if (data.success && data.evaluation) {
+      if (data.fallback) {
+        logger.warn('AI evaluation returned fallback — GEMINI_API_KEY may not be configured on the server');
+      }
       return data.evaluation;
     }
 
