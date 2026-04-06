@@ -10,9 +10,9 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles = {
-    primary: 'bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:from-violet-700 hover:to-purple-700 shadow-lg hover:shadow-xl hover:shadow-violet-500/25',
+    primary: 'bg-violet-600 text-white hover:bg-violet-700 shadow-sm hover:shadow-md',
     secondary: 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shadow-sm',
-    danger: 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 shadow-lg',
+    danger: 'bg-red-600 text-white hover:bg-red-700 shadow-sm',
     ghost: 'text-slate-600 hover:text-slate-800 hover:bg-white/50',
 };
 
@@ -48,7 +48,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           ${sizeStyles[size]}
           ${className}
         `}
-                whileHover={!disabled && !isLoading ? { scale: 1.02 } : {}}
+                whileHover={!disabled && !isLoading ? {} : {}}
                 whileTap={!disabled && !isLoading ? { scale: 0.98 } : {}}
                 {...props}
             >

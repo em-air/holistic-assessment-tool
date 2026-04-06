@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Lock } from 'lucide-react';
-import FloatingBackground from '../components/FloatingBackground';
 import { useAuth } from '../contexts/AuthContext';
 import { getNumericGrade, canAccessQuizGrade } from '../utils/gradeUtils';
 import { ROUTES, startingEndingSoundGradeRoute, categoryRoute } from '../routes';
@@ -58,14 +57,13 @@ const StartingEndingSoundGradeSelector: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-purple-100 relative overflow-hidden">
-      <FloatingBackground />
+    <div className="min-h-screen bg-slate-50 relative overflow-hidden">
 
       {/* Header with back button */}
       <div className="absolute top-4 left-4 z-20">
         <button
           onClick={() => navigate(categoryRoute('oral-skills'))}
-          className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
+          className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
         >
           <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
           <span className="font-medium">back</span>
@@ -108,7 +106,7 @@ const StartingEndingSoundGradeSelector: React.FC = () => {
                   className={`group transform transition-all duration-300 ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-105'}`}
                   onClick={() => handleGradeSelect(gradeInfo.grade)}
                 >
-                  <div className={`bg-white rounded-3xl shadow-lg p-6 h-full border-2 transition-all duration-300 relative overflow-hidden ${locked ? 'border-gray-200' : 'border-transparent group-hover:border-blue-300'}`}>
+                  <div className={`bg-white rounded-xl shadow-lg p-6 h-full border-2 transition-all duration-300 relative overflow-hidden ${locked ? 'border-gray-200' : 'border-transparent group-hover:border-blue-300'}`}>
                     {/* Lock Icon */}
                     {locked && (
                       <div className="absolute top-3 right-3 bg-gray-500 text-white p-1.5 rounded-full z-20">
@@ -157,7 +155,7 @@ const StartingEndingSoundGradeSelector: React.FC = () => {
 
           {/* Footer Info */}
           <div className="text-center mt-12">
-            <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 max-w-2xl mx-auto">
+            <div className="bg-white rounded-2xl p-6 max-w-2xl mx-auto">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">How to Play</h3>
               <p className="text-gray-600 text-sm">
                 Listen to the word, look at the picture, and identify the beginning or ending sound.

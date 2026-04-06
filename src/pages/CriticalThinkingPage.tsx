@@ -46,7 +46,7 @@ const CriticalThinkingPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-400 via-purple-500 to-pink-500 py-8">
+    <div className="min-h-screen bg-purple-50 py-8">
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -77,7 +77,7 @@ const CriticalThinkingPage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl mb-8 text-center"
+          className="bg-white rounded-xl p-8 shadow-card mb-8 text-center"
         >
           <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
             <Brain size={36} className="text-white" />
@@ -100,7 +100,7 @@ const CriticalThinkingPage: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.2 }}
               whileHover={{ y: -5 }}
-              className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-300"
+              className="bg-white rounded-xl p-8 shadow-card hover:shadow-card transition-all duration-300"
             >
               {/* Quiz Icon & Title */}
               <div className="text-center mb-6">
@@ -153,7 +153,7 @@ const CriticalThinkingPage: React.FC = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(quiz.route)}
-                className={`w-full py-4 bg-gradient-to-r ${quiz.color} text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300`}
+                className={`w-full py-4 bg-gradient-to-r ${quiz.color} text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-card transition-all duration-300`}
               >
                 Start {quiz.title}
               </motion.button>
@@ -168,7 +168,7 @@ const CriticalThinkingPage: React.FC = () => {
           transition={{ delay: 0.6 }}
           className="mt-8 text-center"
         >
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl p-6 shadow-lg max-w-2xl mx-auto">
             <h3 className="text-lg font-bold text-gray-800 mb-2">💡 Pro Tip</h3>
             <p className="text-gray-600 text-sm">
               Start with Grade 1 if you're new to these types of puzzles, or jump to your grade level for an appropriate challenge.

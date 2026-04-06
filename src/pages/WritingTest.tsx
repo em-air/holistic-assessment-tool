@@ -133,7 +133,7 @@ const WritingTest: React.FC = () => {
 
   if (!gradeData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">✍️</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Loading Writing Assessment...</h2>
@@ -150,7 +150,7 @@ const WritingTest: React.FC = () => {
 
   if (showTopicSelection) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 p-6">
+      <div className="min-h-screen bg-slate-50 p-6">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <motion.div
@@ -224,7 +224,7 @@ const WritingTest: React.FC = () => {
   // Show AI evaluation loading screen
   if (isEvaluating) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 p-6 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 p-6 flex items-center justify-center">
         <motion.div 
           className="text-center max-w-md mx-auto"
           initial={{ opacity: 0, scale: 0.8 }}
@@ -299,7 +299,7 @@ const WritingTest: React.FC = () => {
 
   if (evaluation) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 p-6">
+      <div className="min-h-screen bg-slate-50 p-6">
         <div className="max-w-4xl mx-auto">
           {/* Results Header */}
           <motion.div
@@ -483,7 +483,7 @@ const WritingTest: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 p-6">
+    <div className="min-h-screen bg-slate-50 p-6">
       <div className="max-w-4xl mx-auto">
         {/* Writing Interface Header */}
         <motion.div

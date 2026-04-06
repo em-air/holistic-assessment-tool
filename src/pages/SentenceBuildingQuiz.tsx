@@ -104,14 +104,14 @@ const SentenceBuildingQuiz: React.FC = () => {
   // Results screen
   if (showResults) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-teal-500 py-8">
+      <div className="min-h-screen bg-emerald-50 py-8">
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center max-w-2xl mx-auto"
           >
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
+            <div className="bg-white rounded-xl p-8 shadow-card border border-slate-100">
               <Star className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
               <h2 className="text-3xl font-bold text-stone-800 mb-2">Quiz Complete!</h2>
               <p className="text-stone-500 mb-6">Sentence Building — {gradeData?.title}</p>
@@ -160,7 +160,7 @@ const SentenceBuildingQuiz: React.FC = () => {
 
   // Question screen
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 py-8">
+    <div className="min-h-screen bg-purple-50 py-8">
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -202,7 +202,7 @@ const SentenceBuildingQuiz: React.FC = () => {
           exit={{ opacity: 0, x: -20 }}
           className="max-w-4xl mx-auto"
         >
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20 mb-6 relative">
+          <div className="bg-white rounded-xl p-8 shadow-card border border-slate-100 mb-6 relative">
             {/* Question */}
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-stone-800 mb-4">

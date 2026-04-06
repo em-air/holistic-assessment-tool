@@ -70,7 +70,7 @@ export const QuizResultsScreen = ({
         <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/50 max-w-md w-full text-center mx-auto"
+            className="bg-white rounded-xl p-8 shadow-card border border-slate-100 max-w-md w-full text-center mx-auto"
         >
             {/* Celebration Emoji */}
             <motion.div

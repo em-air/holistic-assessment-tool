@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import QuestionCard from '../components/QuestionCard';
 import ResultScreen from '../components/ResultScreen';
-import FloatingBackground from '../components/FloatingBackground';
-import { 
+import {
   quizQuestions, 
   learningStyles, 
   quizTexts, 
@@ -159,9 +158,7 @@ const LearningStylesQuiz: React.FC = () => {
   }, [currentQuestionIndex, currentAnswer]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
-      <FloatingBackground />
-      
+    <div className="min-h-screen bg-slate-50 relative overflow-hidden">
       <div className="relative z-10 container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
@@ -247,7 +244,7 @@ const LearningStylesQuiz: React.FC = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={startQuiz}
-                  className="px-12 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xl font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="px-12 py-4 bg-blue-600 text-white text-xl font-bold rounded-2xl shadow-lg hover:bg-blue-700 hover:shadow-card transition-all duration-300"
                 >
                   {quizTexts.startButton[language]} ✨
                 </motion.button>
@@ -287,7 +284,7 @@ const LearningStylesQuiz: React.FC = () => {
                   className={`
                     px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300
                     ${selectedOption
-                      ? 'bg-gradient-to-r from-green-500 to-blue-500 text-white shadow-lg hover:shadow-xl'
+                      ? 'bg-gradient-to-r from-green-500 to-blue-500 text-white shadow-lg hover:shadow-card'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }
                   `}

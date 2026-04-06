@@ -52,7 +52,7 @@ const OralLanguageSelection: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12">
+    <div className="min-h-screen bg-slate-50 py-12">
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Header */}
         <motion.div
@@ -79,7 +79,7 @@ const OralLanguageSelection: React.FC = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => handleOptionClick(option)}
-              className="bg-white rounded-2xl shadow-xl p-8 cursor-pointer hover:shadow-2xl transition-all duration-300 border-2 border-gray-100"
+              className="bg-white rounded-2xl shadow-card p-8 cursor-pointer hover:shadow-card transition-all duration-300 border-2 border-gray-100"
             >
               {/* Icon & Title */}
               <div className="text-center mb-6">

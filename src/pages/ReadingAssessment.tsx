@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, MicOff, Clock, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
-import FloatingBackground from '../components/FloatingBackground';
 import { logger } from '../utils/logger';
 import { ROUTES, categoryRoute } from '../routes';
 import { ProgressTracker } from '../utils/progressTracker';
@@ -507,13 +506,12 @@ const ReadingAssessment: React.FC = () => {
 
   if (showResults && results) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 relative overflow-hidden">
-        <FloatingBackground />
+      <div className="min-h-screen bg-emerald-500 relative overflow-hidden">
         
         <div className="relative z-10 p-6">
           <button
             onClick={() => navigate(categoryRoute(categoryId!))}
-            className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
+            className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 px-4 py-2 rounded-lg transition-colors duration-200"
           >
             <ArrowLeft size={20} />
             <span>Back to Category</span>
@@ -524,7 +522,7 @@ const ReadingAssessment: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-2xl mx-auto bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/50"
+            className="max-w-2xl mx-auto bg-white rounded-2xl p-8 shadow-card border border-slate-100"
           >
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -595,13 +593,12 @@ const ReadingAssessment: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 relative overflow-hidden">
-      <FloatingBackground />
-      
+    <div className="min-h-screen bg-emerald-500 relative overflow-hidden">
+
       <div className="relative z-10 p-6">
         <button
           onClick={() => navigate(categoryRoute(categoryId!))}
-          className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
+          className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 px-4 py-2 rounded-lg transition-colors duration-200"
         >
           <ArrowLeft size={20} />
           <span>Back to Category</span>
@@ -628,7 +625,7 @@ const ReadingAssessment: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/50"
+              className="bg-white rounded-2xl p-8 shadow-card border border-slate-100"
             >
               <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Setup Your Assessment</h2>
               
@@ -687,7 +684,7 @@ const ReadingAssessment: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/50 text-center"
+              className="bg-white rounded-2xl p-8 shadow-card border border-slate-100 text-center"
             >
               <h2 className="text-3xl font-bold text-gray-800 mb-6">Ready to Start?</h2>
               
@@ -722,7 +719,7 @@ const ReadingAssessment: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-white/95 backdrop-blur-sm rounded-2xl p-16 shadow-xl border border-white/50 text-center"
+              className="bg-white rounded-2xl p-16 shadow-card border border-slate-100 text-center"
             >
               <h2 className="text-2xl font-bold text-gray-800 mb-8">Get Ready!</h2>
               <motion.div
@@ -744,7 +741,7 @@ const ReadingAssessment: React.FC = () => {
               className="space-y-6"
             >
               {/* Timer and Status */}
-              <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/50">
+              <div className="bg-white rounded-2xl p-6 shadow-card border border-slate-100">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     {isRecording ? (
@@ -776,7 +773,7 @@ const ReadingAssessment: React.FC = () => {
               {/* Side-by-side Reading Text and Transcript */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Reading Text */}
-                <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/50">
+                <div className="bg-white rounded-2xl p-6 shadow-card border border-slate-100">
                   <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2">
                     <BookOpen className="w-5 h-5 text-emerald-600" />
                     <span>Read this text aloud</span>
@@ -790,7 +787,7 @@ const ReadingAssessment: React.FC = () => {
                 </div>
 
                 {/* Transcript */}
-                <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/50">
+                <div className="bg-white rounded-2xl p-6 shadow-card border border-slate-100">
                   <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2">
                     <span className={isRecording ? "text-red-600" : "text-gray-600"}>🎤</span>
                     <span>Speech Recognition</span>

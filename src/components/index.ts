@@ -11,7 +11,6 @@ export * from './auth';
 export * from './quiz';
 
 // Re-export individual components that haven't been moved yet
-export { default as FloatingBackground } from './FloatingBackground';
 export { default as NavigationBar } from './NavigationBar';
 export { default as ResultScreen } from './ResultScreen';
 export { default as CategoryCard } from './CategoryCard';

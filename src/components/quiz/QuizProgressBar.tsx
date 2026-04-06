@@ -29,7 +29,7 @@ export const QuizProgressBar = ({
             )}
             <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
                 <motion.div
-                    className="h-full bg-gradient-to-r from-violet-500 to-purple-500 rounded-full"
+                    className="h-full bg-violet-500 rounded-full"
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
                     transition={{ duration: 0.5, ease: 'easeOut' }}

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, FileText, Clock, Users, BookOpen } from 'lucide-react';
 import { generateAssessmentWithGemini } from '../utils/assessmentApi';
-import FloatingBackground from '../components/FloatingBackground';
 import { ROUTES } from '../routes';
 
 interface AssessmentForm {
@@ -75,15 +74,12 @@ const AssessmentGenerator: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 relative overflow-hidden">
-      {/* Background Elements */}
-      <FloatingBackground />
-
+    <div className="min-h-screen bg-emerald-500 relative overflow-hidden">
       {/* Navigation */}
       <div className="relative z-10 p-6">
         <button
           onClick={() => navigate(ROUTES.CATEGORY_ACADEMIC_SKILLS)}
-          className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
+          className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 px-4 py-2 rounded-lg transition-colors duration-200"
         >
           <ArrowLeft size={20} />
           <span>Back</span>
@@ -105,7 +101,7 @@ const AssessmentGenerator: React.FC = () => {
 
           <div className="grid grid-cols-1 gap-8">
             {/* Single Column Form Layout */}
-            <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl max-w-4xl mx-auto w-full">
+            <div className="bg-white rounded-2xl p-8 shadow-card max-w-4xl mx-auto w-full">
               <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center flex items-center justify-center">
                 <FileText className="mr-3 text-emerald-600" size={32} />
                 Assessment Generator
@@ -288,19 +284,19 @@ const AssessmentGenerator: React.FC = () => {
 
           {/* Features */}
           <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl p-6 shadow-lg text-center">
+            <div className="bg-white/90 rounded-xl p-6 shadow-lg text-center">
               <Clock className="mx-auto h-12 w-12 text-emerald-600 mb-4" />
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Flexible Duration</h3>
               <p className="text-gray-600 text-sm">Set assessment duration from 10 to 90 minutes based on your needs</p>
             </div>
             
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl p-6 shadow-lg text-center">
+            <div className="bg-white/90 rounded-xl p-6 shadow-lg text-center">
               <Users className="mx-auto h-12 w-12 text-emerald-600 mb-4" />
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Grade Adaptive</h3>
               <p className="text-gray-600 text-sm">Supports grades 1-12 with curriculum-specific content</p>
             </div>
             
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl p-6 shadow-lg text-center">
+            <div className="bg-white/90 rounded-xl p-6 shadow-lg text-center">
               <BookOpen className="mx-auto h-12 w-12 text-emerald-600 mb-4" />
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Topic Focused</h3>
               <p className="text-gray-600 text-sm">Generate assessments for specific topics or comprehensive coverage</p>

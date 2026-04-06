@@ -19,16 +19,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                         )}
                     </label>
                 )}
-                <motion.input
+                <input
                     ref={ref}
                     className={`
-            w-full px-4 py-3 border rounded-xl 
+            w-full px-4 py-3 border rounded-lg 
             focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 
-            transition-all duration-300 text-slate-800 placeholder-slate-400
-            ${error ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-white/50'}
+            transition-colors duration-200 text-slate-800 placeholder-slate-400
+            ${error ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-white'}
             ${className}
           `}
-                    whileFocus={{ scale: 1.02 }}
                     {...props}
                 />
                 {error && (

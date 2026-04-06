@@ -267,7 +267,7 @@ const OralLanguageQuiz: React.FC = () => {
   // Loading or no category — show spinner (selection page is no longer needed)
   if (!selectedCategory) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-300 via-purple-400 to-pink-500 flex items-center justify-center">
+      <div className="min-h-screen bg-purple-50 flex items-center justify-center">
         <div className="text-center text-white">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mx-auto mb-4"></div>
           <p className="text-lg font-medium">Loading quiz...</p>
@@ -282,14 +282,14 @@ const OralLanguageQuiz: React.FC = () => {
     const categoryScore = quizScores[selectedCategory.id];
     
     return (
-      <div className={`min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-teal-500 py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+      <div className={`min-h-screen bg-emerald-50 py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center max-w-2xl mx-auto"
           >
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
+            <div className="bg-white rounded-2xl p-8 shadow-card border border-slate-100">
               <Star className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
               <h2 className="text-3xl font-bold text-stone-800 mb-4">{t.complete}</h2>
               
@@ -333,10 +333,10 @@ const OralLanguageQuiz: React.FC = () => {
   // No questions loaded - show error state
   if (!selectedCategory.questions || selectedCategory.questions.length === 0) {
     return (
-      <div className={`min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+      <div className={`min-h-screen bg-purple-50 py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-2xl mx-auto text-center">
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
+            <div className="bg-white rounded-2xl p-8 shadow-card border border-slate-100">
               <h2 className="text-2xl font-bold text-stone-800 mb-4">
                 Unable to Load Questions
               </h2>
@@ -358,7 +358,7 @@ const OralLanguageQuiz: React.FC = () => {
 
   // Quiz Question Screen
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+    <div className={`min-h-screen bg-purple-50 py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -391,7 +391,7 @@ const OralLanguageQuiz: React.FC = () => {
             exit={{ opacity: 0, x: -20 }}
             className="max-w-4xl mx-auto"
           >
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20 mb-6">
+            <div className="bg-white rounded-2xl p-8 shadow-card border border-slate-100 mb-6">
               {/* Question */}
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold text-stone-800 mb-4">

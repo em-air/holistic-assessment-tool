@@ -35,12 +35,12 @@ export const QuizCompletion = ({
     const { grade, emoji, color } = getGrade();
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-violet-50 to-purple-100 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-violet-50 flex items-center justify-center p-4">
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
-                className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center"
+                className="bg-white rounded-xl shadow-card p-8 max-w-md w-full text-center"
             >
                 {/* Celebration emoji */}
                 <motion.div
@@ -70,7 +70,7 @@ export const QuizCompletion = ({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.4 }}
-                    className="bg-gradient-to-r from-violet-100 to-purple-100 rounded-2xl p-6 mb-8"
+                    className="bg-violet-50 rounded-xl p-6 mb-8"
                 >
                     <div className="text-5xl font-bold text-violet-600 mb-2">
                         {score}/{totalQuestions}
@@ -132,7 +132,7 @@ export const QuizCompletion = ({
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={onRetry}
-                            className="w-full py-3 px-6 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all"
+                            className="w-full py-3 px-6 bg-violet-600 text-white font-medium rounded-lg shadow-sm hover:bg-violet-700 transition-colors"
                         >
                             🔄 Try Again
                         </motion.button>
@@ -143,7 +143,7 @@ export const QuizCompletion = ({
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => navigate(nextQuizPath)}
-                            className="w-full py-3 px-6 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all"
+                            className="w-full py-3 px-6 bg-emerald-600 text-white font-medium rounded-lg shadow-sm hover:bg-emerald-700 transition-colors"
                         >
                             ➡️ Next Quiz
                         </motion.button>
@@ -153,7 +153,7 @@ export const QuizCompletion = ({
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => navigate(categoryPath)}
-                        className="w-full py-3 px-6 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-all"
+                        className="w-full py-3 px-6 bg-slate-100 text-slate-700 font-medium rounded-lg hover:bg-slate-200 transition-colors"
                     >
                         📚 Back to Categories
                     </motion.button>

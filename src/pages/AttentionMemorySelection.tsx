@@ -45,7 +45,7 @@ const AttentionMemorySelection: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 py-8">
+    <div className="min-h-screen bg-purple-50 py-8">
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -88,7 +88,7 @@ const AttentionMemorySelection: React.FC = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+              className="bg-white rounded-2xl p-6 shadow-card hover:shadow-card transition-all duration-300 transform hover:scale-105"
             >
               {/* Icon and Title */}
               <div className="text-center mb-4">
@@ -119,7 +119,7 @@ const AttentionMemorySelection: React.FC = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(option.route)}
-                className={`w-full px-4 py-3 bg-gradient-to-r ${option.color} text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200`}
+                className={`w-full px-4 py-3 bg-gradient-to-r ${option.color} text-white font-semibold rounded-xl shadow-lg hover:shadow-card transition-all duration-200`}
               >
                 Start Quiz
               </motion.button>
@@ -132,7 +132,7 @@ const AttentionMemorySelection: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="max-w-4xl mx-auto mt-12 bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl"
+          className="max-w-4xl mx-auto mt-12 bg-white rounded-2xl p-8 shadow-card"
         >
           <div className="text-center">
             <h3 className="text-2xl font-bold text-gray-800 mb-4">

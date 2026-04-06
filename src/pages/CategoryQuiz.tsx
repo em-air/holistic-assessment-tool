@@ -209,15 +209,15 @@ const CategoryQuiz: React.FC = () => {
   // Grade Selection Screen
   if (!selectedGrade) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-400 via-teal-400 to-blue-500 py-8">
+      <div className="min-h-screen bg-emerald-50 py-8">
         <div className="container mx-auto px-4 max-w-4xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl"
+            className="bg-white rounded-xl p-8 shadow-card"
           >
             <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-3xl">🧺</span>
               </div>
               <h1 className="text-3xl font-bold text-gray-800 mb-2">Category Quiz</h1>
@@ -267,14 +267,14 @@ const CategoryQuiz: React.FC = () => {
     const performance = getPerformanceLevel();
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-400 via-blue-400 to-purple-500 py-8">
+      <div className="min-h-screen bg-emerald-50 py-8">
         <div className="container mx-auto px-4 max-w-4xl">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl text-center"
+            className="bg-white rounded-xl p-8 shadow-card text-center"
           >
-            <div className="w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-6">
               <Trophy size={36} className="text-white" />
             </div>
 
@@ -296,14 +296,14 @@ const CategoryQuiz: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={resetQuiz}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-green-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
               >
                 <RotateCcw size={20} />
                 Try Again
               </button>
               <button
                 onClick={() => setSelectedGrade(null)}
-                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+                className="px-6 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
               >
                 Change Grade
               </button>
@@ -322,7 +322,7 @@ const CategoryQuiz: React.FC = () => {
 
   // Quiz Screen
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-300 via-green-400 to-blue-500 py-8">
+    <div className="min-h-screen bg-emerald-50 py-8">
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -359,7 +359,7 @@ const CategoryQuiz: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl"
+            className="bg-white rounded-xl p-8 shadow-card"
           >
             {/* Instruction */}
             <div className="text-center mb-8">
@@ -492,7 +492,7 @@ const CategoryQuiz: React.FC = () => {
                   onClick={checkAnswers}
                   disabled={!allItemsPlaced || isChecking}
                   className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${allItemsPlaced && !isChecking
-                    ? 'bg-gradient-to-r from-teal-500 to-green-500 text-white hover:shadow-lg'
+                    ? 'bg-teal-500 text-white hover:shadow-lg'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                 >
@@ -522,7 +522,7 @@ const CategoryQuiz: React.FC = () => {
 
                   <button
                     onClick={handleNext}
-                    className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+                    className="px-8 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
                   >
                     {currentQuestionIndex < questions.length - 1 ? 'Next Challenge' : 'See Final Results'}
                   </button>

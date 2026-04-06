@@ -7,7 +7,6 @@ import { supabase } from '../supabase-client';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { ProgressTracker } from '../utils/progressTracker';
-import FloatingBackground from '../components/FloatingBackground';
 import { logger } from '../utils/logger';
 import { ROUTES, perceptionQuizSelectionRoute } from '../routes';
 
@@ -212,7 +211,7 @@ const LogicalSequencingQuiz: React.FC = () => {
 
   if (!currentQuestion) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 flex items-center justify-center">
+      <div className="min-h-screen bg-purple-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
           <p className="text-gray-600">Loading questions...</p>
@@ -225,14 +224,12 @@ const LogicalSequencingQuiz: React.FC = () => {
     const percentage = Math.round((score / questions.length) * 100);
     
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 relative overflow-hidden">
-        <FloatingBackground />
-        
+      <div className="min-h-screen bg-purple-50 relative overflow-hidden">
         <div className="flex items-center justify-center min-h-screen p-4">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center relative z-10"
+            className="bg-white rounded-xl shadow-card p-8 max-w-md w-full text-center relative z-10"
           >
             <div className="mb-6">
               {percentage >= 70 ? (
@@ -280,25 +277,23 @@ const LogicalSequencingQuiz: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 relative overflow-hidden">
-      <FloatingBackground />
-      
+    <div className="min-h-screen bg-purple-50 relative overflow-hidden">
       {/* Header */}
       <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-center">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg hover:bg-black/30 transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 text-white bg-black/20 rounded-lg hover:bg-black/30 transition-colors"
         >
           <ArrowLeft size={20} />
           <span className="font-medium">back</span>
         </button>
         
-        <div className="text-white text-center bg-black/20 backdrop-blur-sm rounded-lg px-4 py-2">
+        <div className="text-white text-center bg-black/20 rounded-lg px-4 py-2">
           <div className="text-sm opacity-90">Grade {grade} • Logical Sequencing</div>
           <div className="font-bold">Question {currentQuestionIndex + 1} of {questions.length}</div>
         </div>
         
-        <div className="text-white text-right bg-black/20 backdrop-blur-sm rounded-lg px-4 py-2">
+        <div className="text-white text-right bg-black/20 rounded-lg px-4 py-2">
           <div className="text-sm opacity-90">Score</div>
           <div className="font-bold">{score}/{questions.length}</div>
         </div>
@@ -311,7 +306,7 @@ const LogicalSequencingQuiz: React.FC = () => {
             key={currentQuestionIndex}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-3xl shadow-2xl p-8 mb-8"
+            className="bg-white rounded-xl shadow-card p-8 mb-8"
           >
             <div className="text-center mb-8">
               <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">

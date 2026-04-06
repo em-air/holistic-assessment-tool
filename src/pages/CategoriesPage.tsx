@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { LogOut, Shield, User } from 'lucide-react';
 import CategoryCard from '../components/CategoryCard';
 import { assessmentCategories } from '../data/assessmentData';
-import FloatingBackground from '../components/FloatingBackground';
 import { useAuth } from '../contexts/AuthContext';
 import { ROUTES } from '../routes';
 
@@ -32,10 +31,7 @@ const CategoriesPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <FloatingBackground />
-
+    <div className="min-h-screen bg-emerald-500 relative overflow-hidden">
       {/* Top Navigation Bar */}
       <nav className="relative z-50 bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -140,26 +136,6 @@ const CategoriesPage: React.FC = () => {
         </div>
       </nav>
 
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Floating background shapes */}
-        <motion.div
-          className="absolute top-10 left-10 w-64 h-64 bg-gradient-to-br from-yellow-300 to-lime-400 rounded-full opacity-30"
-          animate={{ x: [0, 50, 0], y: [0, -30, 0], rotate: [0, 180, 360] }}
-          transition={{ duration: 20, repeat: Infinity }}
-        />
-        <motion.div
-          className="absolute top-1/3 right-20 w-48 h-48 bg-gradient-to-br from-white to-emerald-200 rounded-full opacity-25"
-          animate={{ x: [0, -40, 0], y: [0, 40, 0], rotate: [360, 180, 0] }}
-          transition={{ duration: 15, repeat: Infinity }}
-        />
-        <motion.div
-          className="absolute bottom-20 left-1/4 w-32 h-32 bg-gradient-to-br from-cyan-300 to-teal-400 rounded-full opacity-35"
-          animate={{ scale: [1, 1.2, 1], rotate: [0, -90, 0] }}
-          transition={{ duration: 12, repeat: Infinity }}
-        />
-      </div>
-
       {/* Main Content */}
       <div className="p-6 pb-24">
         <div className="max-w-6xl mx-auto">
@@ -180,11 +156,11 @@ const CategoriesPage: React.FC = () => {
 
               {/* Stats Cards */}
               <div className="hidden md:flex space-x-4">
-                <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/50 text-center min-w-[100px]">
+                <div className="bg-white rounded-xl p-4 shadow-card border border-slate-100 text-center min-w-[100px]">
                   <div className="text-2xl font-medium text-emerald-600">{assessmentCategories.length}</div>
                   <div className="text-xs text-gray-600">Categories</div>
                 </div>
-                <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/50 text-center min-w-[100px]">
+                <div className="bg-white rounded-xl p-4 shadow-card border border-slate-100 text-center min-w-[100px]">
                   <div className="text-2xl font-medium text-green-600">12</div>
                   <div className="text-xs text-gray-600">Completed</div>
                 </div>
@@ -220,9 +196,9 @@ const CategoriesPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.4 }}
           >
-            <div className="bg-white rounded-2xl p-6 shadow-soft border border-gray-100">
+            <div className="bg-white rounded-xl p-6 shadow-card border border-slate-100">
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-success-400 to-success-600 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
@@ -232,9 +208,9 @@ const CategoriesPage: React.FC = () => {
               <p className="text-gray-600 text-sm">Monitor your learning journey with detailed analytics and progress reports.</p>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-soft border border-gray-100">
+            <div className="bg-white rounded-xl p-6 shadow-card border border-slate-100">
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-secondary-400 to-secondary-600 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
@@ -315,13 +291,13 @@ const CategoriesPage: React.FC = () => {
           onClick={() => { if (!isSigningOut) setShowSignOutConfirm(false); }}
         >
           <motion.div
-            className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-gray-100"
+            className="bg-white rounded-xl p-8 max-w-sm w-full shadow-elevated border border-slate-100"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
           >
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-red-500 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <LogOut className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-2">Sign Out</h3>
@@ -331,14 +307,14 @@ const CategoriesPage: React.FC = () => {
               <button
                 onClick={() => setShowSignOutConfirm(false)}
                 disabled={isSigningOut}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-2xl text-gray-700 hover:bg-gray-50 transition-all duration-300 font-semibold disabled:opacity-50"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors duration-200 font-semibold disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSignOut}
                 disabled={isSigningOut}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl hover:from-red-600 hover:to-red-700 transition-all duration-300 font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors duration-200 font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSigningOut ? 'Signing Out...' : 'Sign Out'}
               </button>

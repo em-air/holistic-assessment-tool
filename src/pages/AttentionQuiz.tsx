@@ -267,7 +267,7 @@ const AttentionQuiz: React.FC = () => {
   // Quiz Selection Screen
   if (gameState === 'selection') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-300 via-emerald-400 to-green-500 py-8">
+      <div className="min-h-screen bg-emerald-50 py-8">
         <div className="container mx-auto px-4 relative z-10">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
@@ -304,7 +304,7 @@ const AttentionQuiz: React.FC = () => {
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
-              className="group bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl p-8 shadow-xl border border-emerald-300 cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-2xl"
+              className="group bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl p-8 shadow-card border border-emerald-300 cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-card"
               onClick={() => startQuiz('attention')}
             >
               <div className="text-center text-white">
@@ -337,7 +337,7 @@ const AttentionQuiz: React.FC = () => {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="group bg-gradient-to-br from-purple-400 to-pink-500 rounded-2xl p-8 shadow-xl border border-purple-300 cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-2xl"
+              className="group bg-gradient-to-br from-purple-400 to-pink-500 rounded-2xl p-8 shadow-card border border-purple-300 cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-card"
               onClick={() => startQuiz('sequence')}
             >
               <div className="text-center text-white">
@@ -372,7 +372,7 @@ const AttentionQuiz: React.FC = () => {
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="group bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl p-8 shadow-xl border border-orange-300 cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-2xl"
+              className="group bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl p-8 shadow-card border border-orange-300 cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-card"
               onClick={() => navigate(ROUTES.FLASH_WORD_QUIZ_FLAT)}
             >
               <div className="text-center text-white">
@@ -406,7 +406,7 @@ const AttentionQuiz: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-300 via-emerald-400 to-green-500 py-8">
+    <div className="min-h-screen bg-emerald-50 py-8">
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -436,9 +436,9 @@ const AttentionQuiz: React.FC = () => {
 
           <button
             onClick={resetGame}
-            className="group relative px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-stone-100 rounded-full font-medium overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-emerald-500/25 transform hover:scale-105 hover:-translate-y-1"
+            className="group relative px-6 py-3 bg-emerald-600 text-stone-100 rounded-full font-medium overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-emerald-500/25 transform hover:scale-105 hover:-translate-y-1"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-700 to-teal-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="absolute inset-0 bg-emerald-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <span className="relative flex items-center gap-2">
               <RotateCcw size={20} />
               Reset
@@ -456,7 +456,7 @@ const AttentionQuiz: React.FC = () => {
         {/* Sequence Game Instructions */}
         {quizType === 'sequence' && (gameState === 'showing' || gameState === 'playing') && (
           <div className="text-center mb-8">
-            <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl p-6 shadow-xl border border-purple-200 max-w-2xl mx-auto">
+            <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl p-6 shadow-card border border-purple-200 max-w-2xl mx-auto">
               {showInstructions ? (
                 <div>
                   <h2 className="text-2xl font-bold text-purple-800 mb-2">Remember the order and tap the tiles!</h2>
@@ -481,7 +481,7 @@ const AttentionQuiz: React.FC = () => {
         {/* Attention Game Instructions */}
         {quizType !== 'sequence' && (gameState === 'showing' || gameState === 'playing') && (
           <div className="text-center mb-8">
-            <div className="bg-stone-100 rounded-2xl p-6 shadow-xl border border-stone-200 max-w-2xl mx-auto">
+            <div className="bg-stone-100 rounded-2xl p-6 shadow-card border border-stone-200 max-w-2xl mx-auto">
               {gamePhase === 'memorize' ? (
                 <div>
                   <h2 className="text-2xl font-bold text-stone-800 mb-2">Remember which tile has which number!</h2>
@@ -501,7 +501,7 @@ const AttentionQuiz: React.FC = () => {
         {/* Sequence Game Grid */}
         {quizType === 'sequence' && (gameState === 'showing' || gameState === 'playing') && (
           <div className="max-w-md mx-auto mb-8">
-            <div className="grid grid-cols-3 gap-3 p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-xl border border-purple-200">
+            <div className="grid grid-cols-3 gap-3 p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-card border border-purple-200">
               {Array.from({ length: 9 }, (_, index) => {
                 const tile = sequenceTiles.find(t => t.id === index);
                 return (
@@ -514,7 +514,7 @@ const AttentionQuiz: React.FC = () => {
                       ${!tile
                         ? 'bg-gray-200 cursor-default'
                         : tile.isFlipped
-                          ? 'bg-gradient-to-br from-purple-400 to-pink-400 text-white shadow-lg hover:shadow-xl'
+                          ? 'bg-gradient-to-br from-purple-400 to-pink-400 text-white shadow-lg hover:shadow-card'
                           : tile.isCorrect
                             ? 'bg-green-400 text-white border-2 border-green-600'
                             : tile.isWrong
@@ -562,7 +562,7 @@ const AttentionQuiz: React.FC = () => {
         {/* Attention Game Grid */}
         {quizType !== 'sequence' && (gameState === 'showing' || gameState === 'playing') && (
           <div className="max-w-md mx-auto mb-8">
-            <div className="grid grid-cols-3 gap-3 p-6 bg-stone-100 rounded-2xl shadow-xl border border-stone-200">
+            <div className="grid grid-cols-3 gap-3 p-6 bg-stone-100 rounded-2xl shadow-card border border-stone-200">
               {tiles.map((tile) => (
                 <motion.div
                   key={tile.id}
@@ -576,7 +576,7 @@ const AttentionQuiz: React.FC = () => {
                           ? 'bg-emerald-400 text-white border-2 border-emerald-600'
                           : tile.isSelected && !tile.isCorrect
                             ? 'bg-red-400 text-white border-2 border-red-600'
-                            : 'bg-gradient-to-br from-teal-400 to-emerald-500 text-white shadow-lg hover:shadow-xl'
+                            : 'bg-gradient-to-br from-teal-400 to-emerald-500 text-white shadow-lg hover:shadow-card'
                         : 'bg-stone-300 cursor-default'
                       : 'bg-stone-200 hover:bg-stone-300 cursor-pointer'
                     }
@@ -599,7 +599,7 @@ const AttentionQuiz: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-8"
           >
-            <div className={`bg-stone-100 rounded-2xl p-6 shadow-xl border-2 ${isCorrect ? 'border-emerald-300' : 'border-red-300'
+            <div className={`bg-stone-100 rounded-2xl p-6 shadow-card border-2 ${isCorrect ? 'border-emerald-300' : 'border-red-300'
               } max-w-2xl mx-auto`}>
               {isCorrect ? (
                 <div className="text-emerald-600">
@@ -625,7 +625,7 @@ const AttentionQuiz: React.FC = () => {
             animate={{ opacity: 1, scale: 1 }}
             className="text-center"
           >
-            <div className="bg-stone-100 rounded-2xl p-8 shadow-xl border border-stone-200 max-w-2xl mx-auto">
+            <div className="bg-stone-100 rounded-2xl p-8 shadow-card border border-stone-200 max-w-2xl mx-auto">
               <Star className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
               <h2 className="text-3xl font-bold text-stone-800 mb-4">Congratulations!</h2>
               <p className="text-xl text-stone-600 mb-6">
@@ -635,7 +635,7 @@ const AttentionQuiz: React.FC = () => {
               <div className="flex justify-center gap-4">
                 <button
                   onClick={resetGame}
-                  className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-full font-bold hover:shadow-lg transition-all duration-300"
+                  className="px-8 py-3 bg-emerald-600 text-white rounded-full font-bold hover:bg-emerald-700 hover:shadow-lg transition-all duration-300"
                 >
                   Play Again
                 </button>

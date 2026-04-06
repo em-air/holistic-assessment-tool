@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ListOrdered, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
-import FloatingBackground from '../components/FloatingBackground';
 import { useAuth } from '../contexts/AuthContext';
 import { getNumericGrade, canAccessQuizGrade } from '../utils/gradeUtils';
 import { ROUTES, logicalSequencingGradeRoute } from '../routes';
@@ -63,14 +62,12 @@ const LogicalSequencingGradeSelector: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 relative overflow-hidden">
-      <FloatingBackground />
-
+    <div className="min-h-screen bg-purple-50 relative overflow-hidden">
       {/* Header with back button */}
       <div className="absolute top-4 left-4 z-20">
         <button
           onClick={() => navigate(ROUTES.PERCEPTION_SELECTION)}
-          className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
+          className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
         >
           <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
           <span className="font-medium">back</span>
@@ -86,7 +83,7 @@ const LogicalSequencingGradeSelector: React.FC = () => {
             className="text-center mb-12"
           >
             <div className="mb-6">
-              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-600 rounded-3xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <ListOrdered size={40} className="text-white" />
               </div>
             </div>
@@ -125,7 +122,7 @@ const LogicalSequencingGradeSelector: React.FC = () => {
                   className={`group transform transition-all duration-300 ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-105'}`}
                   onClick={() => handleGradeSelect(gradeInfo.grade)}
                 >
-                  <div className={`bg-white rounded-3xl shadow-lg p-8 h-full border-2 transition-all duration-300 relative overflow-hidden ${locked ? 'border-gray-200' : 'border-transparent group-hover:border-purple-300'}`}>
+                  <div className={`bg-white rounded-xl shadow-lg p-8 h-full border-2 transition-all duration-300 relative overflow-hidden ${locked ? 'border-gray-200' : 'border-transparent group-hover:border-purple-300'}`}>
                     {/* Lock Icon */}
                     {locked && (
                       <div className="absolute top-4 right-4 bg-gray-500 text-white p-2 rounded-full z-20">
@@ -193,7 +190,7 @@ const LogicalSequencingGradeSelector: React.FC = () => {
 
                     {/* Hover overlay */}
                     {!locked && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-5 transition-opacity duration-300 rounded-3xl"></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-5 transition-opacity duration-300 rounded-xl"></div>
                     )}
                   </div>
                 </motion.div>
@@ -208,7 +205,7 @@ const LogicalSequencingGradeSelector: React.FC = () => {
             transition={{ delay: 0.5 }}
             className="mt-12 text-center"
           >
-            <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 max-w-2xl mx-auto">
+            <div className="bg-white rounded-2xl p-6 max-w-2xl mx-auto">
               <h3 className="text-lg font-semibold text-gray-800 mb-3">
                 How to Play
               </h3>

@@ -20,20 +20,19 @@ export const QuizLayout = ({
     subtitle,
     backPath = '/categories',
     showBackButton = true,
-    backgroundGradient = 'from-violet-50 via-purple-50 to-indigo-100',
+    backgroundGradient = 'bg-slate-50',
 }: QuizLayoutProps) => {
     const navigate = useNavigate();
 
     return (
-        <div className={`min-h-screen bg-gradient-to-br ${backgroundGradient}`}>
+        <div className={`min-h-screen ${backgroundGradient}`}>
             {/* Header */}
-            <header className="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-40">
+            <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
                 <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
                     {showBackButton && (
                         <motion.button
                             onClick={() => navigate(backPath)}
                             className="flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors"
-                            whileHover={{ x: -4 }}
                             whileTap={{ scale: 0.95 }}
                         >
                             <svg

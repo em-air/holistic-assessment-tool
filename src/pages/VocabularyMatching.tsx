@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import FloatingBackground from '../components/FloatingBackground';
 import { ProgressTracker } from '../utils/progressTracker';
 import { logger } from '../utils/logger';
 
@@ -329,9 +328,8 @@ const VocabularyMatching: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 relative overflow-hidden">
-      <FloatingBackground />
-      
+    <div className="min-h-screen bg-emerald-50 relative overflow-hidden">
+
       <div className="relative z-10 container mx-auto px-4 py-4">
         {/* Header */}
         <motion.div 
@@ -509,7 +507,7 @@ const VocabularyMatching: React.FC = () => {
             transition={{ duration: 0.3 }}
           >
             <motion.div
-              className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl"
+              className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-card"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.3, delay: 0.1 }}
@@ -581,7 +579,7 @@ const VocabularyMatching: React.FC = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <div className="bg-gradient-to-r from-teal-100 to-emerald-100 rounded-lg p-3 shadow-md inline-block mb-4">
+          <div className="bg-teal-100 rounded-lg p-3 shadow-md inline-block mb-4">
             <div className="text-sm text-gray-700 mb-2">
               Grade {selectedGrade} • Level {selectedLevel} • Progress: {matches.length} / {vocabularyWords.length}
             </div>
@@ -605,7 +603,7 @@ const VocabularyMatching: React.FC = () => {
                 className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 ${
                   matches.length === 0
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-teal-500 text-white hover:bg-teal-600 shadow-lg hover:shadow-xl transform hover:scale-105'
+                    : 'bg-teal-500 text-white hover:bg-teal-600 shadow-lg hover:shadow-card transform hover:scale-105'
                 }`}
               >
                 Submit Answers ({matches.length}/{vocabularyWords.length})

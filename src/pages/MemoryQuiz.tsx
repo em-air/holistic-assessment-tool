@@ -172,7 +172,7 @@ const MemoryQuiz: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 py-8">
+    <div className="min-h-screen bg-purple-50 py-8">
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -202,9 +202,9 @@ const MemoryQuiz: React.FC = () => {
 
           <button
             onClick={resetGame}
-            className="group relative px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-stone-100 rounded-full font-medium overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-indigo-500/25 transform hover:scale-105 hover:-translate-y-1"
+            className="group relative px-6 py-3 bg-indigo-600 text-stone-100 rounded-full font-medium overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-indigo-500/25 transform hover:scale-105 hover:-translate-y-1"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="absolute inset-0 bg-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <span className="relative flex items-center gap-2">
               <RotateCcw size={20} />
               Reset
@@ -222,7 +222,7 @@ const MemoryQuiz: React.FC = () => {
         {/* Game Instructions */}
         {(gameState === 'showing' || gameState === 'playing') && (
           <div className="text-center mb-8">
-            <div className="bg-stone-100 rounded-2xl p-6 shadow-xl border border-stone-200 max-w-2xl mx-auto">
+            <div className="bg-stone-100 rounded-2xl p-6 shadow-card border border-stone-200 max-w-2xl mx-auto">
               {gamePhase === 'memorize' ? (
                 <div>
                   <h2 className="text-2xl font-bold text-stone-800 mb-2">Remember which tile has which number!</h2>
@@ -242,7 +242,7 @@ const MemoryQuiz: React.FC = () => {
         {/* Game Grid */}
         {(gameState === 'showing' || gameState === 'playing') && (
           <div className="max-w-md mx-auto mb-8">
-            <div className="grid grid-cols-3 gap-3 p-6 bg-stone-100 rounded-2xl shadow-xl border border-stone-200">
+            <div className="grid grid-cols-3 gap-3 p-6 bg-stone-100 rounded-2xl shadow-card border border-stone-200">
               {tiles.map((tile) => (
                 <motion.div
                   key={tile.id}
@@ -256,7 +256,7 @@ const MemoryQuiz: React.FC = () => {
                           ? 'bg-indigo-400 text-white border-2 border-indigo-600'
                           : tile.isSelected && !tile.isCorrect
                             ? 'bg-red-400 text-white border-2 border-red-600'
-                            : 'bg-gradient-to-br from-indigo-400 to-purple-500 text-white shadow-lg hover:shadow-xl'
+                            : 'bg-gradient-to-br from-indigo-400 to-purple-500 text-white shadow-lg hover:shadow-card'
                         : 'bg-stone-300 cursor-default'
                       : 'bg-stone-200 hover:bg-stone-300 cursor-pointer'
                     }
@@ -279,7 +279,7 @@ const MemoryQuiz: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-8"
           >
-            <div className={`bg-stone-100 rounded-2xl p-6 shadow-xl border-2 ${isCorrect ? 'border-indigo-300' : 'border-red-300'
+            <div className={`bg-stone-100 rounded-2xl p-6 shadow-card border-2 ${isCorrect ? 'border-indigo-300' : 'border-red-300'
               } max-w-2xl mx-auto`}>
               {isCorrect ? (
                 <div className="text-indigo-600">
@@ -305,7 +305,7 @@ const MemoryQuiz: React.FC = () => {
             animate={{ opacity: 1, scale: 1 }}
             className="text-center"
           >
-            <div className="bg-stone-100 rounded-2xl p-8 shadow-xl border border-stone-200 max-w-2xl mx-auto">
+            <div className="bg-stone-100 rounded-2xl p-8 shadow-card border border-stone-200 max-w-2xl mx-auto">
               <Star className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
               <h2 className="text-3xl font-bold text-stone-800 mb-4">Memory Quiz Complete!</h2>
               <p className="text-xl text-stone-600 mb-6">
@@ -335,7 +335,7 @@ const MemoryQuiz: React.FC = () => {
               <div className="flex justify-center gap-4">
                 <button
                   onClick={resetGame}
-                  className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full font-bold hover:shadow-lg transition-all duration-300"
+                  className="px-8 py-3 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 hover:shadow-lg transition-all duration-300"
                 >
                   Play Again
                 </button>
