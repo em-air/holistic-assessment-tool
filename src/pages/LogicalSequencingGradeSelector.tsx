@@ -19,7 +19,7 @@ const LogicalSequencingGradeSelector: React.FC = () => {
       description: '3-sentence stories about daily activities',
       color: 'from-green-400 to-blue-500',
       difficulty: 'Beginner',
-      examples: ['Making a sandwich', 'Getting ready for school', 'Brushing teeth']
+      examples: ['Feeding a pet', 'Washing hands', 'Drawing a picture']
     },
     {
       grade: 2,

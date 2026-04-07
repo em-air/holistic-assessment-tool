@@ -20,41 +20,41 @@ export interface SequencingQuestion {
 export const grade1Questions: SequencingQuestion[] = [
   {
     id: 1,
-    title: "Making a Sandwich",
+    title: "Feeding a Pet",
     sentences: [
-      "I eat my delicious sandwich.",
-      "I get bread and peanut butter.",
-      "I spread peanut butter on the bread."
+      "My pet eats all the food.",
+      "I pour the food into the bowl.",
+      "I get the pet food from the shelf."
     ],
-    correctOrder: [1, 2, 0],
+    correctOrder: [2, 1, 0],
     grade: 1,
     difficulty: 'easy',
     topic: 'daily-activities',
-    hint: "What do you do first when making food?"
+    hint: "What do you need to get first?"
   },
   {
     id: 2,
-    title: "Getting Ready for School",
+    title: "Washing Hands",
     sentences: [
-      "I walk to school.",
-      "I wake up in the morning.",
-      "I put on my clothes and backpack."
+      "I rub soap on my hands.",
+      "I turn on the water.",
+      "I dry my hands with a towel."
     ],
-    correctOrder: [1, 2, 0],
+    correctOrder: [1, 0, 2],
     grade: 1,
     difficulty: 'easy',
     topic: 'daily-activities',
-    hint: "What happens first in the morning?"
+    hint: "What do you turn on first?"
   },
   {
     id: 3,
     title: "Planting a Seed",
     sentences: [
+      "I water the seed every day.",
       "The plant grows tall.",
-      "I put the seed in the dirt.",
-      "I water the seed every day."
+      "I put the seed in the dirt."
     ],
-    correctOrder: [1, 2, 0],
+    correctOrder: [2, 0, 1],
     grade: 1,
     difficulty: 'easy',
     topic: 'nature',
@@ -62,27 +62,27 @@ export const grade1Questions: SequencingQuestion[] = [
   },
   {
     id: 4,
-    title: "Brushing Teeth",
+    title: "Drawing a Picture",
     sentences: [
-      "I rinse my mouth with water.",
-      "I put toothpaste on my toothbrush.",
-      "I brush my teeth for two minutes."
+      "I get my crayons and paper.",
+      "I show my picture to Mom.",
+      "I draw a pretty picture."
     ],
-    correctOrder: [1, 2, 0],
+    correctOrder: [0, 2, 1],
     grade: 1,
     difficulty: 'easy',
-    topic: 'daily-activities',
-    hint: "What goes on the toothbrush first?"
+    topic: 'play',
+    hint: "What do you need to get first?"
   },
   {
     id: 5,
     title: "Building with Blocks",
     sentences: [
+      "I stack the blocks to make a tower.",
       "I play with my tall tower.",
-      "I get my blocks from the toy box.",
-      "I stack the blocks to make a tower."
+      "I get my blocks from the toy box."
     ],
-    correctOrder: [1, 2, 0],
+    correctOrder: [2, 0, 1],
     grade: 1,
     difficulty: 'medium',
     topic: 'play',
