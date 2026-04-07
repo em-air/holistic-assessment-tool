@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ROUTES } from '../routes';
+import { ROUTES, categoryRoute } from '../routes';
 
 interface OralLanguageOption {
   id: string;
@@ -117,7 +117,7 @@ const OralLanguageSelection: React.FC = () => {
           className="text-center mt-12"
         >
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(categoryRoute('oral-skills'))}
             className="px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-colors duration-300 shadow-md hover:shadow-lg"
           >
             ← Back to Categories

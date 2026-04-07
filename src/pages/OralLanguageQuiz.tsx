@@ -8,6 +8,7 @@ import { supabase } from '../supabase-client';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { ProgressTracker } from '../utils/progressTracker';
+import { ROUTES } from '../routes';
 import { ROUTES, categoryRoute } from '../routes';
 
 // Category metadata (UI only — no answer data)
@@ -233,7 +234,7 @@ const OralLanguageQuiz: React.FC = () => {
 
     if (!questions || questions.length === 0) {
       // Navigate back instead of showing the selection page
-      navigate(-1);
+      navigate(ROUTES.ORAL_LANGUAGE_SELECTION);
       return;
     }
 

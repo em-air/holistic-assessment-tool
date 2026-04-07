@@ -6,6 +6,7 @@ import type { GradeLevel, AnalogyQuestion } from '../types/quiz';
 import { supabase } from '../supabase-client';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { ROUTES } from '../routes';
 
 const gradeOptions = [
   { value: 'grade1', label: 'Grade 1', description: 'Basic relationships and simple concepts' },
@@ -182,7 +183,7 @@ const AnalogyQuiz: React.FC = () => {
 
             <div className="text-center">
               <button
-                onClick={() => navigate(-1)}
+                onClick={() => navigate(ROUTES.CRITICAL_THINKING_SELECTION)}
                 className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-colors duration-200"
               >
                 Back
@@ -267,7 +268,7 @@ const AnalogyQuiz: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(ROUTES.CRITICAL_THINKING_SELECTION)}
             className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:bg-white/20 transition-colors duration-200"
           >
             <ArrowLeft size={20} />

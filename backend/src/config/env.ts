@@ -48,7 +48,7 @@ const envSchema = z.object({
   REPORTS_BUCKET: z.preprocess(emptyToUndefined, z.string().default('reports')),
 
   // AI — alternative key name used from ai.ts
-  GEMINI_API_KEY: z.preprocess(emptyToUndefined, z.string().optional()),
+  xGEMINI_API_KEY: z.preprocess(emptyToUndefined, z.string().optional()),
 
   // Session
   SESSION_STORAGE: z.preprocess(emptyToUndefined, z.enum(['auto', 'memory', 'redis']).default('auto')),
