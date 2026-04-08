@@ -17,7 +17,7 @@ const gradeOptions = [
 import { ProgressTracker } from '../utils/progressTracker';
 import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
-import { ROUTES } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 const AnalogyQuiz: React.FC = () => {
   const navigate = useNavigate();
