@@ -47,8 +47,8 @@ const envSchema = z.object({
   // Storage
   REPORTS_BUCKET: z.preprocess(emptyToUndefined, z.string().default('reports')),
 
-  // AI — alternative key name used from ai.ts
-  xGEMINI_API_KEY: z.preprocess(emptyToUndefined, z.string().optional()),
+  // AI — Gemini API key used from ai.ts
+  GEMINI_API_KEY: z.preprocess(emptyToUndefined, z.string().optional()),
 
   // Session
   SESSION_STORAGE: z.preprocess(emptyToUndefined, z.enum(['auto', 'memory', 'redis']).default('auto')),
@@ -91,7 +91,7 @@ export const isTest = env.NODE_ENV === 'test';
 // Feature flags based on optional env vars
 export const features = {
   redis: !!env.REDIS_URL,
-  ai: !!env.GOOGLE_AI_API_KEY,
+  ai: !!env.GEMINI_API_KEY || !!env.GOOGLE_AI_API_KEY,
   sentry: !!env.SENTRY_DSN,
 };
 
