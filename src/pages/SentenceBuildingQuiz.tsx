@@ -5,6 +5,7 @@ import { ArrowLeft, Star, Check, X, RotateCcw, MessageSquare } from 'lucide-reac
 import { getQuestionsForGrade, getGradeData, type SentenceBuildingQuestion } from '../data/sentenceBuildingData';
 import { ProgressTracker } from '../utils/progressTracker';
 import { ROUTES } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 const SentenceBuildingQuiz: React.FC = () => {
   const navigate = useNavigate();
@@ -104,7 +105,8 @@ const SentenceBuildingQuiz: React.FC = () => {
   // Results screen
   if (showResults) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-teal-500 py-8">
+      <div className="min-h-screen bg-emerald-50 relative overflow-hidden py-8">
+        <FloatingBackground />
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
@@ -160,7 +162,8 @@ const SentenceBuildingQuiz: React.FC = () => {
 
   // Question screen
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 py-8">
+    <div className="min-h-screen bg-purple-50 relative overflow-hidden py-8">
+      <FloatingBackground />
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -173,12 +176,12 @@ const SentenceBuildingQuiz: React.FC = () => {
           </button>
 
           {/* Progress */}
-          <div className="flex items-center gap-4 text-white">
+          <div className="flex items-center gap-4 text-gray-700">
             <div className="flex items-center gap-2">
               <MessageSquare size={20} />
               <span>Sentence Building — {gradeData?.title}</span>
             </div>
-            <div className="bg-white/20 rounded-full px-3 py-1">
+            <div className="bg-white/60 rounded-full px-3 py-1">
               {currentQuestionIndex + 1} of {questions.length}
             </div>
           </div>
@@ -186,9 +189,9 @@ const SentenceBuildingQuiz: React.FC = () => {
 
         {/* Progress Bar */}
         <div className="max-w-4xl mx-auto mb-6">
-          <div className="w-full bg-white/20 rounded-full h-2">
+          <div className="w-full bg-white/40 rounded-full h-2">
             <div
-              className="bg-white rounded-full h-2 transition-all duration-500"
+              className="bg-purple-500 rounded-full h-2 transition-all duration-500"
               style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
             />
           </div>
