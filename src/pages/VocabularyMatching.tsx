@@ -529,7 +529,7 @@ const VocabularyMatching: React.FC = () => {
                     </button>
                   )}
                   <button
-                    onClick={() => navigate(ROUTES.CATEGORY_ACADEMIC_SKILLS)}
+                    onClick={() => navigate(-1)}
                     className="flex-1 bg-gray-300 text-gray-700 px-4 py-3 rounded-lg font-medium hover:bg-gray-400 transition-colors duration-200"
                   >
                     Exit

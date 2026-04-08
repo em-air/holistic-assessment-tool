@@ -203,7 +203,7 @@ const SpellingTest = () => {
           <div className="text-6xl mb-4">📝</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Loading Spelling Test...</h2>
           <button
-            onClick={() => navigate(ROUTES.SPELLING_GRADES)}
+            onClick={() => navigate(-1)}
             className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-colors"
           >
             Back to Grade Selection
@@ -356,7 +356,7 @@ const SpellingTest = () => {
         {/* Back Button */}
         <div className="text-center">
           <button
-            onClick={() => navigate(ROUTES.SPELLING_GRADES)}
+            onClick={() => navigate(-1)}
             className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-medium transition-colors"
           >
             ← Back to Grade Selection

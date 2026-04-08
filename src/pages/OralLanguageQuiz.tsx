@@ -234,7 +234,7 @@ const OralLanguageQuiz: React.FC = () => {
 
     if (!questions || questions.length === 0) {
       // Navigate back instead of showing the selection page
-      navigate(ROUTES.ORAL_LANGUAGE_SELECTION);
+      navigate(-1);
       return;
     }
 
@@ -250,7 +250,7 @@ const OralLanguageQuiz: React.FC = () => {
 
   // Reset quiz — navigate back to the oral skills category page
   const resetQuiz = () => {
-    navigate(categoryRoute('oral-skills'), { replace: true });
+    navigate(-1);
   };
 
   // Calculate overall performance
