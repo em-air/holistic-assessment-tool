@@ -249,13 +249,13 @@ const getSubcategoryColor = (color: string) => {
 const getButtonColor = (color: string) => {
   switch (color) {
     case 'mind':
-      return 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700';
+      return 'bg-purple-500 hover:bg-purple-600';
     case 'oral':
-      return 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700';
+      return 'bg-emerald-500 hover:bg-emerald-600';
     case 'academic':
-      return 'bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700';
+      return 'bg-orange-500 hover:bg-orange-600';
     default:
-      return 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700';
+      return 'bg-blue-500 hover:bg-blue-600';
   }
 };
 

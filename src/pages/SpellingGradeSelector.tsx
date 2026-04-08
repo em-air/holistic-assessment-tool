@@ -14,6 +14,7 @@ import {
   getCategoryBlockedMessage
 } from '../utils/gradeUtils';
 import { ROUTES, spellingTestRoute } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 interface GradeInfo {
   grade: number;
@@ -54,8 +55,9 @@ const SpellingGradeSelector: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 p-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-blue-50 relative overflow-hidden p-6">
+      <FloatingBackground />
+      <div className="max-w-6xl mx-auto relative z-10">
         {/* Header */}
         <motion.div
           className="text-center mb-8"
@@ -64,7 +66,7 @@ const SpellingGradeSelector: React.FC = () => {
           transition={{ duration: 0.6 }}
         >
           <div className="flex items-center justify-center mb-4">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white text-4xl p-3 rounded-full shadow-lg mr-4">
+            <div className="bg-blue-500 text-white text-4xl p-3 rounded-full shadow-lg mr-4">
               📝
             </div>
             <h1 className="text-4xl font-bold text-gray-800">
@@ -134,7 +136,7 @@ const SpellingGradeSelector: React.FC = () => {
                     </div>
                   )}
 
-                  <div className={`text-white text-2xl font-bold w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg ${locked ? 'bg-gray-400' : 'bg-gradient-to-r from-blue-500 to-purple-600'
+                  <div className={`text-white text-2xl font-bold w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg ${locked ? 'bg-gray-400' : 'bg-blue-500'
                     }`}>
                     {gradeData.grade}
                   </div>

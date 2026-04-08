@@ -8,8 +8,8 @@ import { supabase } from '../supabase-client';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { ProgressTracker } from '../utils/progressTracker';
-import { ROUTES } from '../routes';
 import { ROUTES, categoryRoute } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 // Category metadata (UI only — no answer data)
 const oralLanguageCategories: Omit<QuizCategory, 'questions'>[] = [
@@ -18,28 +18,28 @@ const oralLanguageCategories: Omit<QuizCategory, 'questions'>[] = [
     title: { en: 'Vocabulary', ar: 'المفردات' },
     description: { en: 'Learn new words with pictures', ar: 'تعلم كلمات جديدة مع الصور' },
     icon: '📖',
-    color: 'bg-gradient-to-br from-blue-500 to-blue-700',
+    color: 'bg-blue-500',
   },
   {
     id: 'sentence-building',
     title: { en: 'Sentence Building', ar: 'بناء الجمل' },
     description: { en: 'Build sentences from pictures', ar: 'ابنِ جمل من الصور' },
     icon: '✍️',
-    color: 'bg-gradient-to-br from-green-500 to-green-700',
+    color: 'bg-green-500',
   },
   {
     id: 'storytelling',
     title: { en: 'Story Sequencing', ar: 'تسلسل القصص' },
     description: { en: 'Put stories in order', ar: 'رتب القصص' },
     icon: '📚',
-    color: 'bg-gradient-to-br from-purple-500 to-purple-700',
+    color: 'bg-purple-500',
   },
   {
     id: 'story-retell',
     title: { en: 'Story Retell', ar: 'إعادة سرد القصة' },
     description: { en: 'Retell a story', ar: 'أعد سرد القصة' },
     icon: '🎭',
-    color: 'bg-gradient-to-br from-orange-500 to-orange-700',
+    color: 'bg-orange-500',
   },
 ];
 
@@ -268,9 +268,10 @@ const OralLanguageQuiz: React.FC = () => {
   // Loading or no category — show spinner (selection page is no longer needed)
   if (!selectedCategory) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-300 via-purple-400 to-pink-500 flex items-center justify-center">
-        <div className="text-center text-white">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mx-auto mb-4"></div>
+      <div className="min-h-screen bg-purple-50 relative overflow-hidden flex items-center justify-center">
+        <FloatingBackground />
+        <div className="text-center text-gray-700 relative z-10">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
           <p className="text-lg font-medium">Loading quiz...</p>
         </div>
       </div>
@@ -283,7 +284,8 @@ const OralLanguageQuiz: React.FC = () => {
     const categoryScore = quizScores[selectedCategory.id];
     
     return (
-      <div className={`min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-teal-500 py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+      <div className={`min-h-screen bg-emerald-50 relative overflow-hidden py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+        <FloatingBackground />
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
@@ -334,7 +336,8 @@ const OralLanguageQuiz: React.FC = () => {
   // No questions loaded - show error state
   if (!selectedCategory.questions || selectedCategory.questions.length === 0) {
     return (
-      <div className={`min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+      <div className={`min-h-screen bg-purple-50 relative overflow-hidden py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+        <FloatingBackground />
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-2xl mx-auto text-center">
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
@@ -359,7 +362,8 @@ const OralLanguageQuiz: React.FC = () => {
 
   // Quiz Question Screen
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+    <div className={`min-h-screen bg-purple-50 relative overflow-hidden py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+      <FloatingBackground />
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -372,12 +376,12 @@ const OralLanguageQuiz: React.FC = () => {
           </button>
 
           {/* Progress */}
-          <div className="flex items-center gap-4 text-white">
+          <div className="flex items-center gap-4 text-gray-700">
             <div className="flex items-center gap-2">
               <Brain size={20} />
               <span>{selectedCategory.title[language]}</span>
             </div>
-            <div className="bg-white/20 rounded-full px-3 py-1">
+            <div className="bg-purple-200 rounded-full px-3 py-1">
               {currentQuestionIndex + 1} {t.of} {selectedCategory.questions?.length ?? 0}
             </div>
           </div>

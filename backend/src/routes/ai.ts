@@ -74,7 +74,7 @@ const GRADE_RUBRICS: Record<number, {
   developmentalExpectations: string;
 }> = {
   1: {
-    maxScore: 18,
+    maxScore: 36,
     criteria: {
       ideas: {
         excellent: "Student writes about a clear topic with 2-3 simple details. Ideas make sense and stick to the topic.",
@@ -116,7 +116,7 @@ const GRADE_RUBRICS: Record<number, {
     developmentalExpectations: "Grade 1 students are beginning writers who focus on expressing simple ideas clearly. They should write 2-3 sentences about familiar topics with basic organization and use simple words they know how to spell."
   },
   2: {
-    maxScore: 18,
+    maxScore: 36,
     criteria: {
       ideas: {
         excellent: "Clear main idea with 3-4 supporting details. Writing stays focused on the topic throughout.",
@@ -158,7 +158,7 @@ const GRADE_RUBRICS: Record<number, {
     developmentalExpectations: "Grade 2 students should write multiple sentences (4-6) with clear ideas and basic story structure. They begin to use more descriptive words and show more control over spelling and punctuation."
   },
   3: {
-    maxScore: 24,
+    maxScore: 36,
     criteria: {
       ideas: {
         excellent: "Focused topic with rich details and examples. Ideas are original and well-developed.",
@@ -200,7 +200,7 @@ const GRADE_RUBRICS: Record<number, {
     developmentalExpectations: "Grade 3 students should write well-organized paragraphs with clear topic sentences and supporting details. They begin to use more complex sentence structures and show increasing control over writing conventions."
   },
   4: {
-    maxScore: 24,
+    maxScore: 36,
     criteria: {
       ideas: {
         excellent: "Well-focused topic with rich, relevant details. Ideas are insightful and well-elaborated.",
@@ -242,7 +242,7 @@ const GRADE_RUBRICS: Record<number, {
     developmentalExpectations: "Grade 4 students should write multi-paragraph compositions with clear main ideas and supporting details. They demonstrate increasing sophistication in word choice and sentence structure while maintaining good control of writing conventions."
   },
   5: {
-    maxScore: 30,
+    maxScore: 36,
     criteria: {
       ideas: {
         excellent: "Exceptionally clear focus with rich, relevant, and insightful details. Ideas are original and thoroughly developed.",
@@ -284,7 +284,7 @@ const GRADE_RUBRICS: Record<number, {
     developmentalExpectations: "Grade 5 students should write well-organized, multi-paragraph compositions with sophisticated ideas and varied sentence structures. They should demonstrate strong control of writing conventions and begin to develop a more mature writing voice."
   },
   6: {
-    maxScore: 30,
+    maxScore: 36,
     criteria: {
       ideas: {
         excellent: "Highly focused with exceptionally rich, relevant details. Ideas are insightful, original, and thoroughly developed.",

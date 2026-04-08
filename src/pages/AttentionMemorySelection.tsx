@@ -4,6 +4,7 @@ import { ArrowLeft, Brain, Target, Eye, Focus, Hash, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
+import FloatingBackground from '../components/FloatingBackground';
 import { ROUTES } from '../routes';
 
 const AttentionMemorySelection: React.FC = () => {
@@ -17,7 +18,7 @@ const AttentionMemorySelection: React.FC = () => {
       subtitle: 'Attention',
       description: 'Evaluate your ability to focus and shift attention using a research-based questionnaire.',
       icon: Focus,
-      color: 'from-blue-400 to-purple-500',
+      color: 'bg-blue-500',
       route: ROUTES.ATTENTION_QUIZ,
       duration: '10-15 minutes'
     },
@@ -27,7 +28,7 @@ const AttentionMemorySelection: React.FC = () => {
       subtitle: 'Memory',
       description: 'Remember the order of 3-5 pictures and recall the sequence.',
       icon: Eye,
-      color: 'from-purple-400 to-indigo-500',
+      color: 'bg-purple-500',
       route: ROUTES.PICTURE_SEQUENCE,
       startType: 'sequence_recall',
       duration: '10 minutes'
@@ -38,20 +39,21 @@ const AttentionMemorySelection: React.FC = () => {
       subtitle: 'Memory',
       description: 'Quickly memorize and recall words shown briefly on screen.',
       icon: Zap,
-      color: 'from-orange-400 to-red-500',
+      color: 'bg-orange-500',
       route: ROUTES.FLASH_WORD,
       duration: '10 minutes'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 py-8">
+    <div className="min-h-screen bg-purple-50 relative overflow-hidden py-8">
+      <FloatingBackground />
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="group flex items-center space-x-2 px-4 py-2 text-white rounded-lg transition-all duration-300 ease-out hover:text-purple-100 hover:bg-white/20 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
+            className="group flex items-center space-x-2 px-4 py-2 text-gray-700 rounded-lg transition-all duration-300 ease-out hover:text-purple-700 hover:bg-white/60 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
           >
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
             <span className="font-medium">Back</span>
@@ -72,10 +74,10 @@ const AttentionMemorySelection: React.FC = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 drop-shadow-sm">
             Attention & Memory
           </h1>
-          <p className="text-xl text-white/90 max-w-3xl mx-auto drop-shadow-md">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Choose an assessment to evaluate your cognitive abilities
           </p>
         </motion.div>
@@ -92,7 +94,7 @@ const AttentionMemorySelection: React.FC = () => {
             >
               {/* Icon and Title */}
               <div className="text-center mb-4">
-                <div className={`w-16 h-16 bg-gradient-to-r ${option.color} rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg`}>
+                <div className={`w-16 h-16 ${option.color} rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg`}>
                   <option.icon size={28} className="text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-800 mb-1">
@@ -119,7 +121,7 @@ const AttentionMemorySelection: React.FC = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(option.route)}
-                className={`w-full px-4 py-3 bg-gradient-to-r ${option.color} text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200`}
+                className={`w-full px-4 py-3 ${option.color} hover:brightness-110 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200`}
               >
                 Start Quiz
               </motion.button>

@@ -6,6 +6,7 @@ import { BookOpen, Pencil, Users, Target, ArrowLeft, Lock } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { getNumericGrade, canAccessQuizGrade } from '../utils/gradeUtils';
 import { ROUTES, writingTestRoute } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 const WritingGradeSelector: React.FC = () => {
   const navigate = useNavigate();
@@ -42,15 +43,16 @@ const WritingGradeSelector: React.FC = () => {
   };
 
   const getGradientColor = (grade: number) => {
-    if (grade <= 2) return "from-pink-400 to-red-400";
-    if (grade <= 5) return "from-blue-400 to-purple-400";
-    if (grade <= 6) return "from-green-400 to-teal-400";
-    return "from-purple-400 to-indigo-500";
+    if (grade <= 2) return "bg-pink-500";
+    if (grade <= 5) return "bg-blue-500";
+    if (grade <= 6) return "bg-green-500";
+    return "bg-purple-500";
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 p-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-blue-50 relative overflow-hidden p-6">
+      <FloatingBackground />
+      <div className="max-w-6xl mx-auto relative z-10">
         {/* Header */}
         <motion.div
           className="text-center mb-8"
@@ -59,7 +61,7 @@ const WritingGradeSelector: React.FC = () => {
           transition={{ duration: 0.6 }}
         >
           <div className="flex items-center justify-center mb-4">
-            <div className="bg-gradient-to-r from-purple-500 to-pink-600 text-white text-4xl p-3 rounded-full shadow-lg mr-4">
+            <div className="bg-purple-500 text-white text-4xl p-3 rounded-full shadow-lg mr-4">
               ✍️
             </div>
             <h1 className="text-4xl font-bold text-gray-800">
@@ -115,7 +117,7 @@ const WritingGradeSelector: React.FC = () => {
                   )}
 
                   {/* Grade Icon */}
-                  <div className={`${locked ? 'bg-gray-400' : `bg-gradient-to-r ${getGradientColor(gradeData.grade)}`} text-white p-4 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg ${locked ? '' : 'group-hover:scale-110'} transition-transform duration-300`}>
+                  <div className={`${locked ? 'bg-gray-400' : `${getGradientColor(gradeData.grade)}`} text-white p-4 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg ${locked ? '' : 'group-hover:scale-110'} transition-transform duration-300`}>
                     {getGradeIcon(gradeData.grade)}
                   </div>
 

@@ -55,7 +55,7 @@ const SentenceBuildingGradeSelector: React.FC = () => {
             className="text-center mb-12"
           >
             <div className="mb-6">
-              <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-20 h-20 bg-green-500 rounded-3xl flex items-center justify-center mx-auto mb-4">
                 <MessageSquare size={40} className="text-white" />
               </div>
             </div>

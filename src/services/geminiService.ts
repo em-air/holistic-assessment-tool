@@ -94,10 +94,7 @@ export async function evaluateWritingWithGemini(
 /**
  * Get max score for a grade level
  */
-function getMaxScoreForGrade(grade: number): number {
-  if (grade <= 2) return 18;
-  if (grade <= 4) return 24;
-  if (grade <= 6) return 30;
+function getMaxScoreForGrade(_grade: number): number {
   return 36;
 }
 

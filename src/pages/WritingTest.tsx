@@ -95,8 +95,8 @@ const WritingTest: React.FC = () => {
       const currentWordCount = words.length;
       
       const fallbackEvaluation: WritingEvaluation = {
-        overallScore: Math.min(18, Math.max(6, currentWordCount / 10 + studentText.length / 50)),
-        maxScore: 24,
+        overallScore: Math.min(36, Math.max(6, currentWordCount / 10 + studentText.length / 50)),
+        maxScore: 36,
         grade: grade,
         feedback: "Thank you for your writing! Keep practicing to improve your skills.",
         strengths: ["You completed the writing task", "You shared your ideas", "You tried your best"],
