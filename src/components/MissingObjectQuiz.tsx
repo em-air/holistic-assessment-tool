@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProgressTracker } from '../utils/progressTracker';
 import { ROUTES } from '../routes';
+import FloatingBackground from './FloatingBackground';
 
 interface Question {
   id: number;
@@ -151,8 +152,9 @@ const MissingObjectQuiz: React.FC = () => {
 
   if (isQuizComplete) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100 p-4">
-        <div className="bg-white rounded-3xl shadow-lg p-8 max-w-md w-full text-center">
+      <div className="flex items-center justify-center min-h-screen bg-teal-50 relative overflow-hidden p-4">
+        <FloatingBackground />
+        <div className="bg-white rounded-3xl shadow-lg p-8 max-w-md w-full text-center relative z-10">
           <h2 className="text-3xl font-bold text-purple-600 mb-4">quiz complete!</h2>
           <div className="text-6xl mb-4">🎉</div>
           <p className="text-xl text-gray-700 mb-6">
@@ -171,8 +173,9 @@ const MissingObjectQuiz: React.FC = () => {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100 p-4">
-      <div className="bg-white rounded-3xl shadow-lg p-6 max-w-2xl w-full">
+    <div className="flex items-center justify-center min-h-screen bg-teal-50 relative overflow-hidden p-4">
+      <FloatingBackground />
+      <div className="bg-white rounded-3xl shadow-lg p-6 max-w-2xl w-full relative z-10">
         {/* Progress bar */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">

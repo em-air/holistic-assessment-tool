@@ -308,13 +308,13 @@ const BlendingQuiz: React.FC = () => {
   // Grade Selection Screen
   if (!selectedGrade) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-300 via-violet-400 to-indigo-500 relative overflow-hidden">
+      <div className="min-h-screen bg-violet-50 relative overflow-hidden">
         <FloatingBackground />
         
         <div className="relative z-10 p-6">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
+            className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
           >
             <ArrowLeft size={20} />
             <span>Back to Category</span>
@@ -357,13 +357,13 @@ const BlendingQuiz: React.FC = () => {
     const percentage = Math.round((score / currentQuestions.length) * 100);
     
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-300 via-violet-400 to-indigo-500 relative overflow-hidden">
+      <div className="min-h-screen bg-violet-50 relative overflow-hidden">
         <FloatingBackground />
         
         <div className="relative z-10 p-6">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
+            className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
           >
             <ArrowLeft size={20} />
             <span>Back to Category</span>
@@ -417,13 +417,13 @@ const BlendingQuiz: React.FC = () => {
 
   // Quiz Screen
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-300 via-violet-400 to-indigo-500 relative overflow-hidden">
+    <div className="min-h-screen bg-violet-50 relative overflow-hidden">
       <FloatingBackground />
       
       <div className="relative z-10 p-6">
         <button
           onClick={() => setSelectedGrade(null)}
-          className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
+          className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
         >
           <ArrowLeft size={20} />
           <span>Back to Category</span>

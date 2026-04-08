@@ -6,6 +6,7 @@ import { ProgressTracker } from '../utils/progressTracker';
 import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 import { ROUTES } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 // Tile interface
 interface Tile {
@@ -267,7 +268,8 @@ const AttentionQuiz: React.FC = () => {
   // Quiz Selection Screen
   if (gameState === 'selection') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-300 via-emerald-400 to-green-500 py-8">
+      <div className="min-h-screen bg-emerald-50 relative overflow-hidden py-8">
+        <FloatingBackground />
         <div className="container mx-auto px-4 relative z-10">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
@@ -406,7 +408,8 @@ const AttentionQuiz: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-300 via-emerald-400 to-green-500 py-8">
+    <div className="min-h-screen bg-emerald-50 relative overflow-hidden py-8">
+      <FloatingBackground />
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

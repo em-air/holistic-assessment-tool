@@ -7,6 +7,7 @@ import { supabase } from '../supabase-client';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { ROUTES } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 const gradeOptions = [
   { value: 'grade1', label: 'Grade 1', description: 'Basic relationships and simple concepts' },
@@ -210,15 +211,16 @@ const CategoryQuiz: React.FC = () => {
   // Grade Selection Screen
   if (!selectedGrade) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-400 via-teal-400 to-blue-500 py-8">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <div className="min-h-screen bg-teal-50 relative overflow-hidden py-8">
+        <FloatingBackground />
+        <div className="container mx-auto px-4 max-w-4xl relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl"
           >
             <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-20 h-20 bg-teal-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-3xl">🧺</span>
               </div>
               <h1 className="text-3xl font-bold text-gray-800 mb-2">Category Quiz</h1>
@@ -268,14 +270,15 @@ const CategoryQuiz: React.FC = () => {
     const performance = getPerformanceLevel();
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-400 via-blue-400 to-purple-500 py-8">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <div className="min-h-screen bg-green-50 relative overflow-hidden py-8">
+        <FloatingBackground />
+        <div className="container mx-auto px-4 max-w-4xl relative z-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl text-center"
           >
-            <div className="w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
               <Trophy size={36} className="text-white" />
             </div>
 
@@ -323,23 +326,24 @@ const CategoryQuiz: React.FC = () => {
 
   // Quiz Screen
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-300 via-green-400 to-blue-500 py-8">
-      <div className="container mx-auto px-4 max-w-6xl">
+    <div className="min-h-screen bg-teal-50 relative overflow-hidden py-8">
+      <FloatingBackground />
+      <div className="container mx-auto px-4 max-w-6xl relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={() => setSelectedGrade(null)}
-            className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:bg-white/20 transition-colors duration-200"
+            className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-white/60 rounded-lg hover:bg-white/80 transition-colors duration-200"
           >
             <ArrowLeft size={20} />
             Back
           </button>
 
-          <div className="text-center text-white">
+          <div className="text-center text-gray-700">
             <h1 className="text-xl font-bold">
               {gradeOptions.find(g => g.value === selectedGrade)?.label} Category Sort
             </h1>
-            <div className="text-sm opacity-90">
+            <div className="text-sm text-gray-500">
               Question {currentQuestionIndex + 1} of {questions.length} • Score: {score}/{currentQuestionIndex + (showResults ? 1 : 0)}
             </div>
           </div>

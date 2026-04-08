@@ -6,6 +6,7 @@ import { ProgressTracker } from '../utils/progressTracker';
 import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 import { ROUTES } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 // Tile interface
 interface Tile {
@@ -172,7 +173,8 @@ const MemoryQuiz: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 py-8">
+    <div className="min-h-screen bg-indigo-50 relative overflow-hidden py-8">
+      <FloatingBackground />
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

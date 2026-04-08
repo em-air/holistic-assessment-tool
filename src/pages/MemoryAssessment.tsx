@@ -8,6 +8,7 @@ import MindSectionReport from '../components/MindSectionReport';
 import { supabase } from '../supabase-client';
 import { logger } from '../utils/logger';
 import { ROUTES } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 // API types for memory assessment (no answers exposed)
 interface MemoryItem {
@@ -295,8 +296,9 @@ const MemoryAssessment: React.FC = () => {
   // Results screen
   if (gamePhase === 'results' && finalResults) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-300 via-purple-400 to-pink-500 py-8">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <div className="min-h-screen bg-indigo-50 relative overflow-hidden py-8">
+        <FloatingBackground />
+        <div className="container mx-auto px-4 max-w-4xl relative z-10">
           {/* Mind Section Progress Bar */}
           <div className="mb-6">
             <AssessmentProgressBar
@@ -404,19 +406,20 @@ const MemoryAssessment: React.FC = () => {
 
   // Main game screen
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-300 via-emerald-400 to-green-500 py-8">
+    <div className="min-h-screen bg-emerald-50 relative overflow-hidden py-8">
+      <FloatingBackground />
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="group flex items-center space-x-2 px-4 py-2 text-white rounded-lg transition-all duration-300 ease-out hover:text-emerald-100 hover:bg-white/20 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
+            className="group flex items-center space-x-2 px-4 py-2 text-gray-700 bg-white/60 rounded-lg transition-all duration-300 ease-out hover:text-gray-800 hover:bg-white/80 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
           >
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
             <span className="font-medium">Back to Selection</span>
           </button>
 
-          <div className="text-center text-white">
+          <div className="text-center text-gray-700">
             <h1 className="text-2xl font-bold mb-1">{currentQuestion?.title}</h1>
             <div className="flex items-center justify-center gap-4 text-sm">
               <span>Question {questionsAnswered + 1}/5</span>

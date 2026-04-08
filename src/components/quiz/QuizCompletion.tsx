@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import FloatingBackground from '../FloatingBackground';
 
 interface QuizCompletionProps {
     score: number;
@@ -35,7 +36,8 @@ export const QuizCompletion = ({
     const { grade, emoji, color } = getGrade();
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-violet-50 to-purple-100 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-violet-50 relative overflow-hidden flex items-center justify-center p-4">
+            <FloatingBackground />
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}

@@ -39,7 +39,7 @@ const PerceptionQuiz: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 py-8">
+    <div className="min-h-screen bg-blue-50 py-8">
       <FloatingBackground />
       
       <div className="container mx-auto px-4 relative z-10">

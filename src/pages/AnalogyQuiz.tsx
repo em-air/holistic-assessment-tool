@@ -150,15 +150,16 @@ const AnalogyQuiz: React.FC = () => {
   // Grade Selection Screen
   if (!selectedGrade) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-400 to-red-400 py-8">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <div className="min-h-screen bg-violet-50 relative overflow-hidden py-8">
+        <FloatingBackground />
+        <div className="container mx-auto px-4 max-w-4xl relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl"
           >
             <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-20 h-20 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-3xl">🧩</span>
               </div>
               <h1 className="text-3xl font-bold text-gray-800 mb-2">Analogy Quiz</h1>
@@ -208,14 +209,15 @@ const AnalogyQuiz: React.FC = () => {
     const performance = getPerformanceLevel();
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-400 via-blue-400 to-purple-500 py-8">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <div className="min-h-screen bg-green-50 relative overflow-hidden py-8">
+        <FloatingBackground />
+        <div className="container mx-auto px-4 max-w-4xl relative z-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl text-center"
           >
-            <div className="w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6">
               <Trophy size={36} className="text-white" />
             </div>
 
@@ -237,14 +239,14 @@ const AnalogyQuiz: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={resetQuiz}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
               >
                 <RotateCcw size={20} />
                 Try Again
               </button>
               <button
                 onClick={() => setSelectedGrade(null)}
-                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+                className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
               >
                 Change Grade
               </button>
@@ -263,13 +265,14 @@ const AnalogyQuiz: React.FC = () => {
 
   // Quiz Screen
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-500 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
+    <div className="min-h-screen bg-purple-50 relative overflow-hidden py-8">
+      <FloatingBackground />
+      <div className="container mx-auto px-4 max-w-4xl relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={() => setSelectedGrade(null)}
-            className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:bg-white/20 transition-colors duration-200"
+            className="flex items-center gap-2 px-4 py-2 text-gray-700 rounded-lg hover:bg-white/60 transition-colors duration-200"
           >
             <ArrowLeft size={20} />
             Back
@@ -409,7 +412,7 @@ const AnalogyQuiz: React.FC = () => {
               >
                 <button
                   onClick={handleNext}
-                  className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+                  className="px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
                 >
                   {currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'See Results'}
                 </button>

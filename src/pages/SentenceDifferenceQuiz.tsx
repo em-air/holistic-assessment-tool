@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, XCircle } from 'lucide-react';
 import { ProgressTracker } from '../utils/progressTracker';
 import { ROUTES } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 // API types (no correctAnswer exposed)
 interface SentenceDifferenceQuestion {
@@ -155,7 +156,7 @@ const SentenceDifferenceQuiz: React.FC = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100">
+      <div className="flex items-center justify-center min-h-screen bg-blue-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
           <p className="text-gray-600">Loading questions...</p>
@@ -167,7 +168,7 @@ const SentenceDifferenceQuiz: React.FC = () => {
   // Error state
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100">
+      <div className="flex items-center justify-center min-h-screen bg-blue-50">
         <div className="text-center bg-white rounded-2xl p-8 shadow-xl max-w-md">
           <XCircle size={48} className="text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-800 mb-2">Failed to Load</h2>
@@ -185,7 +186,7 @@ const SentenceDifferenceQuiz: React.FC = () => {
 
   if (isQuizComplete) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100 p-4">
+      <div className="flex items-center justify-center min-h-screen bg-blue-50 p-4">
         <div className="bg-white rounded-3xl shadow-lg p-8 max-w-md w-full text-center">
           <h2 className="text-3xl font-bold text-purple-600 mb-4">quiz complete!</h2>
           <div className="text-6xl mb-4">🎯</div>
@@ -211,7 +212,7 @@ const SentenceDifferenceQuiz: React.FC = () => {
 
   if (!currentQuestion) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-purple-100">
+      <div className="flex items-center justify-center min-h-screen bg-blue-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
           <p className="text-gray-600">Loading questions...</p>
@@ -221,12 +222,13 @@ const SentenceDifferenceQuiz: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-purple-100 p-4">
+    <div className="min-h-screen bg-blue-50 relative overflow-hidden p-4">
+      <FloatingBackground />
       {/* Header with back button */}
       <div className="absolute top-4 left-4 z-20">
         <button
           onClick={() => navigate(ROUTES.PERCEPTION_SELECTION)}
-          className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
+          className="group flex items-center space-x-2 px-4 py-2 text-gray-700 bg-white/60 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-white/80 hover:shadow-md transform hover:scale-105"
         >
           <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
           <span className="font-medium">back</span>

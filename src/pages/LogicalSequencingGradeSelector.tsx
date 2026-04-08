@@ -63,14 +63,14 @@ const LogicalSequencingGradeSelector: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 relative overflow-hidden">
+    <div className="min-h-screen bg-purple-50 relative overflow-hidden">
       <FloatingBackground />
 
       {/* Header with back button */}
       <div className="absolute top-4 left-4 z-20">
         <button
           onClick={() => navigate(ROUTES.PERCEPTION_SELECTION)}
-          className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
+          className="group flex items-center space-x-2 px-4 py-2 text-gray-700 bg-white/60 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-white/80 hover:shadow-md transform hover:scale-105"
         >
           <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
           <span className="font-medium">back</span>

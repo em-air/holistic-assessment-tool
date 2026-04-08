@@ -9,6 +9,7 @@ import {
     getLockedReason
 } from '../../utils/gradeUtils';
 import { ROUTES } from '../../routes';
+import FloatingBackground from '../FloatingBackground';
 
 interface GradeSelectorProps {
     title: string;
@@ -90,12 +91,13 @@ export const GradeSelector = ({
     };
 
     return (
-        <div className={`min-h-screen bg-gradient-to-br ${gradientFrom} via-violet-400 ${gradientTo} relative overflow-hidden`}>
+        <div className={`min-h-screen bg-violet-50 relative overflow-hidden`}>
+            <FloatingBackground />
             {/* Back Button */}
             <div className="relative z-10 p-6">
                 <button
                     onClick={() => navigate(backPath)}
-                    className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
+                    className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
                 >
                     <ArrowLeft size={20} />
                     <span>Back</span>

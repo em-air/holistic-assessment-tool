@@ -213,7 +213,7 @@ const LogicalSequencingQuiz: React.FC = () => {
 
   if (!currentQuestion) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 flex items-center justify-center">
+      <div className="min-h-screen bg-purple-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
           <p className="text-gray-600">Loading questions...</p>
@@ -226,7 +226,7 @@ const LogicalSequencingQuiz: React.FC = () => {
     const percentage = Math.round((score / questions.length) * 100);
     
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 relative overflow-hidden">
+      <div className="min-h-screen bg-purple-50 relative overflow-hidden">
         <FloatingBackground />
         
         <div className="flex items-center justify-center min-h-screen p-4">
@@ -281,14 +281,14 @@ const LogicalSequencingQuiz: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 relative overflow-hidden">
+    <div className="min-h-screen bg-purple-50 relative overflow-hidden">
       <FloatingBackground />
       
       {/* Header */}
       <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-center">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg hover:bg-black/30 transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 text-gray-700 bg-white/60 backdrop-blur-sm rounded-lg hover:bg-white/80 transition-colors"
         >
           <ArrowLeft size={20} />
           <span className="font-medium">back</span>
