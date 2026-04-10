@@ -9,13 +9,34 @@ import { sanitizeString } from '../lib/sanitize.js';
 const router = Router();
 
 // Initialize Gemini AI - API key is now safely on the server
-const getGeminiModel = () => {
+const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'] as const;
+
+const getGeminiModel = (modelName: string = GEMINI_MODELS[0]) => {
   const apiKey = env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY environment variable is not set');
   }
   const genAI = new GoogleGenerativeAI(apiKey);
-  return genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  return genAI.getGenerativeModel({ model: modelName });
+};
+
+const generateWithFallback = async (prompt: string) => {
+  for (const modelName of GEMINI_MODELS) {
+    try {
+      const model = getGeminiModel(modelName);
+      const result = await model.generateContent(prompt);
+      return result.response.text();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
+      const isRetryable = msg.includes('503') || msg.includes('Service Unavailable') || msg.includes('high demand');
+      if (isRetryable && modelName !== GEMINI_MODELS[GEMINI_MODELS.length - 1]) {
+        logger.warn(`Model ${modelName} unavailable, falling back to next model`);
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw new Error('All Gemini models failed');
 };
 
 // Validation schemas
@@ -435,8 +456,6 @@ router.post('/evaluate-writing', verifySupabaseToken, async (req: Request, res: 
       return res.status(400).json({ error: `No rubric found for grade ${grade}` });
     }
 
-    const model = getGeminiModel();
-
     const evaluationPrompt = `
 You are an expert elementary and middle school writing teacher evaluating a Grade ${grade} student's writing response. Please provide a comprehensive, constructive evaluation.
 
@@ -513,9 +532,7 @@ Please respond with a JSON object in this exact format:
 }
 `;
 
-    const result = await model.generateContent(evaluationPrompt);
-    const response = await result.response;
-    const text = response.text();
+    const text = await generateWithFallback(evaluationPrompt);
 
     // Extract JSON from the response
     const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -586,8 +603,6 @@ router.post('/generate-assessment', verifySupabaseToken, async (req: Request, re
 
     const { grade, curriculum, subject, difficulty, duration, topics, includeAnswerKey } = validationResult.data;
 
-    const model = getGeminiModel();
-
     const prompt = `Create a ${difficulty} test for grade ${grade} (${curriculum} curriculum) for ${subject}.
 Duration: ${duration} minutes
 Topics: ${topics.length ? topics.join(', ') : 'All grade-level topics'}
@@ -604,9 +619,7 @@ ${includeAnswerKey ? 'Include a complete answer key with explanations at the end
 
 Format the response as markdown with clear section headers.`;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const assessment = response.text();
+    const assessment = await generateWithFallback(prompt);
 
     res.json({
       success: true,
@@ -614,9 +627,18 @@ Format the response as markdown with clear section headers.`;
     });
   } catch (error) {
     logger.error(error, 'Error generating assessment:');
-    res.status(500).json({
+    const message = error instanceof Error ? error.message : 'Failed to generate assessment';
+    const isQuota = message.includes('429') || message.includes('quota') || message.includes('Too Many Requests');
+    const isUnavailable = message.includes('503') || message.includes('Service Unavailable') || message.includes('high demand');
+    const statusCode = isQuota ? 429 : isUnavailable ? 503 : 500;
+    const userMessage = isQuota
+      ? 'AI service quota exceeded. Please try again later or check your billing plan.'
+      : isUnavailable
+        ? 'AI service is temporarily unavailable due to high demand. Please try again in a few minutes.'
+        : message;
+    res.status(statusCode).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to generate assessment',
+      error: userMessage,
     });
   }
 });

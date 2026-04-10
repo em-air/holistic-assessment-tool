@@ -15,6 +15,7 @@ interface AttentionControlQuestion {
   id: number;
   subscale: 'focusing' | 'shifting';
   kidFriendlyQuestion: string;
+  example?: string;
   type: 'rating';
   options: number[];
 }
@@ -449,6 +450,12 @@ const AttentionAssessment: React.FC = () => {
               <h2 className="text-2xl font-bold text-gray-800 mb-4 leading-relaxed">
                 {question.kidFriendlyQuestion}
               </h2>
+
+              {question.example && (
+                <p className="text-sm text-gray-500 italic mb-4 leading-relaxed">
+                  {question.example}
+                </p>
+              )}
 
               <p className="text-gray-600 text-sm">
                 Choose the option that best describes how often this applies to you:
