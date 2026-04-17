@@ -11,6 +11,7 @@ import { getMyReports, downloadReport, type ProfileReport } from '../services/pr
 import { generateReport } from '../services/reportService';
 import { logger } from '../utils/logger';
 import { ROUTES } from '../routes';
+import ReportOptionsDialog, { type ReportAudience, type ReportLanguage } from '../components/ReportOptionsDialog';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -372,6 +373,7 @@ const ProfilePage: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [reportStatus, setReportStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [showReportDialog, setShowReportDialog] = useState(false);
 
   // ── Redirect if not logged in ──────────────────────────────────────────────
   useEffect(() => {
@@ -419,17 +421,22 @@ const ProfilePage: React.FC = () => {
     setRefreshing(false);
   };
 
-  const handleGenerateReport = async () => {
+  const handleGenerateReport = () => {
+    setShowReportDialog(true);
+  };
+
+  const handleReportConfirm = async (audience: ReportAudience, language: ReportLanguage) => {
     setIsGeneratingReport(true);
     setReportStatus('idle');
     try {
-      const result = await generateReport({ reportType: 'full' });
+      const result = await generateReport({ reportType: 'full', audience, language });
       if (result.success) {
         setReportStatus('success');
         logger.log('Report saved:', result.report?.id);
 
         const dateSuffix = new Date().toISOString().split('T')[0];
-        if (result.downloadUrl) {
+        const audienceLabel = audience === 'teacher' ? 'teacher' : 'parent';
+        if (result.downloadUrl && (language === 'english' || language === 'both')) {
           try {
             const pdfResp = await fetch(result.downloadUrl);
             if (pdfResp.ok) {
@@ -437,7 +444,7 @@ const ProfilePage: React.FC = () => {
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              a.download = `en_assessment-report-${dateSuffix}.pdf`;
+              a.download = `en_${audienceLabel}_assessment-report-${dateSuffix}.pdf`;
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
@@ -447,7 +454,7 @@ const ProfilePage: React.FC = () => {
             logger.error('EN PDF download error:', dlErr);
           }
         }
-        if (result.downloadUrlAr) {
+        if (result.downloadUrlAr && (language === 'arabic' || language === 'both')) {
           try {
             const pdfResp = await fetch(result.downloadUrlAr);
             if (pdfResp.ok) {
@@ -455,7 +462,7 @@ const ProfilePage: React.FC = () => {
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              a.download = `ar_assessment-report-${dateSuffix}.pdf`;
+              a.download = `ar_${audienceLabel}_assessment-report-${dateSuffix}.pdf`;
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
@@ -476,6 +483,7 @@ const ProfilePage: React.FC = () => {
       logger.error('Report error:', err);
     } finally {
       setIsGeneratingReport(false);
+      setShowReportDialog(false);
       setTimeout(() => setReportStatus('idle'), 3000);
     }
   };
@@ -810,6 +818,14 @@ const ProfilePage: React.FC = () => {
         {/* ── Footer padding ───────────────────────────────────────────────── */}
         <div className="h-8" />
       </div>
+
+      {/* Report options dialog */}
+      <ReportOptionsDialog
+        open={showReportDialog}
+        onClose={() => setShowReportDialog(false)}
+        onConfirm={handleReportConfirm}
+        isGenerating={isGeneratingReport}
+      />
     </div>
   );
 };

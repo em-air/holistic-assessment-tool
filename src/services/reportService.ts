@@ -20,10 +20,14 @@ interface GenerateReportResponse {
  */
 export async function generateReport(options: {
   reportType?: 'mind' | 'oral' | 'academic' | 'full';
+  audience?: 'parent' | 'teacher';
+  language?: 'english' | 'arabic' | 'both';
 }): Promise<GenerateReportResponse> {
   try {
     const response = await api.post<GenerateReportResponse>('/api/reports/generate', {
       report_type: options.reportType || 'full',
+      audience: options.audience || 'parent',
+      language: options.language || 'both',
     });
 
     if (!response.success) {

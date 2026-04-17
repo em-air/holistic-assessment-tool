@@ -16,6 +16,7 @@ import { generateReport } from '../services/reportService';
 import { useNavigate } from 'react-router-dom';
 import { logger } from '../utils/logger';
 import { ROUTES } from '../routes';
+import ReportOptionsDialog, { type ReportAudience, type ReportLanguage } from './ReportOptionsDialog';
 
 /* ─── helper maps ─────────────────────────────────────── */
 
@@ -64,6 +65,7 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
   const [showClearSuccess, setShowClearSuccess] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [showReportDialog, setShowReportDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -126,18 +128,23 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
     }
   };
 
-  const handleGenerateReport = async () => {
+  const handleGenerateReport = () => {
+    setShowReportDialog(true);
+  };
+
+  const handleReportConfirm = async (audience: ReportAudience, language: ReportLanguage) => {
     setIsGeneratingReport(true);
     setSaveStatus('idle');
     try {
-      const result = await generateReport({ reportType: 'full' });
+      const result = await generateReport({ reportType: 'full', audience, language });
       if (result.success) {
         setSaveStatus('success');
         logger.log('Report saved:', result.report?.id);
 
         const dateSuffix = new Date().toISOString().split('T')[0];
+        const audienceLabel = audience === 'teacher' ? 'teacher' : 'parent';
         // Download English PDF
-        if (result.downloadUrl) {
+        if (result.downloadUrl && (language === 'english' || language === 'both')) {
           try {
             const pdfResp = await fetch(result.downloadUrl);
             if (pdfResp.ok) {
@@ -145,7 +152,7 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              a.download = `en_assessment-report-${dateSuffix}.pdf`;
+              a.download = `en_${audienceLabel}_assessment-report-${dateSuffix}.pdf`;
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
@@ -156,7 +163,7 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
           }
         }
         // Download Arabic PDF
-        if (result.downloadUrlAr) {
+        if (result.downloadUrlAr && (language === 'arabic' || language === 'both')) {
           try {
             const pdfResp = await fetch(result.downloadUrlAr);
             if (pdfResp.ok) {
@@ -164,7 +171,7 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              a.download = `ar_assessment-report-${dateSuffix}.pdf`;
+              a.download = `ar_${audienceLabel}_assessment-report-${dateSuffix}.pdf`;
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
@@ -183,6 +190,7 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
       logger.error('Report error:', err);
     } finally {
       setIsGeneratingReport(false);
+      setShowReportDialog(false);
       setTimeout(() => setSaveStatus('idle'), 3000);
     }
     if (onShowReport) onShowReport();
@@ -508,6 +516,14 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
           Last updated: {new Date(progress.lastUpdated).toLocaleString()}
         </div>
       )}
+
+      {/* Report options dialog */}
+      <ReportOptionsDialog
+        open={showReportDialog}
+        onClose={() => setShowReportDialog(false)}
+        onConfirm={handleReportConfirm}
+        isGenerating={isGeneratingReport}
+      />
     </div>
   );
 };

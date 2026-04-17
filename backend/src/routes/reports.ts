@@ -28,6 +28,8 @@ router.post('/generate', verifySupabaseToken, async (req: Request, res: Response
 
     const generateSchema = z.object({
       report_type: z.enum(['mind', 'oral', 'academic', 'full']).default('full'),
+      audience: z.enum(['parent', 'teacher']).default('parent'),
+      language: z.enum(['english', 'arabic', 'both']).default('both'),
     });
 
     const validation = generateSchema.safeParse(req.body);
@@ -38,7 +40,7 @@ router.post('/generate', verifySupabaseToken, async (req: Request, res: Response
       });
     }
 
-    const { report_type } = validation.data;
+    const { report_type, audience, language } = validation.data;
 
     // Fetch all quiz results
     const [mindResults, oralResults, academicResults] = await Promise.all([
@@ -69,36 +71,39 @@ router.post('/generate', verifySupabaseToken, async (req: Request, res: Response
       oralResults: report_type === 'full' || report_type === 'oral' ? oralResults : [],
       academicResults: report_type === 'full' || report_type === 'academic' ? academicResults : [],
       generatedAt: new Date(),
+      audience,
     };
 
-    // Generate English PDF
-    const pdfBuffer = await generateEnglishPDF(reportData);
-
-    // Generate Arabic PDF
-    let pdfBufferAr: Buffer | null = null;
-    try {
-      pdfBufferAr = await generateArabicPDF(reportData);
-    } catch (err) {
-      logger.warn(err, 'Arabic PDF generation failed (font may be unavailable):');
-    }
-
-    // Upload English PDF to storage
-    const storageResult = await uploadPDF(req.user.id, pdfBuffer, `en_${report_type}`);
-    if (!storageResult) {
-      return res.status(500).json({ error: 'Failed to upload report' });
-    }
-
-    // Upload Arabic PDF to storage
+    // Generate PDFs based on language selection
+    let storageResult: { path: string } | null = null;
     let storageResultAr: { path: string } | null = null;
-    if (pdfBufferAr) {
-      storageResultAr = await uploadPDF(req.user.id, pdfBufferAr, `ar_${report_type}`);
+
+    if (language === 'english' || language === 'both') {
+      const pdfBuffer = await generateEnglishPDF(reportData);
+      storageResult = await uploadPDF(req.user.id, pdfBuffer, `en_${audience}_${report_type}`);
+      if (!storageResult) {
+        return res.status(500).json({ error: 'Failed to upload English report' });
+      }
+    }
+
+    if (language === 'arabic' || language === 'both') {
+      try {
+        const pdfBufferAr = await generateArabicPDF(reportData);
+        storageResultAr = await uploadPDF(req.user.id, pdfBufferAr, `ar_${audience}_${report_type}`);
+      } catch (err) {
+        logger.warn(err, 'Arabic PDF generation failed (font may be unavailable):');
+      }
+    }
+
+    if (!storageResult && !storageResultAr) {
+      return res.status(500).json({ error: 'Failed to upload any report' });
     }
 
     // Save report record
     const reportInsert: ReportInsert = {
       user_id: req.user.id,
       report_type: report_type as ReportType,
-      pdf_url: storageResult.path,
+      pdf_url: (storageResult || storageResultAr)!.path,
       emailed_to: [],
     };
 
@@ -114,7 +119,7 @@ router.post('/generate', verifySupabaseToken, async (req: Request, res: Response
     }
 
     // Get download URLs
-    const downloadUrl = await getSignedUrl(storageResult.path);
+    const downloadUrl = storageResult ? await getSignedUrl(storageResult.path) : undefined;
     const downloadUrlAr = storageResultAr ? await getSignedUrl(storageResultAr.path) : undefined;
 
     res.json({
