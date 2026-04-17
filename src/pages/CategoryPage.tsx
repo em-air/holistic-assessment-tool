@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { assessmentCategories } from '../data/assessmentData';
+import FloatingBackground from '../components/FloatingBackground';
 import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 import '../utils/testProgressUtils'; // For testing - adds window.addTestResults() and window.clearTestResults()
@@ -16,14 +17,15 @@ const CategoryPage: React.FC = () => {
 
   if (!category) {
     return (
-      <div className="min-h-screen bg-emerald-500 flex items-center justify-center">
-        <div className="text-center bg-stone-100 p-8 rounded-2xl shadow-card border border-stone-200 relative z-10">
+      <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 flex items-center justify-center">
+        <FloatingBackground />
+        <div className="text-center bg-stone-100 p-8 rounded-2xl shadow-xl border border-stone-200 relative z-10">
           <h1 className="text-2xl font-bold text-stone-800 mb-4">Category Not Found</h1>
           <button
             onClick={() => navigate(ROUTES.CATEGORIES)}
-            className="group relative px-6 py-3 bg-emerald-600 text-stone-100 rounded-full font-medium overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-emerald-500/25 transform hover:scale-105 hover:-translate-y-1"
+            className="group relative px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-stone-100 rounded-full font-medium overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-emerald-500/25 transform hover:scale-105 hover:-translate-y-1"
           >
-            <div className="absolute inset-0 bg-emerald-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-700 to-teal-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <span className="relative">Back</span>
           </button>
         </div>
@@ -64,7 +66,8 @@ const CategoryPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-emerald-500 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 py-8">
+      <FloatingBackground />
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

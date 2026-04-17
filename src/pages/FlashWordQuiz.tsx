@@ -6,6 +6,7 @@ import { ProgressTracker } from '../utils/progressTracker';
 import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 import { ROUTES } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 // Flash word data structure
 interface FlashWord {
@@ -206,13 +207,14 @@ const FlashWordQuiz: React.FC = () => {
   // Grade selection screen
   if (!selectedGrade) {
     return (
-      <div className="min-h-screen bg-purple-50 py-8">
-        <div className="container mx-auto px-4">
+      <div className="min-h-screen bg-pink-50 relative overflow-hidden py-8">
+        <FloatingBackground />
+        <div className="container mx-auto px-4 relative z-10">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <button
               onClick={() => navigate(-1)}
-              className="group flex items-center space-x-2 px-4 py-2 text-white bg-white/20 rounded-lg transition-all duration-300 ease-out hover:bg-white/30 hover:shadow-md transform hover:scale-105"
+              className="group flex items-center space-x-2 px-4 py-2 text-gray-700 bg-white/60 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-white/80 hover:shadow-md transform hover:scale-105"
             >
               <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
               <span className="font-medium">Back</span>
@@ -242,7 +244,7 @@ const FlashWordQuiz: React.FC = () => {
                   onClick={() => handleGradeSelect(grade as GradeLevel)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="bg-white/20 rounded-2xl p-8 text-center hover:bg-white/30 transition-all duration-300 shadow-lg hover:shadow-card"
+                  className="bg-white/20 backdrop-blur-sm rounded-2xl p-8 text-center hover:bg-white/30 transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
                   <div className="text-4xl mb-4">📚</div>
                   <h3 className="text-xl font-bold text-white mb-2">
@@ -271,11 +273,12 @@ const FlashWordQuiz: React.FC = () => {
   // Quiz complete screen
   if (isComplete) {
     return (
-        <div className="min-h-screen bg-emerald-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-green-50 relative overflow-hidden flex items-center justify-center p-4">
+        <FloatingBackground />
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-white rounded-xl shadow-card p-8 max-w-md w-full text-center"
+          className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center relative z-10"
         >
           <div className="text-6xl mb-6">🎉</div>
           <h2 className="text-3xl font-bold text-gray-800 mb-4">Quiz Complete!</h2>
@@ -300,7 +303,7 @@ const FlashWordQuiz: React.FC = () => {
               Try Again
             </button>
             <button
-              onClick={() => navigate(ROUTES.ATTENTION_MEMORY, { replace: true })}
+              onClick={() => navigate(-1)}
               className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-colors"
             >
               Back to Cognition
@@ -316,34 +319,35 @@ const FlashWordQuiz: React.FC = () => {
   const showWordText = true; // Always show word text for all grades
 
   return (
-    <div className="min-h-screen bg-purple-50">
+    <div className="min-h-screen bg-indigo-50 relative overflow-hidden">
+      <FloatingBackground />
       {/* Header */}
-      <div className="flex items-center justify-between p-4">
+      <div className="flex items-center justify-between p-4 relative z-10">
         <button
-          onClick={() => navigate(-1)}
-          className="group flex items-center space-x-2 px-4 py-2 text-white bg-white/20 rounded-lg transition-all duration-300 ease-out hover:bg-white/30 hover:shadow-md transform hover:scale-105"
+          onClick={() => setSelectedGrade(null)}
+          className="group flex items-center space-x-2 px-4 py-2 text-gray-700 bg-white/60 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-white/80 hover:shadow-md transform hover:scale-105"
         >
           <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
           <span className="font-medium">Back</span>
         </button>
 
-        <div className="text-white text-lg font-medium">
+        <div className="text-gray-700 text-lg font-medium">
           {getGradeDisplay(selectedGrade)} - Word {currentWordIndex + 1} of {currentWords.length}
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="px-4 mb-4">
-        <div className="bg-white/20 rounded-full h-2">
+      <div className="px-4 mb-4 relative z-10">
+        <div className="bg-white/40 rounded-full h-2">
           <div
-            className="bg-white rounded-full h-2 transition-all duration-300"
+            className="bg-indigo-500 rounded-full h-2 transition-all duration-300"
             style={{ width: `${((currentWordIndex + 1) / currentWords.length) * 100}%` }}
           />
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center p-4">
+      <div className="flex-1 flex items-center justify-center p-4 relative z-10">
         <div className="w-full max-w-4xl">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
 
@@ -358,7 +362,7 @@ const FlashWordQuiz: React.FC = () => {
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
-                      className="absolute inset-0 bg-white rounded-xl shadow-card flex flex-col items-center justify-center p-6"
+                      className="absolute inset-0 bg-white rounded-3xl shadow-2xl flex flex-col items-center justify-center p-6"
                     >
                       {showImage && (
                         <img
@@ -379,7 +383,7 @@ const FlashWordQuiz: React.FC = () => {
 
                 {/* Ready/Placeholder State */}
                 {gamePhase === 'ready' && (
-                  <div className="absolute inset-0 bg-white/20 rounded-xl flex items-center justify-center">
+                  <div className="absolute inset-0 bg-white/20 backdrop-blur-sm rounded-3xl flex items-center justify-center">
                     <button
                       onClick={startFlashCard}
                       className="bg-white text-purple-600 font-bold py-4 px-8 rounded-2xl text-xl hover:bg-gray-100 transition-colors shadow-lg"
@@ -391,7 +395,7 @@ const FlashWordQuiz: React.FC = () => {
 
                 {/* Input State Placeholder */}
                 {gamePhase === 'input' && !showFlashCard && (
-                  <div className="absolute inset-0 bg-white/10 rounded-xl flex items-center justify-center">
+                  <div className="absolute inset-0 bg-white/10 backdrop-blur-sm rounded-3xl flex items-center justify-center">
                     <div className="text-white text-center">
                       <div className="text-6xl mb-4">🤔</div>
                       <p className="text-xl">What word did you see?</p>
@@ -470,7 +474,7 @@ const FlashWordQuiz: React.FC = () => {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-white/20 rounded-2xl p-4"
+                  className="bg-white/20 backdrop-blur-sm rounded-2xl p-4"
                 >
                   <div className="space-y-2">
                     {keyboardRows.map((row, rowIndex) => (

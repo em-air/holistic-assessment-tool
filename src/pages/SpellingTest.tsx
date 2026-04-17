@@ -9,6 +9,7 @@ import { logger } from '../utils/logger';
 import { QuizProgressBar, QuizNavigation, QuizResultsScreen } from '../components/quiz';
 import { useSpeech } from '../hooks';
 import { ROUTES } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 /**
  * SpellingTest - Refactored
@@ -198,12 +199,13 @@ const SpellingTest = () => {
   // Loading state
   if (!grade || wordMeta.length === 0) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-blue-50 relative overflow-hidden flex items-center justify-center">
+        <FloatingBackground />
         <div className="text-center">
           <div className="text-6xl mb-4">📝</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Loading Spelling Test...</h2>
           <button
-            onClick={() => navigate(ROUTES.SPELLING_GRADES)}
+            onClick={() => navigate(-1)}
             className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-colors"
           >
             Back to Grade Selection
@@ -245,8 +247,9 @@ const SpellingTest = () => {
     .filter(i => i !== -1);
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-blue-50 relative overflow-hidden p-6">
+      <FloatingBackground />
+      <div className="max-w-4xl mx-auto relative z-10">
         {/* Header */}
         <motion.div
           className="text-center mb-8"
@@ -356,7 +359,7 @@ const SpellingTest = () => {
         {/* Back Button */}
         <div className="text-center">
           <button
-            onClick={() => navigate(ROUTES.SPELLING_GRADES)}
+            onClick={() => navigate(-1)}
             className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-medium transition-colors"
           >
             ← Back to Grade Selection

@@ -8,12 +8,14 @@ import MindSectionReport from '../components/MindSectionReport';
 import { supabase } from '../supabase-client';
 import { logger } from '../utils/logger';
 import { ROUTES } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 // API types for attention control
 interface AttentionControlQuestion {
   id: number;
   subscale: 'focusing' | 'shifting';
   kidFriendlyQuestion: string;
+  example?: string;
   type: 'rating';
   options: number[];
 }
@@ -194,8 +196,9 @@ const AttentionAssessment: React.FC = () => {
 
   if (isCompleted && results) {
     return (
-      <div className="min-h-screen bg-purple-50 py-8">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <div className="min-h-screen bg-indigo-50 relative overflow-hidden py-8">
+        <FloatingBackground />
+        <div className="container mx-auto px-4 max-w-4xl relative z-10">
           {/* Mind Section Progress Bar */}
           <div className="mb-6">
             <AssessmentProgressBar
@@ -206,7 +209,7 @@ const AttentionAssessment: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-xl p-8 shadow-card"
+            className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl"
           >
             {/* Header */}
             <div className="text-center mb-8">
@@ -322,13 +325,13 @@ const AttentionAssessment: React.FC = () => {
               </button>
               <button
                 onClick={() => navigate(ROUTES.ATTENTION_MEMORY)}
-                className="px-8 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+                className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200 transform hover:scale-105"
               >
                 Try Memory Games
               </button>
               <button
-                onClick={() => navigate(ROUTES.ATTENTION_MEMORY)}
-                className="px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+                onClick={() => navigate(-1)}
+                className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200 transform hover:scale-105"
               >
                 Back
               </button>
@@ -347,10 +350,11 @@ const AttentionAssessment: React.FC = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mx-auto mb-4"></div>
-          <p className="text-white">Loading questions...</p>
+      <div className="min-h-screen bg-indigo-50 relative overflow-hidden flex items-center justify-center">
+        <FloatingBackground />
+        <div className="text-center relative z-10">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-700">Loading questions...</p>
         </div>
       </div>
     );
@@ -359,13 +363,14 @@ const AttentionAssessment: React.FC = () => {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-purple-50 flex items-center justify-center">
-        <div className="text-center bg-white rounded-2xl p-8 shadow-card max-w-md">
+      <div className="min-h-screen bg-indigo-50 relative overflow-hidden flex items-center justify-center">
+        <FloatingBackground />
+        <div className="text-center bg-white rounded-2xl p-8 shadow-xl max-w-md relative z-10">
           <XCircle size={48} className="text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-800 mb-2">Failed to Load</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
-            onClick={() => navigate(ROUTES.ATTENTION_MEMORY)}
+            onClick={() => navigate(-1)}
             className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-xl"
           >
             Go Back
@@ -378,28 +383,30 @@ const AttentionAssessment: React.FC = () => {
   // No questions loaded
   if (questions.length === 0) {
     return (
-      <div className="min-h-screen bg-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mx-auto mb-4"></div>
-          <p className="text-white">Loading questions...</p>
+      <div className="min-h-screen bg-indigo-50 relative overflow-hidden flex items-center justify-center">
+        <FloatingBackground />
+        <div className="text-center relative z-10">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-700">Loading questions...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-purple-50 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
+    <div className="min-h-screen bg-indigo-50 relative overflow-hidden py-8">
+      <FloatingBackground />
+      <div className="container mx-auto px-4 max-w-4xl relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <button
-            onClick={() => navigate(ROUTES.ATTENTION_MEMORY)}
-            className="flex items-center space-x-2 px-4 py-2 text-white rounded-lg transition-all duration-300 hover:bg-white/20"
+            onClick={() => navigate(-1)}
+            className="flex items-center space-x-2 px-4 py-2 text-gray-700 rounded-lg transition-all duration-300 hover:bg-white/60"
           >
             <ArrowLeft size={20} />
             <span>Back</span>
           </button>
-          <div className="text-white text-sm font-medium">
+          <div className="text-gray-700 text-sm font-medium">
             Question {currentQuestion + 1} of {questions.length}
           </div>
         </div>
@@ -428,7 +435,7 @@ const AttentionAssessment: React.FC = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="bg-white rounded-xl p-8 shadow-card mb-8"
+            className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl mb-8"
           >
             <div className="mb-8">
               <div className="flex items-center mb-4">
@@ -443,6 +450,12 @@ const AttentionAssessment: React.FC = () => {
               <h2 className="text-2xl font-bold text-gray-800 mb-4 leading-relaxed">
                 {question.kidFriendlyQuestion}
               </h2>
+
+              {question.example && (
+                <p className="text-sm text-gray-500 italic mb-4 leading-relaxed">
+                  {question.example}
+                </p>
+              )}
 
               <p className="text-gray-600 text-sm">
                 Choose the option that best describes how often this applies to you:
@@ -498,7 +511,7 @@ const AttentionAssessment: React.FC = () => {
             disabled={responses[currentQuestion] === 0}
             className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${responses[currentQuestion] === 0
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg transform hover:scale-105'
+              : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg transform hover:scale-105'
               }`}
           >
             <span>{currentQuestion === questions.length - 1 ? 'Complete' : 'Next'}</span>

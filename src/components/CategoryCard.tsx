@@ -22,17 +22,17 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
 
   const getCardBgColor = (color: string, blocked: boolean = false) => {
     if (blocked) {
-      return 'bg-gray-100/80 border border-gray-300 opacity-60';
+      return 'bg-gradient-to-br from-gray-100 to-gray-200 border border-gray-300 opacity-60';
     }
     switch (color) {
       case 'mind':
-        return 'bg-white/70 backdrop-blur-sm hover:bg-white/85 border border-white/40 hover:border-purple-200';
+        return 'bg-gradient-to-br from-purple-100 to-indigo-100 hover:from-purple-200 hover:to-indigo-200 border border-purple-200 hover:border-purple-300';
       case 'oral':
-        return 'bg-white/70 backdrop-blur-sm hover:bg-white/85 border border-white/40 hover:border-emerald-200';
+        return 'bg-gradient-to-br from-emerald-100 to-teal-100 hover:from-emerald-200 hover:to-teal-200 border border-emerald-200 hover:border-emerald-300';
       case 'academic':
-        return 'bg-white/70 backdrop-blur-sm hover:bg-white/85 border border-white/40 hover:border-orange-200';
+        return 'bg-gradient-to-br from-orange-100 to-yellow-100 hover:from-orange-200 hover:to-yellow-200 border border-orange-200 hover:border-orange-300';
       default:
-        return 'bg-white/70 backdrop-blur-sm hover:bg-white/85 border border-white/40 hover:border-blue-200';
+        return 'bg-gradient-to-br from-blue-100 to-cyan-100 hover:from-blue-200 hover:to-cyan-200 border border-blue-200 hover:border-blue-300';
     }
   };
 
@@ -134,7 +134,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
 
   return (
     <div
-      className={`group rounded-xl p-6 shadow-card ${isBlocked ? '' : 'hover:shadow-card-hover'} ${getCardBgColor(category.color, isBlocked)} max-w-sm mx-auto transition-shadow duration-200 ${isBlocked ? 'cursor-not-allowed' : 'cursor-pointer'} overflow-hidden relative`}
+      className={`group rounded-2xl p-6 shadow-sm ${isBlocked ? '' : 'hover:shadow-lg'} ${getCardBgColor(category.color, isBlocked)} max-w-sm mx-auto transform transition-all duration-500 ease-out ${isBlocked ? 'cursor-not-allowed' : 'hover:scale-105 cursor-pointer'} overflow-hidden relative`}
       title={blockedMessage || undefined}
     >
       {/* Lock overlay for blocked categories */}
@@ -144,9 +144,14 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
         </div>
       )}
 
+      {/* Animated background overlay */}
+      {!isBlocked && (
+        <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      )}
+
       <div className="relative">
         <div className="text-center mb-6">
-          <div className={`text-4xl mb-4 ${isBlocked ? 'grayscale opacity-50' : ''}`}>
+          <div className={`text-4xl mb-4 transform transition-all duration-300 ${isBlocked ? 'grayscale opacity-50' : 'group-hover:scale-110 group-hover:rotate-6'}`}>
             {getCardEmoji(category.color)}
           </div>
           <h2 className={`text-xl font-semibold ${getTextColor(category.color, isBlocked)} mb-3 transition-colors duration-300`}>
@@ -188,9 +193,12 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
         <button
           onClick={handleStartAssessment}
           disabled={isBlocked}
-          className={`group/btn relative w-full ${isBlocked ? 'bg-gray-400 cursor-not-allowed' : getButtonColor(category.color)} text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-md ${!isBlocked && 'hover:shadow-lg hover:brightness-110'} text-sm overflow-hidden`}
+          className={`group/btn relative w-full ${isBlocked ? 'bg-gray-400 cursor-not-allowed' : getButtonColor(category.color)} text-white font-medium py-3 px-4 rounded-xl transition-all duration-300 shadow-sm ${!isBlocked && 'hover:shadow-lg'} text-sm overflow-hidden transform ${!isBlocked && 'hover:scale-105 hover:-translate-y-1'}`}
         >
-          <div className="flex items-center justify-center space-x-2">
+          {!isBlocked && (
+            <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
+          )}
+          <div className="relative flex items-center justify-center space-x-2">
             {isBlocked ? (
               <>
                 <Lock size={16} />
@@ -241,13 +249,13 @@ const getSubcategoryColor = (color: string) => {
 const getButtonColor = (color: string) => {
   switch (color) {
     case 'mind':
-      return 'bg-purple-600 hover:bg-purple-700';
+      return 'bg-purple-500 hover:bg-purple-600';
     case 'oral':
-      return 'bg-emerald-600 hover:bg-emerald-700';
+      return 'bg-emerald-500 hover:bg-emerald-600';
     case 'academic':
-      return 'bg-orange-600 hover:bg-orange-700';
+      return 'bg-orange-500 hover:bg-orange-600';
     default:
-      return 'bg-blue-600 hover:bg-blue-700';
+      return 'bg-blue-500 hover:bg-blue-600';
   }
 };
 

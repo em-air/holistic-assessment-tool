@@ -6,6 +6,7 @@ import type { GradeLevel, AnalogyQuestion } from '../types/quiz';
 import { supabase } from '../supabase-client';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { ROUTES } from '../routes';
 
 const gradeOptions = [
   { value: 'grade1', label: 'Grade 1', description: 'Basic relationships and simple concepts' },
@@ -16,7 +17,7 @@ const gradeOptions = [
 import { ProgressTracker } from '../utils/progressTracker';
 import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
-import { ROUTES } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 const AnalogyQuiz: React.FC = () => {
   const navigate = useNavigate();
@@ -149,12 +150,13 @@ const AnalogyQuiz: React.FC = () => {
   // Grade Selection Screen
   if (!selectedGrade) {
     return (
-      <div className="min-h-screen bg-purple-50 py-8">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <div className="min-h-screen bg-violet-50 relative overflow-hidden py-8">
+        <FloatingBackground />
+        <div className="container mx-auto px-4 max-w-4xl relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl p-8 shadow-card"
+            className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl"
           >
             <div className="text-center mb-8">
               <div className="w-20 h-20 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -207,14 +209,15 @@ const AnalogyQuiz: React.FC = () => {
     const performance = getPerformanceLevel();
 
     return (
-      <div className="min-h-screen bg-emerald-50 py-8">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <div className="min-h-screen bg-green-50 relative overflow-hidden py-8">
+        <FloatingBackground />
+        <div className="container mx-auto px-4 max-w-4xl relative z-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-xl p-8 shadow-card text-center"
+            className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl text-center"
           >
-            <div className="w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6">
               <Trophy size={36} className="text-white" />
             </div>
 
@@ -236,19 +239,19 @@ const AnalogyQuiz: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={resetQuiz}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-purple-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
               >
                 <RotateCcw size={20} />
                 Try Again
               </button>
               <button
                 onClick={() => setSelectedGrade(null)}
-                className="px-6 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+                className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
               >
                 Change Grade
               </button>
               <button
-                onClick={() => navigate(ROUTES.CRITICAL_THINKING_SELECTION, { replace: true })}
+                onClick={() => navigate(-1)}
                 className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-colors duration-200"
               >
                 Back
@@ -262,13 +265,14 @@ const AnalogyQuiz: React.FC = () => {
 
   // Quiz Screen
   return (
-    <div className="min-h-screen bg-purple-50 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
+    <div className="min-h-screen bg-purple-50 relative overflow-hidden py-8">
+      <FloatingBackground />
+      <div className="container mx-auto px-4 max-w-4xl relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:bg-white/20 transition-colors duration-200"
+            onClick={() => setSelectedGrade(null)}
+            className="flex items-center gap-2 px-4 py-2 text-gray-700 rounded-lg hover:bg-white/60 transition-colors duration-200"
           >
             <ArrowLeft size={20} />
             Back
@@ -299,7 +303,7 @@ const AnalogyQuiz: React.FC = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="bg-white rounded-xl p-8 shadow-card"
+            className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl"
           >
             {/* Question */}
             <div className="text-center mb-8">
@@ -318,7 +322,7 @@ const AnalogyQuiz: React.FC = () => {
                   />
                 </div>
               )}
-              <div className="w-20 h-1 bg-blue-400 rounded mx-auto"></div>
+              <div className="w-20 h-1 bg-gradient-to-r from-blue-400 to-purple-500 rounded mx-auto"></div>
             </div>
 
             {/* Answer Choices */}
@@ -408,7 +412,7 @@ const AnalogyQuiz: React.FC = () => {
               >
                 <button
                   onClick={handleNext}
-                  className="px-8 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+                  className="px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
                 >
                   {currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'See Results'}
                 </button>

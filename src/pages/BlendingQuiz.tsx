@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Volume2, Mic } from 'lucide-react';
 import { motion } from 'framer-motion';
+import FloatingBackground from '../components/FloatingBackground';
 import { enhancedTTS, phoneticSoundMap } from '../utils/enhancedTTS';
 import { ProgressTracker } from '../utils/progressTracker';
 import { logger } from '../utils/logger';
@@ -308,10 +309,12 @@ const BlendingQuiz: React.FC = () => {
   if (!selectedGrade) {
     return (
       <div className="min-h-screen bg-violet-50 relative overflow-hidden">
+        <FloatingBackground />
+        
         <div className="relative z-10 p-6">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 px-4 py-2 rounded-lg transition-colors duration-200"
+            className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
           >
             <ArrowLeft size={20} />
             <span>Back to Category</span>
@@ -322,7 +325,7 @@ const BlendingQuiz: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl p-8 shadow-card border border-slate-100 max-w-md w-full"
+            className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/50 max-w-md w-full"
           >
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -355,10 +358,12 @@ const BlendingQuiz: React.FC = () => {
     
     return (
       <div className="min-h-screen bg-violet-50 relative overflow-hidden">
+        <FloatingBackground />
+        
         <div className="relative z-10 p-6">
           <button
-            onClick={() => navigate(categoryRoute(categoryId!), { replace: true })}
-            className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 px-4 py-2 rounded-lg transition-colors duration-200"
+            onClick={() => navigate(-1)}
+            className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
           >
             <ArrowLeft size={20} />
             <span>Back to Category</span>
@@ -369,7 +374,7 @@ const BlendingQuiz: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl p-8 shadow-card border border-slate-100 max-w-md w-full text-center"
+            className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/50 max-w-md w-full text-center"
           >
             <div className="w-20 h-20 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-6">
               <span className="text-3xl">🎉</span>
@@ -398,7 +403,7 @@ const BlendingQuiz: React.FC = () => {
               </button>
               
               <button
-                onClick={() => navigate(ROUTES.CATEGORIES, { replace: true })}
+                onClick={() => navigate(-1)}
                 className="w-full bg-gray-500 hover:bg-gray-600 text-white py-3 px-6 rounded-lg font-bold transition-colors duration-200"
               >
                 Back to Categories
@@ -413,10 +418,12 @@ const BlendingQuiz: React.FC = () => {
   // Quiz Screen
   return (
     <div className="min-h-screen bg-violet-50 relative overflow-hidden">
+      <FloatingBackground />
+      
       <div className="relative z-10 p-6">
         <button
-          onClick={() => navigate(-1)}
-          className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 px-4 py-2 rounded-lg transition-colors duration-200"
+          onClick={() => setSelectedGrade(null)}
+          className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
         >
           <ArrowLeft size={20} />
           <span>Back to Category</span>
@@ -428,7 +435,7 @@ const BlendingQuiz: React.FC = () => {
           key={currentQuestionIndex}
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
-          className="bg-white rounded-2xl p-8 shadow-card border border-slate-100 max-w-2xl w-full"
+          className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/50 max-w-2xl w-full"
         >
           {/* Progress */}
           <div className="mb-8">

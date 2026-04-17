@@ -9,6 +9,7 @@ import {
     getLockedReason
 } from '../../utils/gradeUtils';
 import { ROUTES } from '../../routes';
+import FloatingBackground from '../FloatingBackground';
 
 interface GradeSelectorProps {
     title: string;
@@ -39,8 +40,8 @@ export const GradeSelector = ({
     grades = [1, 2, 3],
     onSelectGrade,
     backPath,
-    gradientFrom = 'bg-purple-50',
-    gradientTo = '',
+    gradientFrom = 'from-purple-300',
+    gradientTo = 'to-indigo-500',
     accentColor = 'purple',
     category = 'academic',
     subcategory = 'spelling',
@@ -90,12 +91,13 @@ export const GradeSelector = ({
     };
 
     return (
-        <div className={`min-h-screen ${gradientFrom} ${gradientTo} relative overflow-hidden`}>
+        <div className={`min-h-screen bg-violet-50 relative overflow-hidden`}>
+            <FloatingBackground />
             {/* Back Button */}
             <div className="relative z-10 p-6">
                 <button
                     onClick={() => navigate(backPath)}
-                    className="flex items-center space-x-2 text-slate-600 hover:text-slate-800 bg-white/90 border border-slate-200 px-4 py-2 rounded-lg transition-colors duration-200"
+                    className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
                 >
                     <ArrowLeft size={20} />
                     <span>Back</span>
@@ -106,7 +108,7 @@ export const GradeSelector = ({
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-xl p-8 shadow-card border border-slate-100 max-w-md w-full"
+                    className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/50 max-w-md w-full"
                 >
                     {/* Header */}
                     <div className="text-center mb-6">

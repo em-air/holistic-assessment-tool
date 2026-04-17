@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Eye, Search, List } from 'lucide-react';
 import { motion } from 'framer-motion';
+import FloatingBackground from '../components/FloatingBackground';
 import { ROUTES } from '../routes';
 
 const PerceptionQuizSelection: React.FC = () => {
@@ -16,7 +17,7 @@ const PerceptionQuizSelection: React.FC = () => {
       description: 'Identify which object was removed from a set of pictures',
       icon: Search,
       route: ROUTES.PERCEPTION_MISSING_OBJECT,
-      color: 'bg-pink-500',
+      color: 'from-pink-500 to-rose-600',
       difficulty: 'All Ages'
     },
     {
@@ -26,7 +27,7 @@ const PerceptionQuizSelection: React.FC = () => {
       description: 'Identify differences between similar sentences',
       icon: Search,
       route: ROUTES.PERCEPTION_SENTENCE_DIFF,
-      color: 'bg-green-500',
+      color: 'from-green-500 to-emerald-600',
       difficulty: 'Grades 1-4'
     },
     {
@@ -36,18 +37,20 @@ const PerceptionQuizSelection: React.FC = () => {
       description: 'Arrange sentences in the correct logical order',
       icon: List,
       route: ROUTES.PERCEPTION_LOGICAL_SEQ,
-      color: 'bg-purple-500',
+      color: 'from-purple-500 to-pink-600',
       difficulty: 'Grades 1-4'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-indigo-100 relative overflow-hidden">
+      <FloatingBackground />
+
       {/* Header with back button */}
       <div className="absolute top-4 left-4 z-20">
         <button
           onClick={() => navigate(-1)}
-          className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
+          className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
         >
           <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
           <span className="font-medium">back</span>
@@ -63,7 +66,7 @@ const PerceptionQuizSelection: React.FC = () => {
             className="text-center mb-12"
           >
             <div className="mb-6">
-              <div className="w-20 h-20 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-4">
                 <Eye size={40} className="text-white" />
               </div>
             </div>
@@ -89,14 +92,14 @@ const PerceptionQuizSelection: React.FC = () => {
                   className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
                   onClick={() => navigate(quiz.route)}
                 >
-                  <div className="bg-white rounded-xl shadow-lg p-8 h-full border-2 border-transparent group-hover:border-blue-300 transition-all duration-300 relative overflow-hidden">
+                  <div className="bg-white rounded-3xl shadow-lg p-8 h-full border-2 border-transparent group-hover:border-blue-300 transition-all duration-300 relative overflow-hidden">
                     {/* Background gradient */}
-                    <div className={`absolute inset-0 ${quiz.color} opacity-5 group-hover:opacity-10 transition-opacity duration-300`}></div>
+                    <div className={`absolute inset-0 bg-gradient-to-br ${quiz.color} opacity-5 group-hover:opacity-10 transition-opacity duration-300`}></div>
 
                     {/* Content */}
                     <div className="relative z-10 text-center">
                       {/* Icon */}
-                      <div className={`w-16 h-16 ${quiz.color} rounded-2xl flex items-center justify-center mx-auto mb-6`}>
+                      <div className={`w-16 h-16 bg-gradient-to-r ${quiz.color} rounded-2xl flex items-center justify-center mx-auto mb-6`}>
                         <IconComponent size={32} className="text-white" />
                       </div>
 
@@ -124,7 +127,7 @@ const PerceptionQuizSelection: React.FC = () => {
                       <div className="mt-6">
                         <div className={`
                           inline-flex items-center px-6 py-3 rounded-xl font-semibold text-white
-                          ${quiz.color} 
+                          bg-gradient-to-r ${quiz.color} 
                           transform transition-all duration-200 
                           group-hover:shadow-lg group-hover:scale-105
                         `}>
@@ -134,7 +137,7 @@ const PerceptionQuizSelection: React.FC = () => {
                     </div>
 
                     {/* Hover effect */}
-                    <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-blue-200 transition-all duration-300"></div>
+                    <div className="absolute inset-0 rounded-3xl border-2 border-transparent group-hover:border-blue-200 transition-all duration-300"></div>
                   </div>
                 </motion.div>
               );
@@ -148,7 +151,7 @@ const PerceptionQuizSelection: React.FC = () => {
             transition={{ delay: 0.4 }}
             className="mt-12 text-center"
           >
-            <div className="bg-white/70 rounded-2xl p-6 max-w-2xl mx-auto">
+            <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 max-w-2xl mx-auto">
               <h3 className="text-lg font-semibold text-gray-800 mb-3">
                 About Perception Activities
               </h3>

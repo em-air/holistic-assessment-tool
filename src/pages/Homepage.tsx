@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Shield, User } from 'lucide-react';
+import FloatingBackground from '../components/FloatingBackground';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { createHomepageT } from '../i18n/homepage';
@@ -32,14 +33,9 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 relative overflow-hidden">
-      {/* Floating Background Shapes */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-        <div className="absolute -top-20 -left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/3 -right-16 w-96 h-96 bg-teal-300/15 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-1/4 w-64 h-64 bg-emerald-300/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <FloatingBackground />
 
       {/* Navigation Bar */}
       <nav className="relative z-20 bg-white shadow-sm border-b border-gray-200">
@@ -49,6 +45,11 @@ const HomePage: React.FC = () => {
             <div className="flex items-center">
               <motion.span
                 className="text-xl font-semibold text-black cursor-pointer"
+                whileHover={{
+                  scale: 1.05,
+                  color: "#10b981",
+                  textShadow: "0px 0px 8px rgba(16, 185, 129, 0.3)"
+                }}
                 whileTap={{ scale: 0.95 }}
                 transition={{
                   type: "spring",
@@ -142,7 +143,7 @@ const HomePage: React.FC = () => {
         <div className="max-w-6xl mx-auto">
           {/* Hero Card */}
           <motion.div
-            className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-elevated p-8 md:p-12 mb-8 border border-white/40"
+            className="bg-white/98 backdrop-blur-lg rounded-3xl shadow-2xl p-8 md:p-12 mb-8 border border-white/30"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
@@ -157,19 +158,25 @@ const HomePage: React.FC = () => {
                   transition={{ duration: 0.3, delay: 0.1, ease: "easeOut" }}
                 >
                   <motion.div
-                    className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center shadow-sm"
+                    className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg"
+                    animate={{ y: [-3, 3, -3] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                     style={{ willChange: 'transform' }}
                   >
                     <span className="text-white text-2xl">⭐</span>
                   </motion.div>
                   <motion.div
-                    className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center shadow-sm"
+                    className="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center shadow-lg"
+                    animate={{ y: [3, -3, 3] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.2, ease: "linear" }}
                     style={{ willChange: 'transform' }}
                   >
                     <span className="text-white text-2xl">📚</span>
                   </motion.div>
                   <motion.div
-                    className="w-16 h-16 bg-pink-500 rounded-full flex items-center justify-center shadow-sm"
+                    className="w-16 h-16 bg-gradient-to-br from-pink-400 to-red-500 rounded-full flex items-center justify-center shadow-lg"
+                    animate={{ y: [-3, 3, -3] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.4, ease: "linear" }}
                     style={{ willChange: 'transform' }}
                   >
                     <span className="text-white text-2xl">🧠</span>
@@ -178,19 +185,21 @@ const HomePage: React.FC = () => {
               </div>
 
               <motion.h1
-                className={`text-4xl md:text-6xl font-semibold text-slate-800 mb-6 ${isRTL ? 'font-arabic' : ''}`}
+                className={`text-4xl md:text-6xl font-semibold bg-gradient-to-r from-white via-gray-100 to-white bg-clip-text text-transparent mb-6 drop-shadow-lg ${isRTL ? 'font-arabic' : ''}`}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
+                whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
               >
                 {t('hero.title')}
               </motion.h1>
 
               <motion.p
-                className={`text-lg md:text-xl text-slate-600 max-w-4xl mx-auto mb-8 font-normal ${isRTL ? 'font-arabic' : ''}`}
+                className={`text-lg md:text-xl text-white drop-shadow-md max-w-4xl mx-auto mb-8 font-normal ${isRTL ? 'font-arabic' : ''}`}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
+                whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
               >
                 {t('hero.subtitle')}
               </motion.p>
@@ -203,8 +212,13 @@ const HomePage: React.FC = () => {
               >
                 <motion.button
                   onClick={() => navigate(ROUTES.CATEGORIES)}
-                  className="group relative bg-emerald-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:bg-emerald-700 hover:shadow-xl transition-all duration-200"
-                  whileHover={{}}
+                  className="group relative bg-white/20 backdrop-blur-md text-white px-8 py-4 rounded-full text-lg font-medium border border-white/40 shadow-lg hover:shadow-xl transition-all duration-300"
+                  whileHover={{
+                    scale: 1.02,
+                    backgroundColor: "rgba(255,255,255,0.25)",
+                    borderColor: "rgba(255,255,255,0.6)",
+                    transition: { duration: 0.2 }
+                  }}
                   whileTap={{ scale: 0.98 }}
                 >
                   <span className={`flex items-center space-x-2 ${isRTL ? 'font-arabic' : ''}`}>
@@ -238,7 +252,7 @@ const HomePage: React.FC = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.6, ease: "easeOut" }}
-                    className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl text-base font-medium shadow-sm hover:shadow-md transition-all duration-200"
+                    className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-full text-base font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -257,28 +271,38 @@ const HomePage: React.FC = () => {
               transition={{ duration: 0.4, delay: 0.5, ease: "easeOut" }}
             >
               {[
-                { number: "3", label: t('stats.categories'), icon: "📊", color: "bg-blue-500" },
-                { number: "12", label: t('stats.skillAreas'), icon: "🎯", color: "bg-emerald-500" },
-                { number: "45", label: t('stats.minutes'), icon: "⏱️", color: "bg-pink-500" },
-                { number: "6-12", label: t('stats.ageRange'), icon: "👦", color: "bg-yellow-500" }
+                { number: "3", label: t('stats.categories'), icon: "📊", color: "from-blue-500 to-purple-600" },
+                { number: "12", label: t('stats.skillAreas'), icon: "🎯", color: "from-emerald-500 to-teal-600" },
+                { number: "45", label: t('stats.minutes'), icon: "⏱️", color: "from-pink-500 to-red-600" },
+                { number: "6-12", label: t('stats.ageRange'), icon: "👦", color: "from-yellow-500 to-orange-600" }
               ].map((stat, index) => (
                 <motion.div
                   key={index}
-                  className="bg-white/70 backdrop-blur-sm rounded-xl p-4 md:p-6 text-center border border-white/40 shadow-card hover:shadow-card-hover transition-shadow duration-200"
+                  className="bg-gradient-to-br from-white/95 via-white/98 to-white/95 backdrop-blur-sm rounded-2xl p-4 md:p-6 text-center border border-white/50 shadow-lg"
+                  whileHover={{
+                    scale: 1.03,
+                    background: "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,255,255,1))",
+                    borderColor: "#0891b2",
+                    boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
+                    transition: { duration: 0.2, ease: "easeOut" }
+                  }}
+                  transition={{ duration: 0.2 }}
                 >
-                  <div className={`w-10 h-10 mx-auto mb-3 ${stat.color} rounded-xl flex items-center justify-center`}>
+                  <div className={`w-10 h-10 mx-auto mb-3 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-md`}>
                     <span className="text-white text-lg">{stat.icon}</span>
                   </div>
-                  <div
-                    className="text-2xl md:text-3xl font-medium text-slate-800 mb-1"
+                  <motion.div
+                    className={`text-2xl md:text-3xl font-medium bg-gradient-to-r ${stat.color} bg-clip-text text-transparent mb-1`}
+                    whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
                   >
                     {stat.number}
-                  </div>
-                  <div
-                    className="text-sm md:text-base text-slate-600 font-normal"
+                  </motion.div>
+                  <motion.div
+                    className="text-sm md:text-base text-gray-700 drop-shadow-sm font-normal"
+                    whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
                   >
                     {stat.label}
-                  </div>
+                  </motion.div>
                 </motion.div>
               ))}
             </motion.div>
@@ -295,44 +319,56 @@ const HomePage: React.FC = () => {
                   icon: "⚡",
                   title: t('features.quickEasy'),
                   desc: t('features.quickEasyDesc'),
-                  iconBg: "bg-yellow-500",
-                  bg: "bg-yellow-50"
+                  gradient: "from-yellow-400 to-orange-500",
+                  bgGradient: "from-yellow-50 to-orange-50"
                 },
                 {
                   icon: "👶",
                   title: t('features.kidFriendly'),
                   desc: t('features.kidFriendlyDesc'),
-                  iconBg: "bg-pink-500",
-                  bg: "bg-pink-50"
+                  gradient: "from-pink-400 to-purple-500",
+                  bgGradient: "from-pink-50 to-purple-50"
                 },
                 {
                   icon: "📊",
                   title: t('features.detailedResults'),
                   desc: t('features.detailedResultsDesc'),
-                  iconBg: "bg-blue-500",
-                  bg: "bg-blue-50"
+                  gradient: "from-blue-400 to-cyan-500",
+                  bgGradient: "from-blue-50 to-cyan-50"
                 }
               ].map((feature, index) => (
-                <div
+                <motion.div
                   key={index}
-                  className={`${feature.bg}/70 backdrop-blur-sm rounded-xl p-6 border border-white/40 text-center shadow-card hover:shadow-card-hover transition-shadow duration-200`}
+                  className={`bg-gradient-to-br ${feature.bgGradient} backdrop-blur-sm rounded-2xl p-6 border border-white/60 text-center shadow-lg`}
+                  whileHover={{
+                    scale: 1.02,
+                    boxShadow: "0 25px 50px rgba(0,0,0,0.15)",
+                    borderColor: "#0891b2",
+                    background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,1))",
+                    transition: { duration: 0.2, ease: "easeOut" }
+                  }}
+                  transition={{ duration: 0.2 }}
                 >
-                  <div
-                    className={`w-16 h-16 mx-auto mb-4 ${feature.iconBg} rounded-xl flex items-center justify-center`}
+                  <motion.div
+                    className={`w-16 h-16 mx-auto mb-4 bg-gradient-to-br ${feature.gradient} rounded-2xl flex items-center justify-center shadow-lg`}
+                    whileHover={{ scale: 1.05, rotate: 3, transition: { duration: 0.2 } }}
+                    transition={{ duration: 0.2 }}
                   >
                     <span className="text-white text-2xl">{feature.icon}</span>
-                  </div>
-                  <h3
-                    className="text-lg font-medium text-slate-800 mb-2"
+                  </motion.div>
+                  <motion.h3
+                    className={`text-lg font-medium bg-gradient-to-r ${feature.gradient} bg-clip-text text-transparent mb-2`}
+                    whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
                   >
                     {feature.title}
-                  </h3>
-                  <p
-                    className="text-slate-600 font-normal"
+                  </motion.h3>
+                  <motion.p
+                    className="text-gray-700 drop-shadow-sm font-normal"
+                    whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
                   >
                     {feature.desc}
-                  </p>
-                </div>
+                  </motion.p>
+                </motion.div>
               ))}
             </motion.div>
 
@@ -344,21 +380,29 @@ const HomePage: React.FC = () => {
               transition={{ duration: 0.4, delay: 0.7, ease: "easeOut" }}
             >
               {[
-                { text: t('trust.educatorApproved'), icon: "✅", color: "text-emerald-600" },
-                { text: t('trust.safeSecure'), icon: "🔒", color: "text-blue-600" },
-                { text: t('trust.researchBased'), icon: "📚", color: "text-purple-600" }
+                { text: t('trust.educatorApproved'), icon: "✅", gradient: "from-emerald-500 to-green-600" },
+                { text: t('trust.safeSecure'), icon: "🔒", gradient: "from-blue-500 to-cyan-600" },
+                { text: t('trust.researchBased'), icon: "📚", gradient: "from-purple-500 to-pink-600" }
               ].map((badge, index) => (
-                <div
+                <motion.div
                   key={index}
-                  className="bg-white/70 backdrop-blur-sm px-6 py-3 rounded-full border border-white/40 shadow-card"
+                  className="bg-gradient-to-r from-white/95 via-white/98 to-white/95 backdrop-blur-sm px-6 py-3 rounded-full border border-white/60 shadow-lg"
+                  whileHover={{
+                    scale: 1.05,
+                    background: "linear-gradient(to right, rgba(255,255,255,0.98), rgba(255,255,255,1))",
+                    borderColor: "#0891b2",
+                    boxShadow: "0 15px 30px rgba(0,0,0,0.12)"
+                  }}
+                  transition={{ duration: 0.3 }}
                 >
-                  <span
-                    className={`${badge.color} font-medium text-sm md:text-base flex items-center gap-2`}
+                  <motion.span
+                    className={`bg-gradient-to-r ${badge.gradient} bg-clip-text text-transparent font-medium text-sm md:text-base flex items-center gap-2`}
+                    whileHover={{ scale: 1.02 }}
                   >
                     <span className="text-lg">{badge.icon}</span>
                     {badge.text}
-                  </span>
-                </div>
+                  </motion.span>
+                </motion.div>
               ))}
             </motion.div>
           </motion.div>
@@ -433,13 +477,13 @@ const HomePage: React.FC = () => {
           onClick={() => { if (!isSigningOut) setShowSignOutConfirm(false); }}
         >
           <motion.div
-            className="bg-white rounded-xl p-8 max-w-sm w-full shadow-elevated border border-slate-100"
+            className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-gray-100"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
           >
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-red-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <LogOut className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-2">{t('signOut.title')}</h3>
@@ -449,14 +493,14 @@ const HomePage: React.FC = () => {
               <button
                 onClick={() => setShowSignOutConfirm(false)}
                 disabled={isSigningOut}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors duration-200 font-semibold disabled:opacity-50"
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-2xl text-gray-700 hover:bg-gray-50 transition-all duration-300 font-semibold disabled:opacity-50"
               >
                 {t('signOut.cancel')}
               </button>
               <button
                 onClick={handleSignOut}
                 disabled={isSigningOut}
-                className="flex-1 px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors duration-200 font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl hover:from-red-600 hover:to-red-700 transition-all duration-300 font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSigningOut ? 'Signing Out...' : t('signOut.confirm')}
               </button>

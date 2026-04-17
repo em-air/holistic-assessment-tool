@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import FloatingBackground from '../components/FloatingBackground';
 import { AuthSuccessAnimation, LoginForm, SignupForm } from '../components/auth';
 import { useAuthForm } from '../hooks/useAuthForm';
 import { ROUTES } from '../routes';
@@ -43,17 +44,21 @@ const AuthPage = () => {
       </AnimatePresence>
 
       <motion.div
-        className="min-h-screen bg-emerald-500 relative overflow-hidden"
+        className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 relative overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
       >
+        {/* Animated background */}
+        <FloatingBackground />
+
         {/* Back button */}
         <div className="absolute top-6 left-6 z-50">
           <motion.button
             onClick={() => navigate(ROUTES.HOME)}
-            className="group flex items-center space-x-2 px-4 py-2 text-slate-700 rounded-lg transition-colors duration-200 hover:text-slate-800 hover:bg-white/50 border border-slate-200"
+            className="group flex items-center space-x-2 px-4 py-2 text-slate-700 rounded-lg transition-all duration-300 ease-out hover:text-slate-800 hover:bg-white/50 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5 backdrop-blur-sm border border-violet-200/30"
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
             <svg
@@ -81,8 +86,10 @@ const AuthPage = () => {
             >
               <motion.div
                 className="flex justify-center mb-4"
+                whileHover={{ scale: 1.1, rotate: 12 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 10 }}
               >
-                <div className="w-12 h-12 bg-violet-600 rounded-xl flex items-center justify-center shadow-sm">
+                <div className="w-12 h-12 bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                   <div className="w-6 h-6 bg-white rounded" />
                 </div>
               </motion.div>
@@ -98,7 +105,7 @@ const AuthPage = () => {
 
             {/* Form container */}
             <motion.div
-              className="bg-white rounded-xl p-8 shadow-card border border-slate-100"
+              className="bg-white/70 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-violet-200/40"
               layout
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}

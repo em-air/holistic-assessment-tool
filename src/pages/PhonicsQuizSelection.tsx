@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Volume2 } from 'lucide-react';
+import FloatingBackground from '../components/FloatingBackground';
 import { ROUTES, categoryRoute, phonicsQuizRoute } from '../routes';
 
 const PhonicsQuizSelection: React.FC = () => {
@@ -14,7 +15,7 @@ const PhonicsQuizSelection: React.FC = () => {
       description: 'Match letters with their sounds',
       icon: BookOpen,
       route: phonicsQuizRoute(categoryId!),
-      color: 'bg-blue-500',
+      color: 'from-blue-500 to-purple-600',
       difficulty: 'Grades 1-4'
     },
     {
@@ -23,18 +24,20 @@ const PhonicsQuizSelection: React.FC = () => {
       description: 'Identify beginning and ending sounds in words',
       icon: Volume2,
       route: ROUTES.STARTING_ENDING_SOUND,
-      color: 'bg-green-500',
+      color: 'from-green-500 to-blue-600',
       difficulty: 'Grades 1-4'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-purple-100 relative overflow-hidden">
+      <FloatingBackground />
+      
       {/* Header with back button */}
       <div className="absolute top-4 left-4 z-20">
         <button
           onClick={() => navigate(-1)}
-          className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
+          className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
         >
           <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
           <span className="font-medium">back</span>
@@ -63,9 +66,9 @@ const PhonicsQuizSelection: React.FC = () => {
                   className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
                   onClick={() => navigate(quiz.route)}
                 >
-                  <div className="bg-white rounded-xl shadow-lg p-8 h-full border-2 border-transparent group-hover:border-blue-300 transition-all duration-300">
+                  <div className="bg-white rounded-3xl shadow-lg p-8 h-full border-2 border-transparent group-hover:border-blue-300 transition-all duration-300">
                     {/* Quiz Icon */}
-                    <div className={`w-16 h-16 rounded-2xl ${quiz.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${quiz.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
                       <Icon size={32} className="text-white" />
                     </div>
 

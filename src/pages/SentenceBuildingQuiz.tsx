@@ -5,6 +5,7 @@ import { ArrowLeft, Star, Check, X, RotateCcw, MessageSquare } from 'lucide-reac
 import { getQuestionsForGrade, getGradeData, type SentenceBuildingQuestion } from '../data/sentenceBuildingData';
 import { ProgressTracker } from '../utils/progressTracker';
 import { ROUTES } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 const SentenceBuildingQuiz: React.FC = () => {
   const navigate = useNavigate();
@@ -104,14 +105,15 @@ const SentenceBuildingQuiz: React.FC = () => {
   // Results screen
   if (showResults) {
     return (
-      <div className="min-h-screen bg-emerald-50 py-8">
+      <div className="min-h-screen bg-emerald-50 relative overflow-hidden py-8">
+        <FloatingBackground />
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center max-w-2xl mx-auto"
           >
-            <div className="bg-white rounded-xl p-8 shadow-card border border-slate-100">
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
               <Star className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
               <h2 className="text-3xl font-bold text-stone-800 mb-2">Quiz Complete!</h2>
               <p className="text-stone-500 mb-6">Sentence Building — {gradeData?.title}</p>
@@ -137,7 +139,7 @@ const SentenceBuildingQuiz: React.FC = () => {
                   Try Again
                 </button>
                 <button
-                  onClick={() => navigate(ROUTES.ORAL_SENTENCE_BUILDING, { replace: true })}
+                  onClick={() => navigate(-1)}
                   className="px-6 py-3 bg-stone-500 hover:bg-stone-600 text-white rounded-lg font-medium transition-colors duration-300"
                 >
                   Back to Grades
@@ -160,7 +162,8 @@ const SentenceBuildingQuiz: React.FC = () => {
 
   // Question screen
   return (
-    <div className="min-h-screen bg-purple-50 py-8">
+    <div className="min-h-screen bg-purple-50 relative overflow-hidden py-8">
+      <FloatingBackground />
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -173,12 +176,12 @@ const SentenceBuildingQuiz: React.FC = () => {
           </button>
 
           {/* Progress */}
-          <div className="flex items-center gap-4 text-white">
+          <div className="flex items-center gap-4 text-gray-700">
             <div className="flex items-center gap-2">
               <MessageSquare size={20} />
               <span>Sentence Building — {gradeData?.title}</span>
             </div>
-            <div className="bg-white/20 rounded-full px-3 py-1">
+            <div className="bg-white/60 rounded-full px-3 py-1">
               {currentQuestionIndex + 1} of {questions.length}
             </div>
           </div>
@@ -186,9 +189,9 @@ const SentenceBuildingQuiz: React.FC = () => {
 
         {/* Progress Bar */}
         <div className="max-w-4xl mx-auto mb-6">
-          <div className="w-full bg-white/20 rounded-full h-2">
+          <div className="w-full bg-white/40 rounded-full h-2">
             <div
-              className="bg-white rounded-full h-2 transition-all duration-500"
+              className="bg-purple-500 rounded-full h-2 transition-all duration-500"
               style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
             />
           </div>
@@ -202,7 +205,7 @@ const SentenceBuildingQuiz: React.FC = () => {
           exit={{ opacity: 0, x: -20 }}
           className="max-w-4xl mx-auto"
         >
-          <div className="bg-white rounded-xl p-8 shadow-card border border-slate-100 mb-6 relative">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20 mb-6 relative">
             {/* Question */}
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-stone-800 mb-4">

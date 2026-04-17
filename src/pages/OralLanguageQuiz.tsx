@@ -9,6 +9,7 @@ import { supabase } from '../supabase-client';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { ProgressTracker } from '../utils/progressTracker';
 import { ROUTES, categoryRoute } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 // Category metadata (UI only — no answer data)
 const oralLanguageCategories: Omit<QuizCategory, 'questions'>[] = [
@@ -17,28 +18,28 @@ const oralLanguageCategories: Omit<QuizCategory, 'questions'>[] = [
     title: { en: 'Vocabulary', ar: 'المفردات' },
     description: { en: 'Learn new words with pictures', ar: 'تعلم كلمات جديدة مع الصور' },
     icon: '📖',
-    color: 'bg-blue-600',
+    color: 'bg-blue-500',
   },
   {
     id: 'sentence-building',
     title: { en: 'Sentence Building', ar: 'بناء الجمل' },
     description: { en: 'Build sentences from pictures', ar: 'ابنِ جمل من الصور' },
     icon: '✍️',
-    color: 'bg-green-600',
+    color: 'bg-green-500',
   },
   {
     id: 'storytelling',
     title: { en: 'Story Sequencing', ar: 'تسلسل القصص' },
     description: { en: 'Put stories in order', ar: 'رتب القصص' },
     icon: '📚',
-    color: 'bg-purple-600',
+    color: 'bg-purple-500',
   },
   {
     id: 'story-retell',
     title: { en: 'Story Retell', ar: 'إعادة سرد القصة' },
     description: { en: 'Retell a story', ar: 'أعد سرد القصة' },
     icon: '🎭',
-    color: 'bg-orange-600',
+    color: 'bg-orange-500',
   },
 ];
 
@@ -249,7 +250,7 @@ const OralLanguageQuiz: React.FC = () => {
 
   // Reset quiz — navigate back to the oral skills category page
   const resetQuiz = () => {
-    navigate(categoryRoute('oral-skills'), { replace: true });
+    navigate(-1);
   };
 
   // Calculate overall performance
@@ -267,9 +268,10 @@ const OralLanguageQuiz: React.FC = () => {
   // Loading or no category — show spinner (selection page is no longer needed)
   if (!selectedCategory) {
     return (
-      <div className="min-h-screen bg-purple-50 flex items-center justify-center">
-        <div className="text-center text-white">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mx-auto mb-4"></div>
+      <div className="min-h-screen bg-purple-50 relative overflow-hidden flex items-center justify-center">
+        <FloatingBackground />
+        <div className="text-center text-gray-700 relative z-10">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
           <p className="text-lg font-medium">Loading quiz...</p>
         </div>
       </div>
@@ -282,14 +284,15 @@ const OralLanguageQuiz: React.FC = () => {
     const categoryScore = quizScores[selectedCategory.id];
     
     return (
-      <div className={`min-h-screen bg-emerald-50 py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+      <div className={`min-h-screen bg-emerald-50 relative overflow-hidden py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+        <FloatingBackground />
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center max-w-2xl mx-auto"
           >
-            <div className="bg-white rounded-2xl p-8 shadow-card border border-slate-100">
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
               <Star className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
               <h2 className="text-3xl font-bold text-stone-800 mb-4">{t.complete}</h2>
               
@@ -333,10 +336,11 @@ const OralLanguageQuiz: React.FC = () => {
   // No questions loaded - show error state
   if (!selectedCategory.questions || selectedCategory.questions.length === 0) {
     return (
-      <div className={`min-h-screen bg-purple-50 py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+      <div className={`min-h-screen bg-purple-50 relative overflow-hidden py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+        <FloatingBackground />
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-2xl mx-auto text-center">
-            <div className="bg-white rounded-2xl p-8 shadow-card border border-slate-100">
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
               <h2 className="text-2xl font-bold text-stone-800 mb-4">
                 Unable to Load Questions
               </h2>
@@ -358,7 +362,8 @@ const OralLanguageQuiz: React.FC = () => {
 
   // Quiz Question Screen
   return (
-    <div className={`min-h-screen bg-purple-50 py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+    <div className={`min-h-screen bg-purple-50 relative overflow-hidden py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+      <FloatingBackground />
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -371,12 +376,12 @@ const OralLanguageQuiz: React.FC = () => {
           </button>
 
           {/* Progress */}
-          <div className="flex items-center gap-4 text-white">
+          <div className="flex items-center gap-4 text-gray-700">
             <div className="flex items-center gap-2">
               <Brain size={20} />
               <span>{selectedCategory.title[language]}</span>
             </div>
-            <div className="bg-white/20 rounded-full px-3 py-1">
+            <div className="bg-purple-200 rounded-full px-3 py-1">
               {currentQuestionIndex + 1} {t.of} {selectedCategory.questions?.length ?? 0}
             </div>
           </div>
@@ -391,7 +396,7 @@ const OralLanguageQuiz: React.FC = () => {
             exit={{ opacity: 0, x: -20 }}
             className="max-w-4xl mx-auto"
           >
-            <div className="bg-white rounded-2xl p-8 shadow-card border border-slate-100 mb-6">
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20 mb-6">
               {/* Question */}
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold text-stone-800 mb-4">

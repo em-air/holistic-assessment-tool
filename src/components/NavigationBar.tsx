@@ -92,7 +92,7 @@ const NavigationBar: React.FC = () => {
           <button
             onClick={handleSignOut}
             disabled={isSigningOut}
-            className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-2xl transition-all duration-200 font-semibold shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl hover:from-red-600 hover:to-red-700 transition-all duration-300 font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSigningOut ? 'Signing Out...' : 'Sign Out'}
           </button>

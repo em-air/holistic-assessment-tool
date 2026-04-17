@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import FloatingBackground from '../components/FloatingBackground';
 import { ProgressTracker } from '../utils/progressTracker';
 import { logger } from '../utils/logger';
+import { ROUTES } from '../routes';
 
 interface VocabularyItem {
   id: string;
@@ -15,6 +18,7 @@ interface MatchedPair {
 }
 
 const VocabularyMatching: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedGrade, setSelectedGrade] = useState<number>(4);
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
   const [unlockedLevels, setUnlockedLevels] = useState<{[key: number]: number}>({
@@ -37,13 +41,14 @@ const VocabularyMatching: React.FC = () => {
       hasSavedResultRef.current = true;
       const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
       const totalWords = vocabularyWords.length || 5;
-      const percentage = totalWords > 0 ? Math.round((score / totalWords) * 100) : 0;
+      const correctCount = matches.filter(m => m.wordId === m.definitionId).length;
+      const percentage = totalWords > 0 ? Math.round((correctCount / totalWords) * 100) : 0;
       ProgressTracker.saveQuizResult({
         quizId: 'vocabulary-matching',
         quizName: `Vocabulary Matching - Grade ${selectedGrade}`,
         category: 'academic',
         subcategory: 'vocabulary',
-        score,
+        score: correctCount,
         totalQuestions: totalWords,
         percentage,
         timeSpent,
@@ -57,7 +62,7 @@ const VocabularyMatching: React.FC = () => {
     if (!completed) {
       hasSavedResultRef.current = false;
     }
-  }, [completed, showResults, score, vocabularyWords.length, selectedGrade, selectedLevel]);
+  }, [completed, showResults, score, matches, vocabularyWords.length, selectedGrade, selectedLevel]);
 
   // Vocabulary data for each grade level with 3 levels each containing 5 words
   const vocabularyData: { [key: number]: { [key: number]: VocabularyItem[] } } = {
@@ -238,27 +243,7 @@ const VocabularyMatching: React.FC = () => {
     }
   };
 
-  const handleDefinitionClick = (definitionId: string) => {
-    // Allow dragging back to original position by removing the match
-    const matchToRemove = matches.find(match => match.definitionId === definitionId);
-    if (matchToRemove) {
-      const updatedMatches = matches.filter(match => match.definitionId !== definitionId);
-      setMatches(updatedMatches);
-      setCompleted(false);
-      setShowResults(false);
-    }
-  };
 
-  const handleSubmit = () => {
-    if (matches.length === 0) {
-      alert('Please match at least one word before submitting.');
-      return;
-    }
-    
-    calculateScore(matches);
-    setCompleted(true);
-    setShowResults(true);
-  };
 
   const calculateScore = (finalMatches: MatchedPair[]) => {
     let correctMatches = 0;
@@ -298,17 +283,6 @@ const VocabularyMatching: React.FC = () => {
     return level <= unlockedLevels[selectedGrade];
   };
 
-  const resetActivity = () => {
-    const gradeData = vocabularyData[selectedGrade];
-    const levelVocab = gradeData ? gradeData[selectedLevel] || [] : [];
-    setShuffledWords([...levelVocab].sort(() => Math.random() - 0.5));
-    setShuffledDefinitions([...levelVocab].sort(() => Math.random() - 0.5));
-    setMatches([]);
-    setScore(0);
-    setShowResults(false);
-    setCompleted(false);
-  };
-
   const isWordMatched = (wordId: string) => {
     return matches.some(match => match.wordId === wordId);
   };
@@ -328,8 +302,9 @@ const VocabularyMatching: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-emerald-50 relative overflow-hidden">
-
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 relative overflow-hidden">
+      <FloatingBackground />
+      
       <div className="relative z-10 container mx-auto px-4 py-4">
         {/* Header */}
         <motion.div 
@@ -462,7 +437,6 @@ const VocabularyMatching: React.FC = () => {
                       <div
                         onDragOver={handleDragOver}
                         onDrop={(e: React.DragEvent) => handleDrop(e, definition.id)}
-                        onClick={() => handleDefinitionClick(definition.id)}
                         className={`
                           p-3 rounded-lg shadow-md transition-all duration-200 min-h-[70px] flex items-center cursor-pointer
                           ${!isDefinitionMatched(definition.id)
@@ -507,7 +481,7 @@ const VocabularyMatching: React.FC = () => {
             transition={{ duration: 0.3 }}
           >
             <motion.div
-              className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-card"
+              className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.3, delay: 0.1 }}
@@ -543,12 +517,6 @@ const VocabularyMatching: React.FC = () => {
                   )}
                 </div>
                 <div className="flex space-x-2">
-                  <button
-                    onClick={resetActivity}
-                    className="flex-1 bg-teal-500 text-white px-4 py-3 rounded-lg font-medium hover:bg-teal-600 transition-colors duration-200"
-                  >
-                    Try Again
-                  </button>
                   {score >= 70 && matches.length === vocabularyWords.length && selectedLevel < 3 && selectedLevel < unlockedLevels[selectedGrade] && (
                     <button
                       onClick={() => {
@@ -561,10 +529,10 @@ const VocabularyMatching: React.FC = () => {
                     </button>
                   )}
                   <button
-                    onClick={() => setShowResults(false)}
+                    onClick={() => navigate(-1)}
                     className="flex-1 bg-gray-300 text-gray-700 px-4 py-3 rounded-lg font-medium hover:bg-gray-400 transition-colors duration-200"
                   >
-                    Review
+                    Exit
                   </button>
                 </div>
               </div>
@@ -579,7 +547,7 @@ const VocabularyMatching: React.FC = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <div className="bg-teal-100 rounded-lg p-3 shadow-md inline-block mb-4">
+          <div className="bg-gradient-to-r from-teal-100 to-emerald-100 rounded-lg p-3 shadow-md inline-block mb-4">
             <div className="text-sm text-gray-700 mb-2">
               Grade {selectedGrade} • Level {selectedLevel} • Progress: {matches.length} / {vocabularyWords.length}
             </div>
@@ -597,19 +565,8 @@ const VocabularyMatching: React.FC = () => {
           
           {!completed && (
             <div>
-              <button
-                onClick={handleSubmit}
-                disabled={matches.length === 0}
-                className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 ${
-                  matches.length === 0
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-teal-500 text-white hover:bg-teal-600 shadow-lg hover:shadow-card transform hover:scale-105'
-                }`}
-              >
-                Submit Answers ({matches.length}/{vocabularyWords.length})
-              </button>
               <p className="text-xs text-gray-500 mt-2">
-                Click matched words to remove them • You can submit incomplete answers
+                Drag each word to its matching definition. Each match is final!
               </p>
             </div>
           )}

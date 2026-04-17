@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -142,15 +144,73 @@ footer {
   animation: button-pulse 0.2s ease-out;
 }
 
-/* Shadow system — 3 tiers */
-.shadow-card {
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+/* Kid-friendly animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
 }
 
-.shadow-card-hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
 }
 
-.shadow-elevated {
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+@keyframes bounce-in {
+  0% { transform: scale(0.3) rotate(-30deg); opacity: 0; }
+  50% { transform: scale(1.1) rotate(10deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes rainbow-text {
+  0% { color: #8b5cf6; }
+  20% { color: #ec4899; }
+  40% { color: #f97316; }
+  60% { color: #22c55e; }
+  80% { color: #3b82f6; }
+  100% { color: #8b5cf6; }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+.wiggle-animation {
+  animation: wiggle 2s ease-in-out infinite;
+}
+
+.bounce-in-animation {
+  animation: bounce-in 0.8s ease-out;
+}
+
+.rainbow-text-animation {
+  animation: rainbow-text 3s ease-in-out infinite;
+}
+
+/* Fun shadow effects */
+.shadow-soft {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-playful {
+  box-shadow: 0 10px 25px -3px rgba(139, 92, 246, 0.3), 0 4px 6px -2px rgba(236, 72, 153, 0.2);
+}
+
+.shadow-magical {
+  box-shadow: 0 20px 25px -5px rgba(139, 92, 246, 0.2), 0 10px 10px -5px rgba(236, 72, 153, 0.1);
+}
+
+/* Gradient text utilities */
+.gradient-text-purple-pink {
+  background: linear-gradient(45deg, #8b5cf6, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-rainbow {
+  background: linear-gradient(45deg, #8b5cf6, #ec4899, #f97316, #22c55e, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }

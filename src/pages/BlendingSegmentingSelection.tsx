@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Volume2, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
+import FloatingBackground from '../components/FloatingBackground';
 import { categoryRoute, blendingQuizRoute, segmentingQuizRoute } from '../routes';
 
 const BlendingSegmentingSelection: React.FC = () => {
@@ -29,10 +30,12 @@ const BlendingSegmentingSelection: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-indigo-50 relative overflow-hidden">
+      <FloatingBackground />
+      
       <div className="relative z-10 p-6">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center space-x-2 text-white hover:text-gray-200 bg-white/20 px-4 py-2 rounded-lg transition-colors duration-200"
+          className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-lg transition-colors duration-200"
         >
           <ArrowLeft size={20} />
           <span>Back to Category</span>
@@ -64,7 +67,7 @@ const BlendingSegmentingSelection: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                   onClick={() => navigate(option.route)}
-                  className="group relative bg-white rounded-2xl p-8 shadow-card border border-slate-100 hover:shadow-card transition-all duration-300 hover:scale-105 text-left overflow-hidden"
+                  className="group relative bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/50 hover:shadow-2xl transition-all duration-300 hover:scale-105 text-left overflow-hidden"
                 >
                   {/* Gradient Background */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${option.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
@@ -106,7 +109,7 @@ const BlendingSegmentingSelection: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="mt-8 bg-white rounded-xl p-6 shadow-lg border border-slate-100"
+            className="mt-8 bg-white/90 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-white/50"
           >
             <h3 className="text-lg font-bold text-gray-800 mb-2">
               💡 What's the difference?

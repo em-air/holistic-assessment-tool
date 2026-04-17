@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import QuizQuestion from '../components/QuizQuestion';
 import { assessmentCategories } from '../data/assessmentData';
 import { QuizResult } from '../types';
+import FloatingBackground from '../components/FloatingBackground';
 import { ROUTES, categoryRoute } from '../routes';
 
 const QuizPage: React.FC = () => {
@@ -25,8 +26,9 @@ const QuizPage: React.FC = () => {
 
   if (!category || !subcategory || !subcategory.questions.length) {
     return (
-      <div className="min-h-screen bg-emerald-500 flex items-center justify-center">
-        <div className="text-center bg-stone-100 p-8 rounded-2xl shadow-card relative z-10">
+      <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 flex items-center justify-center">
+        <FloatingBackground />
+        <div className="text-center bg-stone-100 p-8 rounded-2xl shadow-xl relative z-10">
           <h1 className="text-2xl font-bold text-stone-800 mb-4">Quiz not found</h1>
           <button
             onClick={() => navigate(ROUTES.HOME, { replace: true })}
@@ -99,10 +101,10 @@ const QuizPage: React.FC = () => {
     const { focusingScore, shiftingScore, totalScore, focusingLevel, shiftingLevel } = showResults;
 
     return (
-      <div className="min-h-screen bg-stone-50 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-stone-100 to-amber-50 py-8">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto">
-            <div className="bg-stone-50 rounded-2xl p-8 shadow-card text-center border border-stone-200">
+            <div className="bg-stone-50 rounded-2xl p-8 shadow-xl text-center border border-stone-200">
               <h1 className="text-3xl font-bold text-stone-800 mb-4">Assessment Complete!</h1>
               <h2 className="text-xl text-stone-600 mb-8">{subcategory.title} Results</h2>
               
@@ -146,7 +148,8 @@ const QuizPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-emerald-500 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 py-8">
+      <FloatingBackground />
       <div className="container mx-auto px-4 relative z-10">
         <div className="flex items-center justify-between mb-8">
           <button

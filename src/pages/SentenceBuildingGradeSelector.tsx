@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, MessageSquare, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import FloatingBackground from '../components/FloatingBackground';
 import { useAuth } from '../contexts/AuthContext';
 import {
   getNumericGrade,
@@ -31,13 +32,14 @@ const SentenceBuildingGradeSelector: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-emerald-50 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-green-100 to-emerald-100 relative overflow-hidden">
+      <FloatingBackground />
 
       {/* Header with back button */}
       <div className="absolute top-4 left-4 z-20">
         <button
           onClick={() => navigate(categoryRoute('oral-skills'))}
-          className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
+          className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
         >
           <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
           <span className="font-medium">back</span>
@@ -53,7 +55,7 @@ const SentenceBuildingGradeSelector: React.FC = () => {
             className="text-center mb-12"
           >
             <div className="mb-6">
-              <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-20 h-20 bg-green-500 rounded-3xl flex items-center justify-center mx-auto mb-4">
                 <MessageSquare size={40} className="text-white" />
               </div>
             </div>
@@ -92,7 +94,7 @@ const SentenceBuildingGradeSelector: React.FC = () => {
                   className={`group transform transition-all duration-300 ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-105'}`}
                   onClick={() => handleGradeSelect(gradeInfo.grade)}
                 >
-                  <div className={`bg-white rounded-xl shadow-lg p-8 h-full border-2 transition-all duration-300 relative overflow-hidden ${locked ? 'border-gray-200' : 'border-transparent group-hover:border-green-300'}`}>
+                  <div className={`bg-white rounded-3xl shadow-lg p-8 h-full border-2 transition-all duration-300 relative overflow-hidden ${locked ? 'border-gray-200' : 'border-transparent group-hover:border-green-300'}`}>
                     {/* Lock Icon */}
                     {locked && (
                       <div className="absolute top-4 right-4 bg-gray-500 text-white p-2 rounded-full z-20">
@@ -158,7 +160,7 @@ const SentenceBuildingGradeSelector: React.FC = () => {
             transition={{ delay: 0.5 }}
             className="text-center"
           >
-            <div className="bg-white rounded-2xl p-6 max-w-3xl mx-auto">
+            <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 max-w-3xl mx-auto">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
                 How Sentence Building Works
               </h3>

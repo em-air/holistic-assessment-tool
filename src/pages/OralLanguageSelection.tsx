@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ROUTES } from '../routes';
+import { ROUTES, categoryRoute } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 interface OralLanguageOption {
   id: string;
@@ -24,7 +25,7 @@ const OralLanguageSelection: React.FC = () => {
       description: 'Understand sentence structure and meaning from pictures',
       icon: '💬',
       route: ROUTES.ORAL_SENTENCE_BUILDING,
-      color: 'from-green-400 to-green-600'
+      color: 'bg-green-500'
     },
     {
       id: 'story-sequencing',
@@ -33,7 +34,7 @@ const OralLanguageSelection: React.FC = () => {
       description: 'Arrange pictures in the correct story sequence',
       icon: '📖',
       route: ROUTES.ORAL_STORY_SEQUENCING,
-      color: 'from-purple-400 to-purple-600'
+      color: 'bg-purple-500'
     },
     {
       id: 'story-retell',
@@ -42,7 +43,7 @@ const OralLanguageSelection: React.FC = () => {
       description: 'Read a story and retell it using Beginning, Middle, and End',
       icon: '📚',
       route: ROUTES.ORAL_STORY_RETELL,
-      color: 'from-indigo-400 to-indigo-600'
+      color: 'bg-indigo-500'
     }
   ];
 
@@ -52,8 +53,9 @@ const OralLanguageSelection: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12">
-      <div className="container mx-auto px-4 max-w-6xl">
+    <div className="min-h-screen bg-blue-50 relative overflow-hidden py-12">
+      <FloatingBackground />
+      <div className="container mx-auto px-4 max-w-6xl relative z-10">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -79,11 +81,11 @@ const OralLanguageSelection: React.FC = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => handleOptionClick(option)}
-              className="bg-white rounded-2xl shadow-card p-8 cursor-pointer hover:shadow-card transition-all duration-300 border-2 border-gray-100"
+              className="bg-white rounded-2xl shadow-xl p-8 cursor-pointer hover:shadow-2xl transition-all duration-300 border-2 border-gray-100"
             >
               {/* Icon & Title */}
               <div className="text-center mb-6">
-                <div className={`w-20 h-20 bg-gradient-to-r ${option.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg`}>
+                <div className={`w-20 h-20 ${option.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg`}>
                   <span className="text-4xl">{option.icon}</span>
                 </div>
                 <h3 className="text-2xl font-bold text-gray-800 mb-1">
@@ -101,7 +103,7 @@ const OralLanguageSelection: React.FC = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold shadow-sm transition-all duration-300"
+                className={`w-full ${option.color} hover:brightness-110 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300`}
               >
                 Start Assessment
               </motion.button>

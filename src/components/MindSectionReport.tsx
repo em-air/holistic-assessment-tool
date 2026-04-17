@@ -66,7 +66,7 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
             </button>
             <button
               onClick={() => navigate(ROUTES.AUTH)}
-              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors duration-200 shadow-sm"
+              className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg"
             >
               Sign In
             </button>

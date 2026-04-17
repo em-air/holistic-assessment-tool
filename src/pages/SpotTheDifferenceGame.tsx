@@ -152,7 +152,7 @@ export default function SpotTheDifferenceGame() {
   };
 
   return (
-    <div className={`min-h-screen bg-purple-50 ${isRTL ? 'rtl' : 'ltr'}`}>
+    <div className={`min-h-screen bg-gradient-to-br from-purple-100 to-pink-100 ${isRTL ? 'rtl' : 'ltr'}`}>
       {/* Header */}
       <div className="bg-white shadow-lg p-4">
         <div className="flex items-center justify-between max-w-6xl mx-auto">

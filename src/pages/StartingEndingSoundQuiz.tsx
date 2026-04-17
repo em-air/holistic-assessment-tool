@@ -8,10 +8,12 @@ import { supabase } from '../supabase-client';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { ProgressTracker } from '../utils/progressTracker';
 import SoundQuestionDisplay from '../components/SoundQuestionDisplay';
+import { ROUTES } from '../routes';
 import SoundOptionButtons from '../components/SoundOptionButtons';
 import FeedbackMessage from '../components/FeedbackMessage';
 import { logger } from '../utils/logger';
 import { ROUTES } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 const StartingEndingSoundQuiz: React.FC = () => {
   const navigate = useNavigate();
@@ -228,8 +230,9 @@ const StartingEndingSoundQuiz: React.FC = () => {
   // Show loading screen while questions are being generated
   if (questions.length === 0 && !isQuizComplete) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50">
-        <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+      <div className="flex items-center justify-center min-h-screen bg-cyan-50 relative overflow-hidden">
+        <FloatingBackground />
+        <div className="bg-white rounded-3xl shadow-lg p-8 text-center relative z-10">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
           <div className="text-xl text-gray-600">Loading Grade {grade} Questions...</div>
           <div className="text-sm text-gray-500 mt-2">Preparing your phonics quiz</div>
@@ -241,8 +244,9 @@ const StartingEndingSoundQuiz: React.FC = () => {
   // Show error if no current question but questions exist
   if (!currentQuestion && questions.length > 0 && !isQuizComplete) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50">
-        <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+      <div className="flex items-center justify-center min-h-screen bg-cyan-50 relative overflow-hidden">
+        <FloatingBackground />
+        <div className="bg-white rounded-3xl shadow-lg p-8 text-center relative z-10">
           <div className="text-xl text-red-600 mb-4">Error Loading Question</div>
           <button 
             onClick={() => navigate(-1)}
@@ -260,8 +264,9 @@ const StartingEndingSoundQuiz: React.FC = () => {
     const stats = calculateQuizStats(timePerQuestion);
 
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50 p-4">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
+      <div className="flex items-center justify-center min-h-screen bg-cyan-50 relative overflow-hidden p-4">
+        <FloatingBackground />
+        <div className="bg-white rounded-3xl shadow-lg p-8 max-w-md w-full text-center relative z-10">
           <h2 className="text-3xl font-bold text-purple-600 mb-4">Quiz Complete!</h2>
           <div className="text-6xl mb-4">🎯</div>
           
@@ -290,7 +295,7 @@ const StartingEndingSoundQuiz: React.FC = () => {
               <span>Try Again</span>
             </button>
             <button
-              onClick={() => navigate(ROUTES.STARTING_ENDING_SOUND, { replace: true })}
+              onClick={() => navigate(-1)}
               className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-full text-lg transition-colors shadow-lg"
             >
               Continue
@@ -302,12 +307,13 @@ const StartingEndingSoundQuiz: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4">
+    <div className="min-h-screen bg-cyan-50 relative overflow-hidden p-4">
+      <FloatingBackground />
       {/* Header with back button */}
       <div className="absolute top-4 left-4 z-20">
         <button
           onClick={() => navigate(-1)}
-          className="group flex items-center space-x-2 px-4 py-2 text-white bg-black/20 rounded-lg transition-all duration-300 ease-out hover:bg-black/30 hover:shadow-md transform hover:scale-105"
+          className="group flex items-center space-x-2 px-4 py-2 text-gray-700 bg-white/60 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-white/80 hover:shadow-md transform hover:scale-105"
         >
           <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
           <span className="font-medium">back</span>
@@ -315,7 +321,7 @@ const StartingEndingSoundQuiz: React.FC = () => {
       </div>
 
       <div className="flex items-center justify-center min-h-screen">
-        <div className="bg-white rounded-xl shadow-lg p-6 max-w-4xl w-full">
+        <div className="bg-white rounded-3xl shadow-lg p-6 max-w-4xl w-full">
           {/* Progress bar */}
           <div className="mb-6">
             <div className="flex justify-between items-center mb-2">

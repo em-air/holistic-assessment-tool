@@ -16,15 +16,16 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
                         {label}
                     </label>
                 )}
-                <select
+                <motion.select
                     ref={ref}
                     className={`
-            w-full px-4 py-3 border rounded-lg 
+            w-full px-4 py-3 border rounded-xl 
             focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 
-            transition-colors duration-200 text-slate-800
-            ${error ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-white'}
+            transition-all duration-300 text-slate-800
+            ${error ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-white/50'}
             ${className}
           `}
+                    whileFocus={{ scale: 1.02 }}
                     {...props}
                 >
                     {options.map((option) => (
@@ -32,7 +33,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
                             {option.label}
                         </option>
                     ))}
-                </select>
+                </motion.select>
                 {error && (
                     <motion.p
                         className="text-red-500 text-sm mt-1"

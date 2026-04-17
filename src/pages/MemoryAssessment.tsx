@@ -8,6 +8,7 @@ import MindSectionReport from '../components/MindSectionReport';
 import { supabase } from '../supabase-client';
 import { logger } from '../utils/logger';
 import { ROUTES } from '../routes';
+import FloatingBackground from '../components/FloatingBackground';
 
 // API types for memory assessment (no answers exposed)
 interface MemoryItem {
@@ -295,8 +296,9 @@ const MemoryAssessment: React.FC = () => {
   // Results screen
   if (gamePhase === 'results' && finalResults) {
     return (
-      <div className="min-h-screen bg-purple-50 py-8">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <div className="min-h-screen bg-indigo-50 relative overflow-hidden py-8">
+        <FloatingBackground />
+        <div className="container mx-auto px-4 max-w-4xl relative z-10">
           {/* Mind Section Progress Bar */}
           <div className="mb-6">
             <AssessmentProgressBar
@@ -307,7 +309,7 @@ const MemoryAssessment: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-xl p-8 shadow-card"
+            className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl"
           >
             <div className="text-center mb-8">
               <div className="w-20 h-20 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -380,13 +382,13 @@ const MemoryAssessment: React.FC = () => {
                   setFinalResults(null);
                   generateNewQuestion('sequence_recall', 1);
                 }}
-                className="px-8 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+                className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200 transform hover:scale-105"
               >
                 Try Again
               </button>
               <button
-                onClick={() => navigate(ROUTES.ATTENTION_MEMORY, { replace: true })}
-                className="px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+                onClick={() => navigate(-1)}
+                className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200 transform hover:scale-105"
               >
                 Back to Selection
               </button>
@@ -404,19 +406,20 @@ const MemoryAssessment: React.FC = () => {
 
   // Main game screen
   return (
-    <div className="min-h-screen bg-emerald-50 py-8">
+    <div className="min-h-screen bg-emerald-50 relative overflow-hidden py-8">
+      <FloatingBackground />
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="group flex items-center space-x-2 px-4 py-2 text-white rounded-lg transition-all duration-300 ease-out hover:text-emerald-100 hover:bg-white/20 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
+            className="group flex items-center space-x-2 px-4 py-2 text-gray-700 bg-white/60 rounded-lg transition-all duration-300 ease-out hover:text-gray-800 hover:bg-white/80 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
           >
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
             <span className="font-medium">Back to Selection</span>
           </button>
 
-          <div className="text-center text-white">
+          <div className="text-center text-gray-700">
             <h1 className="text-2xl font-bold mb-1">{currentQuestion?.title}</h1>
             <div className="flex items-center justify-center gap-4 text-sm">
               <span>Question {questionsAnswered + 1}/5</span>
@@ -444,7 +447,7 @@ const MemoryAssessment: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-white rounded-xl p-8 shadow-card max-w-4xl mx-auto"
+            className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl max-w-4xl mx-auto"
           >
             {/* Instructions */}
             <div className="text-center mb-8">
@@ -535,7 +538,7 @@ const MemoryAssessment: React.FC = () => {
                       disabled={isSelected && currentQuestion.type !== 'missing_object'}
                       className={`bg-white rounded-2xl p-4 shadow-lg border-2 transition-all duration-200 ${isSelected
                         ? 'border-blue-500 bg-blue-50 scale-105'
-                        : 'border-gray-200 hover:border-blue-300 hover:shadow-card'
+                        : 'border-gray-200 hover:border-blue-300 hover:shadow-xl'
                         }`}
                     >
                       <img

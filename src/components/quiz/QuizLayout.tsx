@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import FloatingBackground from '../FloatingBackground';
 
 interface QuizLayoutProps {
     children: React.ReactNode;
@@ -20,19 +21,21 @@ export const QuizLayout = ({
     subtitle,
     backPath = '/categories',
     showBackButton = true,
-    backgroundGradient = 'bg-slate-50',
+    backgroundGradient = 'bg-violet-50',
 }: QuizLayoutProps) => {
     const navigate = useNavigate();
 
     return (
-        <div className={`min-h-screen ${backgroundGradient}`}>
+        <div className={`min-h-screen ${backgroundGradient} relative overflow-hidden`}>
+            <FloatingBackground />
             {/* Header */}
-            <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
+            <header className="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-40">
                 <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
                     {showBackButton && (
                         <motion.button
                             onClick={() => navigate(backPath)}
                             className="flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors"
+                            whileHover={{ x: -4 }}
                             whileTap={{ scale: 0.95 }}
                         >
                             <svg
@@ -65,7 +68,7 @@ export const QuizLayout = ({
             </header>
 
             {/* Content */}
-            <main className="max-w-4xl mx-auto px-4 py-8">
+            <main className="max-w-4xl mx-auto px-4 py-8 relative z-10">
                 {children}
             </main>
         </div>
