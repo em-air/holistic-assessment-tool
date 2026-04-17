@@ -154,6 +154,179 @@ const subNameAr: Record<string, string> = {
 
 // ═════ Helpers ═════
 
+// ── Mind quiz IDs in display order ──
+const MIND_QUIZ_IDS = [
+  'attention-assessment', 'picture-sequence', 'flash-word-quiz',
+  'learning-styles', 'analogy-quiz', 'category-quiz',
+  'sentence-difference-quiz', 'logical-sequencing-quiz', 'missing-object-quiz',
+];
+
+const mindQuizDisplayName: Record<string, string> = {
+  'attention-assessment': 'Attention Questionnaire',
+  'picture-sequence': 'Picture Sequence',
+  'flash-word-quiz': 'Flash Word Quiz',
+  'learning-styles': 'Learning Style Quiz',
+  'analogy-quiz': 'Analogy Quiz',
+  'category-quiz': 'Category Quiz',
+  'sentence-difference-quiz': 'Find Sentence Differences',
+  'logical-sequencing-quiz': 'Logical Sequencing',
+  'missing-object-quiz': 'Missing Object',
+};
+
+function buildAttentionParagraphEnBackend(result: QuizResult): string {
+  const ad = parseAdditionalData(result.additional_data) || {};
+  const overallLevel = ad.attentionLevel || (result.percentage >= 75 ? 'Strong' : result.percentage >= 60 ? 'Moderate' : 'Developing');
+  const focusingLevel = ad.focusingLevel || overallLevel;
+  const shiftingLevel = ad.shiftingLevel || overallLevel;
+  const focusPct = ad.focusingPercentage;
+  const shiftPct = ad.shiftingPercentage;
+
+  const isStrongFocus = /strong|good|high/i.test(focusingLevel);
+  const isStrongShift = /strong|good|high/i.test(shiftingLevel);
+  const isWeakFocus = /developing|low|weak|needs/i.test(focusingLevel);
+  const isWeakShift = /developing|low|weak|needs/i.test(shiftingLevel);
+
+  const parts: string[] = [];
+  parts.push(`The Attention Control Assessment evaluated the student across two subscales: Focusing (sustaining attention on a task) and Shifting (switching attention between tasks). The student's overall attention level was rated as "${overallLevel}".`);
+
+  if (isStrongFocus && isStrongShift) {
+    parts.push(`Both focusing${focusPct != null ? ` (${focusPct}%)` : ''} and shifting${shiftPct != null ? ` (${shiftPct}%)` : ''} abilities are strong. The student can sustain concentration on activities and transition smoothly between tasks. This is a positive indicator for classroom learning, as it supports engagement in lessons and the ability to follow complex, multi-step instructions.`);
+  } else if (isStrongFocus && isWeakShift) {
+    parts.push(`While the student's focusing ability is strong${focusPct != null ? ` (${focusPct}%)` : ''}, they have difficulty with shifting attention${shiftPct != null ? ` (${shiftPct}%)` : ''}. This means the student can concentrate well on a single task but may struggle when asked to switch between activities or transition to a new topic. Consider providing clear transition warnings (e.g., "in 2 minutes we will switch to math"), using visual schedules, and allowing extra time during transitions between activities.`);
+  } else if (isWeakFocus && isStrongShift) {
+    parts.push(`The student shows difficulty with sustained focusing${focusPct != null ? ` (${focusPct}%)` : ''} but has good shifting ability${shiftPct != null ? ` (${shiftPct}%)` : ''}. They can switch between tasks effectively but may struggle to maintain concentration on a single activity for extended periods. Consider breaking tasks into shorter segments, using timers to create structured focus intervals, and providing frequent check-ins to help the student stay engaged.`);
+  } else if (isWeakFocus && isWeakShift) {
+    parts.push(`Both focusing${focusPct != null ? ` (${focusPct}%)` : ''} and shifting${shiftPct != null ? ` (${shiftPct}%)` : ''} abilities need support. The student may have difficulty maintaining concentration on tasks and also struggle when transitioning between activities. Consider seating the student away from distractions, using visual cues and timers, breaking tasks into small steps, providing transition warnings, and checking in frequently to help the student stay on track.`);
+  } else {
+    parts.push(`Focusing was rated as "${focusingLevel}"${focusPct != null ? ` (${focusPct}%)` : ''} and shifting was rated as "${shiftingLevel}"${shiftPct != null ? ` (${shiftPct}%)` : ''}. The student may benefit from structured activities with clear instructions, periodic check-ins, and visual schedules to support both sustained attention and smooth transitions between tasks.`);
+  }
+
+  return parts.join(' ');
+}
+
+function getTeacherParagraphEn(result: QuizResult): string {
+  const pct = result.percentage;
+  const ad = parseAdditionalData(result.additional_data);
+  switch (result.quiz_id) {
+    case 'attention-assessment':
+      return buildAttentionParagraphEnBackend(result);
+    case 'picture-sequence':
+      if (pct >= 75) return 'The student demonstrates strong visual memory and sequencing skills. They can effectively recall and arrange visual information in the correct order, which is important for understanding stories, following procedures, and organizing thoughts logically.';
+      if (pct >= 60) return 'The student shows developing visual memory and sequencing abilities. They can sometimes recall and order visual information but may need additional support. Practice with picture stories and step-by-step visual activities can help strengthen these skills.';
+      return 'The student has difficulty with visual memory and sequencing tasks. They struggle to remember and arrange images in the correct order. This may affect their ability to follow story sequences or multi-step procedures. Consider using visual aids, graphic organizers, and repeated practice with sequencing activities to build this skill.';
+    case 'flash-word-quiz':
+      if (pct >= 75) return 'The student has strong rapid word recognition skills. They can quickly identify and remember words that are briefly displayed, indicating good visual processing speed and word memory. This is a positive sign for reading fluency development.';
+      if (pct >= 60) return 'The student shows moderate rapid word recognition abilities. They can recognize some flashed words but may need more time or repetition. Continued practice with sight words and flash card activities can help improve speed and accuracy.';
+      return 'The student has difficulty remembering words that were briefly flashed and needs additional work in this area. This suggests challenges with rapid visual word processing and sight word memory, which can affect reading fluency. Consider using repeated exposure to high-frequency words, flash card drills at a gradually increasing pace, and multisensory word recognition activities.';
+    case 'learning-styles': {
+      const style = ad?.dominantStyle;
+      if (style === 'visual') return 'The student has been identified as a visual learner. They learn best through seeing information presented in diagrams, charts, pictures, and written text. To support this student, use visual aids such as graphic organizers, color-coded notes, videos, and demonstrations. Allow them to draw or map out concepts when possible.';
+      if (style === 'auditory') return 'The student has been identified as an auditory learner. They learn best through listening, discussions, and verbal explanations. To support this student, incorporate group discussions, oral instructions, read-alouds, and audio resources. Allow them to talk through problems and explain their thinking verbally.';
+      if (style === 'kinesthetic') return 'The student has been identified as a kinesthetic learner. They learn best through hands-on activities, movement, and physical engagement. To support this student, incorporate manipulatives, role-playing, experiments, and movement breaks into lessons. Allow them to build models or act out concepts when possible.';
+      if (style === 'reading-writing') return 'The student has been identified as a reading/writing learner. They learn best through reading text and writing notes. To support this student, provide written instructions, encourage note-taking, and use reading-based assignments. Allow them to express understanding through written responses and journaling.';
+      return 'The learning style assessment has been completed. Understanding the student\'s preferred learning style can help tailor instruction to their strengths.';
+    }
+    case 'analogy-quiz':
+      if (pct >= 75) return 'The student demonstrates strong analogical reasoning skills. They can identify relationships between concepts and apply that understanding to new situations. This is an important foundation for critical thinking, problem-solving, and understanding complex academic content.';
+      if (pct >= 60) return 'The student shows developing analogical reasoning abilities. They can sometimes identify relationships between concepts but may struggle with more complex analogies. Practice with word relationship games and guided analogy exercises can help strengthen this skill.';
+      return 'The student has difficulty with analogical reasoning and struggles to identify relationships between concepts. This may affect their ability to make connections across subjects and solve problems that require relational thinking. Consider using concrete examples, visual analogy cards, and guided practice to help the student recognize patterns and relationships.';
+    case 'category-quiz':
+      if (pct >= 75) return 'The student demonstrates strong categorization and classification skills. They can effectively group items based on shared characteristics, which supports organizational thinking, vocabulary development, and the ability to identify patterns in information.';
+      if (pct >= 60) return 'The student shows developing categorization skills. They can group some items correctly but may have difficulty with less obvious groupings. Sorting activities, classification games, and discussions about how things are alike and different can help improve this skill.';
+      return 'The student struggles with categorization and classification tasks. They have difficulty grouping items by shared characteristics, which may impact their ability to organize information and see patterns. Consider using hands-on sorting activities, visual grouping exercises, and explicit instruction on identifying common features among items.';
+    case 'sentence-difference-quiz':
+      if (pct >= 75) return 'The student shows strong attention to detail and comparison skills. They can effectively identify differences between sentences, which is important for reading comprehension, editing, and careful analysis of written information.';
+      if (pct >= 60) return 'The student shows developing skills in identifying differences between sentences. They can spot some changes but may miss subtle differences. Practice with spot-the-difference exercises and careful reading activities can help sharpen this skill.';
+      return 'The student has difficulty finding differences between sentences, suggesting challenges with attention to detail and careful comparison of written information. This may affect proofreading and reading comprehension. Consider using side-by-side comparison exercises, highlighting activities, and guided practice in identifying small changes in text.';
+    case 'logical-sequencing-quiz':
+      if (pct >= 75) return 'The student demonstrates strong logical sequencing abilities. They can arrange information in a logical order, which is essential for understanding cause and effect, following procedures, and constructing well-organized written and verbal responses.';
+      if (pct >= 60) return 'The student shows developing logical sequencing skills. They can sometimes order events or steps correctly but may struggle with more complex sequences. Practice with timeline activities, process ordering, and sequential storytelling can help strengthen this ability.';
+      return 'The student has difficulty with logical sequencing tasks and struggles to arrange information in a meaningful order. This may affect their ability to understand cause and effect, follow multi-step directions, and organize their thoughts for writing. Consider using visual timelines, step-by-step guides, and sequencing card activities to build this skill.';
+    case 'missing-object-quiz':
+      if (pct >= 75) return 'The student demonstrates strong visual perception and observation skills. They can quickly identify missing elements in visual scenes, which supports attention to detail, visual analysis, and spatial awareness in the classroom.';
+      if (pct >= 60) return 'The student shows developing visual perception skills. They can identify some missing objects but may miss others. Practice with visual puzzles, spot-the-difference games, and observation activities can help strengthen this ability.';
+      return 'The student has difficulty identifying missing objects in visual scenes, suggesting challenges with visual perception and observation. This may affect their ability to notice important details in visual materials and classroom activities. Consider using visual scanning exercises, I-spy games, and guided observation activities to develop these skills.';
+    default: return '';
+  }
+}
+
+function buildAttentionParagraphArBackend(result: QuizResult): string {
+  const ad = parseAdditionalData(result.additional_data) || {};
+  const overallLevel = ad.attentionLevel || (result.percentage >= 75 ? 'Strong' : result.percentage >= 60 ? 'Moderate' : 'Developing');
+  const focusingLevel = ad.focusingLevel || overallLevel;
+  const shiftingLevel = ad.shiftingLevel || overallLevel;
+  const focusPct = ad.focusingPercentage;
+  const shiftPct = ad.shiftingPercentage;
+
+  const isStrongFocus = /strong|good|high/i.test(focusingLevel);
+  const isStrongShift = /strong|good|high/i.test(shiftingLevel);
+  const isWeakFocus = /developing|low|weak|needs/i.test(focusingLevel);
+  const isWeakShift = /developing|low|weak|needs/i.test(shiftingLevel);
+
+  const parts: string[] = [];
+  parts.push(reshapeArabic(`قيّم اختبار التحكم في الانتباه الطالب عبر مقياسين فرعيين: التركيز (الحفاظ على الانتباه لمهمة واحدة) والتحويل (الانتقال بين المهام). تم تقييم مستوى الانتباه العام للطالب بـ "${overallLevel}".`));
+
+  if (isStrongFocus && isStrongShift) {
+    parts.push(reshapeArabic(`كلتا قدرتي التركيز${focusPct != null ? ` (${focusPct}%)` : ''} والتحويل${shiftPct != null ? ` (${shiftPct}%)` : ''} قوية. يستطيع الطالب الحفاظ على التركيز في الأنشطة والانتقال بسلاسة بين المهام. هذا مؤشر إيجابي للتعلم في الفصل الدراسي، حيث يدعم المشاركة في الدروس والقدرة على اتباع التعليمات المعقدة المتعددة الخطوات.`));
+  } else if (isStrongFocus && isWeakShift) {
+    parts.push(reshapeArabic(`بينما قدرة الطالب على التركيز قوية${focusPct != null ? ` (${focusPct}%)` : ''}، إلا أنه يواجه صعوبة في تحويل الانتباه${shiftPct != null ? ` (${shiftPct}%)` : ''}. هذا يعني أن الطالب يستطيع التركيز جيداً على مهمة واحدة لكنه قد يجد صعوبة عند المطالبة بالانتقال بين الأنشطة أو التحول إلى موضوع جديد. يُنصح بتقديم تنبيهات واضحة قبل الانتقال واستخدام الجداول المرئية والسماح بوقت إضافي أثناء التحولات بين الأنشطة.`));
+  } else if (isWeakFocus && isStrongShift) {
+    parts.push(reshapeArabic(`يُظهر الطالب صعوبة في التركيز المستمر${focusPct != null ? ` (${focusPct}%)` : ''} لكن لديه قدرة جيدة على التحويل${shiftPct != null ? ` (${shiftPct}%)` : ''}. يمكنه الانتقال بين المهام بفعالية لكنه قد يجد صعوبة في الحفاظ على التركيز على نشاط واحد لفترات طويلة. يُنصح بتقسيم المهام إلى أجزاء أقصر واستخدام المؤقتات لإنشاء فترات تركيز منظمة وتوفير متابعة متكررة لمساعدة الطالب على البقاء منخرطاً.`));
+  } else if (isWeakFocus && isWeakShift) {
+    parts.push(reshapeArabic(`كلتا قدرتي التركيز${focusPct != null ? ` (${focusPct}%)` : ''} والتحويل${shiftPct != null ? ` (${shiftPct}%)` : ''} تحتاجان إلى دعم. قد يواجه الطالب صعوبة في الحفاظ على التركيز على المهام وأيضاً يجد صعوبة عند الانتقال بين الأنشطة. يُنصح بإجلاس الطالب بعيداً عن المشتتات واستخدام الإشارات البصرية والمؤقتات وتقسيم المهام إلى خطوات صغيرة وتقديم تنبيهات الانتقال والتحقق بشكل متكرر لمساعدة الطالب على البقاء في المسار الصحيح.`));
+  } else {
+    parts.push(reshapeArabic(`تم تقييم التركيز بـ "${focusingLevel}"${focusPct != null ? ` (${focusPct}%)` : ''} والتحويل بـ "${shiftingLevel}"${shiftPct != null ? ` (${shiftPct}%)` : ''}. قد يستفيد الطالب من أنشطة منظمة مع تعليمات واضحة ومتابعة دورية وجداول مرئية لدعم كل من الانتباه المستمر والانتقالات السلسة بين المهام.`));
+  }
+
+  return parts.join(' ');
+}
+
+function getTeacherParagraphAr(result: QuizResult): string {
+  const pct = result.percentage;
+  const ad = parseAdditionalData(result.additional_data);
+  switch (result.quiz_id) {
+    case 'attention-assessment':
+      return buildAttentionParagraphArBackend(result);
+    case 'picture-sequence':
+      if (pct >= 75) return reshapeArabic('يُظهر الطالب مهارات قوية في الذاكرة البصرية والتسلسل. يمكنه استرجاع وترتيب المعلومات البصرية بالترتيب الصحيح بفعالية، وهو أمر مهم لفهم القصص واتباع الإجراءات وتنظيم الأفكار بشكل منطقي.');
+      if (pct >= 60) return reshapeArabic('يُظهر الطالب قدرات متطورة في الذاكرة البصرية والتسلسل. يمكنه أحياناً استرجاع وترتيب المعلومات البصرية لكنه قد يحتاج إلى دعم إضافي. يمكن أن تساعد الممارسة مع القصص المصورة والأنشطة البصرية المتسلسلة في تعزيز هذه المهارات.');
+      return reshapeArabic('يواجه الطالب صعوبة في مهام الذاكرة البصرية والتسلسل. يجد صعوبة في تذكر وترتيب الصور بالترتيب الصحيح. قد يؤثر ذلك على قدرته على متابعة تسلسل القصص أو الإجراءات المتعددة الخطوات. يُنصح باستخدام الوسائل البصرية والمنظمات الرسومية والممارسة المتكررة مع أنشطة التسلسل لبناء هذه المهارة.');
+    case 'flash-word-quiz':
+      if (pct >= 75) return reshapeArabic('يتمتع الطالب بمهارات قوية في التعرف السريع على الكلمات. يمكنه تحديد وتذكر الكلمات التي تُعرض بسرعة، مما يشير إلى سرعة معالجة بصرية جيدة وذاكرة كلمات قوية. هذا مؤشر إيجابي لتطوير الطلاقة في القراءة.');
+      if (pct >= 60) return reshapeArabic('يُظهر الطالب قدرات متوسطة في التعرف السريع على الكلمات. يمكنه التعرف على بعض الكلمات المعروضة لكنه قد يحتاج إلى مزيد من الوقت أو التكرار. يمكن أن تساعد الممارسة المستمرة مع الكلمات الشائعة وأنشطة البطاقات التعليمية في تحسين السرعة والدقة.');
+      return reshapeArabic('يواجه الطالب صعوبة في تذكر الكلمات التي تُعرض بسرعة ويحتاج إلى عمل إضافي في هذا المجال. يشير ذلك إلى تحديات في المعالجة البصرية السريعة للكلمات وذاكرة الكلمات البصرية، مما قد يؤثر على طلاقة القراءة. يُنصح بالتعرض المتكرر للكلمات عالية التردد وتمارين البطاقات التعليمية بوتيرة متزايدة تدريجياً وأنشطة التعرف على الكلمات متعددة الحواس.');
+    case 'learning-styles': {
+      const style = ad?.dominantStyle;
+      if (style === 'visual') return reshapeArabic('تم تحديد الطالب كمتعلم بصري. يتعلم بشكل أفضل من خلال رؤية المعلومات المقدمة في الرسوم البيانية والمخططات والصور والنصوص المكتوبة. لدعم هذا الطالب، استخدم الوسائل البصرية مثل المنظمات الرسومية والملاحظات الملونة ومقاطع الفيديو والعروض التوضيحية. اسمح له بالرسم أو رسم الخرائط المفاهيمية عندما يكون ذلك ممكناً.');
+      if (style === 'auditory') return reshapeArabic('تم تحديد الطالب كمتعلم سمعي. يتعلم بشكل أفضل من خلال الاستماع والمناقشات والشروحات اللفظية. لدعم هذا الطالب، أدخل المناقشات الجماعية والتعليمات الشفهية والقراءة بصوت عالٍ والموارد الصوتية. اسمح له بالتحدث عن المشكلات وشرح تفكيره شفهياً.');
+      if (style === 'kinesthetic') return reshapeArabic('تم تحديد الطالب كمتعلم حركي. يتعلم بشكل أفضل من خلال الأنشطة العملية والحركة والمشاركة البدنية. لدعم هذا الطالب، أدخل الأدوات التعليمية الملموسة ولعب الأدوار والتجارب وفترات الراحة الحركية في الدروس. اسمح له ببناء النماذج أو تمثيل المفاهيم عندما يكون ذلك ممكناً.');
+      if (style === 'reading-writing') return reshapeArabic('تم تحديد الطالب كمتعلم قرائي/كتابي. يتعلم بشكل أفضل من خلال قراءة النصوص وكتابة الملاحظات. لدعم هذا الطالب، قدم تعليمات مكتوبة وشجع على تدوين الملاحظات واستخدم المهام المبنية على القراءة. اسمح له بالتعبير عن فهمه من خلال الاستجابات المكتوبة والتدوين.');
+      return reshapeArabic('تم إكمال تقييم أسلوب التعلم للطالب. يمكن أن يساعد فهم أسلوب التعلم المفضل للطالب في تخصيص التعليم بما يتناسب مع نقاط قوته.');
+    }
+    case 'analogy-quiz':
+      if (pct >= 75) return reshapeArabic('يُظهر الطالب مهارات قوية في التفكير القياسي. يمكنه تحديد العلاقات بين المفاهيم وتطبيق هذا الفهم على مواقف جديدة. هذا أساس مهم للتفكير النقدي وحل المشكلات وفهم المحتوى الأكاديمي المعقد.');
+      if (pct >= 60) return reshapeArabic('يُظهر الطالب قدرات متطورة في التفكير القياسي. يمكنه أحياناً تحديد العلاقات بين المفاهيم لكنه قد يواجه صعوبة مع القياسات الأكثر تعقيداً. يمكن أن تساعد الممارسة مع ألعاب علاقات الكلمات وتمارين القياس الموجهة في تعزيز هذه المهارة.');
+      return reshapeArabic('يواجه الطالب صعوبة في التفكير القياسي ويجد صعوبة في تحديد العلاقات بين المفاهيم. قد يؤثر ذلك على قدرته على إجراء الروابط بين المواد الدراسية وحل المشكلات التي تتطلب التفكير العلائقي. يُنصح باستخدام أمثلة ملموسة وبطاقات القياس البصرية والممارسة الموجهة لمساعدة الطالب على التعرف على الأنماط والعلاقات.');
+    case 'category-quiz':
+      if (pct >= 75) return reshapeArabic('يُظهر الطالب مهارات قوية في التصنيف والتبويب. يمكنه تجميع العناصر بفعالية بناءً على الخصائص المشتركة، مما يدعم التفكير التنظيمي وتطوير المفردات والقدرة على تحديد الأنماط في المعلومات.');
+      if (pct >= 60) return reshapeArabic('يُظهر الطالب مهارات متطورة في التصنيف. يمكنه تجميع بعض العناصر بشكل صحيح لكنه قد يواجه صعوبة مع التجميعات الأقل وضوحاً. يمكن أن تساعد أنشطة الفرز وألعاب التصنيف والمناقشات حول أوجه التشابه والاختلاف في تحسين هذه المهارة.');
+      return reshapeArabic('يواجه الطالب صعوبة في مهام التصنيف والتبويب. يجد صعوبة في تجميع العناصر حسب الخصائص المشتركة، مما قد يؤثر على قدرته على تنظيم المعلومات ورؤية الأنماط. يُنصح باستخدام أنشطة الفرز العملية وتمارين التجميع البصري والتعليم المباشر لتحديد السمات المشتركة بين العناصر.');
+    case 'sentence-difference-quiz':
+      if (pct >= 75) return reshapeArabic('يُظهر الطالب اهتماماً قوياً بالتفاصيل ومهارات المقارنة. يمكنه تحديد الاختلافات بين الجمل بفعالية، وهو أمر مهم للفهم القرائي والتحرير والتحليل الدقيق للمعلومات المكتوبة.');
+      if (pct >= 60) return reshapeArabic('يُظهر الطالب مهارات متطورة في تحديد الاختلافات بين الجمل. يمكنه اكتشاف بعض التغييرات لكنه قد يفوت الاختلافات الدقيقة. يمكن أن تساعد الممارسة مع تمارين اكتشاف الاختلافات وأنشطة القراءة المتأنية في صقل هذه المهارة.');
+      return reshapeArabic('يواجه الطالب صعوبة في إيجاد الاختلافات بين الجمل، مما يشير إلى تحديات في الاهتمام بالتفاصيل والمقارنة الدقيقة للمعلومات المكتوبة. قد يؤثر ذلك على التدقيق اللغوي والفهم القرائي. يُنصح باستخدام تمارين المقارنة جنباً إلى جنب وأنشطة التظليل والممارسة الموجهة في تحديد التغييرات الصغيرة في النص.');
+    case 'logical-sequencing-quiz':
+      if (pct >= 75) return reshapeArabic('يُظهر الطالب قدرات قوية في التسلسل المنطقي. يمكنه ترتيب المعلومات بترتيب منطقي، وهو أمر أساسي لفهم السبب والنتيجة واتباع الإجراءات وبناء استجابات مكتوبة وشفهية منظمة.');
+      if (pct >= 60) return reshapeArabic('يُظهر الطالب مهارات متطورة في التسلسل المنطقي. يمكنه أحياناً ترتيب الأحداث أو الخطوات بشكل صحيح لكنه قد يواجه صعوبة مع التسلسلات الأكثر تعقيداً. يمكن أن تساعد الممارسة مع أنشطة الجدول الزمني وترتيب العمليات والسرد المتسلسل في تعزيز هذه القدرة.');
+      return reshapeArabic('يواجه الطالب صعوبة في مهام التسلسل المنطقي ويجد صعوبة في ترتيب المعلومات بشكل ذي معنى. قد يؤثر ذلك على قدرته على فهم السبب والنتيجة واتباع التوجيهات المتعددة الخطوات وتنظيم أفكاره للكتابة. يُنصح باستخدام الجداول الزمنية البصرية والأدلة خطوة بخطوة وأنشطة بطاقات التسلسل لبناء هذه المهارة.');
+    case 'missing-object-quiz':
+      if (pct >= 75) return reshapeArabic('يُظهر الطالب مهارات قوية في الإدراك البصري والملاحظة. يمكنه تحديد العناصر المفقودة في المشاهد البصرية بسرعة، مما يدعم الاهتمام بالتفاصيل والتحليل البصري والوعي المكاني في الفصل الدراسي.');
+      if (pct >= 60) return reshapeArabic('يُظهر الطالب مهارات متطورة في الإدراك البصري. يمكنه تحديد بعض الأشياء المفقودة لكنه قد يفوت أخرى. يمكن أن تساعد الممارسة مع الألغاز البصرية وألعاب اكتشاف الاختلافات وأنشطة الملاحظة في تعزيز هذه القدرة.');
+      return reshapeArabic('يواجه الطالب صعوبة في تحديد الأشياء المفقودة في المشاهد البصرية، مما يشير إلى تحديات في الإدراك البصري والملاحظة. قد يؤثر ذلك على قدرته على ملاحظة التفاصيل المهمة في المواد البصرية والأنشطة الصفية. يُنصح باستخدام تمارين المسح البصري وألعاب البحث عن الأشياء وأنشطة الملاحظة الموجهة لتطوير هذه المهارات.');
+    default: return '';
+  }
+}
+
 function groupBySub(results: QuizResult[]) {
   const map: Record<string, QuizResult[]> = {};
   for (const r of results) {
@@ -484,6 +657,46 @@ export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
       for (const act of activities) { y = ensureSpace(y, 20); doc.font('Helvetica').fontSize(10).fillColor(C.gray700).text(`\u2022  ${act}`, L + 14, y, { width: W - 28, lineBreak: false }); y += 18; }
       pageFooter();
 
+      // ── For Teachers: Cognition Assessment Details ──
+      if (data.mindResults.length > 0) {
+        doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill(C.warning); doc.restore();
+        y = 50;
+        doc.font('Helvetica-Bold').fontSize(18).fillColor(C.warning).text('For Teachers: Cognition Assessment Details', L, y, { lineBreak: false });
+        y += 8; doc.moveTo(L, y + 18).lineTo(L + 280, y + 18).lineWidth(2.5).strokeColor(C.warning).stroke(); y += 30;
+
+        doc.font('Helvetica').fontSize(10).fillColor(C.gray700)
+          .text('This section provides detailed, quiz-by-quiz analysis of the student\u2019s performance on all Mind (cognition) assessments. Each paragraph describes what the quiz measures and what the student\u2019s score indicates for classroom instruction.', L, y, { width: W });
+        y += doc.heightOfString('This section provides detailed, quiz-by-quiz analysis...', { width: W }) + 20;
+
+        for (const qId of MIND_QUIZ_IDS) {
+          const result = data.mindResults.find(r => r.quiz_id === qId);
+          if (!result) continue;
+          const paragraph = getTeacherParagraphEn(result);
+          if (!paragraph) continue;
+
+          const nameLabel = mindQuizDisplayName[qId] || result.quiz_name;
+          const subLabel = subNameEn[result.subcategory] || result.subcategory;
+          let scoreLabel = '';
+          if (qId === 'attention-assessment') {
+            const adH = parseAdditionalData(result.additional_data);
+            scoreLabel = adH?.attentionLevel ? ` — ${adH.attentionLevel}` : '';
+          } else if (qId !== 'learning-styles') {
+            scoreLabel = ` — ${result.percentage}%`;
+          }
+          const heading = `${nameLabel} (${subLabel}${scoreLabel})`;
+          doc.font('Helvetica').fontSize(9);
+          const paraH = doc.heightOfString(paragraph, { width: W - 28 });
+          y = ensureSpace(y, paraH + 30);
+
+          doc.save(); doc.roundedRect(L, y, W, paraH + 28, 4).fill(C.warningLt); doc.restore();
+          doc.font('Helvetica-Bold').fontSize(10).fillColor('#78350f').text(heading, L + 12, y + 6, { width: W - 24 });
+          y += 20;
+          doc.font('Helvetica').fontSize(9).fillColor('#451a03').text(paragraph, L + 12, y, { width: W - 28, lineGap: 2 });
+          y += paraH + 16;
+        }
+        pageFooter();
+      }
+
       doc.end();
     } catch (error) { reject(error); }
   });
@@ -627,6 +840,47 @@ export async function generateArabicPDF(data: ReportData): Promise<Buffer> {
       ];
       for (const act of activitiesAr) { y = ensureSpace(y, 20, true); doc.font('Arabic').fontSize(10).fillColor(C.gray700).text(reshapeArabic(act) + '  \u2022', L + 14, y, { width: W - 28, align: 'right', lineBreak: false }); y += 18; }
       pageFooter(true);
+
+      // ── For Teachers: Cognition Assessment Details (Arabic) ──
+      if (data.mindResults.length > 0) {
+        doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill(C.warning); doc.restore();
+        y = 50;
+        doc.font('Arabic').fontSize(18).fillColor(C.warning).text(reshapeArabic('للمعلمين: تفاصيل تقييم الإدراك'), L, y, { width: W, align: 'right', lineBreak: false });
+        y += 8; doc.moveTo(R, y + 18).lineTo(R - 280, y + 18).lineWidth(2.5).strokeColor(C.warning).stroke(); y += 30;
+
+        const introAr = reshapeArabic('يوفر هذا القسم تحليلاً تفصيلياً لأداء الطالب في جميع تقييمات العقل (الإدراك). تصف كل فقرة ما يقيسه الاختبار وما تشير إليه درجة الطالب للتعليم في الفصل الدراسي.');
+        doc.font('Arabic').fontSize(10).fillColor(C.gray700).text(introAr, L, y, { width: W, align: 'right' });
+        y += doc.heightOfString(introAr, { width: W, align: 'right' }) + 20;
+
+        for (const qId of MIND_QUIZ_IDS) {
+          const result = data.mindResults.find(r => r.quiz_id === qId);
+          if (!result) continue;
+          const paragraph = getTeacherParagraphAr(result);
+          if (!paragraph) continue;
+
+          const nameLabel = mindQuizDisplayName[qId] || result.quiz_name;
+          const subLabel = subNameAr[result.subcategory] || result.subcategory;
+          let scoreLabel = '';
+          if (qId === 'attention-assessment') {
+            const adH = parseAdditionalData(result.additional_data);
+            scoreLabel = adH?.attentionLevel ? ` — ${adH.attentionLevel}` : '';
+          } else if (qId !== 'learning-styles') {
+            scoreLabel = ` — ${result.percentage}%`;
+          }
+          const heading = `(${scoreLabel}${subLabel}) ${nameLabel}`;
+
+          doc.font('Arabic').fontSize(9);
+          const paraH = doc.heightOfString(paragraph, { width: W - 28, align: 'right' });
+          y = ensureSpace(y, paraH + 30, true);
+
+          doc.save(); doc.roundedRect(L, y, W, paraH + 28, 4).fill(C.warningLt); doc.restore();
+          doc.font('Arabic').fontSize(10).fillColor('#78350f').text(heading, L + 12, y + 6, { width: W - 24, align: 'right' });
+          y += 20;
+          doc.font('Arabic').fontSize(9).fillColor('#451a03').text(paragraph, L + 12, y, { width: W - 28, align: 'right', lineGap: 2 });
+          y += paraH + 16;
+        }
+        pageFooter(true);
+      }
 
       doc.end();
     } catch (error) { reject(error); }
