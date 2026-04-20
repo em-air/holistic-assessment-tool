@@ -1,4 +1,4 @@
-import logger from '../lib/logger.js';
+﻿import logger from '../lib/logger.js';
 import PDFDocument from 'pdfkit';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -152,181 +152,6 @@ const subNameAr: Record<string, string> = {
   'phonics-awareness': reshapeArabic('أصوات البداية والنهاية'), 'blending-segmenting': reshapeArabic('الدمج والتقسيم'),
   writing: reshapeArabic('مهارات الكتابة'), vocabulary: reshapeArabic('المفردات'), spelling: reshapeArabic('الإملاء'),
 };
-
-// ═════ Helpers ═════
-
-// ── Mind quiz IDs in display order ──
-const MIND_QUIZ_IDS = [
-  'attention-assessment', 'picture-sequence', 'flash-word-quiz',
-  'learning-styles', 'analogy-quiz', 'category-quiz',
-  'sentence-difference-quiz', 'logical-sequencing-quiz', 'missing-object-quiz',
-];
-
-const mindQuizDisplayName: Record<string, string> = {
-  'attention-assessment': 'Attention Questionnaire',
-  'picture-sequence': 'Picture Sequence',
-  'flash-word-quiz': 'Flash Word Quiz',
-  'learning-styles': 'Learning Style Quiz',
-  'analogy-quiz': 'Analogy Quiz',
-  'category-quiz': 'Category Quiz',
-  'sentence-difference-quiz': 'Find Sentence Differences',
-  'logical-sequencing-quiz': 'Logical Sequencing',
-  'missing-object-quiz': 'Missing Object',
-};
-
-function buildAttentionParagraphEnBackend(result: QuizResult): string {
-  const ad = parseAdditionalData(result.additional_data) || {};
-  const overallLevel = ad.attentionLevel || (result.percentage >= 75 ? 'Strong' : result.percentage >= 60 ? 'Moderate' : 'Developing');
-  const focusingLevel = ad.focusingLevel || overallLevel;
-  const shiftingLevel = ad.shiftingLevel || overallLevel;
-  const focusPct = ad.focusingPercentage;
-  const shiftPct = ad.shiftingPercentage;
-
-  const isStrongFocus = /strong|good|high/i.test(focusingLevel);
-  const isStrongShift = /strong|good|high/i.test(shiftingLevel);
-  const isWeakFocus = /developing|low|weak|needs/i.test(focusingLevel);
-  const isWeakShift = /developing|low|weak|needs/i.test(shiftingLevel);
-
-  const parts: string[] = [];
-  parts.push(`The Attention Control Assessment evaluated the student across two subscales: Focusing (sustaining attention on a task) and Shifting (switching attention between tasks). The student's overall attention level was rated as "${overallLevel}".`);
-
-  if (isStrongFocus && isStrongShift) {
-    parts.push(`Both focusing${focusPct != null ? ` (${focusPct}%)` : ''} and shifting${shiftPct != null ? ` (${shiftPct}%)` : ''} abilities are strong. The student can sustain concentration on activities and transition smoothly between tasks. This is a positive indicator for classroom learning, as it supports engagement in lessons and the ability to follow complex, multi-step instructions.`);
-  } else if (isStrongFocus && isWeakShift) {
-    parts.push(`While the student's focusing ability is strong${focusPct != null ? ` (${focusPct}%)` : ''}, they have difficulty with shifting attention${shiftPct != null ? ` (${shiftPct}%)` : ''}. This means the student can concentrate well on a single task but may struggle when asked to switch between activities or transition to a new topic. Consider providing clear transition warnings (e.g., "in 2 minutes we will switch to math"), using visual schedules, and allowing extra time during transitions between activities.`);
-  } else if (isWeakFocus && isStrongShift) {
-    parts.push(`The student shows difficulty with sustained focusing${focusPct != null ? ` (${focusPct}%)` : ''} but has good shifting ability${shiftPct != null ? ` (${shiftPct}%)` : ''}. They can switch between tasks effectively but may struggle to maintain concentration on a single activity for extended periods. Consider breaking tasks into shorter segments, using timers to create structured focus intervals, and providing frequent check-ins to help the student stay engaged.`);
-  } else if (isWeakFocus && isWeakShift) {
-    parts.push(`Both focusing${focusPct != null ? ` (${focusPct}%)` : ''} and shifting${shiftPct != null ? ` (${shiftPct}%)` : ''} abilities need support. The student may have difficulty maintaining concentration on tasks and also struggle when transitioning between activities. Consider seating the student away from distractions, using visual cues and timers, breaking tasks into small steps, providing transition warnings, and checking in frequently to help the student stay on track.`);
-  } else {
-    parts.push(`Focusing was rated as "${focusingLevel}"${focusPct != null ? ` (${focusPct}%)` : ''} and shifting was rated as "${shiftingLevel}"${shiftPct != null ? ` (${shiftPct}%)` : ''}. The student may benefit from structured activities with clear instructions, periodic check-ins, and visual schedules to support both sustained attention and smooth transitions between tasks.`);
-  }
-
-  return parts.join(' ');
-}
-
-function getTeacherParagraphEn(result: QuizResult): string {
-  const pct = result.percentage;
-  const ad = parseAdditionalData(result.additional_data);
-  switch (result.quiz_id) {
-    case 'attention-assessment':
-      return buildAttentionParagraphEnBackend(result);
-    case 'picture-sequence':
-      if (pct >= 75) return 'The student demonstrates strong visual memory and sequencing skills. They can effectively recall and arrange visual information in the correct order, which is important for understanding stories, following procedures, and organizing thoughts logically.';
-      if (pct >= 60) return 'The student shows developing visual memory and sequencing abilities. They can sometimes recall and order visual information but may need additional support. Practice with picture stories and step-by-step visual activities can help strengthen these skills.';
-      return 'The student has difficulty with visual memory and sequencing tasks. They struggle to remember and arrange images in the correct order. This may affect their ability to follow story sequences or multi-step procedures. Consider using visual aids, graphic organizers, and repeated practice with sequencing activities to build this skill.';
-    case 'flash-word-quiz':
-      if (pct >= 75) return 'The student has strong rapid word recognition skills. They can quickly identify and remember words that are briefly displayed, indicating good visual processing speed and word memory. This is a positive sign for reading fluency development.';
-      if (pct >= 60) return 'The student shows moderate rapid word recognition abilities. They can recognize some flashed words but may need more time or repetition. Continued practice with sight words and flash card activities can help improve speed and accuracy.';
-      return 'The student has difficulty remembering words that were briefly flashed and needs additional work in this area. This suggests challenges with rapid visual word processing and sight word memory, which can affect reading fluency. Consider using repeated exposure to high-frequency words, flash card drills at a gradually increasing pace, and multisensory word recognition activities.';
-    case 'learning-styles': {
-      const style = ad?.dominantStyle;
-      if (style === 'visual') return 'The student has been identified as a visual learner. They learn best through seeing information presented in diagrams, charts, pictures, and written text. To support this student, use visual aids such as graphic organizers, color-coded notes, videos, and demonstrations. Allow them to draw or map out concepts when possible.';
-      if (style === 'auditory') return 'The student has been identified as an auditory learner. They learn best through listening, discussions, and verbal explanations. To support this student, incorporate group discussions, oral instructions, read-alouds, and audio resources. Allow them to talk through problems and explain their thinking verbally.';
-      if (style === 'kinesthetic') return 'The student has been identified as a kinesthetic learner. They learn best through hands-on activities, movement, and physical engagement. To support this student, incorporate manipulatives, role-playing, experiments, and movement breaks into lessons. Allow them to build models or act out concepts when possible.';
-      if (style === 'reading-writing') return 'The student has been identified as a reading/writing learner. They learn best through reading text and writing notes. To support this student, provide written instructions, encourage note-taking, and use reading-based assignments. Allow them to express understanding through written responses and journaling.';
-      return 'The learning style assessment has been completed. Understanding the student\'s preferred learning style can help tailor instruction to their strengths.';
-    }
-    case 'analogy-quiz':
-      if (pct >= 75) return 'The student demonstrates strong analogical reasoning skills. They can identify relationships between concepts and apply that understanding to new situations. This is an important foundation for critical thinking, problem-solving, and understanding complex academic content.';
-      if (pct >= 60) return 'The student shows developing analogical reasoning abilities. They can sometimes identify relationships between concepts but may struggle with more complex analogies. Practice with word relationship games and guided analogy exercises can help strengthen this skill.';
-      return 'The student has difficulty with analogical reasoning and struggles to identify relationships between concepts. This may affect their ability to make connections across subjects and solve problems that require relational thinking. Consider using concrete examples, visual analogy cards, and guided practice to help the student recognize patterns and relationships.';
-    case 'category-quiz':
-      if (pct >= 75) return 'The student demonstrates strong categorization and classification skills. They can effectively group items based on shared characteristics, which supports organizational thinking, vocabulary development, and the ability to identify patterns in information.';
-      if (pct >= 60) return 'The student shows developing categorization skills. They can group some items correctly but may have difficulty with less obvious groupings. Sorting activities, classification games, and discussions about how things are alike and different can help improve this skill.';
-      return 'The student struggles with categorization and classification tasks. They have difficulty grouping items by shared characteristics, which may impact their ability to organize information and see patterns. Consider using hands-on sorting activities, visual grouping exercises, and explicit instruction on identifying common features among items.';
-    case 'sentence-difference-quiz':
-      if (pct >= 75) return 'The student shows strong attention to detail and comparison skills. They can effectively identify differences between sentences, which is important for reading comprehension, editing, and careful analysis of written information.';
-      if (pct >= 60) return 'The student shows developing skills in identifying differences between sentences. They can spot some changes but may miss subtle differences. Practice with spot-the-difference exercises and careful reading activities can help sharpen this skill.';
-      return 'The student has difficulty finding differences between sentences, suggesting challenges with attention to detail and careful comparison of written information. This may affect proofreading and reading comprehension. Consider using side-by-side comparison exercises, highlighting activities, and guided practice in identifying small changes in text.';
-    case 'logical-sequencing-quiz':
-      if (pct >= 75) return 'The student demonstrates strong logical sequencing abilities. They can arrange information in a logical order, which is essential for understanding cause and effect, following procedures, and constructing well-organized written and verbal responses.';
-      if (pct >= 60) return 'The student shows developing logical sequencing skills. They can sometimes order events or steps correctly but may struggle with more complex sequences. Practice with timeline activities, process ordering, and sequential storytelling can help strengthen this ability.';
-      return 'The student has difficulty with logical sequencing tasks and struggles to arrange information in a meaningful order. This may affect their ability to understand cause and effect, follow multi-step directions, and organize their thoughts for writing. Consider using visual timelines, step-by-step guides, and sequencing card activities to build this skill.';
-    case 'missing-object-quiz':
-      if (pct >= 75) return 'The student demonstrates strong visual perception and observation skills. They can quickly identify missing elements in visual scenes, which supports attention to detail, visual analysis, and spatial awareness in the classroom.';
-      if (pct >= 60) return 'The student shows developing visual perception skills. They can identify some missing objects but may miss others. Practice with visual puzzles, spot-the-difference games, and observation activities can help strengthen this ability.';
-      return 'The student has difficulty identifying missing objects in visual scenes, suggesting challenges with visual perception and observation. This may affect their ability to notice important details in visual materials and classroom activities. Consider using visual scanning exercises, I-spy games, and guided observation activities to develop these skills.';
-    default: return '';
-  }
-}
-
-function buildAttentionParagraphArBackend(result: QuizResult): string {
-  const ad = parseAdditionalData(result.additional_data) || {};
-  const overallLevel = ad.attentionLevel || (result.percentage >= 75 ? 'Strong' : result.percentage >= 60 ? 'Moderate' : 'Developing');
-  const focusingLevel = ad.focusingLevel || overallLevel;
-  const shiftingLevel = ad.shiftingLevel || overallLevel;
-  const focusPct = ad.focusingPercentage;
-  const shiftPct = ad.shiftingPercentage;
-
-  const isStrongFocus = /strong|good|high/i.test(focusingLevel);
-  const isStrongShift = /strong|good|high/i.test(shiftingLevel);
-  const isWeakFocus = /developing|low|weak|needs/i.test(focusingLevel);
-  const isWeakShift = /developing|low|weak|needs/i.test(shiftingLevel);
-
-  const parts: string[] = [];
-  parts.push(reshapeArabic(`قيّم اختبار التحكم في الانتباه الطالب عبر مقياسين فرعيين: التركيز (الحفاظ على الانتباه لمهمة واحدة) والتحويل (الانتقال بين المهام). تم تقييم مستوى الانتباه العام للطالب بـ "${overallLevel}".`));
-
-  if (isStrongFocus && isStrongShift) {
-    parts.push(reshapeArabic(`كلتا قدرتي التركيز${focusPct != null ? ` (${focusPct}%)` : ''} والتحويل${shiftPct != null ? ` (${shiftPct}%)` : ''} قوية. يستطيع الطالب الحفاظ على التركيز في الأنشطة والانتقال بسلاسة بين المهام. هذا مؤشر إيجابي للتعلم في الفصل الدراسي، حيث يدعم المشاركة في الدروس والقدرة على اتباع التعليمات المعقدة المتعددة الخطوات.`));
-  } else if (isStrongFocus && isWeakShift) {
-    parts.push(reshapeArabic(`بينما قدرة الطالب على التركيز قوية${focusPct != null ? ` (${focusPct}%)` : ''}، إلا أنه يواجه صعوبة في تحويل الانتباه${shiftPct != null ? ` (${shiftPct}%)` : ''}. هذا يعني أن الطالب يستطيع التركيز جيداً على مهمة واحدة لكنه قد يجد صعوبة عند المطالبة بالانتقال بين الأنشطة أو التحول إلى موضوع جديد. يُنصح بتقديم تنبيهات واضحة قبل الانتقال واستخدام الجداول المرئية والسماح بوقت إضافي أثناء التحولات بين الأنشطة.`));
-  } else if (isWeakFocus && isStrongShift) {
-    parts.push(reshapeArabic(`يُظهر الطالب صعوبة في التركيز المستمر${focusPct != null ? ` (${focusPct}%)` : ''} لكن لديه قدرة جيدة على التحويل${shiftPct != null ? ` (${shiftPct}%)` : ''}. يمكنه الانتقال بين المهام بفعالية لكنه قد يجد صعوبة في الحفاظ على التركيز على نشاط واحد لفترات طويلة. يُنصح بتقسيم المهام إلى أجزاء أقصر واستخدام المؤقتات لإنشاء فترات تركيز منظمة وتوفير متابعة متكررة لمساعدة الطالب على البقاء منخرطاً.`));
-  } else if (isWeakFocus && isWeakShift) {
-    parts.push(reshapeArabic(`كلتا قدرتي التركيز${focusPct != null ? ` (${focusPct}%)` : ''} والتحويل${shiftPct != null ? ` (${shiftPct}%)` : ''} تحتاجان إلى دعم. قد يواجه الطالب صعوبة في الحفاظ على التركيز على المهام وأيضاً يجد صعوبة عند الانتقال بين الأنشطة. يُنصح بإجلاس الطالب بعيداً عن المشتتات واستخدام الإشارات البصرية والمؤقتات وتقسيم المهام إلى خطوات صغيرة وتقديم تنبيهات الانتقال والتحقق بشكل متكرر لمساعدة الطالب على البقاء في المسار الصحيح.`));
-  } else {
-    parts.push(reshapeArabic(`تم تقييم التركيز بـ "${focusingLevel}"${focusPct != null ? ` (${focusPct}%)` : ''} والتحويل بـ "${shiftingLevel}"${shiftPct != null ? ` (${shiftPct}%)` : ''}. قد يستفيد الطالب من أنشطة منظمة مع تعليمات واضحة ومتابعة دورية وجداول مرئية لدعم كل من الانتباه المستمر والانتقالات السلسة بين المهام.`));
-  }
-
-  return parts.join(' ');
-}
-
-function getTeacherParagraphAr(result: QuizResult): string {
-  const pct = result.percentage;
-  const ad = parseAdditionalData(result.additional_data);
-  switch (result.quiz_id) {
-    case 'attention-assessment':
-      return buildAttentionParagraphArBackend(result);
-    case 'picture-sequence':
-      if (pct >= 75) return reshapeArabic('يُظهر الطالب مهارات قوية في الذاكرة البصرية والتسلسل. يمكنه استرجاع وترتيب المعلومات البصرية بالترتيب الصحيح بفعالية، وهو أمر مهم لفهم القصص واتباع الإجراءات وتنظيم الأفكار بشكل منطقي.');
-      if (pct >= 60) return reshapeArabic('يُظهر الطالب قدرات متطورة في الذاكرة البصرية والتسلسل. يمكنه أحياناً استرجاع وترتيب المعلومات البصرية لكنه قد يحتاج إلى دعم إضافي. يمكن أن تساعد الممارسة مع القصص المصورة والأنشطة البصرية المتسلسلة في تعزيز هذه المهارات.');
-      return reshapeArabic('يواجه الطالب صعوبة في مهام الذاكرة البصرية والتسلسل. يجد صعوبة في تذكر وترتيب الصور بالترتيب الصحيح. قد يؤثر ذلك على قدرته على متابعة تسلسل القصص أو الإجراءات المتعددة الخطوات. يُنصح باستخدام الوسائل البصرية والمنظمات الرسومية والممارسة المتكررة مع أنشطة التسلسل لبناء هذه المهارة.');
-    case 'flash-word-quiz':
-      if (pct >= 75) return reshapeArabic('يتمتع الطالب بمهارات قوية في التعرف السريع على الكلمات. يمكنه تحديد وتذكر الكلمات التي تُعرض بسرعة، مما يشير إلى سرعة معالجة بصرية جيدة وذاكرة كلمات قوية. هذا مؤشر إيجابي لتطوير الطلاقة في القراءة.');
-      if (pct >= 60) return reshapeArabic('يُظهر الطالب قدرات متوسطة في التعرف السريع على الكلمات. يمكنه التعرف على بعض الكلمات المعروضة لكنه قد يحتاج إلى مزيد من الوقت أو التكرار. يمكن أن تساعد الممارسة المستمرة مع الكلمات الشائعة وأنشطة البطاقات التعليمية في تحسين السرعة والدقة.');
-      return reshapeArabic('يواجه الطالب صعوبة في تذكر الكلمات التي تُعرض بسرعة ويحتاج إلى عمل إضافي في هذا المجال. يشير ذلك إلى تحديات في المعالجة البصرية السريعة للكلمات وذاكرة الكلمات البصرية، مما قد يؤثر على طلاقة القراءة. يُنصح بالتعرض المتكرر للكلمات عالية التردد وتمارين البطاقات التعليمية بوتيرة متزايدة تدريجياً وأنشطة التعرف على الكلمات متعددة الحواس.');
-    case 'learning-styles': {
-      const style = ad?.dominantStyle;
-      if (style === 'visual') return reshapeArabic('تم تحديد الطالب كمتعلم بصري. يتعلم بشكل أفضل من خلال رؤية المعلومات المقدمة في الرسوم البيانية والمخططات والصور والنصوص المكتوبة. لدعم هذا الطالب، استخدم الوسائل البصرية مثل المنظمات الرسومية والملاحظات الملونة ومقاطع الفيديو والعروض التوضيحية. اسمح له بالرسم أو رسم الخرائط المفاهيمية عندما يكون ذلك ممكناً.');
-      if (style === 'auditory') return reshapeArabic('تم تحديد الطالب كمتعلم سمعي. يتعلم بشكل أفضل من خلال الاستماع والمناقشات والشروحات اللفظية. لدعم هذا الطالب، أدخل المناقشات الجماعية والتعليمات الشفهية والقراءة بصوت عالٍ والموارد الصوتية. اسمح له بالتحدث عن المشكلات وشرح تفكيره شفهياً.');
-      if (style === 'kinesthetic') return reshapeArabic('تم تحديد الطالب كمتعلم حركي. يتعلم بشكل أفضل من خلال الأنشطة العملية والحركة والمشاركة البدنية. لدعم هذا الطالب، أدخل الأدوات التعليمية الملموسة ولعب الأدوار والتجارب وفترات الراحة الحركية في الدروس. اسمح له ببناء النماذج أو تمثيل المفاهيم عندما يكون ذلك ممكناً.');
-      if (style === 'reading-writing') return reshapeArabic('تم تحديد الطالب كمتعلم قرائي/كتابي. يتعلم بشكل أفضل من خلال قراءة النصوص وكتابة الملاحظات. لدعم هذا الطالب، قدم تعليمات مكتوبة وشجع على تدوين الملاحظات واستخدم المهام المبنية على القراءة. اسمح له بالتعبير عن فهمه من خلال الاستجابات المكتوبة والتدوين.');
-      return reshapeArabic('تم إكمال تقييم أسلوب التعلم للطالب. يمكن أن يساعد فهم أسلوب التعلم المفضل للطالب في تخصيص التعليم بما يتناسب مع نقاط قوته.');
-    }
-    case 'analogy-quiz':
-      if (pct >= 75) return reshapeArabic('يُظهر الطالب مهارات قوية في التفكير القياسي. يمكنه تحديد العلاقات بين المفاهيم وتطبيق هذا الفهم على مواقف جديدة. هذا أساس مهم للتفكير النقدي وحل المشكلات وفهم المحتوى الأكاديمي المعقد.');
-      if (pct >= 60) return reshapeArabic('يُظهر الطالب قدرات متطورة في التفكير القياسي. يمكنه أحياناً تحديد العلاقات بين المفاهيم لكنه قد يواجه صعوبة مع القياسات الأكثر تعقيداً. يمكن أن تساعد الممارسة مع ألعاب علاقات الكلمات وتمارين القياس الموجهة في تعزيز هذه المهارة.');
-      return reshapeArabic('يواجه الطالب صعوبة في التفكير القياسي ويجد صعوبة في تحديد العلاقات بين المفاهيم. قد يؤثر ذلك على قدرته على إجراء الروابط بين المواد الدراسية وحل المشكلات التي تتطلب التفكير العلائقي. يُنصح باستخدام أمثلة ملموسة وبطاقات القياس البصرية والممارسة الموجهة لمساعدة الطالب على التعرف على الأنماط والعلاقات.');
-    case 'category-quiz':
-      if (pct >= 75) return reshapeArabic('يُظهر الطالب مهارات قوية في التصنيف والتبويب. يمكنه تجميع العناصر بفعالية بناءً على الخصائص المشتركة، مما يدعم التفكير التنظيمي وتطوير المفردات والقدرة على تحديد الأنماط في المعلومات.');
-      if (pct >= 60) return reshapeArabic('يُظهر الطالب مهارات متطورة في التصنيف. يمكنه تجميع بعض العناصر بشكل صحيح لكنه قد يواجه صعوبة مع التجميعات الأقل وضوحاً. يمكن أن تساعد أنشطة الفرز وألعاب التصنيف والمناقشات حول أوجه التشابه والاختلاف في تحسين هذه المهارة.');
-      return reshapeArabic('يواجه الطالب صعوبة في مهام التصنيف والتبويب. يجد صعوبة في تجميع العناصر حسب الخصائص المشتركة، مما قد يؤثر على قدرته على تنظيم المعلومات ورؤية الأنماط. يُنصح باستخدام أنشطة الفرز العملية وتمارين التجميع البصري والتعليم المباشر لتحديد السمات المشتركة بين العناصر.');
-    case 'sentence-difference-quiz':
-      if (pct >= 75) return reshapeArabic('يُظهر الطالب اهتماماً قوياً بالتفاصيل ومهارات المقارنة. يمكنه تحديد الاختلافات بين الجمل بفعالية، وهو أمر مهم للفهم القرائي والتحرير والتحليل الدقيق للمعلومات المكتوبة.');
-      if (pct >= 60) return reshapeArabic('يُظهر الطالب مهارات متطورة في تحديد الاختلافات بين الجمل. يمكنه اكتشاف بعض التغييرات لكنه قد يفوت الاختلافات الدقيقة. يمكن أن تساعد الممارسة مع تمارين اكتشاف الاختلافات وأنشطة القراءة المتأنية في صقل هذه المهارة.');
-      return reshapeArabic('يواجه الطالب صعوبة في إيجاد الاختلافات بين الجمل، مما يشير إلى تحديات في الاهتمام بالتفاصيل والمقارنة الدقيقة للمعلومات المكتوبة. قد يؤثر ذلك على التدقيق اللغوي والفهم القرائي. يُنصح باستخدام تمارين المقارنة جنباً إلى جنب وأنشطة التظليل والممارسة الموجهة في تحديد التغييرات الصغيرة في النص.');
-    case 'logical-sequencing-quiz':
-      if (pct >= 75) return reshapeArabic('يُظهر الطالب قدرات قوية في التسلسل المنطقي. يمكنه ترتيب المعلومات بترتيب منطقي، وهو أمر أساسي لفهم السبب والنتيجة واتباع الإجراءات وبناء استجابات مكتوبة وشفهية منظمة.');
-      if (pct >= 60) return reshapeArabic('يُظهر الطالب مهارات متطورة في التسلسل المنطقي. يمكنه أحياناً ترتيب الأحداث أو الخطوات بشكل صحيح لكنه قد يواجه صعوبة مع التسلسلات الأكثر تعقيداً. يمكن أن تساعد الممارسة مع أنشطة الجدول الزمني وترتيب العمليات والسرد المتسلسل في تعزيز هذه القدرة.');
-      return reshapeArabic('يواجه الطالب صعوبة في مهام التسلسل المنطقي ويجد صعوبة في ترتيب المعلومات بشكل ذي معنى. قد يؤثر ذلك على قدرته على فهم السبب والنتيجة واتباع التوجيهات المتعددة الخطوات وتنظيم أفكاره للكتابة. يُنصح باستخدام الجداول الزمنية البصرية والأدلة خطوة بخطوة وأنشطة بطاقات التسلسل لبناء هذه المهارة.');
-    case 'missing-object-quiz':
-      if (pct >= 75) return reshapeArabic('يُظهر الطالب مهارات قوية في الإدراك البصري والملاحظة. يمكنه تحديد العناصر المفقودة في المشاهد البصرية بسرعة، مما يدعم الاهتمام بالتفاصيل والتحليل البصري والوعي المكاني في الفصل الدراسي.');
-      if (pct >= 60) return reshapeArabic('يُظهر الطالب مهارات متطورة في الإدراك البصري. يمكنه تحديد بعض الأشياء المفقودة لكنه قد يفوت أخرى. يمكن أن تساعد الممارسة مع الألغاز البصرية وألعاب اكتشاف الاختلافات وأنشطة الملاحظة في تعزيز هذه القدرة.');
-      return reshapeArabic('يواجه الطالب صعوبة في تحديد الأشياء المفقودة في المشاهد البصرية، مما يشير إلى تحديات في الإدراك البصري والملاحظة. قد يؤثر ذلك على قدرته على ملاحظة التفاصيل المهمة في المواد البصرية والأنشطة الصفية. يُنصح باستخدام تمارين المسح البصري وألعاب البحث عن الأشياء وأنشطة الملاحظة الموجهة لتطوير هذه المهارات.');
-    default: return '';
-  }
-}
 
 function groupBySub(results: QuizResult[]) {
   const map: Record<string, QuizResult[]> = {};
@@ -852,6 +677,194 @@ function getParentAdviceAr(result: QuizResult): string {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+//  TEACHER SUMMARY HELPERS
+// ═══════════════════════════════════════════════════════════════════
+
+interface TeacherSummary {
+  cognitiveProfile: string;
+  observations: string[];
+  strategies: string[];
+  accommodations: string[];
+  goals: string[];
+  quickTip: string;
+}
+
+function buildTeacherSummaryEn(mindResults: QuizResult[], oralResults: QuizResult[], academicResults: QuizResult[]): TeacherSummary {
+  const allResults = [...mindResults, ...oralResults, ...academicResults];
+  const avg = allResults.length > 0 ? Math.round(allResults.reduce((s, r) => s + r.percentage, 0) / allResults.length) : 0;
+
+  const lsResult = mindResults.find(r => r.quiz_id === 'learning-styles');
+  const style: string | null = lsResult ? (parseAdditionalData(lsResult.additional_data)?.dominantStyle ?? null) : null;
+
+  const attnResult = mindResults.find(r => r.quiz_id === 'attention-assessment');
+  const attnAd = attnResult ? parseAdditionalData(attnResult.additional_data) : null;
+  const attnLevel: string | null = attnAd?.attentionLevel
+    ?? (attnResult ? (attnResult.percentage >= 75 ? 'Strong' : attnResult.percentage >= 60 ? 'Moderate' : 'Developing') : null);
+
+  const strengths = [...allResults].sort((a, b) => b.percentage - a.percentage).filter(r => r.percentage >= 80).slice(0, 3);
+  const weaknesses = [...allResults].sort((a, b) => a.percentage - b.percentage).filter(r => r.percentage < 70).slice(0, 3);
+
+  // Cognitive Profile
+  let cognitiveProfile = avg >= 85
+    ? `This student demonstrates strong overall cognitive abilities with an average score of ${avg}%.`
+    : avg >= 70
+    ? `This student shows a developing cognitive profile with an overall average of ${avg}%.`
+    : `This student requires additional cognitive support, with an overall average of ${avg}%.`;
+  if (strengths.length > 0) cognitiveProfile += ` Notable strengths include ${strengths.map(r => mindQuizDisplayName[r.quiz_id] || r.quiz_name).join(', ')}.`;
+  if (weaknesses.length > 0) cognitiveProfile += ` Priority support areas: ${weaknesses.map(r => subNameEn[r.subcategory] || r.subcategory).join(' and ')}.`;
+  if (style) cognitiveProfile += ` Preferred learning style: ${styleEn[style] || style}.`;
+  if (attnLevel) cognitiveProfile += ` Attention level: ${attnLevel}.`;
+
+  // Classroom Observations
+  const observations: string[] = [];
+  if (attnLevel && /developing|low|weak/i.test(attnLevel)) observations.push('May show off-task behavior or restlessness during independent work.');
+  else if (attnLevel && /moderate/i.test(attnLevel)) observations.push('Attention may fluctuate; may need gentle redirection during longer tasks.');
+  else if (attnLevel) observations.push('Generally sustains focus well during structured tasks.');
+
+  const seqResult = mindResults.find(r => r.quiz_id === 'logical-sequencing-quiz');
+  if (seqResult && seqResult.percentage < 70) observations.push('May struggle to follow multi-step directions without visual or written support.');
+
+  const memResult = mindResults.find(r => r.quiz_id === 'picture-sequence');
+  if (memResult && memResult.percentage < 70) observations.push('May not reliably retain visual instructions; check comprehension after giving directions.');
+
+  const analogyResult = mindResults.find(r => r.quiz_id === 'analogy-quiz');
+  if (analogyResult && analogyResult.percentage >= 80) observations.push('Shows strong relational thinking; can handle higher-order and abstract questioning.');
+
+  if (observations.length === 0) observations.push('Student demonstrates balanced performance; monitor engagement and participation regularly.');
+
+  // Teaching Strategies (3–4)
+  const strategies: string[] = [];
+  if (style === 'visual') strategies.push('Use diagrams, charts, and color-coded notes to introduce new concepts.');
+  else if (style === 'auditory') strategies.push('Incorporate discussions, verbal explanations, and read-aloud tasks.');
+  else if (style === 'kinesthetic') strategies.push('Include hands-on activities, manipulatives, and movement-based learning.');
+  else if (style === 'reading-writing') strategies.push('Provide written instructions; encourage note-taking and written summaries.');
+  else strategies.push('Vary instructional formats — visual, verbal, and hands-on — to support engagement.');
+
+  if (weaknesses.some(r => ['logical-sequencing-quiz', 'picture-sequence'].includes(r.quiz_id))) strategies.push('Break tasks into numbered steps; use graphic organizers for sequencing work.');
+  if (weaknesses.some(r => ['analogy-quiz', 'category-quiz'].includes(r.quiz_id))) strategies.push('Anchor abstract concepts with concrete, real-world examples before moving to the abstract.');
+  if (attnLevel && /developing|low|weak/i.test(attnLevel)) strategies.push('Use brief, chunked tasks with built-in movement or sensory breaks between segments.');
+  else strategies.push('Provide specific, timely feedback to reinforce effort and sustain motivation.');
+
+  while (strategies.length > 4) strategies.pop();
+  if (strategies.length < 3) strategies.push('Use quick checks for understanding (e.g., mini-whiteboards, exit tickets).');
+
+  // Accommodations
+  const accommodations: string[] = [];
+  if (attnLevel && /developing|low|weak/i.test(attnLevel)) { accommodations.push('Preferential seating away from distractions.'); accommodations.push('Extended time on timed assessments.'); }
+  if (weaknesses.length > 0) accommodations.push('Scaffolded task instructions with reduced complexity where needed.');
+  if (style === 'visual') accommodations.push('Allow graphic organizers and visual reference materials.');
+  else if (style === 'kinesthetic') accommodations.push('Permit use of manipulatives during tasks.');
+  if (accommodations.length === 0) accommodations.push('No major accommodations indicated; continue with standard differentiation.');
+
+  // Goals (exactly 2)
+  const goals: string[] = [];
+  const bottomTwo = [...allResults].sort((a, b) => a.percentage - b.percentage).slice(0, 2);
+  for (const r of bottomTwo) goals.push(`Improve ${subNameEn[r.subcategory] || r.subcategory} from ${r.percentage}% to above 75% within 6 weeks through targeted practice and guided support.`);
+  if (goals.length === 0) { goals.push('Maintain strong performance by introducing challenging extension tasks across all skill areas.'); goals.push('Develop independent problem-solving strategies for complex, multi-step activities.'); }
+  while (goals.length < 2) goals.push('Build confidence and engagement by celebrating incremental progress in identified growth areas.');
+  goals.splice(2);
+
+  // Quick Tip
+  let quickTip = '';
+  if (attnLevel && /developing|low|weak/i.test(attnLevel)) quickTip = "A short movement break between tasks can significantly reset this student's focus and readiness to learn.";
+  else if (style === 'visual') quickTip = "A quick sketch or diagram at the start of each new topic can noticeably boost this student's engagement.";
+  else if (style === 'auditory') quickTip = "Let this student verbalize their thinking — it's often their fastest route to understanding.";
+  else if (style === 'kinesthetic') quickTip = 'Give this student something to manipulate while listening — it improves focus and retention.';
+  else if (weaknesses.length > 0) quickTip = `A daily 5-minute review targeting ${subNameEn[weaknesses[0].subcategory] || weaknesses[0].quiz_name} can make a measurable difference over time.`;
+  else quickTip = 'This student is performing well — consider enrichment activities to keep them challenged and motivated.';
+
+  return { cognitiveProfile, observations, strategies, accommodations, goals, quickTip };
+}
+
+function buildTeacherSummaryAr(mindResults: QuizResult[], oralResults: QuizResult[], academicResults: QuizResult[]): TeacherSummary {
+  const allResults = [...mindResults, ...oralResults, ...academicResults];
+  const avg = allResults.length > 0 ? Math.round(allResults.reduce((s, r) => s + r.percentage, 0) / allResults.length) : 0;
+
+  const lsResult = mindResults.find(r => r.quiz_id === 'learning-styles');
+  const style: string | null = lsResult ? (parseAdditionalData(lsResult.additional_data)?.dominantStyle ?? null) : null;
+
+  const attnResult = mindResults.find(r => r.quiz_id === 'attention-assessment');
+  const attnAd = attnResult ? parseAdditionalData(attnResult.additional_data) : null;
+  const attnLevel: string | null = attnAd?.attentionLevel
+    ?? (attnResult ? (attnResult.percentage >= 75 ? 'Strong' : attnResult.percentage >= 60 ? 'Moderate' : 'Developing') : null);
+
+  const strengths = [...allResults].sort((a, b) => b.percentage - a.percentage).filter(r => r.percentage >= 80).slice(0, 3);
+  const weaknesses = [...allResults].sort((a, b) => a.percentage - b.percentage).filter(r => r.percentage < 70).slice(0, 3);
+  const attnLevelAr = attnLevel ? (attnLevel === 'Strong' ? 'قوي' : attnLevel === 'Moderate' ? 'متوسط' : 'يحتاج تطويراً') : null;
+
+  // Cognitive Profile (Arabic)
+  let cognitiveProfile = avg >= 85
+    ? reshapeArabic(`يُظهر الطالب قدرات معرفية قوية بمتوسط ${avg}%.`)
+    : avg >= 70
+    ? reshapeArabic(`يُظهر الطالب ملفاً معرفياً في طور النمو بمتوسط ${avg}%.`)
+    : reshapeArabic(`يحتاج الطالب دعماً معرفياً إضافياً بمتوسط إجمالي ${avg}%.`);
+  if (strengths.length > 0) cognitiveProfile += ' ' + reshapeArabic(`نقاط القوة البارزة: ${strengths.map(r => mindQuizDisplayName[r.quiz_id] || r.quiz_name).join('، ')}.`);
+  if (weaknesses.length > 0) cognitiveProfile += ' ' + reshapeArabic(`مجالات الأولوية: ${weaknesses.map(r => subNameAr[r.subcategory] || r.subcategory).join(' و')}.`);
+  if (style) cognitiveProfile += ' ' + reshapeArabic(`أسلوب التعلم المفضل: ${styleAr[style] || style}.`);
+  if (attnLevelAr) cognitiveProfile += ' ' + reshapeArabic(`مستوى الانتباه: ${attnLevelAr}.`);
+
+  // Classroom Observations (Arabic)
+  const observations: string[] = [];
+  if (attnLevel && /developing|low|weak/i.test(attnLevel)) observations.push(reshapeArabic('قد يُظهر سلوكاً خارج المهمة أو توتراً أثناء العمل المستقل.'));
+  else if (attnLevel && /moderate/i.test(attnLevel)) observations.push(reshapeArabic('قد يتذبذب الانتباه؛ يحتاج إعادة توجيه خلال المهام الطويلة.'));
+  else if (attnLevel) observations.push(reshapeArabic('يحافظ على التركيز بشكل عام خلال المهام المنظمة.'));
+
+  const seqResultAr = mindResults.find(r => r.quiz_id === 'logical-sequencing-quiz');
+  if (seqResultAr && seqResultAr.percentage < 70) observations.push(reshapeArabic('قد يجد صعوبة في اتباع التوجيهات متعددة الخطوات دون دعم بصري أو مكتوب.'));
+
+  const memResultAr = mindResults.find(r => r.quiz_id === 'picture-sequence');
+  if (memResultAr && memResultAr.percentage < 70) observations.push(reshapeArabic('قد لا يحتفظ بالتعليمات البصرية بشكل موثوق؛ تحقق من الفهم بعد إعطاء التوجيهات.'));
+
+  const analogyResultAr = mindResults.find(r => r.quiz_id === 'analogy-quiz');
+  if (analogyResultAr && analogyResultAr.percentage >= 80) observations.push(reshapeArabic('يُظهر تفكيراً علائقياً قوياً؛ يمكنه التعامل مع الأسئلة المجردة والعليا.'));
+
+  if (observations.length === 0) observations.push(reshapeArabic('يُظهر الطالب أداءً متوازناً؛ راقب المشاركة والتفاعل بانتظام.'));
+
+  // Teaching Strategies (Arabic, 3–4)
+  const strategies: string[] = [];
+  if (style === 'visual') strategies.push(reshapeArabic('استخدم المخططات والرسوم البيانية والملاحظات الملونة لتقديم المفاهيم الجديدة.'));
+  else if (style === 'auditory') strategies.push(reshapeArabic('أدرج المناقشات والشروحات الشفهية ونشاطات القراءة بصوت عالٍ.'));
+  else if (style === 'kinesthetic') strategies.push(reshapeArabic('أدرج الأنشطة العملية والأدوات الملموسة والتعلم القائم على الحركة.'));
+  else if (style === 'reading-writing') strategies.push(reshapeArabic('قدم تعليمات مكتوبة وشجع على تدوين الملاحظات والملخصات المكتوبة.'));
+  else strategies.push(reshapeArabic('نوّع في أساليب التدريس: البصري والشفهي والعملي لدعم التفاعل.'));
+
+  if (weaknesses.some(r => ['logical-sequencing-quiz', 'picture-sequence'].includes(r.quiz_id))) strategies.push(reshapeArabic('قسّم المهام إلى خطوات مرقمة واستخدم المنظمات الرسومية للعمل المتسلسل.'));
+  if (weaknesses.some(r => ['analogy-quiz', 'category-quiz'].includes(r.quiz_id))) strategies.push(reshapeArabic('ربط المفاهيم المجردة بأمثلة واقعية ملموسة قبل الانتقال للمستوى المجرد.'));
+  if (attnLevel && /developing|low|weak/i.test(attnLevel)) strategies.push(reshapeArabic('استخدم مهام قصيرة مجزأة مع فترات راحة حركية بين الأجزاء.'));
+  else strategies.push(reshapeArabic('قدم تغذية راجعة فورية ومحددة لتعزيز الجهد والحفاظ على الدافعية.'));
+
+  while (strategies.length > 4) strategies.pop();
+  if (strategies.length < 3) strategies.push(reshapeArabic('استخدم فحوصات سريعة للفهم مثل بطاقات الخروج أو السبورات الصغيرة.'));
+
+  // Accommodations (Arabic)
+  const accommodations: string[] = [];
+  if (attnLevel && /developing|low|weak/i.test(attnLevel)) { accommodations.push(reshapeArabic('الجلوس المفضل بعيداً عن المشتتات.')); accommodations.push(reshapeArabic('وقت ممتد في التقييمات الزمنية.')); }
+  if (weaknesses.length > 0) accommodations.push(reshapeArabic('تعليمات مدرّجة مع تبسيط في التعقيد عند الحاجة.'));
+  if (style === 'visual') accommodations.push(reshapeArabic('السماح باستخدام المنظمات الرسومية والمواد المرجعية البصرية.'));
+  else if (style === 'kinesthetic') accommodations.push(reshapeArabic('السماح باستخدام الأدوات الملموسة أثناء الأنشطة.'));
+  if (accommodations.length === 0) accommodations.push(reshapeArabic('لا توجد تسهيلات رئيسية مطلوبة في الوقت الحالي.'));
+
+  // Goals (exactly 2, Arabic)
+  const goals: string[] = [];
+  const bottomTwo = [...allResults].sort((a, b) => a.percentage - b.percentage).slice(0, 2);
+  for (const r of bottomTwo) goals.push(reshapeArabic(`تحسين ${subNameAr[r.subcategory] || r.subcategory} من ${r.percentage}% إلى أعلى من 75% خلال 6 أسابيع من خلال الممارسة الموجهة.`));
+  if (goals.length === 0) { goals.push(reshapeArabic('الحفاظ على الأداء القوي من خلال تقديم مهام إثرائية في جميع المجالات.')); goals.push(reshapeArabic('تطوير استراتيجيات حل مستقلة للأنشطة المعقدة متعددة الخطوات.')); }
+  while (goals.length < 2) goals.push(reshapeArabic('بناء الثقة والتفاعل من خلال الاحتفاء بالتقدم التدريجي.'));
+  goals.splice(2);
+
+  // Quick Tip (Arabic)
+  let quickTip = '';
+  if (attnLevel && /developing|low|weak/i.test(attnLevel)) quickTip = reshapeArabic('استراحة حركية قصيرة بين المهام يمكن أن تُعيد تركيز الطالب وجاهزيته للتعلم بشكل ملحوظ.');
+  else if (style === 'visual') quickTip = reshapeArabic('رسم سريع أو مخطط في بداية كل موضوع جديد يمكن أن يعزز تفاعل هذا الطالب بشكل ملحوظ.');
+  else if (style === 'auditory') quickTip = reshapeArabic('دع الطالب يعبر عن تفكيره بصوت عالٍ — فهو غالباً أسرع طريق لفهمه.');
+  else if (style === 'kinesthetic') quickTip = reshapeArabic('أعطِ الطالب شيئاً يتلاعب به أثناء الاستماع — يحسن التركيز والاستيعاب.');
+  else if (weaknesses.length > 0) quickTip = reshapeArabic(`مراجعة يومية لمدة 5 دقائق في ${subNameAr[weaknesses[0].subcategory] || weaknesses[0].quiz_name} يمكن أن تُحدث فرقاً قابلاً للقياس مع الوقت.`);
+  else quickTip = reshapeArabic('يؤدي هذا الطالب بشكل جيد — فكر في مهام إثرائية للحفاظ على تحفيزه وتحديه.');
+
+  return { cognitiveProfile, observations, strategies, accommodations, goals, quickTip };
+}
+
+// ═══════════════════════════════════════════════════════════════════
 //  ENGLISH PDF GENERATION
 // ═══════════════════════════════════════════════════════════════════
 export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
@@ -913,7 +926,9 @@ export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
       progressBar(R - 160, y + 14, 140, overallAvg, overallPl.color);
       y += 50;
 
-      const parentNoteEn = 'Dear Parent/Guardian,\n\nThis report provides an overview of your child\'s cognitive skills assessment. The scores reflect performance across various areas including attention, memory, critical thinking, and language skills. Please review the recommendations section.';
+      const parentNoteEn = data.audience === 'teacher'
+        ? 'Dear Teacher,\n\nThis report provides a detailed overview of the student\'s cognitive skills assessment. The scores reflect performance across various areas including attention, memory, critical thinking, and language skills.'
+        : 'Dear Parent/Guardian,\n\nThis report provides an overview of your child\'s cognitive skills assessment. The scores reflect performance across various areas including attention, memory, critical thinking, and language skills.';
       doc.font('Helvetica').fontSize(10);
       const parentNoteEnH = doc.heightOfString(parentNoteEn, { width: W - 32 });
       const parentBoxEnH = Math.max(60, parentNoteEnH + 20);
@@ -937,49 +952,6 @@ export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
         doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill(C.emerald); doc.restore();
         y = 50; y = renderSectionEn(y, 'Academic Skills Assessment', C.emerald, data.academicResults, subNameEn); pageFooter();
       }
-
-      // Recommendations
-      doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill(C.success); doc.restore();
-      y = 50;
-      doc.font('Helvetica-Bold').fontSize(18).fillColor(C.success).text('Recommendations', L, y, { lineBreak: false });
-      y += 8; doc.moveTo(L, y + 18).lineTo(L + 160, y + 18).lineWidth(2.5).strokeColor(C.success).stroke(); y += 30;
-
-      y = ensureSpace(y, 60);
-      doc.save(); doc.roundedRect(L, y, W, 28, 4).fill(C.successLt); doc.restore();
-      doc.font('Helvetica-Bold').fontSize(12).fillColor(C.success).text('Strengths Identified', L + 14, y + 7, { lineBreak: false });
-      y += 36;
-      const highPerf = allResults.filter(r => r.percentage >= 85);
-      if (highPerf.length > 0) {
-        for (const r of highPerf) { y = ensureSpace(y, 20); doc.font('Helvetica').fontSize(10).fillColor(C.gray700).text(`\u2022  ${r.quiz_name}: Excellent performance`, L + 14, y, { width: W - 28, lineBreak: false }); y += 18; }
-      } else if (allResults.length > 0) {
-        doc.font('Helvetica').fontSize(10).fillColor(C.gray700).text('\u2022  Your child is developing skills across all assessed areas.', L + 14, y, { width: W - 28, lineBreak: false }); y += 18;
-      }
-      y += 10;
-
-      y = ensureSpace(y, 60);
-      doc.save(); doc.roundedRect(L, y, W, 28, 4).fill(C.warningLt); doc.restore();
-      doc.font('Helvetica-Bold').fontSize(12).fillColor(C.warning).text('Areas for Growth', L + 14, y + 7, { lineBreak: false });
-      y += 36;
-      const lowPerf = allResults.filter(r => r.percentage < 75);
-      if (lowPerf.length > 0) {
-        for (const r of lowPerf) { y = ensureSpace(y, 20); const sub = subNameEn[r.subcategory] || r.subcategory; doc.font('Helvetica').fontSize(10).fillColor(C.gray700).text(`\u2022  ${sub}: Consider additional practice and support`, L + 14, y, { width: W - 28, lineBreak: false }); y += 18; }
-      } else if (allResults.length > 0) {
-        doc.font('Helvetica').fontSize(10).fillColor(C.gray700).text('\u2022  Consistent performance across all areas \u2014 great job!', L + 14, y, { width: W - 28, lineBreak: false }); y += 18;
-      }
-      y += 10;
-
-      y = ensureSpace(y, 120);
-      doc.save(); doc.roundedRect(L, y, W, 28, 4).fill(C.blueLt); doc.restore();
-      doc.font('Helvetica-Bold').fontSize(12).fillColor(C.blue).text('Suggested Activities', L + 14, y + 7, { lineBreak: false });
-      y += 36;
-      const activities = [
-        'Encourage regular practice in areas where scores were below 75%.',
-        'Celebrate successes and maintain motivation for continued learning.',
-        'Explore educational games that target specific skill areas.',
-        "Discuss results with your child's teacher for additional support.",
-        'Re-assess periodically to track improvement over time.',
-      ];
-      for (const act of activities) { y = ensureSpace(y, 20); doc.font('Helvetica').fontSize(10).fillColor(C.gray700).text(`\u2022  ${act}`, L + 14, y, { width: W - 28, lineBreak: false }); y += 18; }
 
       // ── Audience-specific section ──
       const audience = data.audience || 'parent';
@@ -1033,43 +1005,93 @@ export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
 
       pageFooter();
 
-      // ── For Teachers: Cognition Assessment Details ──
-      if (data.mindResults.length > 0) {
-        doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill(C.warning); doc.restore();
+      // ── Teacher Summary Page (teacher audience only) ──
+      if (audience === 'teacher' && allMindResults.length > 0) {
+        const summary = buildTeacherSummaryEn(allMindResults, data.oralResults, data.academicResults);
+        doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill(C.blue); doc.restore();
         y = 50;
-        doc.font('Helvetica-Bold').fontSize(18).fillColor(C.warning).text('For Teachers: Cognition Assessment Details', L, y, { lineBreak: false });
-        y += 8; doc.moveTo(L, y + 18).lineTo(L + 280, y + 18).lineWidth(2.5).strokeColor(C.warning).stroke(); y += 30;
 
-        doc.font('Helvetica').fontSize(10).fillColor(C.gray700)
-          .text('This section provides detailed, quiz-by-quiz analysis of the student\u2019s performance on all Mind (cognition) assessments. Each paragraph describes what the quiz measures and what the student\u2019s score indicates for classroom instruction.', L, y, { width: W });
-        y += doc.heightOfString('This section provides detailed, quiz-by-quiz analysis...', { width: W }) + 20;
+        doc.font('Helvetica-Bold').fontSize(18).fillColor(C.blue).text('Teacher Summary', L, y, { lineBreak: false });
+        y += 8; doc.moveTo(L, y + 18).lineTo(L + 200, y + 18).lineWidth(2.5).strokeColor(C.blue).stroke(); y += 30;
 
-        for (const qId of MIND_QUIZ_IDS) {
-          const result = data.mindResults.find(r => r.quiz_id === qId);
-          if (!result) continue;
-          const paragraph = getTeacherParagraphEn(result);
-          if (!paragraph) continue;
+        // 1. Cognitive Profile
+        y = ensureSpace(y, 80);
+        doc.save(); doc.roundedRect(L, y, W, 24, 4).fill(C.primaryLt); doc.restore();
+        doc.font('Helvetica-Bold').fontSize(11).fillColor(C.primary).text('Cognitive Profile', L + 12, y + 6, { lineBreak: false });
+        y += 30;
+        doc.font('Helvetica').fontSize(9);
+        const profileH = doc.heightOfString(summary.cognitiveProfile, { width: W - 24 });
+        y = ensureSpace(y, profileH + 10);
+        doc.font('Helvetica').fontSize(9).fillColor(C.gray700).text(summary.cognitiveProfile, L + 12, y, { width: W - 24, lineGap: 2 });
+        y += profileH + 16;
 
-          const nameLabel = mindQuizDisplayName[qId] || result.quiz_name;
-          const subLabel = subNameEn[result.subcategory] || result.subcategory;
-          let scoreLabel = '';
-          if (qId === 'attention-assessment') {
-            const adH = parseAdditionalData(result.additional_data);
-            scoreLabel = adH?.attentionLevel ? ` — ${adH.attentionLevel}` : '';
-          } else if (qId !== 'learning-styles') {
-            scoreLabel = ` — ${result.percentage}%`;
-          }
-          const heading = `${nameLabel} (${subLabel}${scoreLabel})`;
+        // 2. Classroom Observations
+        y = ensureSpace(y, 60);
+        doc.save(); doc.roundedRect(L, y, W, 24, 4).fill(C.emeraldLt); doc.restore();
+        doc.font('Helvetica-Bold').fontSize(11).fillColor(C.emerald).text('Classroom Observations', L + 12, y + 6, { lineBreak: false });
+        y += 30;
+        for (const obs of summary.observations) {
           doc.font('Helvetica').fontSize(9);
-          const paraH = doc.heightOfString(paragraph, { width: W - 28 });
-          y = ensureSpace(y, paraH + 30);
-
-          doc.save(); doc.roundedRect(L, y, W, paraH + 28, 4).fill(C.warningLt); doc.restore();
-          doc.font('Helvetica-Bold').fontSize(10).fillColor('#78350f').text(heading, L + 12, y + 6, { width: W - 24 });
-          y += 20;
-          doc.font('Helvetica').fontSize(9).fillColor('#451a03').text(paragraph, L + 12, y, { width: W - 28, lineGap: 2 });
-          y += paraH + 16;
+          const obsH = doc.heightOfString(`\u2022  ${obs}`, { width: W - 24 });
+          y = ensureSpace(y, obsH + 8);
+          doc.font('Helvetica').fontSize(9).fillColor(C.gray700).text(`\u2022  ${obs}`, L + 12, y, { width: W - 24, lineGap: 2 });
+          y += obsH + 8;
         }
+        y += 6;
+
+        // 3. Teaching Strategies
+        y = ensureSpace(y, 60);
+        doc.save(); doc.roundedRect(L, y, W, 24, 4).fill(C.secondaryLt); doc.restore();
+        doc.font('Helvetica-Bold').fontSize(11).fillColor(C.secondary).text('Teaching Strategies', L + 12, y + 6, { lineBreak: false });
+        y += 30;
+        for (const strat of summary.strategies) {
+          doc.font('Helvetica').fontSize(9);
+          const stratH = doc.heightOfString(`\u2022  ${strat}`, { width: W - 24 });
+          y = ensureSpace(y, stratH + 8);
+          doc.font('Helvetica').fontSize(9).fillColor(C.gray700).text(`\u2022  ${strat}`, L + 12, y, { width: W - 24, lineGap: 2 });
+          y += stratH + 8;
+        }
+        y += 6;
+
+        // 4. Accommodations
+        y = ensureSpace(y, 60);
+        doc.save(); doc.roundedRect(L, y, W, 24, 4).fill(C.warningLt); doc.restore();
+        doc.font('Helvetica-Bold').fontSize(11).fillColor(C.warning).text('Accommodations', L + 12, y + 6, { lineBreak: false });
+        y += 30;
+        for (const acc of summary.accommodations) {
+          doc.font('Helvetica').fontSize(9);
+          const accH = doc.heightOfString(`\u2022  ${acc}`, { width: W - 24 });
+          y = ensureSpace(y, accH + 8);
+          doc.font('Helvetica').fontSize(9).fillColor(C.gray700).text(`\u2022  ${acc}`, L + 12, y, { width: W - 24, lineGap: 2 });
+          y += accH + 8;
+        }
+        y += 6;
+
+        // 5. Goals (2)
+        y = ensureSpace(y, 70);
+        doc.save(); doc.roundedRect(L, y, W, 24, 4).fill(C.successLt); doc.restore();
+        doc.font('Helvetica-Bold').fontSize(11).fillColor(C.success).text('Goals', L + 12, y + 6, { lineBreak: false });
+        y += 30;
+        summary.goals.forEach((goal, i) => {
+          const goalText = `Goal ${i + 1}: ${goal}`;
+          doc.font('Helvetica').fontSize(9);
+          const goalH = doc.heightOfString(goalText, { width: W - 24 });
+          y = ensureSpace(y, goalH + 10);
+          doc.font('Helvetica').fontSize(9).fillColor(C.gray700).text(goalText, L + 12, y, { width: W - 24, lineGap: 2 });
+          y += goalH + 10;
+        });
+        y += 6;
+
+        // 6. Quick Tip
+        doc.font('Helvetica').fontSize(9);
+        const tipH = doc.heightOfString(summary.quickTip, { width: W - 36 });
+        const tipBoxH = Math.max(44, tipH + 30);
+        y = ensureSpace(y, tipBoxH + 10);
+        doc.save(); doc.roundedRect(L, y, W, tipBoxH, 6).fill(C.blueLt); doc.roundedRect(L, y, 4, tipBoxH, 2).fill(C.blue); doc.restore();
+        doc.font('Helvetica-Bold').fontSize(10).fillColor(C.blue).text('Quick Tip', L + 16, y + 8, { lineBreak: false });
+        doc.font('Helvetica').fontSize(9).fillColor(C.gray700).text(summary.quickTip, L + 16, y + 22, { width: W - 32, lineGap: 2 });
+        y += tipBoxH + 10;
+
         pageFooter();
       }
 
@@ -1144,8 +1166,12 @@ export async function generateArabicPDF(data: ReportData): Promise<Buffer> {
       progressBar(L + 14, y + 30, 140, overallAvg, arPl.color);
       y += 58;
 
-      const parentNoteAr1 = reshapeArabic('عزيزي ولي الأمر،');
-      const parentNoteAr2 = reshapeArabic('يقدم هذا التقرير نظرة عامة على تقييم المهارات الإدراكية لطفلك.');
+      const parentNoteAr1 = data.audience === 'teacher'
+        ? reshapeArabic('عزيزي المعلم،')
+        : reshapeArabic('عزيزي ولي الأمر،');
+      const parentNoteAr2 = data.audience === 'teacher'
+        ? reshapeArabic('يقدم هذا التقرير نظرة تفصيلية على تقييم المهارات الإدراكية للطالب.')
+        : reshapeArabic('يقدم هذا التقرير نظرة عامة على تقييم المهارات الإدراكية لطفلك.');
       const parentNoteAr3 = reshapeArabic('تعكس الدرجات الأداء في مختلف المجالات بما في ذلك الانتباه والذاكرة والتفكير النقدي والمهارات اللغوية.');
       const fullParentAr = parentNoteAr1 + '\n\n' + parentNoteAr2 + ' ' + parentNoteAr3;
       doc.font('Arabic').fontSize(10);
@@ -1172,49 +1198,6 @@ export async function generateArabicPDF(data: ReportData): Promise<Buffer> {
         doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill(C.emerald); doc.restore();
         y = 50; y = renderSectionAr(y, reshapeArabic('تقييم المهارات الأكاديمية'), C.emerald, data.academicResults, subNameAr); pageFooter(true);
       }
-
-      // Recommendations (Arabic)
-      doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill(C.success); doc.restore();
-      y = 50;
-      doc.font('Arabic').fontSize(18).fillColor(C.success).text(reshapeArabic('التوصيات'), L, y, { width: W, align: 'right', lineBreak: false });
-      y += 8; doc.moveTo(R, y + 18).lineTo(R - 160, y + 18).lineWidth(2.5).strokeColor(C.success).stroke(); y += 30;
-
-      y = ensureSpace(y, 60, true);
-      doc.save(); doc.roundedRect(L, y, W, 28, 4).fill(C.successLt); doc.restore();
-      doc.font('Arabic').fontSize(12).fillColor(C.success).text(reshapeArabic('نقاط القوة المحددة'), L + 14, y + 7, { width: W - 28, align: 'right', lineBreak: false });
-      y += 36;
-      const highPerfAr = allResults.filter(r => r.percentage >= 85);
-      if (highPerfAr.length > 0) {
-        for (const r of highPerfAr) { y = ensureSpace(y, 20, true); doc.font('Arabic').fontSize(10).fillColor(C.gray700).text(reshapeArabic('أداء ممتاز') + ': ' + r.quiz_name + '  \u2022', L + 14, y, { width: W - 28, align: 'right', lineBreak: false }); y += 18; }
-      } else if (allResults.length > 0) {
-        doc.font('Arabic').fontSize(10).fillColor(C.gray700).text(reshapeArabic('طفلك يطور مهاراته في جميع المجالات التي تم تقييمها') + '  \u2022', L + 14, y, { width: W - 28, align: 'right', lineBreak: false }); y += 18;
-      }
-      y += 10;
-
-      y = ensureSpace(y, 60, true);
-      doc.save(); doc.roundedRect(L, y, W, 28, 4).fill(C.warningLt); doc.restore();
-      doc.font('Arabic').fontSize(12).fillColor(C.warning).text(reshapeArabic('مجالات النمو'), L + 14, y + 7, { width: W - 28, align: 'right', lineBreak: false });
-      y += 36;
-      const lowPerfAr = allResults.filter(r => r.percentage < 75);
-      if (lowPerfAr.length > 0) {
-        for (const r of lowPerfAr) { y = ensureSpace(y, 20, true); const sub = subNameAr[r.subcategory] || r.subcategory; doc.font('Arabic').fontSize(10).fillColor(C.gray700).text(reshapeArabic('يحتاج مزيداً من الممارسة') + ': ' + sub + '  \u2022', L + 14, y, { width: W - 28, align: 'right', lineBreak: false }); y += 18; }
-      } else if (allResults.length > 0) {
-        doc.font('Arabic').fontSize(10).fillColor(C.gray700).text(reshapeArabic('أداء متسق في جميع المجالات') + '  \u2022', L + 14, y, { width: W - 28, align: 'right', lineBreak: false }); y += 18;
-      }
-      y += 10;
-
-      y = ensureSpace(y, 120, true);
-      doc.save(); doc.roundedRect(L, y, W, 28, 4).fill(C.blueLt); doc.restore();
-      doc.font('Arabic').fontSize(12).fillColor(C.blue).text(reshapeArabic('الأنشطة المقترحة'), L + 14, y + 7, { width: W - 28, align: 'right', lineBreak: false });
-      y += 36;
-      const activitiesAr = [
-        'شجع على الممارسة المنتظمة في المجالات الضعيفة',
-        'احتفل بالنجاحات وحافظ على الدافع للتعلم',
-        'استخدم الألعاب التعليمية لتطوير المهارات',
-        'ناقش النتائج مع معلم طفلك للدعم الإضافي',
-        'أعد التقييم بشكل دوري لتتبع التحسن',
-      ];
-      for (const act of activitiesAr) { y = ensureSpace(y, 20, true); doc.font('Arabic').fontSize(10).fillColor(C.gray700).text(reshapeArabic(act) + '  \u2022', L + 14, y, { width: W - 28, align: 'right', lineBreak: false }); y += 18; }
 
       // ── Audience-specific section (Arabic) ──
       const audience = data.audience || 'parent';
@@ -1268,44 +1251,93 @@ export async function generateArabicPDF(data: ReportData): Promise<Buffer> {
 
       pageFooter(true);
 
-      // ── For Teachers: Cognition Assessment Details (Arabic) ──
-      if (data.mindResults.length > 0) {
-        doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill(C.warning); doc.restore();
+      // ── Teacher Summary Page — Arabic (teacher audience only) ──
+      if (audience === 'teacher' && allMindResults.length > 0) {
+        const summaryAr = buildTeacherSummaryAr(allMindResults, data.oralResults, data.academicResults);
+        doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill(C.blue); doc.restore();
         y = 50;
-        doc.font('Arabic').fontSize(18).fillColor(C.warning).text(reshapeArabic('للمعلمين: تفاصيل تقييم الإدراك'), L, y, { width: W, align: 'right', lineBreak: false });
-        y += 8; doc.moveTo(R, y + 18).lineTo(R - 280, y + 18).lineWidth(2.5).strokeColor(C.warning).stroke(); y += 30;
 
-        const introAr = reshapeArabic('يوفر هذا القسم تحليلاً تفصيلياً لأداء الطالب في جميع تقييمات العقل (الإدراك). تصف كل فقرة ما يقيسه الاختبار وما تشير إليه درجة الطالب للتعليم في الفصل الدراسي.');
-        doc.font('Arabic').fontSize(10).fillColor(C.gray700).text(introAr, L, y, { width: W, align: 'right' });
-        y += doc.heightOfString(introAr, { width: W, align: 'right' }) + 20;
+        doc.font('Arabic').fontSize(18).fillColor(C.blue).text(reshapeArabic('ملخص للمعلم'), L, y, { width: W, align: 'right', lineBreak: false });
+        y += 8; doc.moveTo(R, y + 18).lineTo(R - 200, y + 18).lineWidth(2.5).strokeColor(C.blue).stroke(); y += 30;
 
-        for (const qId of MIND_QUIZ_IDS) {
-          const result = data.mindResults.find(r => r.quiz_id === qId);
-          if (!result) continue;
-          const paragraph = getTeacherParagraphAr(result);
-          if (!paragraph) continue;
+        // 1. Cognitive Profile
+        y = ensureSpace(y, 80, true);
+        doc.save(); doc.roundedRect(L, y, W, 24, 4).fill(C.primaryLt); doc.restore();
+        doc.font('Arabic').fontSize(11).fillColor(C.primary).text(reshapeArabic('الملف المعرفي'), L + 12, y + 6, { width: W - 24, align: 'right', lineBreak: false });
+        y += 30;
+        doc.font('Arabic').fontSize(9);
+        const profileArH = doc.heightOfString(summaryAr.cognitiveProfile, { width: W - 24, align: 'right' });
+        y = ensureSpace(y, profileArH + 10, true);
+        doc.font('Arabic').fontSize(9).fillColor(C.gray700).text(summaryAr.cognitiveProfile, L + 12, y, { width: W - 24, align: 'right', lineGap: 2 });
+        y += profileArH + 16;
 
-          const nameLabel = mindQuizDisplayName[qId] || result.quiz_name;
-          const subLabel = subNameAr[result.subcategory] || result.subcategory;
-          let scoreLabel = '';
-          if (qId === 'attention-assessment') {
-            const adH = parseAdditionalData(result.additional_data);
-            scoreLabel = adH?.attentionLevel ? ` — ${adH.attentionLevel}` : '';
-          } else if (qId !== 'learning-styles') {
-            scoreLabel = ` — ${result.percentage}%`;
-          }
-          const heading = `(${scoreLabel}${subLabel}) ${nameLabel}`;
-
+        // 2. Classroom Observations
+        y = ensureSpace(y, 60, true);
+        doc.save(); doc.roundedRect(L, y, W, 24, 4).fill(C.emeraldLt); doc.restore();
+        doc.font('Arabic').fontSize(11).fillColor(C.emerald).text(reshapeArabic('ملاحظات الفصل الدراسي'), L + 12, y + 6, { width: W - 24, align: 'right', lineBreak: false });
+        y += 30;
+        for (const obs of summaryAr.observations) {
           doc.font('Arabic').fontSize(9);
-          const paraH = doc.heightOfString(paragraph, { width: W - 28, align: 'right' });
-          y = ensureSpace(y, paraH + 30, true);
-
-          doc.save(); doc.roundedRect(L, y, W, paraH + 28, 4).fill(C.warningLt); doc.restore();
-          doc.font('Arabic').fontSize(10).fillColor('#78350f').text(heading, L + 12, y + 6, { width: W - 24, align: 'right' });
-          y += 20;
-          doc.font('Arabic').fontSize(9).fillColor('#451a03').text(paragraph, L + 12, y, { width: W - 28, align: 'right', lineGap: 2 });
-          y += paraH + 16;
+          const obsArH = doc.heightOfString(obs + '  \u2022', { width: W - 24, align: 'right' });
+          y = ensureSpace(y, obsArH + 8, true);
+          doc.font('Arabic').fontSize(9).fillColor(C.gray700).text(obs + '  \u2022', L + 12, y, { width: W - 24, align: 'right', lineGap: 2 });
+          y += obsArH + 8;
         }
+        y += 6;
+
+        // 3. Teaching Strategies
+        y = ensureSpace(y, 60, true);
+        doc.save(); doc.roundedRect(L, y, W, 24, 4).fill(C.secondaryLt); doc.restore();
+        doc.font('Arabic').fontSize(11).fillColor(C.secondary).text(reshapeArabic('استراتيجيات التدريس'), L + 12, y + 6, { width: W - 24, align: 'right', lineBreak: false });
+        y += 30;
+        for (const strat of summaryAr.strategies) {
+          doc.font('Arabic').fontSize(9);
+          const stratArH = doc.heightOfString(strat + '  \u2022', { width: W - 24, align: 'right' });
+          y = ensureSpace(y, stratArH + 8, true);
+          doc.font('Arabic').fontSize(9).fillColor(C.gray700).text(strat + '  \u2022', L + 12, y, { width: W - 24, align: 'right', lineGap: 2 });
+          y += stratArH + 8;
+        }
+        y += 6;
+
+        // 4. Accommodations
+        y = ensureSpace(y, 60, true);
+        doc.save(); doc.roundedRect(L, y, W, 24, 4).fill(C.warningLt); doc.restore();
+        doc.font('Arabic').fontSize(11).fillColor(C.warning).text(reshapeArabic('التسهيلات'), L + 12, y + 6, { width: W - 24, align: 'right', lineBreak: false });
+        y += 30;
+        for (const acc of summaryAr.accommodations) {
+          doc.font('Arabic').fontSize(9);
+          const accArH = doc.heightOfString(acc + '  \u2022', { width: W - 24, align: 'right' });
+          y = ensureSpace(y, accArH + 8, true);
+          doc.font('Arabic').fontSize(9).fillColor(C.gray700).text(acc + '  \u2022', L + 12, y, { width: W - 24, align: 'right', lineGap: 2 });
+          y += accArH + 8;
+        }
+        y += 6;
+
+        // 5. Goals (2)
+        y = ensureSpace(y, 70, true);
+        doc.save(); doc.roundedRect(L, y, W, 24, 4).fill(C.successLt); doc.restore();
+        doc.font('Arabic').fontSize(11).fillColor(C.success).text(reshapeArabic('الأهداف'), L + 12, y + 6, { width: W - 24, align: 'right', lineBreak: false });
+        y += 30;
+        summaryAr.goals.forEach((goal, i) => {
+          const label = reshapeArabic(`الهدف ${i + 1}: `) + goal;
+          doc.font('Arabic').fontSize(9);
+          const goalArH = doc.heightOfString(label, { width: W - 24, align: 'right' });
+          y = ensureSpace(y, goalArH + 10, true);
+          doc.font('Arabic').fontSize(9).fillColor(C.gray700).text(label, L + 12, y, { width: W - 24, align: 'right', lineGap: 2 });
+          y += goalArH + 10;
+        });
+        y += 6;
+
+        // 6. Quick Tip
+        doc.font('Arabic').fontSize(9);
+        const tipArH = doc.heightOfString(summaryAr.quickTip, { width: W - 36, align: 'right' });
+        const tipBoxArH = Math.max(44, tipArH + 30);
+        y = ensureSpace(y, tipBoxArH + 10, true);
+        doc.save(); doc.roundedRect(L, y, W, tipBoxArH, 6).fill(C.blueLt); doc.roundedRect(R - 4, y, 4, tipBoxArH, 2).fill(C.blue); doc.restore();
+        doc.font('Arabic').fontSize(10).fillColor(C.blue).text(reshapeArabic('نصيحة سريعة'), L + 12, y + 8, { width: W - 28, align: 'right', lineBreak: false });
+        doc.font('Arabic').fontSize(9).fillColor(C.gray700).text(summaryAr.quickTip, L + 12, y + 22, { width: W - 32, align: 'right', lineGap: 2 });
+        y += tipBoxArH + 10;
+
         pageFooter(true);
       }
 
