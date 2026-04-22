@@ -184,7 +184,7 @@ const AnalogyQuiz: React.FC = () => {
 
             <div className="text-center">
               <button
-                onClick={() => navigate(-1)}
+                onClick={() => navigate(ROUTES.CRITICAL_THINKING_SELECTION)}
                 className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-colors duration-200"
               >
                 Back

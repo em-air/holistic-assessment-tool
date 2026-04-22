@@ -49,9 +49,6 @@ export const ROUTES = {
   ORAL_STORY_SEQUENCING: '/category/oral-skills/story-sequencing',
   ORAL_STORY_RETELL: '/category/oral-skills/story-retell',
 
-  // Phonics & Sound (kept for internal page references, removed from oral skills navigation)
-  STARTING_ENDING_SOUND: '/starting-ending-sound-quiz',
-
   // ── Academic Skills ──────────────────────────────────────────────
   VOCABULARY_MATCHING: '/vocabulary-matching',
   SPELLING_GRADES: '/spelling-grades',
@@ -103,9 +100,6 @@ export const categoryRoute = (id: string) =>
 
 export const quizRoute = (categoryId: string, subcategoryId: string) =>
   `/quiz/${categoryId}/${subcategoryId}`;
-
-export const startingEndingSoundGradeRoute = (grade: string | number) =>
-  `/starting-ending-sound-quiz/${grade}`;
 
 export const logicalSequencingGradeRoute = (grade: string | number) =>
   `/logical-sequencing-quiz/${grade}`;

@@ -20,23 +20,56 @@ const getGeminiModel = (modelName: string = GEMINI_MODELS[0]) => {
   return genAI.getGenerativeModel({ model: modelName });
 };
 
-const generateWithFallback = async (prompt: string) => {
+const generateWithFallback = async (prompt: string, maxRetries = 2) => {
   for (const modelName of GEMINI_MODELS) {
-    try {
-      const model = getGeminiModel(modelName);
-      const result = await model.generateContent(prompt);
-      return result.response.text();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : '';
-      const isRetryable = msg.includes('503') || msg.includes('Service Unavailable') || msg.includes('high demand');
-      if (isRetryable && modelName !== GEMINI_MODELS[GEMINI_MODELS.length - 1]) {
-        logger.warn(`Model ${modelName} unavailable, falling back to next model`);
-        continue;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const model = getGeminiModel(modelName);
+        const result = await model.generateContent(prompt);
+        const text = result.response.text();
+        
+        if (!text || text.trim().length === 0) {
+          throw new Error('Empty response from Gemini');
+        }
+        
+        return text;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        const isRateLimited = msg.includes('429') || msg.includes('quota') || msg.includes('Too Many Requests');
+        const isUnavailable = msg.includes('503') || msg.includes('Service Unavailable') || msg.includes('high demand') || msg.includes('overloaded');
+        const isRetryable = isRateLimited || isUnavailable;
+        
+        // Log detailed error information
+        logger.warn({
+          model: modelName,
+          attempt: attempt + 1,
+          maxRetries: maxRetries + 1,
+          error: msg,
+          isRateLimited,
+          isUnavailable,
+          isRetryable
+        }, 'Gemini API error');
+        
+        // If this is a retryable error and we have retries left
+        if (isRetryable && attempt < maxRetries) {
+          const backoffMs = Math.min(1000 * Math.pow(2, attempt), 5000); // Exponential backoff, max 5s
+          logger.info(`Retrying in ${backoffMs}ms...`);
+          await new Promise(resolve => setTimeout(resolve, backoffMs));
+          continue;
+        }
+        
+        // If retryable but no retries left on this model, try next model
+        if (isRetryable && modelName !== GEMINI_MODELS[GEMINI_MODELS.length - 1]) {
+          logger.warn(`Model ${modelName} exhausted retries, falling back to next model`);
+          break; // Break inner loop to try next model
+        }
+        
+        // Non-retryable error or last model - throw
+        throw err;
       }
-      throw err;
     }
   }
-  throw new Error('All Gemini models failed');
+  throw new Error('All Gemini models failed after retries');
 };
 
 // Validation schemas
@@ -534,17 +567,42 @@ Please respond with a JSON object in this exact format:
 
     const text = await generateWithFallback(evaluationPrompt);
 
-    // Extract JSON from the response
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    // Extract JSON from the response (try multiple patterns)
+    let jsonMatch = text.match(/\{[\s\S]*\}/);
+    
+    // If no match, try looking for JSON code blocks
     if (!jsonMatch) {
+      const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (codeBlockMatch) {
+        jsonMatch = codeBlockMatch[1].match(/\{[\s\S]*\}/);
+      }
+    }
+    
+    if (!jsonMatch) {
+      logger.error({ responseText: text }, 'Failed to extract JSON from Gemini response');
       throw new Error('Failed to extract JSON from Gemini response');
     }
 
-    const evaluation: WritingEvaluation = JSON.parse(jsonMatch[0]);
+    let evaluation: WritingEvaluation;
+    try {
+      evaluation = JSON.parse(jsonMatch[0]);
+    } catch (parseError) {
+      logger.error({ jsonString: jsonMatch[0], parseError }, 'Failed to parse JSON from Gemini');
+      throw new Error('Failed to parse JSON from Gemini response');
+    }
 
     // Validate the response structure
     if (!evaluation.scores || !evaluation.feedback || !evaluation.strengths) {
+      logger.error({ evaluation }, 'Invalid evaluation structure received from Gemini');
       throw new Error('Invalid evaluation structure received from Gemini');
+    }
+
+    // Ensure all score fields are present
+    const requiredScoreFields = ['ideas', 'organization', 'voice', 'wordChoice', 'sentenceFluency', 'conventions'];
+    const missingFields = requiredScoreFields.filter(field => !(field in evaluation.scores));
+    if (missingFields.length > 0) {
+      logger.error({ missingFields, receivedScores: evaluation.scores }, 'Missing score fields in evaluation');
+      throw new Error(`Missing score fields: ${missingFields.join(', ')}`);
     }
 
     res.json({
@@ -553,11 +611,33 @@ Please respond with a JSON object in this exact format:
     });
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : String(error);
-    logger.error({ err: error, errorMessage: errMsg }, 'Error evaluating writing — returning fallback');
+    const isApiKeyError = errMsg.includes('GEMINI_API_KEY') || errMsg.includes('API key');
+    const isRateLimitError = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('Too Many Requests');
+    const isServiceError = errMsg.includes('503') || errMsg.includes('Service Unavailable');
+    
+    logger.error({ 
+      err: error, 
+      errorMessage: errMsg,
+      isApiKeyError,
+      isRateLimitError,
+      isServiceError,
+      grade: req.body?.grade
+    }, 'Error evaluating writing — returning fallback');
 
     // Return fallback evaluation
     const grade = req.body?.grade || 4;
     const rubric = GRADE_RUBRICS[grade] || GRADE_RUBRICS[4];
+    
+    let fallbackMessage = "Thank you for your writing! I'm having trouble analyzing it right now, but keep practicing your writing skills.";
+    
+    // More specific feedback based on error type
+    if (isApiKeyError) {
+      fallbackMessage = "The AI evaluation service is currently unavailable. Your writing has been saved, but automatic feedback cannot be provided at this time.";
+    } else if (isRateLimitError) {
+      fallbackMessage = "The AI service is experiencing high demand. Your writing looks great! Please try getting AI feedback again in a few moments.";
+    } else if (isServiceError) {
+      fallbackMessage = "The AI service is temporarily unavailable. Your writing has been recorded, and you can try requesting feedback again shortly.";
+    }
 
     res.json({
       success: true,
@@ -565,7 +645,7 @@ Please respond with a JSON object in this exact format:
         overallScore: 15,
         maxScore: rubric.maxScore,
         grade: grade.toString(),
-        feedback: "Thank you for your writing! I'm having trouble analyzing it right now, but keep practicing your writing skills.",
+        feedback: fallbackMessage,
         strengths: ["You completed the writing task", "You shared your ideas", "You tried your best"],
         areasForImprovement: ["Keep practicing writing", "Focus on clear ideas"],
         scores: {
@@ -583,6 +663,7 @@ Please respond with a JSON object in this exact format:
         ]
       },
       fallback: true,
+      errorType: isApiKeyError ? 'api_key' : isRateLimitError ? 'rate_limit' : isServiceError ? 'service_unavailable' : 'unknown'
     });
   }
 });

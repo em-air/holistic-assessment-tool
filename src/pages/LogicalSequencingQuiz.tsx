@@ -10,7 +10,6 @@ import { ProgressTracker } from '../utils/progressTracker';
 import FloatingBackground from '../components/FloatingBackground';
 import { ROUTES } from '../routes';
 import { logger } from '../utils/logger';
-import { ROUTES, perceptionQuizSelectionRoute } from '../routes';
 
 interface DragItem {
   id: string;
@@ -261,14 +260,14 @@ const LogicalSequencingQuiz: React.FC = () => {
 
             <div className="space-y-3">
               <button
-                onClick={() => navigate(-1)}
+                onClick={() => navigate(ROUTES.PERCEPTION_LOGICAL_SEQ)}
                 className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
               >
                 Try Different Grade
               </button>
               
               <button
-                onClick={() => navigate(-1)}
+                onClick={() => navigate(ROUTES.PERCEPTION_SELECTION)}
                 className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
               >
                 Back to Perception
@@ -287,7 +286,7 @@ const LogicalSequencingQuiz: React.FC = () => {
       {/* Header */}
       <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-center">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate(ROUTES.PERCEPTION_LOGICAL_SEQ)}
           className="flex items-center space-x-2 px-4 py-2 text-gray-700 bg-white/60 backdrop-blur-sm rounded-lg hover:bg-white/80 transition-colors"
         >
           <ArrowLeft size={20} />

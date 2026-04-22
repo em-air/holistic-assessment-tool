@@ -8,6 +8,9 @@ import { supabase } from '../supabase-client';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { ROUTES } from '../routes';
 import FloatingBackground from '../components/FloatingBackground';
+import { ProgressTracker } from '../utils/progressTracker';
+import AssessmentProgressBar from '../components/AssessmentProgressBar';
+import MindSectionReport from '../components/MindSectionReport';
 
 const gradeOptions = [
   { value: 'grade1', label: 'Grade 1', description: 'Basic relationships and simple concepts' },
@@ -15,10 +18,6 @@ const gradeOptions = [
   { value: 'grade3', label: 'Grade 3', description: 'Age, size, and order reasoning' },
   { value: 'grade4', label: 'Grade 4', description: 'Abstract reasoning and complex relationships' }
 ];
-import { ProgressTracker } from '../utils/progressTracker';
-import AssessmentProgressBar from '../components/AssessmentProgressBar';
-import MindSectionReport from '../components/MindSectionReport';
-import { ROUTES } from '../routes';
 
 interface DroppedItem extends CategoryItem {
   droppedIn: string;
@@ -245,7 +244,7 @@ const CategoryQuiz: React.FC = () => {
 
             <div className="text-center">
               <button
-                onClick={() => navigate(-1)}
+                onClick={() => navigate(ROUTES.CRITICAL_THINKING_SELECTION)}
                 className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-colors duration-200"
               >
                 Back

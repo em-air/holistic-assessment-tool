@@ -213,7 +213,7 @@ const FlashWordQuiz: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => navigate(ROUTES.ATTENTION_MEMORY)}
               className="group flex items-center space-x-2 px-4 py-2 text-gray-700 bg-white/60 backdrop-blur-sm rounded-lg transition-all duration-300 ease-out hover:bg-white/80 hover:shadow-md transform hover:scale-105"
             >
               <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
@@ -303,7 +303,7 @@ const FlashWordQuiz: React.FC = () => {
               Try Again
             </button>
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => navigate(ROUTES.ATTENTION_MEMORY)}
               className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-colors"
             >
               Back to Cognition

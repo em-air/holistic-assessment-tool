@@ -26,6 +26,8 @@ export interface WritingEvaluation {
     conventions: number;
   };
   suggestions: string[];
+  isFallback?: boolean;
+  errorType?: 'api_key' | 'rate_limit' | 'service_unavailable' | 'unknown';
 }
 
 /**
@@ -78,10 +80,22 @@ export async function evaluateWritingWithGemini(
     const data = await response.json();
     
     if (data.success && data.evaluation) {
+      const evaluation = data.evaluation;
+      
+      // Add fallback and error type metadata
       if (data.fallback) {
-        logger.warn('AI evaluation returned fallback — GEMINI_API_KEY may not be configured on the server');
+        evaluation.isFallback = true;
+        evaluation.errorType = data.errorType || 'unknown';
+        logger.warn('AI evaluation returned fallback', { 
+          errorType: data.errorType,
+          reason: data.errorType === 'api_key' ? 'GEMINI_API_KEY not configured' 
+                : data.errorType === 'rate_limit' ? 'Rate limit exceeded'
+                : data.errorType === 'service_unavailable' ? 'Service temporarily unavailable'
+                : 'Unknown error'
+        });
       }
-      return data.evaluation;
+      
+      return evaluation;
     }
 
     return getFallbackEvaluation(grade);

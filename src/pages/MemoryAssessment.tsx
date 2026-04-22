@@ -387,7 +387,7 @@ const MemoryAssessment: React.FC = () => {
                 Try Again
               </button>
               <button
-                onClick={() => navigate(-1)}
+                onClick={() => navigate(ROUTES.ATTENTION_MEMORY)}
                 className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200 transform hover:scale-105"
               >
                 Back to Selection
@@ -412,7 +412,7 @@ const MemoryAssessment: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(ROUTES.ATTENTION_MEMORY)}
             className="group flex items-center space-x-2 px-4 py-2 text-gray-700 bg-white/60 rounded-lg transition-all duration-300 ease-out hover:text-gray-800 hover:bg-white/80 hover:shadow-md transform hover:scale-105 hover:-translate-y-0.5"
           >
             <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
