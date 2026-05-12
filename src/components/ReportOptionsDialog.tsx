@@ -1,6 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Globe, X } from 'lucide-react';
+
+const PROGRESS_STEPS: Array<{ threshold: number; label: string }> = [
+  { threshold: 0,  label: 'Fetching assessment results…' },
+  { threshold: 25, label: 'Generating report PDF…' },
+  { threshold: 55, label: 'Uploading to secure storage…' },
+  { threshold: 80, label: 'Almost ready…' },
+];
+
+function getStepLabel(progress: number): string {
+  for (let i = PROGRESS_STEPS.length - 1; i >= 0; i--) {
+    if (progress >= PROGRESS_STEPS[i].threshold) return PROGRESS_STEPS[i].label;
+  }
+  return PROGRESS_STEPS[0].label;
+}
 
 export type ReportAudience = 'parent' | 'teacher';
 export type ReportLanguage = 'english' | 'arabic' | 'both';
@@ -20,6 +34,31 @@ const ReportOptionsDialog: React.FC<ReportOptionsDialogProps> = ({
 }) => {
   const [audience, setAudience] = useState<ReportAudience>('parent');
   const [language, setLanguage] = useState<ReportLanguage>('both');
+  const [progress, setProgress] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (isGenerating) {
+      setProgress(0);
+      intervalRef.current = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 90) return prev;
+          // Fast early, slow near 90% — simulates realistic generation phases
+          const increment = prev < 30 ? 2 : prev < 60 ? 1 : 0.5;
+          return Math.min(prev + increment, 90);
+        });
+      }, 500);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      setProgress(0);
+    }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [isGenerating]);
 
   if (!open) return null;
 
@@ -104,6 +143,23 @@ const ReportOptionsDialog: React.FC<ReportOptionsDialogProps> = ({
             ))}
           </div>
         </div>
+
+        {/* Progress bar — visible while generating */}
+        {isGenerating && (
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-sm text-gray-500">{getStepLabel(progress)}</span>
+              <span className="text-sm font-semibold text-violet-600">{Math.round(progress)}%</span>
+            </div>
+            <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+              <div
+                className="bg-violet-500 h-2.5 rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <p className="text-xs text-gray-400 mt-2 text-center">This may take up to 2 minutes</p>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex gap-3">

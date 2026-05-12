@@ -75,8 +75,8 @@ const haltOnTimedout = (req: express.Request, _res: express.Response, next: expr
 
 app.use('/api/v1/ai', timeout('60s'), haltOnTimedout);
 app.use('/api/ai', timeout('60s'), haltOnTimedout);
-app.use('/api/v1/reports', timeout('60s'), haltOnTimedout);
-app.use('/api/reports', timeout('60s'), haltOnTimedout);
+app.use('/api/v1/reports', timeout('120s'), haltOnTimedout);
+app.use('/api/reports', timeout('120s'), haltOnTimedout);
 app.use(timeout('30s'));
 app.use(haltOnTimedout);
 

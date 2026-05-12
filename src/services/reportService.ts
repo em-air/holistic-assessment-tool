@@ -28,6 +28,12 @@ export async function generateReport(options: {
       report_type: options.reportType || 'full',
       audience: options.audience || 'parent',
       language: options.language || 'both',
+    }, {
+      // PDF generation can take up to 2 minutes (Arabic font loading + uploads).
+      // Retries are disabled: each retry starts a NEW backend PDF generation,
+      // causing duplicate reports and compounding the delay.
+      timeout: 125_000,
+      retries: 0,
     });
 
     if (!response.success) {
