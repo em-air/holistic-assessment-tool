@@ -5,38 +5,19 @@ import { useNavigate } from 'react-router-dom';
 import { ProgressTracker } from '../utils/progressTracker';
 import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
-import { supabase } from '../supabase-client';
-import { logger } from '../utils/logger';
 import { ROUTES } from '../routes';
 import FloatingBackground from '../components/FloatingBackground';
-
-// API types for memory assessment (no answers exposed)
-interface MemoryItem {
-  id: string;
-  name: string;
-  image: string;
-  category: 'object';
-}
-
-interface SequenceQuestion {
-  id: string;
-  type: 'sequence_recall' | 'missing_object';
-  title: string;
-  instruction: string;
-  items: MemoryItem[];
-  allChoices?: MemoryItem[];
-  difficulty: 1 | 2 | 3 | 4 | 5;
-}
-
-interface PerformanceResult {
-  percentage: number;
-  finalScore: number;
-  level: string;
-  recommendations: string[];
-}
+import {
+  checkMemoryAnswer,
+  evaluateMemoryAssessment,
+  generateMemoryQuestion,
+  type AssessmentType,
+  type MemoryAssessmentQuestion,
+  type MemoryItem,
+  type PerformanceResult,
+} from '../services/memoryAssessmentService';
 
 type GamePhase = 'showing' | 'hidden' | 'testing' | 'feedback' | 'results';
-type AssessmentType = 'sequence_recall' | 'missing_object';
 
 interface AssessmentResults {
   questionsAnswered: number;
@@ -45,14 +26,12 @@ interface AssessmentResults {
   performance: PerformanceResult;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
 const MemoryAssessment: React.FC = () => {
   const navigate = useNavigate();
 
   // Game state
   const [gamePhase, setGamePhase] = useState<GamePhase>('showing');
-  const [currentQuestion, setCurrentQuestion] = useState<SequenceQuestion | null>(null);
+  const [currentQuestion, setCurrentQuestion] = useState<MemoryAssessmentQuestion | null>(null);
   const [selectedType, setSelectedType] = useState<AssessmentType | null>('sequence_recall');
   const [difficulty, setDifficulty] = useState(1);
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
@@ -71,39 +50,23 @@ const MemoryAssessment: React.FC = () => {
   const [finalResults, setFinalResults] = useState<AssessmentResults | null>(null);
   const [startTime] = useState<Date>(new Date());
   const [showReport, setShowReport] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   // Fetch question from API
   const fetchQuestion = useCallback(async (type: AssessmentType, diff: number) => {
-    try {
-      // Get auth token
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        logger.error('No session found for API call');
-        return null;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/api/quiz-content/memory-assessment/generate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ type, difficulty: diff }),
-      });
-
-      const data = await response.json();
-      if (data.success && data.question) {
-        setCurrentQuestion(data.question);
-        // Store the server-side question reference for answer checking
-        if (data.questionRef) {
-          setCurrentQuestionRef(data.questionRef);
-        }
-        return data.question;
-      }
-    } catch (err) {
-      console.error('Error fetching question:', err);
+    setLoadError(null);
+    const generatedQuestion = await generateMemoryQuestion(type, diff);
+    if (!generatedQuestion) {
+      setCurrentQuestion(null);
+      setCurrentQuestionRef(null);
+      setLoadError('Unable to load a memory question right now.');
+      return null;
     }
-    return null;
+
+    setCurrentQuestion(generatedQuestion.question);
+    setCurrentQuestionRef(generatedQuestion.questionRef);
+    return generatedQuestion.question;
   }, []);
 
   // Initialize first question on mount
@@ -140,6 +103,7 @@ const MemoryAssessment: React.FC = () => {
       setGamePhase('showing');
       setTimeLeft(6);
       setShowTimer(true);
+      setSubmissionError(null);
     }
   }, [fetchQuestion]);
 
@@ -195,102 +159,69 @@ const MemoryAssessment: React.FC = () => {
   const checkAnswer = async (answer: string[]) => {
     if (!currentQuestion || !currentQuestionRef) return;
 
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        logger.error('No session found for check API call');
-        return;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/api/quiz-content/memory-assessment/check`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          type: currentQuestion.type,
-          submittedAnswer: currentQuestion.type === 'missing_object' ? answer[0] : answer,
-          questionRef: currentQuestionRef,
-        }),
-      });
-
-      const data = await response.json();
-      const correct = data.success && data.isCorrect;
-
-      setIsCorrect(correct);
-      if (correct) setCorrectAnswers(prev => prev + 1);
-      setQuestionsAnswered(prev => prev + 1);
-      setGamePhase('feedback');
-
-      // Auto-advance after feedback
-      setTimeout(() => {
-        if (questionsAnswered + 1 >= 5) {
-          completeAssessment();
-        } else {
-          const newDifficulty = Math.min(Math.floor((questionsAnswered + 1) / 2) + 1, 5);
-          setDifficulty(newDifficulty);
-          generateNewQuestion(selectedType!, newDifficulty);
-        }
-      }, 2000);
-    } catch (err) {
-      console.error('Error checking answer:', err);
+    setSubmissionError(null);
+    const result = await checkMemoryAnswer(
+      currentQuestion.type,
+      currentQuestion.type === 'missing_object' ? answer[0] : answer,
+      currentQuestionRef,
+    );
+    if (!result) {
+      setSubmissionError('Unable to check your answer right now. Please try again.');
+      return;
     }
+
+    const correct = result.isCorrect;
+    const nextCorrectAnswers = correctAnswers + (correct ? 1 : 0);
+    const nextQuestionsAnswered = questionsAnswered + 1;
+
+    setIsCorrect(correct);
+    if (correct) {
+      setCorrectAnswers(nextCorrectAnswers);
+    }
+    setQuestionsAnswered(nextQuestionsAnswered);
+    setGamePhase('feedback');
+
+    setTimeout(() => {
+      if (nextQuestionsAnswered >= 5) {
+        void completeAssessment(nextCorrectAnswers, nextQuestionsAnswered);
+      } else {
+        const newDifficulty = Math.min(Math.floor(nextQuestionsAnswered / 2) + 1, 5);
+        setDifficulty(newDifficulty);
+        void generateNewQuestion(selectedType!, newDifficulty);
+      }
+    }, 2000);
   };
 
   // Complete assessment
-  const completeAssessment = async () => {
-    const finalCorrect = correctAnswers + (isCorrect ? 1 : 0);
-    const finalTotal = questionsAnswered + 1;
-
-    try {
-      // Get auth token
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        logger.error('No session found for evaluation API call');
-        return;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/api/quiz-content/memory-assessment/evaluate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          correctAnswers: finalCorrect,
-          totalQuestions: finalTotal,
-          difficulty,
-        }),
-      });
-
-      const data = await response.json();
-      if (data.success && data.evaluation) {
-        setFinalResults({
-          questionsAnswered: finalTotal,
-          correctAnswers: finalCorrect,
-          difficulty,
-          performance: data.evaluation
-        });
-        setGamePhase('results');
-
-        const quizId = selectedType === 'sequence_recall' ? 'picture-sequence' : 'missing-object-quiz';
-        const quizName = selectedType === 'sequence_recall' ? 'Picture Sequence' : 'Missing Object';
-
-        ProgressTracker.saveQuizResult({
-          quizId: quizId,
-          quizName: quizName,
-          subcategory: 'memory',
-          score: finalCorrect,
-          totalQuestions: finalTotal,
-          percentage: Math.round((finalCorrect / finalTotal) * 100),
-          timeSpent: Math.round((new Date().getTime() - startTime.getTime()) / 1000),
-          completedAt: new Date().toISOString()
-        });
-      }
-    } catch (err) {
-      console.error('Error evaluating performance:', err);
+  const completeAssessment = async (finalCorrect: number, finalTotal: number) => {
+    setSubmissionError(null);
+    const evaluation = await evaluateMemoryAssessment(finalCorrect, finalTotal, difficulty);
+    if (!evaluation) {
+      setSubmissionError('Unable to finish the memory assessment right now. Please try again.');
+      return;
     }
+
+    setFinalResults({
+      questionsAnswered: finalTotal,
+      correctAnswers: finalCorrect,
+      difficulty,
+      performance: evaluation
+    });
+    setGamePhase('results');
+
+    const quizId = selectedType === 'sequence_recall' ? 'picture-sequence' : 'missing-object-quiz';
+    const quizName = selectedType === 'sequence_recall' ? 'Picture Sequence' : 'Missing Object';
+
+    ProgressTracker.saveQuizResult({
+      quizId: quizId,
+      quizName: quizName,
+      subcategory: 'memory',
+      score: finalCorrect,
+      totalQuestions: finalTotal,
+      percentage: Math.round((finalCorrect / finalTotal) * 100),
+      timeSpent: Math.round((new Date().getTime() - startTime.getTime()) / 1000),
+      completedAt: new Date().toISOString()
+    });
   };
 
   // Results screen
@@ -399,6 +330,38 @@ const MemoryAssessment: React.FC = () => {
           {showReport && (
             <MindSectionReport onClose={() => setShowReport(false)} />
           )}
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentQuestion) {
+    return (
+      <div className="min-h-screen bg-emerald-50 relative overflow-hidden flex items-center justify-center p-4">
+        <FloatingBackground />
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl max-w-xl w-full text-center relative z-10">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Memory Assessment Unavailable</h2>
+          <p className="text-gray-600 mb-6">
+            {loadError ?? 'Loading your next memory challenge...'}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {loadError && selectedType && (
+              <button
+                onClick={() => {
+                  void generateNewQuestion(selectedType, difficulty);
+                }}
+                className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+              >
+                Retry
+              </button>
+            )}
+            <button
+              onClick={() => navigate(ROUTES.ATTENTION_MEMORY)}
+              className="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-xl font-semibold transition-colors duration-200"
+            >
+              Back
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -585,6 +548,22 @@ const MemoryAssessment: React.FC = () => {
                     : 'Don\'t worry, let\'s try another one...'
                   }
                 </p>
+              </div>
+            )}
+
+            {submissionError && (
+              <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-center text-sm text-red-700">
+                <p>{submissionError}</p>
+                {gamePhase === 'feedback' && questionsAnswered >= 5 && (
+                  <button
+                    onClick={() => {
+                      void completeAssessment(correctAnswers, questionsAnswered);
+                    }}
+                    className="mt-4 px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-colors duration-200"
+                  >
+                    Retry Finish
+                  </button>
+                )}
               </div>
             )}
           </motion.div>

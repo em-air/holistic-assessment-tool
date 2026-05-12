@@ -4,15 +4,20 @@ import { ArrowLeft, Star, Brain, Check, X, RotateCcw } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import type { QuizCategory, OralLanguageQuestion } from '../types/quiz';
 import { oralLanguageTranslations } from '../data/oralLanguageTranslations';
-import { supabase } from '../supabase-client';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { ProgressTracker } from '../utils/progressTracker';
-import { ROUTES, categoryRoute } from '../routes';
+import { ROUTES } from '../routes';
 import FloatingBackground from '../components/FloatingBackground';
+import {
+  getOralLanguageQuestions,
+  validateOralLanguageAnswer,
+  type OralLanguageQuizType,
+} from '../services/oralLanguageService';
+
+type OralLanguageCategoryDefinition = Omit<QuizCategory, 'questions'>;
+type ActiveOralLanguageCategory = OralLanguageCategoryDefinition & { questions: OralLanguageQuestion[] };
 
 // Category metadata (UI only — no answer data)
-const oralLanguageCategories: Omit<QuizCategory, 'questions'>[] = [
+const oralLanguageCategories: OralLanguageCategoryDefinition[] = [
   {
     id: 'vocabulary',
     title: { en: 'Vocabulary', ar: 'المفردات' },
@@ -53,7 +58,7 @@ interface QuizScores {
 const OralLanguageQuiz: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [selectedCategory, setSelectedCategory] = useState<(Omit<QuizCategory, 'questions'> & { questions: OralLanguageQuestion[] }) | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<ActiveOralLanguageCategory | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -66,9 +71,13 @@ const OralLanguageQuiz: React.FC = () => {
   });
   const [showResults, setShowResults] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [language, setLanguage] = useState<'en' | 'ar'>('en');
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [language] = useState<'en' | 'ar'>('en');
   const [showSparkle, setShowSparkle] = useState(false);
   const [sequenceOrder, setSequenceOrder] = useState<{[key: string]: number}>({});
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [correctAnswerText, setCorrectAnswerText] = useState<string | null>(null);
   const startTimeRef = useRef<number>(Date.now());
   // Track the original navigation categoryId (before remapping) for correct quiz ID saving
   const [originalCategoryId, setOriginalCategoryId] = useState<string | null>(null);
@@ -140,46 +149,33 @@ const OralLanguageQuiz: React.FC = () => {
     if (showFeedback || !currentQuestion) return;
     
     setSelectedAnswer(optionId);
+    setSubmissionError(null);
 
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.access_token) {
-        const response = await fetch(`${API_BASE_URL}/api/quiz-content/oral-language/validate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ questionId: currentQuestion.id, answerId: optionId }),
-        });
-        const result = await response.json();
-        const correct = result.correct || false;
-        setIsCorrect(correct);
-        setShowFeedback(true);
-        if (correct) {
-          setShowSparkle(true);
-          setTimeout(() => setShowSparkle(false), 2000);
-        }
-        if (selectedCategory) {
-          setQuizScores(prev => ({
-            ...prev,
-            [selectedCategory.id]: {
-              correct: prev[selectedCategory.id].correct + (correct ? 1 : 0),
-              total: prev[selectedCategory.id].total + 1
-            }
-          }));
-        }
-        return;
-      }
-    } catch { /* fallback below */ }
+    const result = await validateOralLanguageAnswer(currentQuestion.id, optionId);
+    if (!result) {
+      setSelectedAnswer(null);
+      setSubmissionError('Unable to validate your answer right now. Please try again.');
+      return;
+    }
 
-    // Fallback: show feedback without server validation
+    setIsCorrect(result.correct);
+    setCorrectAnswerText(result.correctAnswer);
+    setFeedbackMessage(
+      result.feedback
+        ?? (result.correct
+          ? currentQuestion.feedback?.correct ?? 'Correct!'
+          : currentQuestion.feedback?.incorrect ?? `Correct answer: ${result.correctAnswer}`)
+    );
     setShowFeedback(true);
+    if (result.correct) {
+      setShowSparkle(true);
+      setTimeout(() => setShowSparkle(false), 2000);
+    }
     if (selectedCategory) {
       setQuizScores(prev => ({
         ...prev,
         [selectedCategory.id]: {
-          correct: prev[selectedCategory.id].correct,
+          correct: prev[selectedCategory.id].correct + (result.correct ? 1 : 0),
           total: prev[selectedCategory.id].total + 1
         }
       }));
@@ -198,11 +194,14 @@ const OralLanguageQuiz: React.FC = () => {
       setShowFeedback(false);
       setIsCorrect(false);
       setSequenceOrder({});
+      setFeedbackMessage(null);
+      setCorrectAnswerText(null);
+      setSubmissionError(null);
     }
   };
 
   // Start a specific quiz category — fetch questions from API
-  const startQuiz = async (category: Omit<QuizCategory, 'questions'>) => {
+  const startQuiz = async (category: OralLanguageCategoryDefinition) => {
     if (category.id === 'story-retell') {
       navigate(ROUTES.STORY_RETELL_QUIZ_FLAT);
       return;
@@ -213,28 +212,18 @@ const OralLanguageQuiz: React.FC = () => {
     }
 
     setIsLoading(true);
+    setLoadError(null);
+    setSubmissionError(null);
+    setFeedbackMessage(null);
+    setCorrectAnswerText(null);
 
-    // Fetch questions from backend
-    let questions: OralLanguageQuestion[] = [];
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.access_token) {
-        const response = await fetch(
-          `${API_BASE_URL}/api/quiz-content/oral-language/questions?type=${category.id}`,
-          { headers: { Authorization: `Bearer ${session.access_token}` } }
-        );
-        const data = await response.json();
-        if (data.success && data.questions) {
-          questions = data.questions;
-        }
-      }
-    } catch { /* questions will be empty */ }
+    const questions = await getOralLanguageQuestions(category.id as OralLanguageQuizType);
 
     setIsLoading(false);
 
     if (!questions || questions.length === 0) {
-      // Navigate back instead of showing the selection page
-      navigate(-1);
+      setSelectedCategory(null);
+      setLoadError('Unable to load the oral language questions for this assessment.');
       return;
     }
 
@@ -245,6 +234,8 @@ const OralLanguageQuiz: React.FC = () => {
     setIsCorrect(false);
     setShowResults(false);
     setSequenceOrder({});
+    setFeedbackMessage(null);
+    setCorrectAnswerText(null);
     startTimeRef.current = Date.now();
   };
 
@@ -264,6 +255,44 @@ const OralLanguageQuiz: React.FC = () => {
     if (score >= 60) return t.good;
     return t.keepTrying;
   };
+
+  if (isLoading && !selectedCategory) {
+    return (
+      <div className="min-h-screen bg-purple-50 relative overflow-hidden flex items-center justify-center">
+        <FloatingBackground />
+        <div className="text-center text-gray-700 relative z-10">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-lg font-medium">Loading quiz...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError && !selectedCategory) {
+    return (
+      <div className={`min-h-screen bg-purple-50 relative overflow-hidden py-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+        <FloatingBackground />
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-2xl mx-auto text-center">
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
+              <h2 className="text-2xl font-bold text-stone-800 mb-4">
+                Oral Language Quiz Unavailable
+              </h2>
+              <p className="text-stone-600 mb-6">
+                {loadError}
+              </p>
+              <button
+                onClick={resetQuiz}
+                className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors duration-300"
+              >
+                {t.backToSelection}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Loading or no category — show spinner (selection page is no longer needed)
   if (!selectedCategory) {
@@ -499,6 +528,11 @@ const OralLanguageQuiz: React.FC = () => {
                             userSequence.every((id, index) => id === currentQuestion.correctSequence![index]);
 
                           setIsCorrect(isSequenceCorrect || false);
+                          setFeedbackMessage(
+                            isSequenceCorrect
+                              ? currentQuestion.feedback?.correct ?? 'Correct!'
+                              : currentQuestion.feedback?.incorrect ?? 'Try again.'
+                          );
                           setShowFeedback(true);
                           
                           if (isSequenceCorrect) {
@@ -542,8 +576,8 @@ const OralLanguageQuiz: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     {currentQuestion.options.map((option) => {
                       const isSelected = selectedAnswer === option.id;
-                      const showCorrectFeedback = showFeedback && option.isCorrect;
-                      const showIncorrectFeedback = showFeedback && isSelected && !option.isCorrect;
+                      const showCorrectFeedback = showFeedback && correctAnswerText === option.text;
+                      const showIncorrectFeedback = showFeedback && isSelected && correctAnswerText !== option.text;
 
                       return (
                         <motion.button
@@ -574,6 +608,12 @@ const OralLanguageQuiz: React.FC = () => {
                       );
                     })}
                   </div>
+
+                  {submissionError && (
+                    <div className="mb-6 rounded-lg bg-red-100 p-4 text-center text-sm text-red-800">
+                      {submissionError}
+                    </div>
+                  )}
                 </div>
               ) : (
                 // Fallback for invalid question data
@@ -614,10 +654,7 @@ const OralLanguageQuiz: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-sm">
-                      {isCorrect 
-                        ? currentQuestion.feedback?.correct 
-                        : currentQuestion.feedback?.incorrect
-                      }
+                      {feedbackMessage}
                     </p>
                   </motion.div>
                 )}

@@ -3,14 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, CheckCircle, XCircle, Trophy, RotateCcw, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { GradeLevel, CategoryQuestion, CategoryItem } from '../types/quiz';
-import { supabase } from '../supabase-client';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { ROUTES } from '../routes';
 import FloatingBackground from '../components/FloatingBackground';
 import { ProgressTracker } from '../utils/progressTracker';
 import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
+import {
+  getCategoryQuestions,
+  validateCategoryPlacement,
+} from '../services/criticalThinkingService';
 
 const gradeOptions = [
   { value: 'grade1', label: 'Grade 1', description: 'Basic relationships and simple concepts' },
@@ -38,7 +39,9 @@ const CategoryQuiz: React.FC = () => {
   const [showReport, setShowReport] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
-  const [validationResults, setValidationResults] = useState<Record<string, { correct: boolean; correctCategory: string }>>({}); 
+  const [validationResults, setValidationResults] = useState<Record<string, { correct: boolean; correctCategory: string }>>({});
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // Always start with grade selection (don't auto-load from localStorage)
   useEffect(() => {
@@ -60,18 +63,15 @@ const CategoryQuiz: React.FC = () => {
   const handleGradeSelect = async (grade: GradeLevel) => {
     setSelectedGrade(grade);
     setIsLoading(true);
+    setLoadError(null);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return;
-      const response = await fetch(`${API_BASE_URL}/api/quiz-content/critical-thinking/category-questions?grade=${grade}`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      const data = await response.json();
-      if (data.success && data.questions) {
-        setQuestions(data.questions);
+      const loadedQuestions = await getCategoryQuestions(grade);
+      if (loadedQuestions.length === 0) {
+        setQuestions([]);
+        setLoadError('Unable to load category questions right now.');
+      } else {
+        setQuestions(loadedQuestions);
       }
-    } catch (err) {
-      console.error('Error fetching questions:', err);
     } finally {
       setIsLoading(false);
     }
@@ -85,6 +85,7 @@ const CategoryQuiz: React.FC = () => {
     setIsComplete(false);
     setShowResults(false);
     setStartTime(Date.now());
+    setValidationError(null);
   };
 
   const handleDragStart = (item: CategoryItem) => {
@@ -132,42 +133,42 @@ const CategoryQuiz: React.FC = () => {
     if (availableItems.length > 0 || isChecking) return;
 
     setIsChecking(true);
+    setValidationError(null);
     const currentQuestion = questions[currentQuestionIndex];
     let correctCount = 0;
     const results: Record<string, { correct: boolean; correctCategory: string }> = {};
 
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.access_token) {
-        for (const item of droppedItems) {
-          const response = await fetch(`${API_BASE_URL}/api/quiz-content/critical-thinking/category-validate`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({
-              questionId: currentQuestion.id,
-              itemId: item.id,
-              droppedCategory: item.droppedIn,
-              grade: selectedGrade,
-            }),
-          });
-          const result = await response.json();
-          results[item.id] = {
-            correct: result.correct ?? false,
-            correctCategory: result.correctCategory ?? '',
-          };
-          if (result.correct) {
-            correctCount++;
-          }
-        }
+    if (!selectedGrade) {
+      setIsChecking(false);
+      setValidationError('Unable to validate this question without a selected grade.');
+      return;
+    }
+
+    const validationResponses = await Promise.all(
+      droppedItems.map(async (item) => ({
+        itemId: item.id,
+        result: await validateCategoryPlacement(
+          currentQuestion.id,
+          item.id,
+          item.droppedIn,
+          selectedGrade,
+        ),
+      })),
+    );
+
+    const hasValidationFailure = validationResponses.some(({ result }) => result === null);
+    validationResponses.forEach(({ itemId, result }) => {
+      results[itemId] = {
+        correct: result?.correct ?? false,
+        correctCategory: result?.correctCategory ?? '',
+      };
+      if (result?.correct) {
+        correctCount++;
       }
-    } catch {
-      // Fallback: mark all as unknown
-      droppedItems.forEach(item => {
-        results[item.id] = { correct: false, correctCategory: '' };
-      });
+    });
+
+    if (hasValidationFailure) {
+      setValidationError('Some item placements could not be validated. Showing available results.');
     }
 
     if (correctCount === droppedItems.length && droppedItems.length > 0) {
@@ -318,6 +319,48 @@ const CategoryQuiz: React.FC = () => {
               </button>
             </div>
           </motion.div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-teal-50 relative overflow-hidden flex items-center justify-center">
+        <FloatingBackground />
+        <div className="text-center relative z-10 text-gray-700">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-teal-500 border-t-transparent mx-auto mb-4"></div>
+          <p>Loading category questions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError || !currentQuestion) {
+    return (
+      <div className="min-h-screen bg-teal-50 relative overflow-hidden py-8">
+        <FloatingBackground />
+        <div className="container mx-auto px-4 max-w-4xl relative z-10">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl text-center">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Category Quiz Unavailable</h2>
+            <p className="text-gray-600 mb-6">
+              {loadError ?? 'No category questions are available right now.'}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => setSelectedGrade(null)}
+                className="px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+              >
+                Change Grade
+              </button>
+              <button
+                onClick={() => navigate(ROUTES.CRITICAL_THINKING_SELECTION)}
+                className="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-xl font-semibold transition-colors duration-200"
+              >
+                Back
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -504,6 +547,12 @@ const CategoryQuiz: React.FC = () => {
                 </button>
               ) : (
                 <div className="space-y-4">
+                  {validationError && (
+                    <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
+                      {validationError}
+                    </div>
+                  )}
+
                   {/* Results Summary */}
                   <div className="bg-gray-50 rounded-xl p-4 mb-4">
                     <div className="flex items-center justify-center gap-2 mb-2">

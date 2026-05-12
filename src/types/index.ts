@@ -28,5 +28,6 @@ export interface AssessmentSubcategory {
   id: string;
   title: string;
   color: string;
+  available?: boolean;
   questions: QuizQuestion[];
 }

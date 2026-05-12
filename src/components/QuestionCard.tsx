@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { QuizQuestion, QuizOption } from '../data/learningStylesData';
+import type { LearningStyleQuestion, LearningStyleOption } from '../services/learningStylesService';
 
 interface QuestionCardProps {
-  question: QuizQuestion;
+  question: LearningStyleQuestion;
   selectedOption: string | null;
   onSelectOption: (optionId: string) => void;
   language: 'en' | 'ar';
@@ -77,7 +77,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
         {/* Options */}
         <div className="space-y-4">
-          {question.options.map((option: QuizOption, index: number) => (
+          {question.options.map((option: LearningStyleOption, index: number) => (
             <motion.button
               key={option.id}
               initial={{ opacity: 0, x: -20 }}

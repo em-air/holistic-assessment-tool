@@ -3,13 +3,14 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, RotateCcw, CheckCircle, XCircle, GripVertical, Lightbulb } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SequencingQuestion } from '../types/quiz';
-import { supabase } from '../supabase-client';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { ProgressTracker } from '../utils/progressTracker';
 import FloatingBackground from '../components/FloatingBackground';
 import { ROUTES } from '../routes';
 import { logger } from '../utils/logger';
+import {
+  checkLogicalSequencingAnswer,
+  getLogicalSequencingQuestions,
+} from '../services/logicalSequencingService';
 
 interface DragItem {
   id: string;
@@ -35,6 +36,9 @@ const LogicalSequencingQuiz: React.FC = () => {
   const [questionStartTime, setQuestionStartTime] = useState<Date>(new Date());
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [correctOrderDisplay, setCorrectOrderDisplay] = useState<string[] | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   const totalQuestions = 5;
   const currentQuestion = questions[currentQuestionIndex];
@@ -44,20 +48,29 @@ const LogicalSequencingQuiz: React.FC = () => {
     if (!grade) return;
     
     const fetchQuestions = async () => {
+      setIsLoading(true);
+      setLoadError(null);
+
       try {
-        const response = await fetch(`${API_BASE_URL}/api/quiz-content/logical-sequencing/grade/${grade}`);
-        const data = await response.json();
-        if (data.success && data.questions) {
-          const selected = data.questions.slice(0, totalQuestions);
+        const loadedQuestions = await getLogicalSequencingQuestions(grade);
+        if (loadedQuestions.length > 0) {
+          const selected = loadedQuestions.slice(0, totalQuestions);
           setQuestions(selected);
           setCurrentQuestionIndex(0);
           setScore(0);
           setShowResult(false);
           setTimePerQuestion([]);
           setQuestionStartTime(new Date());
+        } else {
+          setQuestions([]);
+          setLoadError('Unable to load logical sequencing questions right now.');
         }
       } catch (error) {
         logger.error('Error loading sequencing questions:', error);
+        setQuestions([]);
+        setLoadError('Unable to load logical sequencing questions right now.');
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchQuestions();
@@ -78,6 +91,8 @@ const LogicalSequencingQuiz: React.FC = () => {
       setIsSubmitted(false);
       setIsCorrect(null);
       setShowHint(false);
+      setCorrectOrderDisplay(null);
+      setSubmissionError(null);
     }
   }, [currentQuestion]);
 
@@ -132,30 +147,21 @@ const LogicalSequencingQuiz: React.FC = () => {
     setTimePerQuestion([...timePerQuestion, questionTime]);
     
     const userOrderIndices = userOrder.map(item => item.originalIndex);
-    
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return;
-      const response = await fetch(`${API_BASE_URL}/api/quiz-content/logical-sequencing/check`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ questionId: currentQuestion.id, submittedOrder: userOrderIndices }),
-      });
-      const result = await response.json();
-      const correct = result.isCorrect;
-      setIsCorrect(correct);
-      setIsSubmitted(true);
-      if (correct) {
-        setScore(score + 1);
-      } else if (result.correctOrder) {
-        setCorrectOrderDisplay(result.correctOrder.map((idx: number) => currentQuestion.sentences[idx]));
-      }
-    } catch {
-      // Fallback: mark as submitted without validation
-      setIsSubmitted(true);
+
+    setSubmissionError(null);
+    const result = await checkLogicalSequencingAnswer(currentQuestion.id, userOrderIndices);
+    if (!result) {
+      setSubmissionError('Unable to validate your sequence right now. Please try again.');
+      return;
+    }
+
+    const correct = result.isCorrect;
+    setIsCorrect(correct);
+    setIsSubmitted(true);
+    if (correct) {
+      setScore(prev => prev + 1);
+    } else if (result.correctOrder) {
+      setCorrectOrderDisplay(result.correctOrder.map((idx: number) => currentQuestion.sentences[idx]));
     }
   };
 
@@ -210,12 +216,40 @@ const LogicalSequencingQuiz: React.FC = () => {
     return correctOrderDisplay;
   };
 
-  if (!currentQuestion) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-purple-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
           <p className="text-gray-600">Loading questions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError || !currentQuestion) {
+    return (
+      <div className="min-h-screen bg-purple-50 relative overflow-hidden flex items-center justify-center p-4">
+        <FloatingBackground />
+        <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-xl w-full text-center relative z-10">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Logical Sequencing Unavailable</h2>
+          <p className="text-gray-600 mb-6">
+            {loadError ?? 'No logical sequencing questions are available right now.'}
+          </p>
+          <div className="space-y-3">
+            <button
+              onClick={() => navigate(ROUTES.PERCEPTION_LOGICAL_SEQ)}
+              className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
+            >
+              Try Different Grade
+            </button>
+            <button
+              onClick={() => navigate(ROUTES.PERCEPTION_SELECTION)}
+              className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
+            >
+              Back to Perception
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -448,6 +482,12 @@ const LogicalSequencingQuiz: React.FC = () => {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {submissionError && (
+              <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 text-center">
+                {submissionError}
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex justify-center space-x-4">

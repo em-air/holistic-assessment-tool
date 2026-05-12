@@ -5,33 +5,38 @@ import FloatingBackground from '../components/FloatingBackground';
 import { ProgressTracker } from '../utils/progressTracker';
 import { logger } from '../utils/logger';
 import { ROUTES } from '../routes';
-
-interface VocabularyItem {
-  id: string;
-  word: string;
-  definition: string;
-}
+import {
+  getVocabularyMatchingGrades,
+  getVocabularyMatchingQuestions,
+  type VocabularyMatchingGradeSummary,
+  type VocabularyMatchingQuestion,
+} from '../services/vocabularyMatchingService';
 
 interface MatchedPair {
   wordId: string;
   definitionId: string;
 }
 
+const shuffleItems = (items: VocabularyMatchingQuestion[]) =>
+  [...items].sort(() => Math.random() - 0.5);
+
 const VocabularyMatching: React.FC = () => {
   const navigate = useNavigate();
   const [selectedGrade, setSelectedGrade] = useState<number>(4);
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
-  const [unlockedLevels, setUnlockedLevels] = useState<{[key: number]: number}>({
-    4: 1, 5: 1, 6: 1, 7: 1, 8: 1 // Each grade starts with level 1 unlocked
-  });
-  const [vocabularyWords, setVocabularyWords] = useState<VocabularyItem[]>([]);
-  const [shuffledWords, setShuffledWords] = useState<VocabularyItem[]>([]);
-  const [shuffledDefinitions, setShuffledDefinitions] = useState<VocabularyItem[]>([]);
+  const [gradeSummaries, setGradeSummaries] = useState<VocabularyMatchingGradeSummary[]>([]);
+  const [unlockedLevels, setUnlockedLevels] = useState<{ [key: number]: number }>({});
+  const [vocabularyWords, setVocabularyWords] = useState<VocabularyMatchingQuestion[]>([]);
+  const [shuffledWords, setShuffledWords] = useState<VocabularyMatchingQuestion[]>([]);
+  const [shuffledDefinitions, setShuffledDefinitions] = useState<VocabularyMatchingQuestion[]>([]);
   const [matches, setMatches] = useState<MatchedPair[]>([]);
   const [draggedWord, setDraggedWord] = useState<string | null>(null);
   const [score, setScore] = useState<number>(0);
   const [showResults, setShowResults] = useState<boolean>(false);
   const [completed, setCompleted] = useState<boolean>(false);
+  const [isLoadingCatalog, setIsLoadingCatalog] = useState(true);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const startTimeRef = useRef<number>(Date.now());
   const hasSavedResultRef = useRef(false);
 
@@ -64,138 +69,83 @@ const VocabularyMatching: React.FC = () => {
     }
   }, [completed, showResults, score, matches, vocabularyWords.length, selectedGrade, selectedLevel]);
 
-  // Vocabulary data for each grade level with 3 levels each containing 5 words
-  const vocabularyData: { [key: number]: { [key: number]: VocabularyItem[] } } = {
-    4: {
-      1: [
-        { id: '4-1-1', word: 'Abundant', definition: 'Present in large quantities; plentiful' },
-        { id: '4-1-2', word: 'Cautious', definition: 'Careful to avoid danger or mistakes' },
-        { id: '4-1-3', word: 'Emerge', definition: 'To come out into view or existence' },
-        { id: '4-1-4', word: 'Fragile', definition: 'Easily broken or damaged; delicate' },
-        { id: '4-1-5', word: 'Grasp', definition: 'To understand or hold firmly' }
-      ],
-      2: [
-        { id: '4-2-1', word: 'Humble', definition: 'Not proud; modest and respectful' },
-        { id: '4-2-2', word: 'Inquire', definition: 'To ask questions; to investigate' },
-        { id: '4-2-3', word: 'Loyal', definition: 'Faithful and devoted to someone or something' },
-        { id: '4-2-4', word: 'Mighty', definition: 'Very strong or powerful' },
-        { id: '4-2-5', word: 'Notice', definition: 'To become aware of or observe' }
-      ],
-      3: [
-        { id: '4-3-1', word: 'Peaceful', definition: 'Free from disturbance; calm and quiet' },
-        { id: '4-3-2', word: 'Rapid', definition: 'Happening very quickly; fast' },
-        { id: '4-3-3', word: 'Sturdy', definition: 'Strong and well-built; durable' },
-        { id: '4-3-4', word: 'Timid', definition: 'Shy and lacking confidence' },
-        { id: '4-3-5', word: 'Vivid', definition: 'Very bright and clear; intense' }
-      ]
-    },
-    5: {
-      1: [
-        { id: '5-1-1', word: 'Analyze', definition: 'To examine in detail to understand better' },
-        { id: '5-1-2', word: 'Chronic', definition: 'Continuing for a long time; persistent' },
-        { id: '5-1-3', word: 'Diverse', definition: 'Showing variety; different from each other' },
-        { id: '5-1-4', word: 'Emphasize', definition: 'To give special importance or attention to' },
-        { id: '5-1-5', word: 'Formulate', definition: 'To create or develop systematically' }
-      ],
-      2: [
-        { id: '5-2-1', word: 'Interpret', definition: 'To explain the meaning of something' },
-        { id: '5-2-2', word: 'Navigate', definition: 'To find one\'s way through or around' },
-        { id: '5-2-3', word: 'Obstacles', definition: 'Things that block progress or movement' },
-        { id: '5-2-4', word: 'Preliminary', definition: 'Coming before the main event; introductory' },
-        { id: '5-2-5', word: 'Reliable', definition: 'Consistently good; dependable' }
-      ],
-      3: [
-        { id: '5-3-1', word: 'Significant', definition: 'Important; having great meaning or effect' },
-        { id: '5-3-2', word: 'Transform', definition: 'To change completely in form or appearance' },
-        { id: '5-3-3', word: 'Ultimate', definition: 'Final; most extreme or important' },
-        { id: '5-3-4', word: 'Vivacious', definition: 'Full of life and energy; lively' },
-        { id: '5-3-5', word: 'Wander', definition: 'To walk aimlessly; to move without purpose' }
-      ]
-    },
-    6: {
-      1: [
-        { id: '6-1-1', word: 'Comprehend', definition: 'To understand fully; to grasp mentally' },
-        { id: '6-1-2', word: 'Distinguish', definition: 'To recognize differences between things' },
-        { id: '6-1-3', word: 'Elaborate', definition: 'To explain in more detail; to expand upon' },
-        { id: '6-1-4', word: 'Flourish', definition: 'To grow well; to be successful' },
-        { id: '6-1-5', word: 'Gradually', definition: 'Happening slowly over time' }
-      ],
-      2: [
-        { id: '6-2-1', word: 'Inevitable', definition: 'Certain to happen; unavoidable' },
-        { id: '6-2-2', word: 'Justify', definition: 'To show or prove to be right or reasonable' },
-        { id: '6-2-3', word: 'Meticulous', definition: 'Very careful and precise; paying attention to details' },
-        { id: '6-2-4', word: 'Precise', definition: 'Exact and accurate in details' },
-        { id: '6-2-5', word: 'Scrutinize', definition: 'To examine closely and carefully' }
-      ],
-      3: [
-        { id: '6-3-1', word: 'Spontaneous', definition: 'Done without planning; happening naturally' },
-        { id: '6-3-2', word: 'Tangible', definition: 'Real and concrete; able to be touched' },
-        { id: '6-3-3', word: 'Versatile', definition: 'Able to adapt to many different uses' },
-        { id: '6-3-4', word: 'Wholesome', definition: 'Good for health and well-being' },
-        { id: '6-3-5', word: 'Zealous', definition: 'Having great energy and enthusiasm' }
-      ]
-    },
-    7: {
-      1: [
-        { id: '7-1-1', word: 'Advocate', definition: 'To publicly support or recommend' },
-        { id: '7-1-2', word: 'Benevolent', definition: 'Kind and generous; showing goodwill' },
-        { id: '7-1-3', word: 'Contemplate', definition: 'To think deeply about something' },
-        { id: '7-1-4', word: 'Deteriorate', definition: 'To become worse in quality or condition' },
-        { id: '7-1-5', word: 'Eloquent', definition: 'Fluent and persuasive in speaking or writing' }
-      ],
-      2: [
-        { id: '7-2-1', word: 'Hypothesis', definition: 'A proposed explanation for something' },
-        { id: '7-2-2', word: 'Innovative', definition: 'Introducing new ideas; creative' },
-        { id: '7-2-3', word: 'Perpetual', definition: 'Never ending; continuing forever' },
-        { id: '7-2-4', word: 'Resilient', definition: 'Able to recover quickly from difficulties' },
-        { id: '7-2-5', word: 'Skeptical', definition: 'Doubtful; questioning the truth of something' }
-      ],
-      3: [
-        { id: '7-3-1', word: 'Tenacious', definition: 'Holding firmly to something; persistent' },
-        { id: '7-3-2', word: 'Unanimous', definition: 'Agreed by everyone; with no opposition' },
-        { id: '7-3-3', word: 'Vindicate', definition: 'To clear of blame or suspicion' },
-        { id: '7-3-4', word: 'Whimsical', definition: 'Playful and unpredictable; fanciful' },
-        { id: '7-3-5', word: 'Zephyr', definition: 'A gentle, mild breeze' }
-      ]
-    },
-    8: {
-      1: [
-        { id: '8-1-1', word: 'Ambiguous', definition: 'Having more than one possible meaning; unclear' },
-        { id: '8-1-2', word: 'Collaborate', definition: 'To work together on a project' },
-        { id: '8-1-3', word: 'Discern', definition: 'To perceive or recognize clearly' },
-        { id: '8-1-4', word: 'Exemplify', definition: 'To be a typical example of something' },
-        { id: '8-1-5', word: 'Fluctuate', definition: 'To change irregularly; to vary' }
-      ],
-      2: [
-        { id: '8-2-1', word: 'Imperative', definition: 'Extremely important; essential' },
-        { id: '8-2-2', word: 'Juxtapose', definition: 'To place side by side for comparison' },
-        { id: '8-2-3', word: 'Lucid', definition: 'Clear and easy to understand' },
-        { id: '8-2-4', word: 'Meander', definition: 'To wander aimlessly; to follow a winding path' },
-        { id: '8-2-5', word: 'Nuance', definition: 'A subtle difference in meaning or expression' }
-      ],
-      3: [
-        { id: '8-3-1', word: 'Synthesis', definition: 'The combination of parts into a coherent whole' },
-        { id: '8-3-2', word: 'Tangential', definition: 'Only slightly related; diverging from the main point' },
-        { id: '8-3-3', word: 'Ubiquitous', definition: 'Present everywhere; widespread' },
-        { id: '8-3-4', word: 'Validate', definition: 'To confirm the accuracy or worth of something' },
-        { id: '8-3-5', word: 'Zenith', definition: 'The highest point; the peak of achievement' }
-      ]
-    }
-  };
+  const currentGradeSummary = gradeSummaries.find((summary) => summary.grade === selectedGrade);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCatalog = async () => {
+      setIsLoadingCatalog(true);
+      const summaries = await getVocabularyMatchingGrades();
+
+      if (!isMounted) {
+        return;
+      }
+
+      setGradeSummaries(summaries);
+      if (summaries.length === 0) {
+        setLoadError('Vocabulary matching content is unavailable right now.');
+      } else {
+        setUnlockedLevels(
+          summaries.reduce<Record<number, number>>((accumulator, summary) => {
+            accumulator[summary.grade] = 1;
+            return accumulator;
+          }, {}),
+        );
+        if (!summaries.some((summary) => summary.grade === selectedGrade)) {
+          setSelectedGrade(summaries[0].grade);
+        }
+      }
+
+      setIsLoadingCatalog(false);
+    };
+
+    void loadCatalog();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Initialize vocabulary for selected grade and level
   useEffect(() => {
-    const gradeData = vocabularyData[selectedGrade];
-    const levelVocab = gradeData ? gradeData[selectedLevel] || [] : [];
-    setVocabularyWords(levelVocab);
-    setShuffledWords([...levelVocab].sort(() => Math.random() - 0.5));
-    setShuffledDefinitions([...levelVocab].sort(() => Math.random() - 0.5));
-    setMatches([]);
-    setScore(0);
-    setShowResults(false);
-    setCompleted(false);
-    startTimeRef.current = Date.now();
-  }, [selectedGrade, selectedLevel]);
+    if (gradeSummaries.length === 0) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadQuestions = async () => {
+      setIsLoadingQuestions(true);
+
+      const loadedQuestions = await getVocabularyMatchingQuestions(selectedGrade, selectedLevel);
+      if (!isMounted) {
+        return;
+      }
+
+      if (loadedQuestions.length === 0) {
+        setLoadError('Vocabulary matching questions are unavailable right now.');
+      } else {
+        setLoadError(null);
+      }
+
+      setVocabularyWords(loadedQuestions);
+      setShuffledWords(shuffleItems(loadedQuestions));
+      setShuffledDefinitions(shuffleItems(loadedQuestions));
+      setMatches([]);
+      setScore(0);
+      setShowResults(false);
+      setCompleted(false);
+      startTimeRef.current = Date.now();
+      setIsLoadingQuestions(false);
+    };
+
+    void loadQuestions();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [gradeSummaries, selectedGrade, selectedLevel]);
 
   // Reset to level 1 when grade changes
   useEffect(() => {
@@ -280,7 +230,7 @@ const VocabularyMatching: React.FC = () => {
   };
 
   const isLevelUnlocked = (level: number) => {
-    return level <= unlockedLevels[selectedGrade];
+    return level <= (unlockedLevels[selectedGrade] ?? 1);
   };
 
   const isWordMatched = (wordId: string) => {
@@ -300,6 +250,36 @@ const VocabularyMatching: React.FC = () => {
   const isCorrectMatch = (wordId: string, definitionId: string) => {
     return wordId === definitionId;
   };
+
+  if (isLoadingCatalog) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 flex items-center justify-center">
+        <FloatingBackground />
+        <div className="relative z-10 rounded-2xl bg-white p-8 text-center shadow-xl">
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Loading vocabulary matching</h1>
+          <p className="text-gray-600">Fetching grade and level content...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError && vocabularyWords.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 flex items-center justify-center">
+        <FloatingBackground />
+        <div className="relative z-10 rounded-2xl bg-white p-8 text-center shadow-xl max-w-lg mx-4">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Vocabulary Matching Unavailable</h1>
+          <p className="text-gray-600 mb-6">{loadError}</p>
+          <button
+            onClick={() => navigate(ROUTES.CATEGORY_ACADEMIC_SKILLS)}
+            className="bg-teal-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-teal-600 transition-colors duration-200"
+          >
+            Back to Academic Skills
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 relative overflow-hidden">
@@ -325,17 +305,17 @@ const VocabularyMatching: React.FC = () => {
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium text-gray-700">Grade:</span>
               <div className="flex space-x-1">
-                {[4, 5, 6, 7, 8].map(grade => (
+                {gradeSummaries.map((summary) => (
                   <button
-                    key={grade}
-                    onClick={() => setSelectedGrade(grade)}
+                    key={summary.grade}
+                    onClick={() => setSelectedGrade(summary.grade)}
                     className={`px-3 py-1 text-sm rounded-lg font-medium transition-all duration-200 ${
-                      selectedGrade === grade
+                      selectedGrade === summary.grade
                         ? 'bg-teal-500 text-white shadow-lg transform scale-105'
                         : 'bg-teal-100 text-gray-700 border border-teal-300 hover:bg-teal-200'
                     }`}
                   >
-                    {grade}
+                    {summary.grade}
                   </button>
                 ))}
               </div>
@@ -345,7 +325,7 @@ const VocabularyMatching: React.FC = () => {
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium text-gray-700">Level:</span>
               <div className="flex space-x-1">
-                {[1, 2, 3].map(level => {
+                {(currentGradeSummary?.levels ?? []).map(({ level }) => {
                   const isUnlocked = isLevelUnlocked(level);
                   return (
                     <button
@@ -375,6 +355,11 @@ const VocabularyMatching: React.FC = () => {
         {/* Game Area */}
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {isLoadingQuestions && (
+              <div className="lg:col-span-2 bg-white/90 rounded-2xl p-6 text-center shadow-md text-gray-600">
+                Loading level content...
+              </div>
+            )}
             
             {/* Vocabulary Words (Left Side) */}
             <motion.div
@@ -552,13 +537,13 @@ const VocabularyMatching: React.FC = () => {
               Grade {selectedGrade} • Level {selectedLevel} • Progress: {matches.length} / {vocabularyWords.length}
             </div>
             <div className="text-xs text-gray-600 mb-2">
-              Unlocked levels: {Array.from({length: unlockedLevels[selectedGrade]}, (_, i) => i + 1).join(', ')}
-              {unlockedLevels[selectedGrade] < 3 && ' • Need 70% with all words to unlock next level'}
+              Unlocked levels: {Array.from({ length: unlockedLevels[selectedGrade] ?? 1 }, (_, i) => i + 1).join(', ')}
+              {(unlockedLevels[selectedGrade] ?? 1) < (currentGradeSummary?.levels.length ?? 0) && ' • Need 70% with all words to unlock next level'}
             </div>
             <div className="w-48 bg-gray-200 rounded-full h-2">
               <motion.div
                 className="bg-teal-500 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${(matches.length / vocabularyWords.length) * 100}%` }}
+                style={{ width: `${vocabularyWords.length > 0 ? (matches.length / vocabularyWords.length) * 100 : 0}%` }}
               />
             </div>
           </div>

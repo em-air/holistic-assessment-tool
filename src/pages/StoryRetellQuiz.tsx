@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Book, CheckCircle, Lightbulb, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { StoryRetellQuestion } from '../types/quiz';
-import { supabase } from '../supabase-client';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { ProgressTracker } from '../utils/progressTracker';
 import FloatingBackground from '../components/FloatingBackground';
-import { logger } from '../utils/logger';
 import { ROUTES, categoryRoute } from '../routes';
+import {
+  getStoryRetellStories,
+  validateStoryRetellAnswers,
+} from '../services/storyRetellService';
 
 const StoryRetellQuiz: React.FC = () => {
   const navigate = useNavigate();
@@ -32,35 +32,43 @@ const StoryRetellQuiz: React.FC = () => {
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [answerFeedback, setAnswerFeedback] = useState<{ beginningCorrect?: boolean; middleCorrect?: boolean; endCorrect?: boolean }>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
   const startTimeRef = useRef<number>(Date.now());
 
   const currentStory = stories[currentStoryIndex];
 
-  // Initialize quiz — fetch stories from backend
-  useEffect(() => {
-    if (!grade) return;
+  const loadStories = useCallback(async () => {
+    if (!grade) {
+      setIsLoading(false);
+      setLoadError('Missing grade selection.');
+      return;
+    }
 
-    const fetchStories = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.access_token) return;
-        const response = await fetch(`${API_BASE_URL}/api/quiz-content/story-retell/stories/${grade}`, {
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        });
-        const data = await response.json();
-        if (data.success && data.stories) {
-          startTimeRef.current = Date.now();
-          setStories(data.stories);
-          setCurrentStoryIndex(0);
-          setScore({ correct: 0, total: 0 });
-          setShowResult(false);
-        }
-      } catch (error) {
-        logger.error('Error loading story retell questions:', error);
-      }
-    };
-    fetchStories();
+    setIsLoading(true);
+    setLoadError(null);
+    setSubmissionError(null);
+
+    const loadedStories = await getStoryRetellStories(grade);
+    if (loadedStories.length === 0) {
+      setStories([]);
+      setLoadError('Unable to load story retell questions right now.');
+      setIsLoading(false);
+      return;
+    }
+
+    startTimeRef.current = Date.now();
+    setStories(loadedStories);
+    setCurrentStoryIndex(0);
+    setScore({ correct: 0, total: 0 });
+    setShowResult(false);
+    setIsLoading(false);
   }, [grade]);
+
+  useEffect(() => {
+    void loadStories();
+  }, [loadStories]);
 
   // Reset form when story changes
   useEffect(() => {
@@ -72,6 +80,7 @@ const StoryRetellQuiz: React.FC = () => {
       setSelectedEnd(null);
       setIsSubmitted(false);
       setAnswerFeedback({});
+      setSubmissionError(null);
     }
   }, [currentStory]);
 
@@ -92,36 +101,25 @@ const StoryRetellQuiz: React.FC = () => {
       return;
     }
 
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return;
-      const response = await fetch(`${API_BASE_URL}/api/quiz-content/story-retell/validate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          storyId: currentStory.id,
-          beginningId: selectedBeginning,
-          middleId: selectedMiddle,
-          endId: selectedEnd,
-        }),
-      });
-      const result = await response.json();
-      if (result.success) {
-        const correctCount = (result.beginningCorrect ? 1 : 0) + (result.middleCorrect ? 1 : 0) + (result.endCorrect ? 1 : 0);
-        setScore(prev => ({ correct: prev.correct + correctCount, total: prev.total + 3 }));
-        setAnswerFeedback({
-          beginningCorrect: result.beginningCorrect,
-          middleCorrect: result.middleCorrect,
-          endCorrect: result.endCorrect,
-        });
-      }
-    } catch (error) {
-      logger.error('Error validating story retell:', error);
+    setSubmissionError(null);
+    const result = await validateStoryRetellAnswers(
+      currentStory.id,
+      selectedBeginning,
+      selectedMiddle,
+      selectedEnd,
+    );
+    if (!result) {
+      setSubmissionError('Unable to validate your answers right now. Please try again.');
+      return;
     }
-    
+
+    const correctCount = (result.beginningCorrect ? 1 : 0) + (result.middleCorrect ? 1 : 0) + (result.endCorrect ? 1 : 0);
+    setScore(prev => ({ correct: prev.correct + correctCount, total: prev.total + 3 }));
+    setAnswerFeedback({
+      beginningCorrect: result.beginningCorrect,
+      middleCorrect: result.middleCorrect,
+      endCorrect: result.endCorrect,
+    });
     setIsSubmitted(true);
   };
 
@@ -154,12 +152,42 @@ const StoryRetellQuiz: React.FC = () => {
     setShowResult(true);
   };
 
-  if (!currentStory) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-blue-100 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
           <p className="text-gray-600">Loading stories...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError || !currentStory) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-100 to-indigo-100 relative overflow-hidden flex items-center justify-center p-4">
+        <FloatingBackground />
+        <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-2xl w-full text-center relative z-10">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Story Retell Unavailable</h2>
+          <p className="text-gray-600 mb-6">
+            {loadError ?? 'No stories are available right now.'}
+          </p>
+          <div className="space-y-3">
+            <button
+              onClick={() => {
+                void loadStories();
+              }}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
+            >
+              Retry
+            </button>
+            <button
+              onClick={() => navigate(ROUTES.STORY_RETELL_QUIZ_FLAT)}
+              className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
+            >
+              Back to Story Retell Grades
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -453,6 +481,12 @@ const StoryRetellQuiz: React.FC = () => {
 
                   {/* Submit Button */}
                   <div className="text-center pt-4">
+                    {submissionError && (
+                      <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                        {submissionError}
+                      </div>
+                    )}
+
                     <button
                       onClick={handleSubmit}
                       disabled={!selectedBeginning || !selectedMiddle || !selectedEnd || isSubmitted}

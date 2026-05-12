@@ -1,0 +1,331 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for holistic-assessment-tool/src/i18n/homepage.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../prettify.css" />
+    <link rel="stylesheet" href="../../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../../index.html">All files</a> / <a href="index.html">holistic-assessment-tool/src/i18n</a> homepage.ts</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>0/48</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>1/1</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>1/1</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>0/48</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line low'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
+ * Homepage translations — English ↔ Arabic
+ *
+ * This file contains all user-visible strings that appear on the Homepage.
+ * The `t()` helper resolves the active language at runtime.
+ */
+&nbsp;
+import { Language } from '../contexts/LanguageContext';
+&nbsp;
+<span class="cstat-no" title="statement not covered" >const homepageTranslations = {</span>
+  // ── Navigation ────────────────────────────────────────────
+<span class="cstat-no" title="statement not covered" >  'nav.about': { en: 'About', ar: 'حول' },</span>
+<span class="cstat-no" title="statement not covered" >  'nav.contact': { en: 'Contact', ar: 'تواصل معنا' },</span>
+<span class="cstat-no" title="statement not covered" >  'nav.profile': { en: 'Profile', ar: 'الملف الشخصي' },</span>
+<span class="cstat-no" title="statement not covered" >  'nav.signOut': { en: 'Sign Out', ar: 'تسجيل الخروج' },</span>
+<span class="cstat-no" title="statement not covered" >  'nav.register': { en: 'Register/Sign In', ar: 'تسجيل / دخول' },</span>
+&nbsp;
+  // ── Hero ──────────────────────────────────────────────────
+<span class="cstat-no" title="statement not covered" >  'hero.title': {</span>
+<span class="cstat-no" title="statement not covered" >    en: 'Discover Your Learning Strengths',</span>
+<span class="cstat-no" title="statement not covered" >    ar: 'اكتشف نقاط قوتك في التعلم',</span>
+<span class="cstat-no" title="statement not covered" >  },</span>
+<span class="cstat-no" title="statement not covered" >  'hero.subtitle': {</span>
+<span class="cstat-no" title="statement not covered" >    en: 'Simple, engaging tools to explore your abilities in reading, memory, attention, and more. Perfect for students aged 6-12',</span>
+<span class="cstat-no" title="statement not covered" >    ar: 'أدوات بسيطة وممتعة لاستكشاف قدراتك في القراءة والذاكرة والانتباه وأكثر. مناسبة للطلاب من 6 إلى 12 سنة',</span>
+<span class="cstat-no" title="statement not covered" >  },</span>
+<span class="cstat-no" title="statement not covered" >  'hero.startAssessment': { en: 'Start Assessment', ar: 'ابدأ التقييم' },</span>
+<span class="cstat-no" title="statement not covered" >  'hero.timeNote': { en: 'Takes about 45 minutes', ar: 'يستغرق حوالي 45 دقيقة' },</span>
+<span class="cstat-no" title="statement not covered" >  'hero.adminDashboard': { en: 'Admin Dashboard', ar: 'لوحة الإدارة' },</span>
+&nbsp;
+  // ── Stats ─────────────────────────────────────────────────
+<span class="cstat-no" title="statement not covered" >  'stats.categories': { en: 'Categories', ar: 'فئات' },</span>
+<span class="cstat-no" title="statement not covered" >  'stats.skillAreas': { en: 'Skill Areas', ar: 'مجالات المهارات' },</span>
+<span class="cstat-no" title="statement not covered" >  'stats.minutes': { en: 'Minutes', ar: 'دقيقة' },</span>
+<span class="cstat-no" title="statement not covered" >  'stats.ageRange': { en: 'Age Range', ar: 'الفئة العمرية' },</span>
+&nbsp;
+  // ── Features ──────────────────────────────────────────────
+<span class="cstat-no" title="statement not covered" >  'features.quickEasy': { en: 'Quick &amp; Easy', ar: 'سريع وسهل' },</span>
+<span class="cstat-no" title="statement not covered" >  'features.quickEasyDesc': { en: 'Complete in 45 minutes', ar: 'أكمل في 45 دقيقة' },</span>
+<span class="cstat-no" title="statement not covered" >  'features.kidFriendly': { en: 'Kid-Friendly', ar: 'مناسب للأطفال' },</span>
+<span class="cstat-no" title="statement not covered" >  'features.kidFriendlyDesc': { en: 'Designed for ages 6-12', ar: 'مصمم للأعمار من 6 إلى 12' },</span>
+<span class="cstat-no" title="statement not covered" >  'features.detailedResults': { en: 'Detailed Results', ar: 'نتائج مفصّلة' },</span>
+<span class="cstat-no" title="statement not covered" >  'features.detailedResultsDesc': { en: 'Get insights into strengths', ar: 'احصل على رؤى حول نقاط القوة' },</span>
+&nbsp;
+  // ── Trust badges ──────────────────────────────────────────
+<span class="cstat-no" title="statement not covered" >  'trust.educatorApproved': { en: 'Educator Approved', ar: 'معتمد من المعلمين' },</span>
+<span class="cstat-no" title="statement not covered" >  'trust.safeSecure': { en: 'Safe &amp; Secure', ar: 'آمن ومحمي' },</span>
+<span class="cstat-no" title="statement not covered" >  'trust.researchBased': { en: 'Research-Based', ar: 'مبني على الأبحاث' },</span>
+&nbsp;
+  // ── Mobile bottom nav ────────────────────────────────────
+<span class="cstat-no" title="statement not covered" >  'mobileNav.home': { en: 'Home', ar: 'الرئيسية' },</span>
+<span class="cstat-no" title="statement not covered" >  'mobileNav.categories': { en: 'Categories', ar: 'الفئات' },</span>
+<span class="cstat-no" title="statement not covered" >  'mobileNav.logOut': { en: 'Log Out', ar: 'خروج' },</span>
+<span class="cstat-no" title="statement not covered" >  'mobileNav.register': { en: 'Register', ar: 'تسجيل' },</span>
+<span class="cstat-no" title="statement not covered" >  'mobileNav.help': { en: 'Help', ar: 'مساعدة' },</span>
+&nbsp;
+  // ── Sign-out modal ────────────────────────────────────────
+<span class="cstat-no" title="statement not covered" >  'signOut.title': { en: 'Sign Out', ar: 'تسجيل الخروج' },</span>
+<span class="cstat-no" title="statement not covered" >  'signOut.message': { en: 'Are you sure you want to sign out?', ar: 'هل أنت متأكد أنك تريد تسجيل الخروج؟' },</span>
+<span class="cstat-no" title="statement not covered" >  'signOut.cancel': { en: 'Cancel', ar: 'إلغاء' },</span>
+<span class="cstat-no" title="statement not covered" >  'signOut.confirm': { en: 'Sign Out', ar: 'تسجيل الخروج' },</span>
+<span class="cstat-no" title="statement not covered" >} as const;</span>
+&nbsp;
+export type HomepageTranslationKey = keyof typeof homepageTranslations;
+&nbsp;
+/**
+ * Create a translator bound to a specific language.
+ *
+ * ```tsx
+ * const t = createHomepageT('ar');
+ * t('hero.title') // → 'اكتشف نقاط قوتك في التعلم'
+ * ```
+ */
+<span class="cstat-no" title="statement not covered" >export function createHomepageT(language: Language) {</span>
+<span class="cstat-no" title="statement not covered" >  return (key: HomepageTranslationKey): string =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    const entry = homepageTranslations[key];</span>
+<span class="cstat-no" title="statement not covered" >    if (!entry) return key;</span>
+<span class="cstat-no" title="statement not covered" >    return entry[language] ?? entry.en;</span>
+<span class="cstat-no" title="statement not covered" >  };</span>
+<span class="cstat-no" title="statement not covered" >}</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >export default homepageTranslations;</span>
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-05-02T08:57:13.328Z
+            </div>
+        <script src="../../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../../sorter.js"></script>
+        <script src="../../../block-navigation.js"></script>
+    </body>
+</html>
+    

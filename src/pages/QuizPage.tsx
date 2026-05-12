@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import QuizQuestion from '../components/QuizQuestion';
-import { assessmentCategories } from '../data/assessmentData';
 import { QuizResult } from '../types';
 import FloatingBackground from '../components/FloatingBackground';
 import { ROUTES, categoryRoute } from '../routes';
+import { getAssessmentCatalog } from '../services/assessmentCatalogService';
+import type { AssessmentCategory } from '../types';
 
 const QuizPage: React.FC = () => {
   const { categoryId, subcategoryId } = useParams();
   const navigate = useNavigate();
+  const [categories, setCategories] = useState<AssessmentCategory[]>([]);
+  const [isLoadingCategory, setIsLoadingCategory] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<{ [key: number]: string | number }>({});
@@ -21,8 +25,67 @@ const QuizPage: React.FC = () => {
     shiftingLevel: string;
   }>(null);
 
-  const category = assessmentCategories.find(cat => cat.id === categoryId);
-  const subcategory = category?.subcategories.find(sub => sub.id === subcategoryId);
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCategories = async () => {
+      const catalog = await getAssessmentCatalog();
+      if (!isMounted) {
+        return;
+      }
+
+      setCategories(catalog);
+      if (catalog.length === 0) {
+        setLoadError('Assessment catalog is unavailable right now.');
+      }
+      setIsLoadingCategory(false);
+    };
+
+    void loadCategories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const category = useMemo(
+    () => categories.find((cat) => cat.id === categoryId),
+    [categories, categoryId]
+  );
+  const subcategory = useMemo(
+    () => category?.subcategories.find((sub) => sub.id === subcategoryId),
+    [category, subcategoryId]
+  );
+
+  if (isLoadingCategory) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 flex items-center justify-center">
+        <FloatingBackground />
+        <div className="text-center bg-stone-100 p-8 rounded-2xl shadow-xl relative z-10">
+          <h1 className="text-2xl font-bold text-stone-800 mb-4">Loading quiz</h1>
+          <p className="text-stone-600">Fetching assessment metadata...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 flex items-center justify-center">
+        <FloatingBackground />
+        <div className="text-center bg-stone-100 p-8 rounded-2xl shadow-xl relative z-10">
+          <h1 className="text-2xl font-bold text-stone-800 mb-4">Quiz Catalog Unavailable</h1>
+          <p className="text-stone-600 mb-4">{loadError}</p>
+          <button
+            onClick={() => navigate(ROUTES.CATEGORIES, { replace: true })}
+            className="bg-emerald-600 hover:bg-emerald-700 text-stone-100 px-6 py-3 rounded-full"
+          >
+            Back to Categories
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!category || !subcategory || !subcategory.questions.length) {
     return (

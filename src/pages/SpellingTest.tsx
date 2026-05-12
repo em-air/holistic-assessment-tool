@@ -1,15 +1,20 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase-client';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { ProgressTracker } from '../utils/progressTracker';
 import { logger } from '../utils/logger';
 import { QuizProgressBar, QuizNavigation, QuizResultsScreen } from '../components/quiz';
 import { useSpeech } from '../hooks';
 import { ROUTES } from '../routes';
 import FloatingBackground from '../components/FloatingBackground';
+import {
+  completeSpellingSession,
+  speakSpellingWord,
+  startSpellingSession,
+  submitSpellingAnswer,
+  type SpellingSessionResult,
+  type SpellingWordMeta,
+} from '../services/spellingService';
 
 /**
  * SpellingTest - Refactored
@@ -22,32 +27,21 @@ import FloatingBackground from '../components/FloatingBackground';
  * 
  * Reduced from 445 lines to ~200 lines
  */
-interface WordMeta {
-  index: number;
-  wordId: string;
-  difficulty: string;
-  hint?: string;
-}
-
-interface ServerResult {
-  wordId: string;
-  userAnswer: string | undefined;
-  correctWord: string;
-  isCorrect: boolean;
-}
-
 const SpellingTest = () => {
   const { grade } = useParams<{ grade: string }>();
   const navigate = useNavigate();
-  const [wordMeta, setWordMeta] = useState<WordMeta[]>([]);
+  const [wordMeta, setWordMeta] = useState<SpellingWordMeta[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [gradeDescription, setGradeDescription] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showResults, setShowResults] = useState(false);
   const [currentAnswer, setCurrentAnswer] = useState('');
-  const [serverResults, setServerResults] = useState<ServerResult[]>([]);
+  const [serverResults, setServerResults] = useState<SpellingSessionResult[]>([]);
   const [serverScore, setServerScore] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
   const startTimeRef = useRef<number>(Date.now());
 
   const { speak, isSpeaking } = useSpeech({
@@ -56,34 +50,39 @@ const SpellingTest = () => {
     preferFemaleVoice: true,
   });
 
-  // Start a spelling session on the backend
-  useEffect(() => {
-    if (!grade) return;
-    const startSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.access_token) return;
-        const response = await fetch(`${API_BASE_URL}/api/quiz-content/spelling/start`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ grade: parseInt(grade), quizType: 'spelling', wordCount: 10 }),
-        });
-        const data = await response.json();
-        if (data.success) {
-          setSessionId(data.sessionId);
-          setWordMeta(data.words);
-          setGradeDescription(data.gradeDescription || '');
-          startTimeRef.current = Date.now();
-        }
-      } catch (error) {
-        logger.error('Error starting spelling session:', error);
-      }
-    };
-    startSession();
+  const loadSession = useCallback(async () => {
+    if (!grade) {
+      setIsLoading(false);
+      setLoadError('Missing grade selection.');
+      return;
+    }
+
+    setIsLoading(true);
+    setLoadError(null);
+    setSubmissionError(null);
+
+    const sessionData = await startSpellingSession(parseInt(grade, 10), 10);
+    if (!sessionData) {
+      setSessionId(null);
+      setWordMeta([]);
+      setGradeDescription('');
+      setLoadError('Unable to start the spelling test right now.');
+      setIsLoading(false);
+      return;
+    }
+
+    setSessionId(sessionData.sessionId);
+    setWordMeta(sessionData.words);
+    setGradeDescription(sessionData.gradeDescription || '');
+    setCurrentIndex(0);
+    setCurrentAnswer('');
+    startTimeRef.current = Date.now();
+    setIsLoading(false);
   }, [grade]);
+
+  useEffect(() => {
+    void loadSession();
+  }, [loadSession]);
 
   // Save quiz results when completed
   useEffect(() => {
@@ -127,39 +126,29 @@ const SpellingTest = () => {
   };
 
   const submitTest = async () => {
-    if (!sessionId) return;
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return;
-      // Submit each answer to the backend
-      for (const meta of wordMeta) {
-        const userAnswer = answers[meta.wordId] || '';
-        await fetch(`${API_BASE_URL}/api/quiz-content/spelling/submit-answer`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ sessionId, wordId: meta.wordId, answer: userAnswer }),
-        });
-      }
-      // Complete the session to get results
-      const completeRes = await fetch(`${API_BASE_URL}/api/quiz-content/spelling/complete`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ sessionId }),
-      });
-      const completeData = await completeRes.json();
-      if (completeData.success) {
-        setServerResults(completeData.results);
-        setServerScore(completeData.score);
-      }
-    } catch (error) {
-      logger.error('Error completing spelling test:', error);
+    if (!sessionId) {
+      setSubmissionError('Unable to submit answers without an active spelling session.');
+      return;
     }
+
+    setSubmissionError(null);
+    for (const meta of wordMeta) {
+      const userAnswer = answers[meta.wordId] || '';
+      const submitResult = await submitSpellingAnswer(sessionId, meta.wordId, userAnswer);
+      if (!submitResult) {
+        setSubmissionError('Unable to submit your spelling answers right now. Please try again.');
+        return;
+      }
+    }
+
+    const completeData = await completeSpellingSession(sessionId);
+    if (!completeData) {
+      setSubmissionError('Unable to finish the spelling test right now. Please try again.');
+      return;
+    }
+
+    setServerResults(completeData.results);
+    setServerScore(completeData.score);
     setShowResults(true);
   };
 
@@ -170,34 +159,58 @@ const SpellingTest = () => {
     setCurrentAnswer('');
     setServerResults([]);
     setServerScore(0);
+    setSubmissionError(null);
+    setLoadError(null);
     startTimeRef.current = Date.now();
-    // Re-start a new session
-    if (grade) {
-      const startNewSession = async () => {
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!session?.access_token) return;
-          const response = await fetch(`${API_BASE_URL}/api/quiz-content/spelling/start`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({ grade: parseInt(grade), quizType: 'spelling', wordCount: 10 }),
-          });
-          const data = await response.json();
-          if (data.success) {
-            setSessionId(data.sessionId);
-            setWordMeta(data.words);
-          }
-        } catch { /* ignore */ }
-      };
-      startNewSession();
-    }
+    void loadSession();
   };
 
-  // Loading state
-  if (!grade || wordMeta.length === 0) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-blue-50 relative overflow-hidden flex items-center justify-center">
+        <FloatingBackground />
+        <div className="text-center">
+          <div className="text-6xl mb-4">📝</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Loading Spelling Test...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError || !grade || wordMeta.length === 0 || !sessionId) {
+    return (
+      <div className="min-h-screen bg-blue-50 relative overflow-hidden flex items-center justify-center p-6">
+        <FloatingBackground />
+        <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-xl w-full text-center relative z-10">
+          <div className="text-6xl mb-4">📝</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Spelling Test Unavailable</h2>
+          <p className="text-gray-600 mb-6">
+            {loadError ?? 'No spelling words are available right now.'}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={() => {
+                void loadSession();
+              }}
+              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-colors"
+            >
+              Retry
+            </button>
+            <button
+              onClick={() => navigate(-1)}
+              className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-medium transition-colors"
+            >
+              Back to Grade Selection
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const currentWord = wordMeta[currentIndex];
+
+  if (!currentWord) {
     return (
       <div className="min-h-screen bg-blue-50 relative overflow-hidden flex items-center justify-center">
         <FloatingBackground />
@@ -214,8 +227,6 @@ const SpellingTest = () => {
       </div>
     );
   }
-
-  const currentWord = wordMeta[currentIndex];
 
   // Results screen using reusable component
   if (showResults) {
@@ -284,22 +295,10 @@ const SpellingTest = () => {
               <motion.button
                 onClick={async () => {
                   if (!sessionId) return;
-                  try {
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (!session?.access_token) return;
-                    const res = await fetch(`${API_BASE_URL}/api/quiz-content/spelling/speak`, {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${session.access_token}`,
-                      },
-                      body: JSON.stringify({ sessionId, wordId: currentWord.wordId }),
-                    });
-                    const data = await res.json();
-                    if (data.success && data.word) {
-                      speak(data.word);
-                    }
-                  } catch { /* ignore */ }
+                  const word = await speakSpellingWord(sessionId, currentWord.wordId);
+                  if (word) {
+                    speak(word);
+                  }
                 }}
                 disabled={isSpeaking}
                 className={`inline-flex items-center justify-center w-20 h-20 rounded-full text-4xl mb-6 transition-all duration-200 ${isSpeaking
@@ -345,6 +344,12 @@ const SpellingTest = () => {
         </AnimatePresence>
 
         <div className="mb-8">
+          {submissionError && (
+            <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-center text-sm text-red-700">
+              {submissionError}
+            </div>
+          )}
+
           <QuizNavigation
             currentIndex={currentIndex}
             totalQuestions={wordMeta.length}

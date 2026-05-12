@@ -1,103 +1,272 @@
 /**
  * Backend Quiz Data - Learning Styles
- * 
- * Learning styles assessment questions.
+ *
+ * This is the authoritative question bank for the learning styles quiz.
+ * It matches the current frontend's three-style model so result storage,
+ * report rendering, and UI labels stay consistent during migration.
  */
 
+export type LearningStyleId = 'visual' | 'auditory' | 'reading-writing';
+
 export interface LearningStyleQuestion {
-  id: number;
-  question: string;
+  id: string;
+  category: LearningStyleId;
+  question: {
+    en: string;
+    ar: string;
+  };
   options: {
     id: string;
-    text: string;
-    style: 'visual' | 'auditory' | 'kinesthetic' | 'reading';
+    text: {
+      en: string;
+      ar: string;
+    };
+    style: LearningStyleId;
   }[];
 }
 
 export const learningStyleQuestions: LearningStyleQuestion[] = [
   {
-    id: 1,
-    question: 'When learning something new, I prefer to:',
+    id: 'visual-q1',
+    category: 'visual',
+    question: {
+      en: 'When your teacher explains something new, you understand it best when...',
+      ar: 'عندما يشرح لك المعلم شيئاً جديداً، تفهمه بشكل أفضل عندما...'
+    },
     options: [
-      { id: 'a', text: 'Watch a video or see pictures', style: 'visual' },
-      { id: 'b', text: 'Listen to someone explain it', style: 'auditory' },
-      { id: 'c', text: 'Try it out myself', style: 'kinesthetic' },
-      { id: 'd', text: 'Read about it in a book', style: 'reading' }
+      {
+        id: 'visual-q1-a',
+        text: {
+          en: 'You see pictures or charts',
+          ar: 'ترى الصور أو المخططات'
+        },
+        style: 'visual'
+      },
+      {
+        id: 'visual-q1-b',
+        text: {
+          en: 'You listen to the explanation',
+          ar: 'تستمع إلى الشرح'
+        },
+        style: 'auditory'
+      },
+      {
+        id: 'visual-q1-c',
+        text: {
+          en: 'You do the activity yourself',
+          ar: 'تقوم بالنشاط بنفسك'
+        },
+        style: 'reading-writing'
+      }
     ]
   },
   {
-    id: 2,
-    question: 'When I need to remember something, I:',
+    id: 'visual-q2',
+    category: 'visual',
+    question: {
+      en: 'If you have to remember a list of things, what helps you most?',
+      ar: 'إذا كان عليك تذكر قائمة من الأشياء، ما الذي يساعدك أكثر؟'
+    },
     options: [
-      { id: 'a', text: 'Picture it in my mind', style: 'visual' },
-      { id: 'b', text: 'Say it out loud to myself', style: 'auditory' },
-      { id: 'c', text: 'Write it down or act it out', style: 'kinesthetic' },
-      { id: 'd', text: 'Read and re-read the information', style: 'reading' }
+      {
+        id: 'visual-q2-a',
+        text: {
+          en: 'Drawing or looking at a mind map',
+          ar: 'الرسم أو النظر إلى خريطة ذهنية'
+        },
+        style: 'visual'
+      },
+      {
+        id: 'visual-q2-b',
+        text: {
+          en: 'Saying the list out loud',
+          ar: 'قول القائمة بصوت عالٍ'
+        },
+        style: 'auditory'
+      },
+      {
+        id: 'visual-q2-c',
+        text: {
+          en: 'Acting out the steps',
+          ar: 'تمثيل الخطوات'
+        },
+        style: 'reading-writing'
+      }
     ]
   },
   {
-    id: 3,
-    question: 'In class, I learn best when:',
+    id: 'auditory-q1',
+    category: 'auditory',
+    question: {
+      en: 'You are learning a song for a school event. What do you enjoy most?',
+      ar: 'تتعلم أغنية لحدث مدرسي. ما الذي تستمتع به أكثر؟'
+    },
     options: [
-      { id: 'a', text: 'The teacher uses diagrams and charts', style: 'visual' },
-      { id: 'b', text: 'The teacher talks and discusses', style: 'auditory' },
-      { id: 'c', text: 'We do hands-on activities', style: 'kinesthetic' },
-      { id: 'd', text: 'We read from textbooks', style: 'reading' }
+      {
+        id: 'auditory-q1-a',
+        text: {
+          en: 'Listening to the tune many times',
+          ar: 'الاستماع إلى اللحن مرات عديدة'
+        },
+        style: 'auditory'
+      },
+      {
+        id: 'auditory-q1-b',
+        text: {
+          en: 'Reading the lyrics silently',
+          ar: 'قراءة كلمات الأغنية بصمت'
+        },
+        style: 'reading-writing'
+      },
+      {
+        id: 'auditory-q1-c',
+        text: {
+          en: 'Dancing or clapping to the beat',
+          ar: 'الرقص أو التصفيق على الإيقاع'
+        },
+        style: 'visual'
+      }
     ]
   },
   {
-    id: 4,
-    question: 'When I get lost, I prefer to:',
+    id: 'auditory-q2',
+    category: 'auditory',
+    question: {
+      en: 'When you are confused about homework, what do you prefer?',
+      ar: 'عندما تشعر بالحيرة حول الواجب المنزلي، ماذا تفضل؟'
+    },
     options: [
-      { id: 'a', text: 'Look at a map', style: 'visual' },
-      { id: 'b', text: 'Ask someone for directions', style: 'auditory' },
-      { id: 'c', text: 'Trust my instincts and explore', style: 'kinesthetic' },
-      { id: 'd', text: 'Look up directions online', style: 'reading' }
+      {
+        id: 'auditory-q2-a',
+        text: {
+          en: 'Ask someone to explain it aloud',
+          ar: 'أطلب من أحد أن يشرحه بصوت عالٍ'
+        },
+        style: 'auditory'
+      },
+      {
+        id: 'auditory-q2-b',
+        text: {
+          en: 'Look for a video with sound',
+          ar: 'أبحث عن فيديو بصوت'
+        },
+        style: 'auditory'
+      },
+      {
+        id: 'auditory-q2-c',
+        text: {
+          en: 'Read the written steps',
+          ar: 'أقرأ الخطوات المكتوبة'
+        },
+        style: 'reading-writing'
+      }
     ]
   },
   {
-    id: 5,
-    question: 'When telling a story, I:',
+    id: 'reading-q1',
+    category: 'reading-writing',
+    question: {
+      en: 'If you are trying to learn a new game, you like to...',
+      ar: 'إذا كنت تحاول تعلم لعبة جديدة، تحب أن...'
+    },
     options: [
-      { id: 'a', text: 'Describe how things looked', style: 'visual' },
-      { id: 'b', text: 'Use different voices and sounds', style: 'auditory' },
-      { id: 'c', text: 'Act out parts with my hands', style: 'kinesthetic' },
-      { id: 'd', text: 'Focus on details and facts', style: 'reading' }
+      {
+        id: 'reading-q1-a',
+        text: {
+          en: 'Read the instructions carefully',
+          ar: 'تقرأ التعليمات بعناية'
+        },
+        style: 'reading-writing'
+      },
+      {
+        id: 'reading-q1-b',
+        text: {
+          en: 'Watch someone demonstrate',
+          ar: 'تشاهد أحداً يوضح'
+        },
+        style: 'visual'
+      },
+      {
+        id: 'reading-q1-c',
+        text: {
+          en: 'Try it and figure it out while playing',
+          ar: 'تجربها واستكشافها أثناء اللعب'
+        },
+        style: 'auditory'
+      }
+    ]
+  },
+  {
+    id: 'reading-q2',
+    category: 'reading-writing',
+    question: {
+      en: 'You need to remember a science fact. What works best?',
+      ar: 'تحتاج لتذكر حقيقة علمية. ما الذي يعمل بشكل أفضل؟'
+    },
+    options: [
+      {
+        id: 'reading-q2-a',
+        text: {
+          en: 'Write it down a few times',
+          ar: 'أكتبها عدة مرات'
+        },
+        style: 'reading-writing'
+      },
+      {
+        id: 'reading-q2-b',
+        text: {
+          en: 'Say it aloud',
+          ar: 'أقولها بصوت عالٍ'
+        },
+        style: 'auditory'
+      },
+      {
+        id: 'reading-q2-c',
+        text: {
+          en: 'Draw a picture of it',
+          ar: 'أرسم صورة عنها'
+        },
+        style: 'visual'
+      }
     ]
   }
 ];
 
-/**
- * Get all questions
- */
 export const getLearningStyleQuestions = (): LearningStyleQuestion[] => {
   return learningStyleQuestions;
 };
 
-/**
- * Calculate learning style from answers
- */
-export const calculateLearningStyle = (answers: Record<number, string>): {
+export const calculateLearningStyle = (answers: Record<string, string>): {
   visual: number;
   auditory: number;
-  kinesthetic: number;
-  reading: number;
-  dominantStyle: string;
+  'reading-writing': number;
+  dominantStyle: LearningStyleId;
 } => {
-  const scores = { visual: 0, auditory: 0, kinesthetic: 0, reading: 0 };
-  
+  const scores: Record<LearningStyleId, number> = {
+    visual: 0,
+    auditory: 0,
+    'reading-writing': 0,
+  };
+
   for (const [questionId, answerId] of Object.entries(answers)) {
-    const question = learningStyleQuestions.find(q => q.id === parseInt(questionId));
-    if (!question) continue;
-    
-    const option = question.options.find(o => o.id === answerId);
+    const question = learningStyleQuestions.find(item => item.id === questionId);
+    if (!question) {
+      continue;
+    }
+
+    const option = question.options.find(item => item.id === answerId);
     if (option) {
-      scores[option.style]++;
+      scores[option.style] += 1;
     }
   }
-  
-  const dominantStyle = Object.entries(scores)
-    .sort((a, b) => b[1] - a[1])[0][0];
-  
-  return { ...scores, dominantStyle };
+
+  const dominantStyle = (Object.entries(scores)
+    .sort((a, b) => b[1] - a[1])[0][0] ?? 'visual') as LearningStyleId;
+
+  return {
+    visual: scores.visual,
+    auditory: scores.auditory,
+    'reading-writing': scores['reading-writing'],
+    dominantStyle,
+  };
 };

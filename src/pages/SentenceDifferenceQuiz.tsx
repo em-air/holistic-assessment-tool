@@ -4,16 +4,10 @@ import { ArrowLeft, XCircle } from 'lucide-react';
 import { ProgressTracker } from '../utils/progressTracker';
 import { ROUTES } from '../routes';
 import FloatingBackground from '../components/FloatingBackground';
-
-// API types (no correctAnswer exposed)
-interface SentenceDifferenceQuestion {
-  id: number;
-  sentenceA: string;
-  sentenceB: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-}
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import {
+  getSentenceDifferenceQuestions,
+  type SentenceDifferenceQuestion,
+} from '../services/sentenceDifferenceService';
 
 const SentenceDifferenceQuiz: React.FC = () => {
   const navigate = useNavigate();
@@ -38,18 +32,12 @@ const SentenceDifferenceQuiz: React.FC = () => {
       setError(null);
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/quiz-content/sentence-difference/questions`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch questions');
-        }
-
-        const data = await response.json();
-        if (data.success && data.questions) {
-          // Shuffle and take a subset for the quiz
-          const shuffled = [...data.questions].sort(() => Math.random() - 0.5);
+        const loadedQuestions = await getSentenceDifferenceQuestions();
+        if (loadedQuestions.length > 0) {
+          const shuffled = [...loadedQuestions].sort(() => Math.random() - 0.5);
           setQuestions(shuffled.slice(0, 10)); // Limit to 10 questions
         } else {
-          throw new Error(data.error || 'Invalid response');
+          throw new Error('No sentence difference questions are available.');
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load questions');

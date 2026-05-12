@@ -7,63 +7,13 @@ import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 import { ROUTES } from '../routes';
 import FloatingBackground from '../components/FloatingBackground';
-
-// Flash word data structure
-interface FlashWord {
-  id: number;
-  image: string;
-  word: string;
-}
-
-// Grade levels for selection
-type GradeLevel = 'grade1' | 'grade2' | 'grade3' | 'grade4';
-
-// Word bank with grade-specific difficulty
-const wordBank = {
-  grade1: [
-    { id: 1, image: 'https://images.unsplash.com/vector-1741847236185-27b1ff478511?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2F0fGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=600', word: 'cat' },
-    { id: 2, image: 'https://images.unsplash.com/vector-1740286698618-7f01b97f6899?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=880', word: 'dog' },
-    { id: 3, image: 'https://images.unsplash.com/vector-1738925311171-6897d223702e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=880', word: 'sun' },
-    { id: 4, image: 'https://plus.unsplash.com/premium_vector-1718166509477-327bc1cba9f9?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fGJhbGx8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&q=60&w=600', word: 'ball' },
-    { id: 5, image: 'https://plus.unsplash.com/premium_vector-1731660866896-69378f2b9a6a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=880', word: 'tree' },
-    { id: 6, image: 'https://plus.unsplash.com/premium_vector-1727952231396-e301fbf4ef1b?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Ym9va3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=600', word: 'book' },
-    { id: 7, image: 'https://images.unsplash.com/vector-1743702228669-15c868db27e6?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2FyfGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=600', word: 'car' },
-    { id: 8, image: 'https://plus.unsplash.com/premium_vector-1711987775501-7f3b47be125d?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aGF0fGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=600', word: 'hat' }
-  ] as FlashWord[],
-
-  grade2: [
-    { id: 1, image: 'https://plus.unsplash.com/premium_vector-1727952230707-372d1ba06834?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8d2F0ZXJ8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&q=60&w=600', word: 'water' },
-    { id: 2, image: 'https://plus.unsplash.com/premium_vector-1682304496080-70b295c04782?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGpveXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=600', word: 'happy' },
-    { id: 3, image: 'https://plus.unsplash.com/premium_vector-1721890983105-625c0d32045f?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aG91c2V8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&q=60&w=600', word: 'house' },
-    { id: 4, image: 'https://plus.unsplash.com/premium_vector-1721918267898-1723de525ab3?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fGZsb3dlcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=600', word: 'flower' },
-    { id: 5, image: 'https://source.unsplash.com/200x200/?yellow', word: 'yellow' },
-    { id: 6, image: 'https://plus.unsplash.com/premium_vector-1733389194552-e60c558f76be?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=764', word: 'friend' },
-    { id: 7, image: 'https://images.unsplash.com/vector-1740296579124-fea8e9995120?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8ZmFtaWx5fGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=600', word: 'family' },
-    { id: 8, image: 'https://images.unsplash.com/vector-1740296579124-fea8e9995120?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8ZmFtaWx5fGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=600', word: 'apple' }
-  ] as FlashWord[],
-
-  grade3: [
-    { id: 1, image: 'https://source.unsplash.com/200x200/?between', word: 'between' },
-    { id: 2, image: 'https://source.unsplash.com/200x200/?animal', word: 'animal' },
-    { id: 3, image: 'https://source.unsplash.com/200x200/?follow', word: 'follow' },
-    { id: 4, image: 'https://source.unsplash.com/200x200/?mother', word: 'mother' },
-    { id: 5, image: 'https://source.unsplash.com/200x200/?school', word: 'school' },
-    { id: 6, image: 'https://source.unsplash.com/200x200/?picture', word: 'picture' },
-    { id: 7, image: 'https://source.unsplash.com/200x200/?kitchen', word: 'kitchen' },
-    { id: 8, image: 'https://source.unsplash.com/200x200/?garden', word: 'garden' }
-  ] as FlashWord[],
-
-  grade4: [
-    { id: 1, image: 'https://source.unsplash.com/200x200/?because', word: 'because' },
-    { id: 2, image: 'https://source.unsplash.com/200x200/?beautiful', word: 'beautiful' },
-    { id: 3, image: 'https://source.unsplash.com/200x200/?another', word: 'another' },
-    { id: 4, image: 'https://source.unsplash.com/200x200/?different', word: 'different' },
-    { id: 5, image: 'https://source.unsplash.com/200x200/?thought', word: 'thought' },
-    { id: 6, image: 'https://source.unsplash.com/200x200/?important', word: 'important' },
-    { id: 7, image: 'https://source.unsplash.com/200x200/?remember', word: 'remember' },
-    { id: 8, image: 'https://source.unsplash.com/200x200/?surprise', word: 'surprise' }
-  ] as FlashWord[]
-};
+import {
+  getFlashWordGrades,
+  getFlashWordQuestions,
+  type FlashWord,
+  type FlashWordGradeSummary,
+  type GradeLevel,
+} from '../services/flashWordService';
 
 // Virtual keyboard layout (3 rows)
 const keyboardRows = [
@@ -74,6 +24,10 @@ const keyboardRows = [
 
 const FlashWordQuiz: React.FC = () => {
   const navigate = useNavigate();
+  const [gradeOptions, setGradeOptions] = useState<FlashWordGradeSummary[]>([]);
+  const [isLoadingGrades, setIsLoadingGrades] = useState(true);
+  const [isLoadingWords, setIsLoadingWords] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Grade selection state
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel | null>(null);
@@ -94,10 +48,37 @@ const FlashWordQuiz: React.FC = () => {
   const [showReport, setShowReport] = useState(false);
   const [gamePhase, setGamePhase] = useState<'ready' | 'showing' | 'input' | 'feedback'>('ready');
 
+  React.useEffect(() => {
+    const loadGrades = async () => {
+      setIsLoadingGrades(true);
+      setLoadError(null);
+
+      const grades = await getFlashWordGrades();
+      if (grades.length === 0) {
+        setLoadError('Flash word content is unavailable right now.');
+      } else {
+        setGradeOptions(grades);
+      }
+
+      setIsLoadingGrades(false);
+    };
+
+    void loadGrades();
+  }, []);
+
   // Handle grade selection
-  const handleGradeSelect = (grade: GradeLevel) => {
+  const handleGradeSelect = async (grade: GradeLevel) => {
+    setIsLoadingWords(true);
+    setLoadError(null);
+
+    const words = await getFlashWordQuestions(grade);
+    if (words.length === 0) {
+      setLoadError('Flash word questions are unavailable right now.');
+      setIsLoadingWords(false);
+      return;
+    }
+
     setSelectedGrade(grade);
-    const words = wordBank[grade];
     setCurrentWords(words);
     setCurrentWordIndex(0);
     setScore(0);
@@ -105,6 +86,7 @@ const FlashWordQuiz: React.FC = () => {
     setTotalAttempts(0);
     setIsComplete(false);
     setGamePhase('ready');
+    setIsLoadingWords(false);
   };
 
   // Start showing flash card
@@ -237,24 +219,35 @@ const FlashWordQuiz: React.FC = () => {
           {/* Grade Selection */}
           <div className="max-w-4xl mx-auto">
             <p className="text-center text-white text-xl mb-8">Choose your grade level:</p>
+            {isLoadingGrades && (
+              <div className="text-center text-white/90 mb-6">Loading grade options...</div>
+            )}
+            {isLoadingWords && (
+              <div className="text-center text-white/90 mb-6">Loading words...</div>
+            )}
+            {loadError && (
+              <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 text-center text-white mb-6">
+                {loadError}
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {Object.keys(wordBank).map((grade) => (
+              {gradeOptions.map((option) => (
                 <motion.button
-                  key={grade}
-                  onClick={() => handleGradeSelect(grade as GradeLevel)}
+                  key={option.grade}
+                  onClick={() => void handleGradeSelect(option.grade)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="bg-white/20 backdrop-blur-sm rounded-2xl p-8 text-center hover:bg-white/30 transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
                   <div className="text-4xl mb-4">📚</div>
                   <h3 className="text-xl font-bold text-white mb-2">
-                    {getGradeDisplay(grade as GradeLevel)}
+                    {getGradeDisplay(option.grade)}
                   </h3>
                   <p className="text-white/80 text-sm">
-                    {grade === 'grade1' || grade === 'grade2' ? 'Image + Word shown' : 'Word only'}
+                    {option.showImage ? 'Image + Word shown' : 'Word only'}
                   </p>
                   <p className="text-white/70 text-xs mt-2">
-                    {wordBank[grade as GradeLevel].length} words
+                    {option.questionCount} words
                   </p>
                 </motion.button>
               ))}
@@ -315,7 +308,8 @@ const FlashWordQuiz: React.FC = () => {
   }
 
   const currentWord = currentWords[currentWordIndex];
-  const showImage = selectedGrade === 'grade1' || selectedGrade === 'grade2';
+  const selectedGradeSummary = gradeOptions.find((option) => option.grade === selectedGrade);
+  const showImage = selectedGradeSummary?.showImage ?? false;
   const showWordText = true; // Always show word text for all grades
 
   return (

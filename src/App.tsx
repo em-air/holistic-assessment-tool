@@ -33,7 +33,7 @@ const SentenceDifferenceQuiz = lazy(() => import('./pages/SentenceDifferenceQuiz
 
 // Cognitive assessments
 const LogicalSequencingQuiz = lazy(() => import('./pages/LogicalSequencingQuiz'));
-const LogicalSequencingGradeSelector = lazy(() => import('./pages/LogicalSequencingGradeSelector'));
+const SharedGradeSelectorPage = lazy(() => import('./pages/SharedGradeSelectorPage'));
 const MemoryQuiz = lazy(() => import('./pages/MemoryQuiz'));
 const AttentionMemorySelection = lazy(() => import('./pages/AttentionMemorySelection'));
 const AttentionAssessment = lazy(() => import('./pages/AttentionAssessment'));
@@ -47,16 +47,12 @@ const CategoryQuiz = lazy(() => import('./pages/CategoryQuiz'));
 const OralLanguageQuiz = lazy(() => import('./pages/OralLanguageQuiz'));
 const OralLanguageSelection = lazy(() => import('./pages/OralLanguageSelection'));
 const StoryRetellQuiz = lazy(() => import('./pages/StoryRetellQuiz'));
-const StoryRetellGradeSelector = lazy(() => import('./pages/StoryRetellGradeSelector'));
-const SentenceBuildingGradeSelector = lazy(() => import('./pages/SentenceBuildingGradeSelector'));
 const SentenceBuildingQuiz = lazy(() => import('./pages/SentenceBuildingQuiz'));
 const VocabularyMatching = lazy(() => import('./pages/VocabularyMatching'));
 const FlashWordQuiz = lazy(() => import('./pages/FlashWordQuiz'));
 
 // Academic assessments
-const SpellingGradeSelector = lazy(() => import('./pages/SpellingGradeSelector'));
 const SpellingTest = lazy(() => import('./pages/SpellingTest'));
-const WritingGradeSelector = lazy(() => import('./pages/WritingGradeSelector'));
 const WritingTest = lazy(() => import('./pages/WritingTest'));
 const ReadingAssessment = lazy(() => import('./pages/ReadingAssessment'));
 const AssessmentGenerator = lazy(() => import('./pages/AssessmentGenerator'));
@@ -97,7 +93,7 @@ const routeConfig: RouteEntry[] = [
   { path: ROUTES.PERCEPTION_SELECTION, Component: PerceptionQuizSelection },
   { path: ROUTES.PERCEPTION_MISSING_OBJECT, Component: MissingObjectQuizPage },
   { path: ROUTES.PERCEPTION_SENTENCE_DIFF, Component: SentenceDifferenceQuiz },
-  { path: ROUTES.PERCEPTION_LOGICAL_SEQ, Component: LogicalSequencingGradeSelector },
+  { path: ROUTES.PERCEPTION_LOGICAL_SEQ, Component: SharedGradeSelectorPage },
 
   // ── Mind – Critical Thinking ──────────────────────────────────────
   { path: ROUTES.CRITICAL_THINKING_SELECTION, Component: CriticalThinkingPage },
@@ -109,17 +105,17 @@ const routeConfig: RouteEntry[] = [
 
   // ── Oral Skills ───────────────────────────────────────────────────
   { path: ROUTES.ORAL_LANGUAGE_SELECTION, Component: OralLanguageSelection },
-  { path: ROUTES.ORAL_SENTENCE_BUILDING, Component: SentenceBuildingGradeSelector },
+  { path: ROUTES.ORAL_SENTENCE_BUILDING, Component: SharedGradeSelectorPage },
   { path: ROUTE_PATTERNS.ORAL_SENTENCE_BUILDING_GRADE, Component: SentenceBuildingQuiz },
   { path: ROUTES.ORAL_STORY_SEQUENCING, Component: OralLanguageQuiz },
-  { path: ROUTES.ORAL_STORY_RETELL, Component: StoryRetellGradeSelector },
+  { path: ROUTES.ORAL_STORY_RETELL, Component: SharedGradeSelectorPage },
   { path: ROUTE_PATTERNS.ORAL_STORY_RETELL_GRADE, Component: StoryRetellQuiz },
 
   // ── Academic ──────────────────────────────────────────────────────
   { path: ROUTES.VOCABULARY_MATCHING, Component: VocabularyMatching },
-  { path: ROUTES.SPELLING_GRADES, Component: SpellingGradeSelector },
+  { path: ROUTES.SPELLING_GRADES, Component: SharedGradeSelectorPage },
   { path: ROUTE_PATTERNS.SPELLING_TEST, Component: SpellingTest },
-  { path: ROUTES.WRITING_GRADES, Component: WritingGradeSelector },
+  { path: ROUTES.WRITING_GRADES, Component: SharedGradeSelectorPage },
   { path: ROUTE_PATTERNS.WRITING_TEST, Component: WritingTest },
   { path: ROUTE_PATTERNS.READING_ASSESSMENT, Component: ReadingAssessment },
   { path: ROUTES.ASSESSMENT_GENERATOR, Component: AssessmentGenerator },
@@ -129,11 +125,11 @@ const routeConfig: RouteEntry[] = [
   { path: ROUTES.PERCEPTION_QUIZ_FLAT, Component: PerceptionQuiz },
   { path: ROUTES.MISSING_OBJECT_QUIZ_FLAT, Component: MissingObjectQuizPage },
   { path: ROUTES.SENTENCE_DIFFERENCE_QUIZ_FLAT, Component: SentenceDifferenceQuiz },
-  { path: ROUTES.LOGICAL_SEQUENCING_GRADES, Component: LogicalSequencingGradeSelector },
+  { path: ROUTES.LOGICAL_SEQUENCING_GRADES, Component: SharedGradeSelectorPage },
   { path: ROUTE_PATTERNS.LOGICAL_SEQUENCING_GRADE, Component: LogicalSequencingQuiz },
   { path: ROUTE_PATTERNS.ORAL_LANGUAGE_SELECTION_WITH_ID, Component: OralLanguageSelection },
   { path: ROUTES.ORAL_LANGUAGE_QUIZ_FLAT, Component: OralLanguageQuiz },
-  { path: ROUTES.STORY_RETELL_QUIZ_FLAT, Component: StoryRetellGradeSelector },
+  { path: ROUTES.STORY_RETELL_QUIZ_FLAT, Component: SharedGradeSelectorPage },
   { path: ROUTE_PATTERNS.STORY_RETELL_QUIZ_GRADE_FLAT, Component: StoryRetellQuiz },
   { path: ROUTES.ATTENTION_MEMORY_FLAT, Component: AttentionMemorySelection },
   { path: ROUTES.ATTENTION_ASSESSMENT_FLAT, Component: AttentionAssessment },

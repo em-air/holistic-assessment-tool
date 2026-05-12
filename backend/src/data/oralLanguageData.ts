@@ -59,19 +59,6 @@ export const oralLanguageQuestions: OralLanguageQuestion[] = [
       { id: 'c', text: 'Banana', isCorrect: false }
     ]
   },
-  // Sentence Building Level 2
-  {
-    id: 'sentence_2_1',
-    type: 'sentence-building',
-    level: 2,
-    question: 'What is the boy doing?',
-    image: 'https://cdn.pixabay.com/photo/2023/07/18/12/56/little-boy-8134737_1280.jpg',
-    options: [
-      { id: 'a', text: 'Playing with the dog', isCorrect: false },
-      { id: 'b', text: 'Feeding the dog', isCorrect: true },
-      { id: 'c', text: 'Walking the dog', isCorrect: false }
-    ]
-  },
   // Storytelling / Story Sequencing
   {
     id: 'story_1_1',

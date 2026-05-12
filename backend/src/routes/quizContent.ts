@@ -33,6 +33,22 @@ import {
   getVocabularyByLevel, 
   validateVocabularyAnswer 
 } from '../data/vocabularyData.js';
+import {
+  getVocabularyMatchingGrades,
+  getVocabularyMatchingQuestions,
+} from '../data/vocabularyMatchingData.js';
+import {
+  getMissingObjectQuestionsForFrontend,
+  validateMissingObjectAnswer,
+} from '../data/missingObjectData.js';
+import {
+  getFlashWordGradeSummaries,
+  getFlashWordsByGrade,
+} from '../data/flashWordData.js';
+import {
+  getAllReadingTargetRates,
+  getReadingAssessmentContent,
+} from '../data/readingAssessmentData.js';
 import { 
   getStoriesByGrade, 
   getStoryForFrontend, 
@@ -48,6 +64,13 @@ import {
   getLearningStyleQuestions, 
   calculateLearningStyle 
 } from '../data/learningStylesData.js';
+import {
+  getSentenceBuildingGradeData,
+  getSentenceBuildingGradeSummaries,
+  getSentenceBuildingQuestionsForFrontend,
+  validateSentenceBuildingAnswer,
+} from '../data/sentenceBuildingData.js';
+import { getAssessmentCatalog } from '../data/assessmentCatalogData.js';
 import { writingData, getWritingDataByGrade } from '../data/writingData.js';
 import { 
   getOralLanguageQuestions, 
@@ -107,6 +130,20 @@ const vocabularyValidateSchema = z.object({
   wordId: z.string(),
   answerId: z.string(),
 });
+
+const vocabularyMatchingQuerySchema = z.object({
+  grade: z.coerce.number().int().min(4).max(8),
+  level: z.coerce.number().int().min(1).max(3),
+});
+
+const missingObjectValidateSchema = z.object({
+  questionId: z.number().int(),
+  answer: z.string().min(1),
+});
+
+const flashWordGradeSchema = z.enum(['grade1', 'grade2', 'grade3', 'grade4']);
+
+const readingAssessmentGradeSchema = z.coerce.number().int().min(1).max(8);
 
 const criticalThinkingValidateSchema = z.object({
   questionId: z.string(),
@@ -517,6 +554,10 @@ router.get('/writing/grades', async (_req: Request, res: Response) => {
       grade: g.grade,
       topicCount: g.topics.length,
       skillFocus: g.skillFocus,
+      wordCount: {
+        min: Math.min(...g.topics.map(topic => topic.wordCount.min)),
+        max: Math.max(...g.topics.map(topic => topic.wordCount.max)),
+      },
     }));
     
     res.json({
@@ -628,6 +669,157 @@ router.post('/story-retell/validate', verifySupabaseToken, async (req: Request, 
   } catch (error) {
     logger.error(error, 'Validate story retell error:');
     res.status(500).json({ error: 'Failed to validate' });
+  }
+});
+
+// ============================================
+// FLASH WORD ROUTES
+// ============================================
+
+/**
+ * GET /api/quiz-content/flash-word/grades
+ */
+router.get('/flash-word/grades', async (_req: Request, res: Response) => {
+  try {
+    res.json({
+      success: true,
+      grades: getFlashWordGradeSummaries(),
+    });
+  } catch (error) {
+    logger.error(error, 'Get flash word grades error:');
+    res.status(500).json({ error: 'Failed to get flash word grades' });
+  }
+});
+
+/**
+ * GET /api/quiz-content/flash-word/questions/:grade
+ */
+router.get('/flash-word/questions/:grade', async (req: Request, res: Response) => {
+  try {
+    const validation = flashWordGradeSchema.safeParse(req.params.grade);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid grade' });
+    }
+
+    res.json({
+      success: true,
+      words: getFlashWordsByGrade(validation.data),
+    });
+  } catch (error) {
+    logger.error(error, 'Get flash word questions error:');
+    res.status(500).json({ error: 'Failed to get flash word questions' });
+  }
+});
+
+// ============================================
+// READING ASSESSMENT ROUTES
+// ============================================
+
+/**
+ * GET /api/quiz-content/reading-assessment/content/:grade
+ */
+router.get('/reading-assessment/content/:grade', async (req: Request, res: Response) => {
+  try {
+    const validation = readingAssessmentGradeSchema.safeParse(req.params.grade);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid grade' });
+    }
+
+    const content = getReadingAssessmentContent(validation.data);
+    if (!content) {
+      return res.status(404).json({ error: 'Reading assessment content not found' });
+    }
+
+    res.json({
+      success: true,
+      content,
+      allTargetRates: getAllReadingTargetRates(),
+    });
+  } catch (error) {
+    logger.error(error, 'Get reading assessment content error:');
+    res.status(500).json({ error: 'Failed to get reading assessment content' });
+  }
+});
+
+// ============================================
+// MISSING OBJECT ROUTES
+// ============================================
+
+/**
+ * GET /api/quiz-content/missing-object/questions
+ */
+router.get('/missing-object/questions', async (_req: Request, res: Response) => {
+  try {
+    res.json({
+      success: true,
+      questions: getMissingObjectQuestionsForFrontend(),
+    });
+  } catch (error) {
+    logger.error(error, 'Get missing object questions error:');
+    res.status(500).json({ error: 'Failed to get missing object questions' });
+  }
+});
+
+/**
+ * POST /api/quiz-content/missing-object/validate
+ */
+router.post('/missing-object/validate', async (req: Request, res: Response) => {
+  try {
+    const validation = missingObjectValidateSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
+    }
+
+    const { questionId, answer } = validation.data;
+    res.json({
+      success: true,
+      ...validateMissingObjectAnswer(questionId, answer),
+    });
+  } catch (error) {
+    logger.error(error, 'Validate missing object answer error:');
+    res.status(500).json({ error: 'Failed to validate missing object answer' });
+  }
+});
+
+// ============================================
+// VOCABULARY MATCHING ROUTES
+// ============================================
+
+/**
+ * GET /api/quiz-content/vocabulary-matching/grades
+ */
+router.get('/vocabulary-matching/grades', async (_req: Request, res: Response) => {
+  try {
+    res.json({
+      success: true,
+      grades: getVocabularyMatchingGrades(),
+    });
+  } catch (error) {
+    logger.error(error, 'Get vocabulary matching grades error:');
+    res.status(500).json({ error: 'Failed to get vocabulary matching grades' });
+  }
+});
+
+/**
+ * GET /api/quiz-content/vocabulary-matching/questions?grade=4&level=1
+ */
+router.get('/vocabulary-matching/questions', async (req: Request, res: Response) => {
+  try {
+    const validation = vocabularyMatchingQuerySchema.safeParse(req.query);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid query', details: validation.error.issues });
+    }
+
+    const { grade, level } = validation.data;
+    const questions = getVocabularyMatchingQuestions(grade, level);
+
+    res.json({
+      success: true,
+      questions,
+    });
+  } catch (error) {
+    logger.error(error, 'Get vocabulary matching questions error:');
+    res.status(500).json({ error: 'Failed to get vocabulary matching questions' });
   }
 });
 
@@ -811,7 +1003,7 @@ router.get('/learning-styles/questions', async (_req: Request, res: Response) =>
 /**
  * POST /api/quiz-content/learning-styles/calculate
  */
-router.post('/learning-styles/calculate', verifySupabaseToken, async (req: Request, res: Response) => {
+router.post('/learning-styles/calculate', async (req: Request, res: Response) => {
   try {
     const validation = learningStylesCalculateSchema.safeParse(req.body);
     if (!validation.success) {
@@ -827,6 +1019,96 @@ router.post('/learning-styles/calculate', verifySupabaseToken, async (req: Reque
   } catch (error) {
     logger.error(error, 'Calculate learning styles error:');
     res.status(500).json({ error: 'Failed to calculate' });
+  }
+});
+
+// ============================================
+// SENTENCE BUILDING ROUTES
+// ============================================
+
+/**
+ * GET /api/quiz-content/sentence-building/grades
+ */
+router.get('/sentence-building/grades', async (_req: Request, res: Response) => {
+  try {
+    res.json({
+      success: true,
+      grades: getSentenceBuildingGradeSummaries(),
+    });
+  } catch (error) {
+    logger.error(error, 'Get sentence-building grades error:');
+    res.status(500).json({ error: 'Failed to get grades' });
+  }
+});
+
+/**
+ * GET /api/quiz-content/sentence-building/questions/:grade
+ */
+router.get('/sentence-building/questions/:grade', async (req: Request, res: Response) => {
+  try {
+    const grade = Number.parseInt(req.params.grade, 10);
+    const gradeData = getSentenceBuildingGradeData(grade);
+
+    if (!gradeData) {
+      return res.status(404).json({ error: 'Grade not found' });
+    }
+
+    res.json({
+      success: true,
+      grade: gradeData.grade,
+      title: gradeData.title,
+      description: gradeData.description,
+      difficulty: gradeData.difficulty,
+      color: gradeData.color,
+      questionCount: gradeData.questions.length,
+      questions: getSentenceBuildingQuestionsForFrontend(grade),
+    });
+  } catch (error) {
+    logger.error(error, 'Get sentence-building questions error:');
+    res.status(500).json({ error: 'Failed to get questions' });
+  }
+});
+
+/**
+ * POST /api/quiz-content/sentence-building/validate
+ */
+router.post('/sentence-building/validate', async (req: Request, res: Response) => {
+  try {
+    const validation = oralLanguageValidateSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
+    }
+
+    const { questionId, answerId } = validation.data;
+    const result = validateSentenceBuildingAnswer(questionId, answerId);
+
+    if (!result) {
+      return res.status(404).json({ error: 'Question not found' });
+    }
+
+    res.json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    logger.error(error, 'Validate sentence-building answer error:');
+    res.status(500).json({ error: 'Failed to validate answer' });
+  }
+});
+
+/**
+ * GET /api/quiz-content/assessment-catalog
+ * Get category and subcategory metadata for the assessment UI.
+ */
+router.get('/assessment-catalog', async (_req: Request, res: Response) => {
+  try {
+    res.json({
+      success: true,
+      categories: getAssessmentCatalog(),
+    });
+  } catch (error) {
+    logger.error(error, 'Get assessment catalog error:');
+    res.status(500).json({ error: 'Failed to get assessment catalog' });
   }
 });
 
@@ -1246,6 +1528,13 @@ router.get('/oral-language/questions', verifySupabaseToken, async (req: Request,
     const type = req.query.type as string | undefined;
     const level = req.query.level ? parseInt(req.query.level as string) : undefined;
 
+    if (type === 'sentence-building') {
+      return res.json({
+        success: true,
+        questions: getSentenceBuildingQuestionsForFrontend(level),
+      });
+    }
+
     const questions = getOralLanguageQuestions(
       type as 'vocabulary' | 'sentence-building' | 'storytelling' | undefined,
       level
@@ -1288,6 +1577,14 @@ router.post('/oral-language/validate', verifySupabaseToken, async (req: Request,
       return res.status(400).json({ error: 'Invalid input', details: validation.error.issues });
     }
     const { questionId, answerId } = validation.data;
+    const sentenceBuildingResult = validateSentenceBuildingAnswer(questionId, answerId);
+    if (sentenceBuildingResult) {
+      return res.json({
+        success: true,
+        ...sentenceBuildingResult,
+      });
+    }
+
     const result = validateOralLanguageAnswer(questionId, answerId);
 
     res.json({

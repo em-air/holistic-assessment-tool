@@ -4,7 +4,8 @@ import { Lock } from 'lucide-react';
 import { AssessmentCategory } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { getNumericGrade, canAccessCategory, getCategoryBlockedMessage } from '../utils/gradeUtils';
-import { ROUTES, categoryRoute, readingAssessmentRoute, quizRoute } from '../routes';
+import { categoryRoute } from '../routes';
+import { navigateToAssessmentSubcategory } from '../utils/assessmentNavigation';
 
 interface CategoryCardProps {
   category: AssessmentCategory;
@@ -86,50 +87,12 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
     e.stopPropagation();
     if (isBlocked) return;
 
-    // Route mapping matching CategoryPage logic
-    switch (subcategoryId) {
-      case 'attention':
-        navigate(ROUTES.ATTENTION_MEMORY);
-        break;
-      case 'learning-style':
-        navigate(ROUTES.LEARNING_STYLES_QUIZ);
-        break;
-      case 'critical-thinking':
-        navigate(ROUTES.CRITICAL_THINKING_SELECTION);
-        break;
-      case 'perception':
-        navigate(ROUTES.PERCEPTION_SELECTION);
-        break;
-      case 'oral-language':
-        navigate(ROUTES.ORAL_LANGUAGE_SELECTION);
-        break;
-      case 'sentence-building':
-        navigate(ROUTES.ORAL_SENTENCE_BUILDING);
-        break;
-      case 'story-sequencing':
-        navigate(ROUTES.ORAL_STORY_SEQUENCING, { state: { categoryId: 'story-sequencing' } });
-        break;
-      case 'story-retell':
-        navigate(ROUTES.ORAL_STORY_RETELL);
-        break;
-      case 'reading':
-        navigate(readingAssessmentRoute(category.id));
-        break;
-      case 'writing':
-        navigate(ROUTES.WRITING_GRADES);
-        break;
-      case 'sentence-formation':
-        navigate(ROUTES.VOCABULARY_MATCHING);
-        break;
-      case 'spelling':
-        navigate(ROUTES.SPELLING_GRADES);
-        break;
-      case 'assessment-generator':
-        navigate(ROUTES.ASSESSMENT_GENERATOR);
-        break;
-      default:
-        navigate(quizRoute(category.id, subcategoryId));
+    const subcategory = category.subcategories.find((item) => item.id === subcategoryId);
+    if (subcategory?.available === false) {
+      return;
     }
+
+    navigateToAssessmentSubcategory(navigate, category.id, subcategoryId);
   };
 
   return (
@@ -177,7 +140,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
             <div
               key={subcategory.id}
               onClick={(e) => handleSubcategoryClick(subcategory.id, e)}
-              className={`flex items-center space-x-3 ${isBlocked ? 'bg-gray-100/60' : 'bg-white/60 hover:bg-white/90 hover:shadow-md cursor-pointer'} rounded-lg px-3 py-2 transition-all duration-300 ${!isBlocked && 'transform hover:translate-x-1'}`}
+              className={`flex items-center space-x-3 ${isBlocked ? 'bg-gray-100/60' : subcategory.available === false ? 'bg-white/40 cursor-not-allowed opacity-60' : 'bg-white/60 hover:bg-white/90 hover:shadow-md cursor-pointer'} rounded-lg px-3 py-2 transition-all duration-300 ${!isBlocked && subcategory.available !== false && 'transform hover:translate-x-1'}`}
               style={{
                 transitionDelay: `${index * 50}ms`
               }}

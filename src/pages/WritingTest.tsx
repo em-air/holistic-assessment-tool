@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getWritingDataByGrade, WritingTopic, GradeWritingData } from '../data/writingData';
 import { evaluateWritingWithGemini, WritingEvaluation } from '../services/geminiService';
 import { ProgressTracker } from '../utils/progressTracker';
 import { ArrowLeft, Clock, Target, BookOpen, Lightbulb, CheckCircle, Star, RefreshCw, Sparkles, Brain } from 'lucide-react';
 import { logger } from '../utils/logger';
 import { ROUTES } from '../routes';
+import { getWritingTopics, type WritingTopic, type GradeWritingData } from '../services/writingQuizService';
 
 const WritingTest: React.FC = () => {
   const { grade } = useParams<{ grade: string }>();
@@ -19,6 +19,8 @@ const WritingTest: React.FC = () => {
   const [showTopicSelection, setShowTopicSelection] = useState(true);
   const [timeStarted, setTimeStarted] = useState<Date | null>(null);
   const [wordCount, setWordCount] = useState(0);
+  const [isLoadingGradeData, setIsLoadingGradeData] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const startTimeRef = useRef<number>(Date.now());
   const hasSavedResultRef = useRef(false);
 
@@ -55,10 +57,42 @@ const WritingTest: React.FC = () => {
   }, [evaluation, selectedTopic, grade, wordCount]);
 
   useEffect(() => {
-    if (grade) {
-      const data = getWritingDataByGrade(parseInt(grade));
-      setGradeData(data || null);
-    }
+    let isMounted = true;
+
+    const loadWritingTopics = async () => {
+      if (!grade) {
+        if (isMounted) {
+          setGradeData(null);
+          setLoadError('Missing grade');
+          setIsLoadingGradeData(false);
+        }
+        return;
+      }
+
+      setIsLoadingGradeData(true);
+      setLoadError(null);
+
+      const data = await getWritingTopics(parseInt(grade, 10));
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (!data) {
+        setGradeData(null);
+        setLoadError('Unable to load writing topics.');
+      } else {
+        setGradeData(data);
+      }
+
+      setIsLoadingGradeData(false);
+    };
+
+    void loadWritingTopics();
+
+    return () => {
+      isMounted = false;
+    };
   }, [grade]);
 
   useEffect(() => {
@@ -131,12 +165,24 @@ const WritingTest: React.FC = () => {
     setWordCount(0);
   };
 
-  if (!gradeData) {
+  if (isLoadingGradeData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">✍️</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Loading Writing Assessment...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (!gradeData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">✍️</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Writing Assessment Unavailable</h2>
+          <p className="mb-4 text-gray-600">{loadError || 'Writing topics could not be loaded for this grade.'}</p>
           <button
             onClick={() => navigate(ROUTES.WRITING_GRADES)}
             className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-colors"

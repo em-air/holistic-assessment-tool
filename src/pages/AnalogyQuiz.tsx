@@ -3,9 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, CheckCircle, XCircle, Trophy, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { GradeLevel, AnalogyQuestion } from '../types/quiz';
-import { supabase } from '../supabase-client';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 import { ROUTES } from '../routes';
 
 const gradeOptions = [
@@ -18,6 +15,10 @@ import { ProgressTracker } from '../utils/progressTracker';
 import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 import FloatingBackground from '../components/FloatingBackground';
+import {
+  getAnalogyQuestions,
+  validateCriticalThinkingAnswer,
+} from '../services/criticalThinkingService';
 
 const AnalogyQuiz: React.FC = () => {
   const navigate = useNavigate();
@@ -34,6 +35,8 @@ const AnalogyQuiz: React.FC = () => {
   const [correctAnswerIndex, setCorrectAnswerIndex] = useState<number | null>(null);
   const [explanation, setExplanation] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   // Always start with grade selection (don't auto-load from localStorage)
   useEffect(() => {
@@ -44,18 +47,15 @@ const AnalogyQuiz: React.FC = () => {
   const handleGradeSelect = async (grade: GradeLevel) => {
     setSelectedGrade(grade);
     setIsLoading(true);
+    setLoadError(null);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return;
-      const response = await fetch(`${API_BASE_URL}/api/quiz-content/critical-thinking/questions?type=analogy`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      const data = await response.json();
-      if (data.success && data.questions) {
-        setQuestions(data.questions);
+      const loadedQuestions = await getAnalogyQuestions();
+      if (loadedQuestions.length === 0) {
+        setQuestions([]);
+        setLoadError('Unable to load analogy questions right now.');
+      } else {
+        setQuestions(loadedQuestions);
       }
-    } catch (err) {
-      console.error('Error fetching questions:', err);
     } finally {
       setIsLoading(false);
     }
@@ -73,6 +73,7 @@ const AnalogyQuiz: React.FC = () => {
     setAnswerCorrect(null);
     setCorrectAnswerIndex(null);
     setExplanation(null);
+    setSubmissionError(null);
   };
 
   const handleAnswerSelect = async (answerIndex: number) => {
@@ -80,39 +81,39 @@ const AnalogyQuiz: React.FC = () => {
 
     setSelectedAnswer(answerIndex);
     setShowFeedback(true);
+    setSubmissionError(null);
 
     const currentQuestion = questions[currentQuestionIndex];
     const optionsList = currentQuestion.options || (currentQuestion.choices || []).map((c, i) => ({ id: String(i), text: c }));
     const selectedOption = optionsList[answerIndex];
 
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.access_token) {
-        const response = await fetch(`${API_BASE_URL}/api/quiz-content/critical-thinking/validate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ questionId: currentQuestion.id, answerId: selectedOption?.id }),
-        });
-        const result = await response.json();
-        if (result.correct) {
-          setScore(prev => prev + 1);
-          setAnswerCorrect(true);
-        } else {
-          setAnswerCorrect(false);
-        }
-        if (result.correctAnswer) {
-          const correctIdx = optionsList.findIndex((o: { id: string }) => o.id === result.correctAnswer);
-          setCorrectAnswerIndex(correctIdx);
-        }
-        if (result.explanation) {
-          setExplanation(result.explanation);
-        }
-      }
-    } catch {
+    if (!selectedOption) {
+      setShowFeedback(false);
+      setSelectedAnswer(null);
+      setSubmissionError('Unable to validate that answer. Please try again.');
+      return;
+    }
+
+    const result = await validateCriticalThinkingAnswer(currentQuestion.id, selectedOption.id);
+    if (!result) {
+      setShowFeedback(false);
+      setSelectedAnswer(null);
+      setSubmissionError('Unable to validate your answer right now. Please try again.');
+      return;
+    }
+
+    if (result.correct) {
+      setScore(prev => prev + 1);
+      setAnswerCorrect(true);
+    } else {
       setAnswerCorrect(false);
+    }
+    if (result.correctAnswer) {
+      const correctIdx = optionsList.findIndex((o: { id: string }) => o.id === result.correctAnswer);
+      setCorrectAnswerIndex(correctIdx);
+    }
+    if (result.explanation) {
+      setExplanation(result.explanation);
     }
   };
 
@@ -263,6 +264,48 @@ const AnalogyQuiz: React.FC = () => {
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-purple-50 relative overflow-hidden flex items-center justify-center">
+        <FloatingBackground />
+        <div className="text-center relative z-10 text-gray-700">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
+          <p>Loading analogy questions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError || questions.length === 0 || !currentQuestion) {
+    return (
+      <div className="min-h-screen bg-purple-50 relative overflow-hidden py-8">
+        <FloatingBackground />
+        <div className="container mx-auto px-4 max-w-4xl relative z-10">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl text-center">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Analogy Quiz Unavailable</h2>
+            <p className="text-gray-600 mb-6">
+              {loadError ?? 'No analogy questions are available right now.'}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => setSelectedGrade(null)}
+                className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+              >
+                Change Grade
+              </button>
+              <button
+                onClick={() => navigate(ROUTES.CRITICAL_THINKING_SELECTION)}
+                className="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-xl font-semibold transition-colors duration-200"
+              >
+                Back
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Quiz Screen
   return (
     <div className="min-h-screen bg-purple-50 relative overflow-hidden py-8">
@@ -371,6 +414,12 @@ const AnalogyQuiz: React.FC = () => {
                 });
               })()}
             </div>
+
+            {submissionError && (
+              <div className="mb-8 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                {submissionError}
+              </div>
+            )}
 
             {/* Feedback */}
             {showFeedback && (

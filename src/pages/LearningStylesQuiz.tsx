@@ -4,23 +4,29 @@ import QuestionCard from '../components/QuestionCard';
 import ResultScreen from '../components/ResultScreen';
 import FloatingBackground from '../components/FloatingBackground';
 import { 
-  quizQuestions, 
   learningStyles, 
   quizTexts, 
-  LearningStyle 
-} from '../data/learningStylesData';
+  type LearningStyle 
+} from '../data/learningStylesPresentation';
 import { ProgressTracker } from '../utils/progressTracker';
 import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
+import {
+  getLearningStyleQuestions,
+  calculateLearningStyle,
+  type LearningStyleQuestion,
+  type LearningStyleId,
+} from '../services/learningStylesService';
+import { logger } from '../utils/logger';
 
 interface QuizAnswer {
   questionId: string;
   selectedOptionId: string;
-  learningStyle: 'visual' | 'auditory' | 'reading-writing';
+  learningStyle: LearningStyleId;
 }
 
 interface LearningStyleScore {
-  style: 'visual' | 'auditory' | 'reading-writing';
+  style: LearningStyleId;
   score: number;
   percentage: number;
 }
@@ -36,11 +42,38 @@ const LearningStylesQuiz: React.FC = () => {
   const [isQuizStarted, setIsQuizStarted] = useState<boolean>(false);
   const [scores, setScores] = useState<LearningStyleScore[]>([]);
   const [dominantStyle, setDominantStyle] = useState<LearningStyle | null>(null);
+  const [questions, setQuestions] = useState<LearningStyleQuestion[]>([]);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [startTime] = useState<number>(Date.now());
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadQuestions = async () => {
+      const fetchedQuestions = await getLearningStyleQuestions();
+      if (!isMounted) {
+        return;
+      }
+
+      setQuestions(fetchedQuestions);
+      setIsLoadingQuestions(false);
+      if (fetchedQuestions.length === 0) {
+        setLoadError('Learning styles questions are unavailable right now.');
+      }
+    };
+
+    void loadQuestions();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Get current question
-  const currentQuestion = quizQuestions[currentQuestionIndex];
-  const totalQuestions = quizQuestions.length;
+  const currentQuestion = questions[currentQuestionIndex];
+  const totalQuestions = questions.length;
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
 
   // Handle option selection
@@ -48,6 +81,7 @@ const LearningStylesQuiz: React.FC = () => {
     const selectedOptionData = currentQuestion.options.find(opt => opt.id === optionId);
     if (!selectedOptionData) return;
 
+    setSubmissionError(null);
     setSelectedOption(optionId);
     
     // Update answers
@@ -73,7 +107,7 @@ const LearningStylesQuiz: React.FC = () => {
     if (!selectedOption) return;
 
     if (isLastQuestion) {
-      calculateResults();
+      void calculateResults();
     } else {
       setCurrentQuestionIndex(prev => prev + 1);
       setSelectedOption(null);
@@ -81,23 +115,26 @@ const LearningStylesQuiz: React.FC = () => {
   };
 
   // Calculate quiz results
-  const calculateResults = () => {
-    const styleScores = {
-      visual: 0,
-      auditory: 0,
-      'reading-writing': 0
-    };
+  const calculateResults = async () => {
+    const answerMap = answers.reduce<Record<string, string>>((acc, answer) => {
+      acc[answer.questionId] = answer.selectedOptionId;
+      return acc;
+    }, {});
 
-    // Count scores for each style
-    answers.forEach(answer => {
-      styleScores[answer.learningStyle]++;
-    });
+    const calculation = await calculateLearningStyle(answerMap);
+    if (!calculation) {
+      setSubmissionError('Unable to calculate learning style right now. Please try again.');
+      logger.error('Learning styles calculation failed');
+      return;
+    }
 
     const totalAnswers = answers.length;
-    const scoreArray: LearningStyleScore[] = Object.entries(styleScores).map(([style, score]) => ({
-      style: style as 'visual' | 'auditory' | 'reading-writing',
-      score,
-      percentage: Math.round((score / totalAnswers) * 100)
+    const scoreArray: LearningStyleScore[] = (
+      ['visual', 'auditory', 'reading-writing'] as const
+    ).map((style) => ({
+      style,
+      score: calculation[style],
+      percentage: totalAnswers > 0 ? Math.round((calculation[style] / totalAnswers) * 100) : 0,
     }));
 
     // Sort by score to find dominant style
@@ -105,7 +142,7 @@ const LearningStylesQuiz: React.FC = () => {
     setScores(scoreArray);
 
     // Find dominant style info
-    const dominantStyleInfo = learningStyles.find(s => s.id === scoreArray[0].style);
+    const dominantStyleInfo = learningStyles.find(s => s.id === calculation.dominantStyle);
     if (dominantStyleInfo) {
       setDominantStyle(dominantStyleInfo);
     }
@@ -124,7 +161,7 @@ const LearningStylesQuiz: React.FC = () => {
       timeSpent,
       completedAt: new Date().toISOString(),
       additionalData: {
-        dominantStyle: scoreArray[0].style,
+        dominantStyle: calculation.dominantStyle,
         allScores: scoreArray
       }
     });
@@ -141,6 +178,7 @@ const LearningStylesQuiz: React.FC = () => {
     setIsQuizStarted(false);
     setScores([]);
     setDominantStyle(null);
+    setSubmissionError(null);
   };
 
   // Start quiz
@@ -157,6 +195,35 @@ const LearningStylesQuiz: React.FC = () => {
       setSelectedOption(null);
     }
   }, [currentQuestionIndex, currentAnswer]);
+
+  if (isLoadingQuestions) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
+        <FloatingBackground />
+        <div className="relative z-10 container mx-auto flex min-h-screen items-center justify-center px-4 py-8">
+          <div className="rounded-2xl bg-white p-8 text-center shadow-lg">
+            <div className="mb-4 text-6xl">🧠</div>
+            <h2 className="text-2xl font-bold text-gray-800">Loading learning styles quiz...</h2>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
+        <FloatingBackground />
+        <div className="relative z-10 container mx-auto flex min-h-screen items-center justify-center px-4 py-8">
+          <div className="max-w-xl rounded-2xl bg-white p-8 text-center shadow-lg">
+            <div className="mb-4 text-6xl">🧠</div>
+            <h2 className="mb-3 text-2xl font-bold text-gray-800">Learning styles unavailable</h2>
+            <p className="text-gray-600">{loadError}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
@@ -276,6 +343,12 @@ const LearningStylesQuiz: React.FC = () => {
                 questionNumber={currentQuestionIndex + 1}
                 totalQuestions={totalQuestions}
               />
+
+              {submissionError && (
+                <div className="mx-auto mt-6 max-w-2xl rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {submissionError}
+                </div>
+              )}
               
               {/* Navigation */}
               <div className="flex justify-center mt-8">

@@ -1,18 +1,45 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Shield, User } from 'lucide-react';
 import CategoryCard from '../components/CategoryCard';
-import { assessmentCategories } from '../data/assessmentData';
 import FloatingBackground from '../components/FloatingBackground';
 import { useAuth } from '../contexts/AuthContext';
 import { ROUTES } from '../routes';
+import { getAssessmentCatalog } from '../services/assessmentCatalogService';
+import type { AssessmentCategory } from '../types';
 
 const CategoriesPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, signOut, isAdmin, studentName } = useAuth();
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [assessmentCategories, setAssessmentCategories] = useState<AssessmentCategory[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCategories = async () => {
+      const categories = await getAssessmentCatalog();
+      if (!isMounted) {
+        return;
+      }
+
+      setAssessmentCategories(categories);
+      if (categories.length === 0) {
+        setLoadError('Assessment categories are unavailable right now.');
+      }
+      setIsLoadingCategories(false);
+    };
+
+    void loadCategories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
@@ -30,6 +57,31 @@ const CategoriesPage: React.FC = () => {
     // Navigate to home after sign out completes (outside finally to ensure signOut finished)
     navigate(ROUTES.HOME, { replace: true });
   };
+
+  if (isLoadingCategories) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 relative overflow-hidden flex items-center justify-center">
+        <FloatingBackground />
+        <div className="relative z-10 rounded-2xl bg-white/95 p-8 text-center shadow-lg">
+          <div className="mb-4 text-5xl">📚</div>
+          <h2 className="text-2xl font-medium text-gray-900">Loading assessment categories...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 relative overflow-hidden flex items-center justify-center">
+        <FloatingBackground />
+        <div className="relative z-10 max-w-xl rounded-2xl bg-white/95 p-8 text-center shadow-lg">
+          <div className="mb-4 text-5xl">📚</div>
+          <h2 className="mb-3 text-2xl font-medium text-gray-900">Assessment Catalog Unavailable</h2>
+          <p className="text-gray-600">{loadError}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 relative overflow-hidden">

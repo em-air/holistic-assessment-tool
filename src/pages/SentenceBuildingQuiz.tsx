@@ -2,32 +2,68 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Star, Check, X, RotateCcw, MessageSquare } from 'lucide-react';
-import { getQuestionsForGrade, getGradeData, type SentenceBuildingQuestion } from '../data/sentenceBuildingData';
 import { ProgressTracker } from '../utils/progressTracker';
 import { ROUTES } from '../routes';
 import FloatingBackground from '../components/FloatingBackground';
+import {
+  getSentenceBuildingQuestions,
+  validateSentenceBuildingAnswer,
+  type SentenceBuildingGradeData,
+  type SentenceBuildingQuestion,
+} from '../services/sentenceBuildingService';
 
 const SentenceBuildingQuiz: React.FC = () => {
   const navigate = useNavigate();
   const { grade: gradeParam } = useParams<{ grade: string }>();
   const grade = parseInt(gradeParam || '1');
-  const gradeData = getGradeData(grade);
 
+  const [gradeData, setGradeData] = useState<SentenceBuildingGradeData | null>(null);
   const [questions, setQuestions] = useState<SentenceBuildingQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [correctAnswerId, setCorrectAnswerId] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [showResults, setShowResults] = useState(false);
   const [showSparkle, setShowSparkle] = useState(false);
+  const [isLoadingQuiz, setIsLoadingQuiz] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [isValidatingAnswer, setIsValidatingAnswer] = useState(false);
   const startTimeRef = useRef<number>(Date.now());
   const hasSavedResultRef = useRef(false);
 
   useEffect(() => {
-    const gradeQuestions = getQuestionsForGrade(grade);
-    setQuestions(gradeQuestions);
-    startTimeRef.current = Date.now();
+    let isMounted = true;
+
+    const loadQuiz = async () => {
+      setIsLoadingQuiz(true);
+      setLoadError(null);
+
+      const data = await getSentenceBuildingQuestions(grade);
+      if (!isMounted) {
+        return;
+      }
+
+      if (!data) {
+        setGradeData(null);
+        setQuestions([]);
+        setLoadError('Sentence building questions could not be loaded for this grade.');
+      } else {
+        setGradeData(data);
+        setQuestions(data.questions);
+        startTimeRef.current = Date.now();
+      }
+
+      setIsLoadingQuiz(false);
+    };
+
+    void loadQuiz();
+
+    return () => {
+      isMounted = false;
+    };
   }, [grade]);
 
   // Save results when quiz is completed
@@ -54,17 +90,28 @@ const SentenceBuildingQuiz: React.FC = () => {
   const currentQuestion = questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
 
-  const handleAnswerSelect = (optionId: string) => {
-    if (showFeedback) return;
+  const handleAnswerSelect = async (optionId: string) => {
+    if (showFeedback || isValidatingAnswer || !currentQuestion) return;
 
     setSelectedAnswer(optionId);
-    const selectedOption = currentQuestion?.options.find(opt => opt.id === optionId);
-    const correct = selectedOption?.isCorrect || false;
+    setIsValidatingAnswer(true);
+    setLoadError(null);
 
-    setIsCorrect(correct);
+    const result = await validateSentenceBuildingAnswer(currentQuestion.id, optionId);
+    setIsValidatingAnswer(false);
+
+    if (!result) {
+      setSelectedAnswer(null);
+      setLoadError('Unable to validate your answer right now. Please try again.');
+      return;
+    }
+
+    setIsCorrect(result.correct);
+    setCorrectAnswerId(result.correctAnswerId);
+    setFeedbackMessage(result.feedback);
     setShowFeedback(true);
 
-    if (correct) {
+    if (result.correct) {
       setScore(prev => prev + 1);
       setShowSparkle(true);
       setTimeout(() => setShowSparkle(false), 2000);
@@ -79,6 +126,9 @@ const SentenceBuildingQuiz: React.FC = () => {
       setSelectedAnswer(null);
       setShowFeedback(false);
       setIsCorrect(false);
+      setFeedbackMessage('');
+      setCorrectAnswerId(null);
+      setLoadError(null);
     }
   };
 
@@ -87,9 +137,13 @@ const SentenceBuildingQuiz: React.FC = () => {
     setSelectedAnswer(null);
     setShowFeedback(false);
     setIsCorrect(false);
+    setFeedbackMessage('');
+    setCorrectAnswerId(null);
     setScore(0);
     setShowResults(false);
     setShowSparkle(false);
+    setLoadError(null);
+    setIsValidatingAnswer(false);
     hasSavedResultRef.current = false;
     startTimeRef.current = Date.now();
   };
@@ -101,6 +155,35 @@ const SentenceBuildingQuiz: React.FC = () => {
     if (percentage >= 60) return 'Good job! 👍';
     return 'Keep practicing! 💪';
   };
+
+  if (isLoadingQuiz) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-purple-50">
+        <div className="text-center">
+          <div className="mb-4 text-6xl">💬</div>
+          <p className="text-lg text-gray-600">Loading sentence building questions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!gradeData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-purple-50 px-4">
+        <div className="max-w-xl rounded-2xl bg-white p-8 text-center shadow-lg">
+          <div className="mb-4 text-6xl">💬</div>
+          <h2 className="mb-3 text-2xl font-bold text-gray-800">Sentence Building Unavailable</h2>
+          <p className="mb-6 text-gray-600">{loadError || 'Questions could not be loaded for this grade.'}</p>
+          <button
+            onClick={() => navigate(ROUTES.ORAL_SENTENCE_BUILDING)}
+            className="rounded-lg bg-purple-500 px-6 py-3 font-medium text-white transition-colors duration-300 hover:bg-purple-600"
+          >
+            Back to Grade Selection
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Results screen
   if (showResults) {
@@ -227,16 +310,16 @@ const SentenceBuildingQuiz: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 {currentQuestion.options.map((option) => {
                   const isSelected = selectedAnswer === option.id;
-                  const showCorrectFeedback = showFeedback && option.isCorrect;
-                  const showIncorrectFeedback = showFeedback && isSelected && !option.isCorrect;
+                  const showCorrectFeedback = showFeedback && option.id === correctAnswerId;
+                  const showIncorrectFeedback = showFeedback && isSelected && option.id !== correctAnswerId;
 
                   return (
                     <motion.button
                       key={option.id}
                       whileHover={{ scale: showFeedback ? 1 : 1.02 }}
                       whileTap={{ scale: showFeedback ? 1 : 0.98 }}
-                      onClick={() => handleAnswerSelect(option.id)}
-                      disabled={showFeedback}
+                      onClick={() => void handleAnswerSelect(option.id)}
+                      disabled={showFeedback || isValidatingAnswer}
                       className={`
                         p-4 rounded-xl border-2 transition-all duration-300 text-left
                         ${showCorrectFeedback
@@ -247,7 +330,7 @@ const SentenceBuildingQuiz: React.FC = () => {
                           ? 'bg-blue-100 border-blue-500 text-blue-800'
                           : 'bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100 hover:border-stone-300'
                         }
-                        ${showFeedback ? 'cursor-not-allowed' : 'cursor-pointer'}
+                        ${showFeedback || isValidatingAnswer ? 'cursor-not-allowed' : 'cursor-pointer'}
                       `}
                     >
                       <div className="flex items-center justify-between">
@@ -259,6 +342,18 @@ const SentenceBuildingQuiz: React.FC = () => {
                   );
                 })}
               </div>
+
+              {loadError && !showFeedback && (
+                <div className="mb-6 rounded-lg bg-red-100 p-4 text-center text-sm text-red-800">
+                  {loadError}
+                </div>
+              )}
+
+              {isValidatingAnswer && (
+                <div className="mb-6 rounded-lg bg-blue-100 p-4 text-center text-sm text-blue-800">
+                  Checking your answer...
+                </div>
+              )}
             </div>
 
             {/* Sparkle Animation */}
@@ -293,12 +388,7 @@ const SentenceBuildingQuiz: React.FC = () => {
                       {isCorrect ? 'Correct!' : 'Incorrect'}
                     </span>
                   </div>
-                  <p className="text-sm">
-                    {isCorrect
-                      ? currentQuestion.feedback.correct
-                      : currentQuestion.feedback.incorrect
-                    }
-                  </p>
+                  <p className="text-sm">{feedbackMessage}</p>
                 </motion.div>
               )}
             </AnimatePresence>

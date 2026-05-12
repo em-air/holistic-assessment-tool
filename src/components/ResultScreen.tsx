@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { learningStyles, LearningStyle } from '../data/learningStylesData';
+import { learningStyles, type LearningStyle } from '../data/learningStylesPresentation';
 
 interface LearningStyleScore {
   style: 'visual' | 'auditory' | 'reading-writing';

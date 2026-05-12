@@ -25,8 +25,8 @@ export interface CategoryRules {
 
 export const QUIZ_ACCESS_RULES: Record<string, CategoryRules> = {
   mind: {
-    // Mind category only available for grades 1-5
-    allowedGrades: [1, 2, 3, 4, 5],
+    // Mind category available for all grades
+    allowedGrades: [1, 2, 3, 4, 5, 6, 7, 8],
     ownGradeOnly: false,
     subcategories: {
       'attention-memory': { maxGrade: 5 },

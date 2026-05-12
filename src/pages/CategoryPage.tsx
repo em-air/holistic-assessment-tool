@@ -1,19 +1,81 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { assessmentCategories } from '../data/assessmentData';
 import FloatingBackground from '../components/FloatingBackground';
 import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 import '../utils/testProgressUtils'; // For testing - adds window.addTestResults() and window.clearTestResults()
-import { ROUTES, categoryRoute, quizRoute, readingAssessmentRoute } from '../routes';
+import { ROUTES } from '../routes';
+import { getAssessmentCatalog } from '../services/assessmentCatalogService';
+import type { AssessmentCategory } from '../types';
+import { navigateToAssessmentSubcategory } from '../utils/assessmentNavigation';
 
 const CategoryPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
   const navigate = useNavigate();
   const [showReport, setShowReport] = useState(false);
+  const [categories, setCategories] = useState<AssessmentCategory[]>([]);
+  const [isLoadingCategory, setIsLoadingCategory] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const category = assessmentCategories.find(cat => cat.id === categoryId);
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCategories = async () => {
+      const catalog = await getAssessmentCatalog();
+      if (!isMounted) {
+        return;
+      }
+
+      setCategories(catalog);
+      if (catalog.length === 0) {
+        setLoadError('Assessment categories are unavailable right now.');
+      }
+      setIsLoadingCategory(false);
+    };
+
+    void loadCategories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const category = useMemo(
+    () => categories.find((cat) => cat.id === categoryId),
+    [categories, categoryId]
+  );
+
+  if (isLoadingCategory) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 flex items-center justify-center">
+        <FloatingBackground />
+        <div className="relative z-10 rounded-2xl bg-stone-100 p-8 text-center shadow-xl border border-stone-200">
+          <h1 className="text-2xl font-bold text-stone-800 mb-2">Loading Category</h1>
+          <p className="text-stone-600">Fetching assessment options...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-300 via-emerald-400 to-lime-500 flex items-center justify-center">
+        <FloatingBackground />
+        <div className="text-center bg-stone-100 p-8 rounded-2xl shadow-xl border border-stone-200 relative z-10">
+          <h1 className="text-2xl font-bold text-stone-800 mb-4">Assessment Catalog Unavailable</h1>
+          <p className="text-stone-600 mb-4">{loadError}</p>
+          <button
+            onClick={() => navigate(ROUTES.CATEGORIES)}
+            className="group relative px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-stone-100 rounded-full font-medium overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-emerald-500/25 transform hover:scale-105 hover:-translate-y-1"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-700 to-teal-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <span className="relative">Back</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!category) {
     return (
@@ -34,35 +96,7 @@ const CategoryPage: React.FC = () => {
   }
 
   const handleSubcategoryClick = (subcategoryId: string) => {
-    if (subcategoryId === 'assessment-generator') {
-      navigate(ROUTES.ASSESSMENT_GENERATOR);
-    } else if (subcategoryId === 'reading') {
-      navigate(readingAssessmentRoute(categoryId!));
-    } else if (subcategoryId === 'sentence-formation') {
-      navigate(ROUTES.VOCABULARY_MATCHING);
-    } else if (subcategoryId === 'learning-style') {
-      navigate(ROUTES.LEARNING_STYLES_QUIZ);
-    } else if (subcategoryId === 'perception') {
-      navigate(ROUTES.PERCEPTION_SELECTION);
-    } else if (subcategoryId === 'spelling') {
-      navigate(ROUTES.SPELLING_GRADES);
-    } else if (subcategoryId === 'writing') {
-      navigate(ROUTES.WRITING_GRADES);
-    } else if (subcategoryId === 'attention') {
-      navigate(ROUTES.ATTENTION_MEMORY);
-    } else if (subcategoryId === 'oral-language') {
-      navigate(ROUTES.ORAL_LANGUAGE_SELECTION);
-    } else if (subcategoryId === 'sentence-building') {
-      navigate(ROUTES.ORAL_SENTENCE_BUILDING, { state: { categoryId: 'sentence-building' } });
-    } else if (subcategoryId === 'story-sequencing') {
-      navigate(ROUTES.ORAL_STORY_SEQUENCING, { state: { categoryId: 'story-sequencing' } });
-    } else if (subcategoryId === 'story-retell') {
-      navigate(ROUTES.ORAL_STORY_RETELL);
-    } else if (subcategoryId === 'critical-thinking') {
-      navigate(ROUTES.CRITICAL_THINKING_SELECTION);
-    } else {
-      navigate(quizRoute(categoryId!, subcategoryId));
-    }
+    navigateToAssessmentSubcategory(navigate, categoryId!, subcategoryId);
   };
 
   return (
@@ -101,7 +135,7 @@ const CategoryPage: React.FC = () => {
             {category.subcategories.map((subcategory) => (
               <button
                 key={subcategory.id}
-                onClick={() => handleSubcategoryClick(subcategory.id)}
+                onClick={() => subcategory.available !== false && handleSubcategoryClick(subcategory.id)}
                 className="group w-full flex items-center justify-between p-4 bg-stone-50 rounded-xl shadow-sm border border-stone-200 overflow-hidden transition-all duration-300 ease-out hover:bg-amber-50 hover:shadow-lg hover:border-amber-200 transform hover:scale-105 hover:-translate-y-1"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-50 to-yellow-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -110,7 +144,7 @@ const CategoryPage: React.FC = () => {
                   <span className="text-stone-800 font-semibold">{subcategory.title}</span>
                 </div>
                 <div className="relative flex items-center space-x-3">
-                  {(subcategory.id === 'attention' || subcategory.id === 'perception' || subcategory.id === 'assessment-generator' || subcategory.id === 'reading' || subcategory.id === 'sentence-formation' || subcategory.id === 'learning-style' || subcategory.id === 'oral-language' || subcategory.id === 'critical-thinking' || subcategory.id === 'sentence-building' || subcategory.id === 'story-sequencing' || subcategory.id === 'story-retell') ? (
+                  {subcategory.available !== false ? (
                     <span className="text-emerald-600 text-sm font-medium">Available</span>
                   ) : (
                     <span className="text-stone-400 text-sm">Coming Soon</span>

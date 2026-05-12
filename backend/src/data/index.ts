@@ -14,9 +14,13 @@ export * from './writingData.js';
 export * from './storyRetellData.js';
 export * from './oralLanguageData.js';
 export * from './vocabularyData.js';
+export * from './vocabularyMatchingData.js';
 export * from './blendingData.js';
 export * from './learningStylesData.js';
 export * from './criticalThinkingData.js';
+export * from './flashWordData.js';
+export * from './missingObjectData.js';
+export * from './readingAssessmentData.js';
 export * from './quizAccessRules.js';
 
 // Namespaced exports for modules with overlapping function names

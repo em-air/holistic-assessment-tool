@@ -5,37 +5,14 @@ import { useNavigate } from 'react-router-dom';
 import { ProgressTracker } from '../utils/progressTracker';
 import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
-import { supabase } from '../supabase-client';
-import { logger } from '../utils/logger';
 import { ROUTES } from '../routes';
 import FloatingBackground from '../components/FloatingBackground';
-
-// API types for attention control
-interface AttentionControlQuestion {
-  id: number;
-  subscale: 'focusing' | 'shifting';
-  kidFriendlyQuestion: string;
-  example?: string;
-  type: 'rating';
-  options: number[];
-}
-
-interface AttentionResults {
-  focusingScore: number;
-  shiftingScore: number;
-  totalScore: number;
-  focusingPercentage: number;
-  shiftingPercentage: number;
-  totalPercentage: number;
-  interpretation: {
-    focusing: { level: string; description: string };
-    shifting: { level: string; description: string };
-    overall: { level: string; description: string };
-    recommendations: string[];
-  };
-}
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import {
+  calculateAttentionAssessmentResults,
+  getAttentionControlQuestions,
+  type AttentionControlQuestion,
+  type AttentionResults,
+} from '../services/attentionControlService';
 
 const AttentionAssessment: React.FC = () => {
   const navigate = useNavigate();
@@ -48,6 +25,7 @@ const AttentionAssessment: React.FC = () => {
   const [results, setResults] = useState<AttentionResults | null>(null);
   const [startTime] = useState<Date>(new Date());
   const [showReport, setShowReport] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   const question = questions[currentQuestion];
   const progress = questions.length > 0 ? ((currentQuestion + 1) / questions.length) * 100 : 0;
@@ -59,17 +37,12 @@ const AttentionAssessment: React.FC = () => {
       setError(null);
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/quiz-content/attention-control/questions`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch questions');
-        }
-
-        const data = await response.json();
-        if (data.success && data.questions) {
-          setQuestions(data.questions);
-          setResponses(new Array(data.questions.length).fill(0));
+        const loadedQuestions = await getAttentionControlQuestions();
+        if (loadedQuestions.length > 0) {
+          setQuestions(loadedQuestions);
+          setResponses(new Array(loadedQuestions.length).fill(0));
         } else {
-          throw new Error(data.error || 'Invalid response');
+          throw new Error('No attention assessment questions are available.');
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load questions');
@@ -108,69 +81,34 @@ const AttentionAssessment: React.FC = () => {
       responseMap[q.id] = responses[index];
     });
 
-    try {
-      // Get auth token
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        logger.error('No session found for calculate API call');
-        return;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/api/quiz-content/attention-control/calculate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ responses: responseMap }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        const { scores, interpretation, recommendations } = data;
-
-        const assessmentResults: AttentionResults = {
-          focusingScore: scores.focusing.raw,
-          shiftingScore: scores.shifting.raw,
-          totalScore: scores.total.raw,
-          focusingPercentage: Math.round((scores.focusing.raw / (scores.focusing.count * 4)) * 100),
-          shiftingPercentage: Math.round((scores.shifting.raw / (scores.shifting.count * 4)) * 100),
-          totalPercentage: Math.round(scores.total.percentage),
-          interpretation: {
-            focusing: interpretation.focusing,
-            shifting: interpretation.shifting,
-            overall: interpretation.overall,
-            recommendations: recommendations
-          }
-        };
-
-        setResults(assessmentResults);
-        setIsCompleted(true);
-
-        // Save progress
-        ProgressTracker.saveQuizResult({
-          quizId: 'attention-assessment',
-          quizName: 'Attention Control Assessment',
-          subcategory: 'attention',
-          score: assessmentResults.totalScore,
-          totalQuestions: questions.length,
-          percentage: assessmentResults.totalPercentage,
-          timeSpent: Math.round((new Date().getTime() - startTime.getTime()) / 1000),
-          completedAt: new Date().toISOString(),
-          additionalData: {
-            attentionLevel: assessmentResults.interpretation.overall.level,
-            attentionDescription: assessmentResults.interpretation.overall.description,
-            focusingLevel: assessmentResults.interpretation.focusing.level,
-            shiftingLevel: assessmentResults.interpretation.shifting.level,
-            focusingPercentage: assessmentResults.focusingPercentage,
-            shiftingPercentage: assessmentResults.shiftingPercentage,
-          }
-        });
-      }
-    } catch (err) {
-      console.error('Error calculating scores:', err);
+    setSubmissionError(null);
+    const assessmentResults = await calculateAttentionAssessmentResults(responseMap);
+    if (!assessmentResults) {
+      setSubmissionError('Unable to calculate your results right now. Please try again.');
+      return;
     }
+
+    setResults(assessmentResults);
+    setIsCompleted(true);
+
+    ProgressTracker.saveQuizResult({
+      quizId: 'attention-assessment',
+      quizName: 'Attention Control Assessment',
+      subcategory: 'attention',
+      score: assessmentResults.totalScore,
+      totalQuestions: questions.length,
+      percentage: assessmentResults.totalPercentage,
+      timeSpent: Math.round((new Date().getTime() - startTime.getTime()) / 1000),
+      completedAt: new Date().toISOString(),
+      additionalData: {
+        attentionLevel: assessmentResults.interpretation.overall.level,
+        attentionDescription: assessmentResults.interpretation.overall.description,
+        focusingLevel: assessmentResults.interpretation.focusing.level,
+        shiftingLevel: assessmentResults.interpretation.shifting.level,
+        focusingPercentage: assessmentResults.focusingPercentage,
+        shiftingPercentage: assessmentResults.shiftingPercentage,
+      }
+    });
   };
 
   const resetAssessment = () => {
@@ -178,6 +116,7 @@ const AttentionAssessment: React.FC = () => {
     setResponses(new Array(questions.length).fill(0));
     setIsCompleted(false);
     setResults(null);
+    setSubmissionError(null);
   };
 
   const getScoreColor = (percentage: number) => {
@@ -493,6 +432,12 @@ const AttentionAssessment: React.FC = () => {
         </AnimatePresence>
 
         {/* Navigation Buttons */}
+        {submissionError && (
+          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 text-center">
+            {submissionError}
+          </div>
+        )}
+
         <div className="flex justify-between">
           <button
             onClick={handlePrevious}
