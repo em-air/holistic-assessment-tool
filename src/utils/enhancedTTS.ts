@@ -192,7 +192,7 @@ class EnhancedTTS {
 // Export singleton instance
 export const enhancedTTS = new EnhancedTTS();
 
-// Export phonetic sound mapping for phonics/blending
+// Export phonetic sound mapping for phonics
 export const phoneticSoundMap: { [key: string]: string } = {
   // Consonants - using clearer phonetic spellings
   'm': 'muhh',

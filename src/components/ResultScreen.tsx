@@ -65,7 +65,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
             {dominantStyle.icon}
           </motion.div>
           <h2 className="text-2xl font-bold mb-4">
-            Your dominant learning style is:
+            Your learning style is:
           </h2>
           <motion.h3
             initial={{ opacity: 0, y: 20 }}
@@ -170,64 +170,97 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
         </h3>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {dominantStyle.id === 'visual' && (
+          {/* Visual tips */}
+          {(dominantStyle.id === 'visual' ||
+            dominantStyle.id === 'mixed-visual-auditory' ||
+            dominantStyle.id === 'mixed-visual-reading-writing' ||
+            dominantStyle.id === 'mixed-all') && (
             <>
               <div className="bg-white rounded-lg p-4 shadow-sm">
                 <div className="text-2xl mb-2">📊</div>
                 <h4 className="font-semibold text-gray-800 mb-2">Use Visual Aids</h4>
-                <p className="text-sm text-gray-600">Create charts, diagrams, and mind maps to organize information</p>
+                <p className="text-sm text-gray-600">Create charts, diagrams, and mind maps to organise information</p>
               </div>
-              <div className="bg-white rounded-lg p-4 shadow-sm">
-                <div className="text-2xl mb-2">🌈</div>
-                <h4 className="font-semibold text-gray-800 mb-2">Color Coding</h4>
-                <p className="text-sm text-gray-600">Use different colors to highlight and categorize information</p>
-              </div>
-              <div className="bg-white rounded-lg p-4 shadow-sm">
-                <div className="text-2xl mb-2">📹</div>
-                <h4 className="font-semibold text-gray-800 mb-2">Watch Videos</h4>
-                <p className="text-sm text-gray-600">Use educational videos and visual demonstrations</p>
-              </div>
+              {dominantStyle.id === 'visual' && (
+                <>
+                  <div className="bg-white rounded-lg p-4 shadow-sm">
+                    <div className="text-2xl mb-2">🌈</div>
+                    <h4 className="font-semibold text-gray-800 mb-2">Colour Coding</h4>
+                    <p className="text-sm text-gray-600">Use different colours to highlight and categorise information</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 shadow-sm">
+                    <div className="text-2xl mb-2">📹</div>
+                    <h4 className="font-semibold text-gray-800 mb-2">Watch Videos</h4>
+                    <p className="text-sm text-gray-600">Use educational videos and visual demonstrations</p>
+                  </div>
+                </>
+              )}
             </>
           )}
-          
-          {dominantStyle.id === 'auditory' && (
+
+          {/* Auditory tips */}
+          {(dominantStyle.id === 'auditory' ||
+            dominantStyle.id === 'mixed-visual-auditory' ||
+            dominantStyle.id === 'mixed-auditory-reading-writing' ||
+            dominantStyle.id === 'mixed-all') && (
             <>
               <div className="bg-white rounded-lg p-4 shadow-sm">
                 <div className="text-2xl mb-2">🗣️</div>
-                <h4 className="font-semibold text-gray-800 mb-2">Discuss & Explain</h4>
+                <h4 className="font-semibold text-gray-800 mb-2">Discuss &amp; Explain</h4>
                 <p className="text-sm text-gray-600">Talk through concepts with others or explain them out loud</p>
               </div>
-              <div className="bg-white rounded-lg p-4 shadow-sm">
-                <div className="text-2xl mb-2">🎵</div>
-                <h4 className="font-semibold text-gray-800 mb-2">Use Audio Resources</h4>
-                <p className="text-sm text-gray-600">Listen to podcasts, audiobooks, and recorded lectures</p>
-              </div>
-              <div className="bg-white rounded-lg p-4 shadow-sm">
-                <div className="text-2xl mb-2">👥</div>
-                <h4 className="font-semibold text-gray-800 mb-2">Study Groups</h4>
-                <p className="text-sm text-gray-600">Join study groups and participate in discussions</p>
-              </div>
+              {dominantStyle.id === 'auditory' && (
+                <>
+                  <div className="bg-white rounded-lg p-4 shadow-sm">
+                    <div className="text-2xl mb-2">🎵</div>
+                    <h4 className="font-semibold text-gray-800 mb-2">Use Audio Resources</h4>
+                    <p className="text-sm text-gray-600">Listen to podcasts, audiobooks, and recorded lectures</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 shadow-sm">
+                    <div className="text-2xl mb-2">👥</div>
+                    <h4 className="font-semibold text-gray-800 mb-2">Study Groups</h4>
+                    <p className="text-sm text-gray-600">Join study groups and participate in discussions</p>
+                  </div>
+                </>
+              )}
             </>
           )}
-          
-          {dominantStyle.id === 'reading-writing' && (
+
+          {/* Reading/Writing tips */}
+          {(dominantStyle.id === 'reading-writing' ||
+            dominantStyle.id === 'mixed-visual-reading-writing' ||
+            dominantStyle.id === 'mixed-auditory-reading-writing' ||
+            dominantStyle.id === 'mixed-all') && (
             <>
               <div className="bg-white rounded-lg p-4 shadow-sm">
                 <div className="text-2xl mb-2">📝</div>
                 <h4 className="font-semibold text-gray-800 mb-2">Take Detailed Notes</h4>
                 <p className="text-sm text-gray-600">Write comprehensive notes and summaries</p>
               </div>
-              <div className="bg-white rounded-lg p-4 shadow-sm">
-                <div className="text-2xl mb-2">📚</div>
-                <h4 className="font-semibold text-gray-800 mb-2">Read Extensively</h4>
-                <p className="text-sm text-gray-600">Use textbooks, articles, and written materials</p>
-              </div>
-              <div className="bg-white rounded-lg p-4 shadow-sm">
-                <div className="text-2xl mb-2">✍️</div>
-                <h4 className="font-semibold text-gray-800 mb-2">Write to Learn</h4>
-                <p className="text-sm text-gray-600">Use writing exercises and essay practice</p>
-              </div>
+              {dominantStyle.id === 'reading-writing' && (
+                <>
+                  <div className="bg-white rounded-lg p-4 shadow-sm">
+                    <div className="text-2xl mb-2">📚</div>
+                    <h4 className="font-semibold text-gray-800 mb-2">Read Extensively</h4>
+                    <p className="text-sm text-gray-600">Use textbooks, articles, and written materials</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 shadow-sm">
+                    <div className="text-2xl mb-2">✍️</div>
+                    <h4 className="font-semibold text-gray-800 mb-2">Write to Learn</h4>
+                    <p className="text-sm text-gray-600">Use writing exercises and essay practice</p>
+                  </div>
+                </>
+              )}
             </>
+          )}
+
+          {/* Mixed-all bonus tip */}
+          {dominantStyle.id === 'mixed-all' && (
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="text-2xl mb-2">🌟</div>
+              <h4 className="font-semibold text-gray-800 mb-2">Mix Your Methods</h4>
+              <p className="text-sm text-gray-600">Combine diagrams, discussion, and written notes to maximise retention</p>
+            </div>
           )}
         </div>
       </motion.div>

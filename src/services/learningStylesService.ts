@@ -3,6 +3,15 @@ import { logger } from '../utils/logger';
 
 export type LearningStyleId = 'visual' | 'auditory' | 'reading-writing';
 
+export type LearningStyleResultId =
+  | 'visual'
+  | 'auditory'
+  | 'reading-writing'
+  | 'mixed-visual-auditory'
+  | 'mixed-visual-reading-writing'
+  | 'mixed-auditory-reading-writing'
+  | 'mixed-all';
+
 export interface LearningStyleOption {
   id: string;
   text: {
@@ -14,7 +23,7 @@ export interface LearningStyleOption {
 
 export interface LearningStyleQuestion {
   id: string;
-  category: LearningStyleId;
+  category: string;
   question: {
     en: string;
     ar: string;
@@ -27,6 +36,7 @@ export interface LearningStyleCalculation {
   auditory: number;
   'reading-writing': number;
   dominantStyle: LearningStyleId;
+  result: LearningStyleResultId;
 }
 
 export async function getLearningStyleQuestions(): Promise<LearningStyleQuestion[]> {

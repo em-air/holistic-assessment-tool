@@ -55,9 +55,7 @@ export const QUIZ_ACCESS_RULES: Record<string, CategoryRules> = {
       'spelling': { grades: [1, 2, 3, 4, 5, 6, 7, 8] },
       'writing': { grades: [1, 2, 3, 4, 5, 6, 7, 8] },
       'reading': { grades: [1, 2, 3, 4, 5, 6, 7, 8] },
-      'blending-segmenting': { grades: [1, 2, 3] },
       'phonics': { grades: [1, 2, 3, 4] },
-      'starting-ending-sounds': { grades: [1, 2, 3] },
     }
   }
 };

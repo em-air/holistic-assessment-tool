@@ -67,7 +67,6 @@ export const ROUTES = {
   ATTENTION_ASSESSMENT_FLAT: '/attention-assessment',
   MEMORY_ASSESSMENT_FLAT: '/memory-assessment',
   ATTENTION_QUIZ_FLAT: '/attention-quiz',
-  MEMORY_QUIZ_FLAT: '/memory-quiz',
   CRITICAL_THINKING_FLAT: '/critical-thinking',
   ANALOGY_QUIZ_FLAT: '/analogy-quiz',
   CATEGORY_QUIZ_FLAT: '/category-quiz',

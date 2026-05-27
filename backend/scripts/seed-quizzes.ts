@@ -48,13 +48,6 @@ const quizzes: QuizMetadataInsert[] = [
     allowed_grades: ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8'],
   },
   {
-    quiz_id: 'number-tiles',
-    quiz_name: 'Number Tiles',
-    category: 'mind',
-    subcategory: 'memory',
-    allowed_grades: ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8'],
-  },
-  {
     quiz_id: 'flash-word-quiz',
     quiz_name: 'Flash Word Quiz',
     category: 'mind',
@@ -141,29 +134,6 @@ const quizzes: QuizMetadataInsert[] = [
     quiz_name: 'Phonics Quiz',
     category: 'oral',
     subcategory: 'phonics',
-    allowed_grades: ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'],
-  },
-  {
-    quiz_id: 'starting-ending-sounds',
-    quiz_name: 'Starting/Ending Sounds',
-    category: 'oral',
-    subcategory: 'phonics',
-    allowed_grades: ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'],
-  },
-
-  // ============= ORAL - Blending/Segmenting =============
-  {
-    quiz_id: 'blending-quiz',
-    quiz_name: 'Blending Quiz',
-    category: 'oral',
-    subcategory: 'blending-segmenting',
-    allowed_grades: ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'],
-  },
-  {
-    quiz_id: 'segmenting-quiz',
-    quiz_name: 'Segmenting Quiz',
-    category: 'oral',
-    subcategory: 'blending-segmenting',
     allowed_grades: ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'],
   },
 

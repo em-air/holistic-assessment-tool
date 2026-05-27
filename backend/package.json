@@ -13,6 +13,7 @@
     "seed": "tsx scripts/seed-quizzes.ts",
     "seed:admins": "tsx scripts/seed-admins.ts",
     "seed:students": "tsx scripts/seed-students.ts",
+    "seed:questions": "tsx scripts/seed-questions.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:ci": "vitest run --coverage"
@@ -35,6 +36,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
     "@types/compression": "^1.7.5",
     "@types/connect-timeout": "^1.9.0",
     "@types/cors": "^2.8.17",

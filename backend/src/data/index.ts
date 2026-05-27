@@ -8,28 +8,10 @@
  * SECURITY: This data should only be accessed by backend routes
  */
 
-// Export quiz data modules with namespaced imports for modules with conflicting names
-export * from './spellingData.js';
-export * from './writingData.js';
-export * from './storyRetellData.js';
-export * from './oralLanguageData.js';
-export * from './vocabularyData.js';
-export * from './vocabularyMatchingData.js';
-export * from './blendingData.js';
-export * from './learningStylesData.js';
-export * from './criticalThinkingData.js';
-export * from './flashWordData.js';
-export * from './missingObjectData.js';
-export * from './readingAssessmentData.js';
+// Quiz data now lives in the database (questions table).
+// The following files remain for config/dynamic use only.
 export * from './quizAccessRules.js';
-
-// Namespaced exports for modules with overlapping function names
-export * as LogicalSequencingData from './logicalSequencingData.js';
-export * as AttentionControlData from './attentionControlData.js';
 export * as MemoryAssessmentData from './memoryAssessmentData.js';
-export * as StartingEndingSoundData from './startingEndingSoundData.js';
-export * as SpotTheDifferenceData from './spotTheDifferenceData.js';
-export * as SentenceDifferenceData from './sentenceDifferenceData.js';
 
 // Types for quiz sessions
 export interface QuizSession {
@@ -50,14 +32,11 @@ export type QuizType =
   | 'story-retell'
   | 'oral-language'
   | 'vocabulary'
-  | 'blending'
-  | 'segmenting'
   | 'learning-styles'
   | 'critical-thinking'
   | 'attention-memory'
   | 'logical-sequencing'
   | 'memory-assessment'
-  | 'starting-ending-sounds'
   | 'spot-the-difference'
   | 'sentence-difference';
 
@@ -111,22 +90,6 @@ export const quizMetadata: Record<QuizType, QuizMetadata> = {
     hasGradeLevels: true,
     availableGrades: [1, 2, 3, 4, 5, 6],
   },
-  'blending': {
-    type: 'blending',
-    name: 'Blending Quiz',
-    category: 'academic',
-    subcategory: 'blending-segmenting',
-    hasGradeLevels: true,
-    availableGrades: [1, 2, 3],
-  },
-  'segmenting': {
-    type: 'segmenting',
-    name: 'Segmenting Quiz',
-    category: 'academic',
-    subcategory: 'blending-segmenting',
-    hasGradeLevels: true,
-    availableGrades: [1, 2, 3],
-  },
   'learning-styles': {
     type: 'learning-styles',
     name: 'Learning Styles Quiz',
@@ -162,14 +125,6 @@ export const quizMetadata: Record<QuizType, QuizMetadata> = {
     category: 'mind',
     subcategory: 'attention-memory',
     hasGradeLevels: false,
-  },
-  'starting-ending-sounds': {
-    type: 'starting-ending-sounds',
-    name: 'Beginning & Ending Sounds',
-    category: 'academic',
-    subcategory: 'starting-ending-sounds',
-    hasGradeLevels: true,
-    availableGrades: [1, 2, 3, 4],
   },
   'spot-the-difference': {
     type: 'spot-the-difference',

@@ -193,6 +193,36 @@ export type Database = {
         Update: Partial<AuditLogInsert>;
         Relationships: [];
       };
+      questions: {
+        Row: {
+          quiz_type: string;
+          id: string;
+          grade: string | null;
+          difficulty: string | null;
+          order_index: number;
+          content: Record<string, unknown>;
+          answer_data: Record<string, unknown>;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          quiz_type: string;
+          id: string;
+          grade?: string | null;
+          difficulty?: string | null;
+          order_index?: number;
+          content?: Record<string, unknown>;
+          answer_data?: Record<string, unknown>;
+        };
+        Update: {
+          grade?: string | null;
+          difficulty?: string | null;
+          order_index?: number;
+          content?: Record<string, unknown>;
+          answer_data?: Record<string, unknown>;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

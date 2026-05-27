@@ -16,6 +16,7 @@ import {
   calculateLearningStyle,
   type LearningStyleQuestion,
   type LearningStyleId,
+  type LearningStyleResultId,
 } from '../services/learningStylesService';
 import { logger } from '../utils/logger';
 
@@ -141,8 +142,8 @@ const LearningStylesQuiz: React.FC = () => {
     scoreArray.sort((a, b) => b.score - a.score);
     setScores(scoreArray);
 
-    // Find dominant style info
-    const dominantStyleInfo = learningStyles.find(s => s.id === calculation.dominantStyle);
+    // Find result style info (supports all 7 result types including mixed)
+    const dominantStyleInfo = learningStyles.find(s => s.id === calculation.result);
     if (dominantStyleInfo) {
       setDominantStyle(dominantStyleInfo);
     }
@@ -162,6 +163,7 @@ const LearningStylesQuiz: React.FC = () => {
       completedAt: new Date().toISOString(),
       additionalData: {
         dominantStyle: calculation.dominantStyle,
+        result: calculation.result,
         allScores: scoreArray
       }
     });

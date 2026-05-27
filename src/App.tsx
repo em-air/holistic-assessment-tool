@@ -34,7 +34,6 @@ const SentenceDifferenceQuiz = lazy(() => import('./pages/SentenceDifferenceQuiz
 // Cognitive assessments
 const LogicalSequencingQuiz = lazy(() => import('./pages/LogicalSequencingQuiz'));
 const SharedGradeSelectorPage = lazy(() => import('./pages/SharedGradeSelectorPage'));
-const MemoryQuiz = lazy(() => import('./pages/MemoryQuiz'));
 const AttentionMemorySelection = lazy(() => import('./pages/AttentionMemorySelection'));
 const AttentionAssessment = lazy(() => import('./pages/AttentionAssessment'));
 const MemoryAssessment = lazy(() => import('./pages/MemoryAssessment'));
@@ -135,7 +134,6 @@ const routeConfig: RouteEntry[] = [
   { path: ROUTES.ATTENTION_ASSESSMENT_FLAT, Component: AttentionAssessment },
   { path: ROUTES.MEMORY_ASSESSMENT_FLAT, Component: MemoryAssessment },
   { path: ROUTES.ATTENTION_QUIZ_FLAT, Component: AttentionAssessment },
-  { path: ROUTES.MEMORY_QUIZ_FLAT, Component: MemoryQuiz },
   { path: ROUTES.CRITICAL_THINKING_FLAT, Component: CriticalThinkingPage },
   { path: ROUTES.ANALOGY_QUIZ_FLAT, Component: AnalogyQuiz },
   { path: ROUTES.CATEGORY_QUIZ_FLAT, Component: CategoryQuiz },

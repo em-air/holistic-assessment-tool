@@ -15,6 +15,7 @@ const MissingObjectQuiz: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [revealedCorrectAnswer, setRevealedCorrectAnswer] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [showNext, setShowNext] = useState(false);
@@ -54,6 +55,8 @@ const MissingObjectQuiz: React.FC = () => {
       return;
     }
 
+    setRevealedCorrectAnswer(result.correctAnswer);
+
     if (result.correct) {
       setFeedbackMessage("great job! that's right.");
       setScore(score + 1);
@@ -73,6 +76,7 @@ const MissingObjectQuiz: React.FC = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer(null);
+      setRevealedCorrectAnswer(null);
       setFeedbackMessage("");
       setShowNext(false);
     } else {
@@ -209,7 +213,7 @@ const MissingObjectQuiz: React.FC = () => {
             let buttonClass = "w-full p-4 text-left rounded-2xl border-2 transition-all duration-200 text-lg font-medium ";
             
             if (selectedAnswer) {
-              if (option === currentQuestion.correctAnswer) {
+              if (option === revealedCorrectAnswer) {
                 buttonClass += "bg-green-100 border-green-500 text-green-700";
               } else if (selectedAnswer === option) {
                 buttonClass += "bg-red-100 border-red-500 text-red-700";

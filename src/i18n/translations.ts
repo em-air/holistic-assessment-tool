@@ -69,7 +69,6 @@ export interface TranslationKeys {
   'subcategory.oralLanguage': string;
   'subcategory.reading': string;
   'subcategory.phonicsAwareness': string;
-  'subcategory.blending': string;
   'subcategory.writing': string;
   'subcategory.vocabulary': string;
   'subcategory.spelling': string;
@@ -207,10 +206,6 @@ export interface TranslationKeys {
   'phonics.title': string;
   'phonics.selection': string;
 
-  // ===== Blending & Segmenting =====
-  'blending.title': string;
-  'blending.selection': string;
-
   // ===== Language Toggle =====
   'language.label': string;
   'language.english': string;
@@ -286,7 +281,7 @@ export const translations: Record<Language, TranslationKeys> = {
     'category.mind.title': 'Cognition',
     'category.mind.description': 'Assess memory, focus, comprehension, and critical thinking.',
     'category.oral.title': 'Oral Skills',
-    'category.oral.description': 'Evaluate oral language, reading, beginning and ending sounds, and blending.',
+    'category.oral.description': 'Evaluate oral language, reading, and foundational phonics skills.',
     'category.academic.title': 'Academic Skills',
     'category.academic.description': 'Evaluate writing, sentence formation, spelling, and math skills.',
     'category.startCognition': 'Start Cognition Assessment',
@@ -302,7 +297,6 @@ export const translations: Record<Language, TranslationKeys> = {
     'subcategory.oralLanguage': 'Oral Language',
     'subcategory.reading': 'Reading',
     'subcategory.phonicsAwareness': 'Beginning and Ending Sounds',
-    'subcategory.blending': 'Blending and Segmenting',
     'subcategory.writing': 'Writing',
     'subcategory.vocabulary': 'Vocabulary',
     'subcategory.spelling': 'Spelling',
@@ -439,10 +433,6 @@ export const translations: Record<Language, TranslationKeys> = {
     'phonics.title': 'Beginning and Ending Sounds',
     'phonics.selection': 'Select a Quiz',
 
-    // Blending
-    'blending.title': 'Blending & Segmenting',
-    'blending.selection': 'Select a Quiz',
-
     // Language Toggle
     'language.label': 'Language',
     'language.english': 'English',
@@ -517,7 +507,7 @@ export const translations: Record<Language, TranslationKeys> = {
     'category.mind.title': 'الإدراك',
     'category.mind.description': 'تقييم الذاكرة والتركيز والفهم والتفكير النقدي.',
     'category.oral.title': 'المهارات الشفوية',
-    'category.oral.description': 'تقييم اللغة الشفوية والقراءة وأصوات البداية والنهاية والمزج.',
+    'category.oral.description': 'تقييم اللغة الشفوية والقراءة والمهارات الأساسية للأصوات.',
     'category.academic.title': 'المهارات الأكاديمية',
     'category.academic.description': 'تقييم الكتابة وتكوين الجمل والإملاء ومهارات الرياضيات.',
     'category.startCognition': 'ابدأ تقييم الإدراك',
@@ -533,7 +523,6 @@ export const translations: Record<Language, TranslationKeys> = {
     'subcategory.oralLanguage': 'اللغة الشفوية',
     'subcategory.reading': 'القراءة',
     'subcategory.phonicsAwareness': 'أصوات البداية والنهاية',
-    'subcategory.blending': 'المزج والتقسيم',
     'subcategory.writing': 'الكتابة',
     'subcategory.vocabulary': 'المفردات',
     'subcategory.spelling': 'الإملاء',
@@ -669,10 +658,6 @@ export const translations: Record<Language, TranslationKeys> = {
     // Phonics
     'phonics.title': 'أصوات البداية والنهاية',
     'phonics.selection': 'اختر اختبارًا',
-
-    // Blending
-    'blending.title': 'المزج والتقسيم',
-    'blending.selection': 'اختر اختبارًا',
 
     // Language Toggle
     'language.label': 'اللغة',

@@ -866,7 +866,7 @@ export const ReportPDFEnglish: React.FC<ReportPDFProps> = (props) => {
   const avgScore = allResults.length > 0
     ? Math.round(allResults.reduce((sum, r) => sum + r.percentage, 0) / allResults.length) : 0;
   const isComplete = completedCount >= totalQuizzes;
-  const categories = ['attention','memory','learning-style','critical-thinking','perception','oral-language','phonics','blending-segmenting','spelling','writing','vocabulary'];
+  const categories = ['attention','memory','learning-style','critical-thinking','perception','oral-language','phonics','spelling','writing','vocabulary'];
   const Watermark = showWatermark ? (
     <View fixed style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: watermarkOpacity, justifyContent: 'center', alignItems: 'center', transform: 'rotate(-45deg)', zIndex: -1 }}>
       <Text style={{ fontSize: 110, color: '#000000', letterSpacing: 5, fontWeight: 'bold' }}>{watermarkText}</Text>
@@ -1041,7 +1041,7 @@ export const ReportPDFArabic: React.FC<ReportPDFProps> = (props) => {
   const avgScore = allResults.length > 0
     ? Math.round(allResults.reduce((sum, r) => sum + r.percentage, 0) / allResults.length) : 0;
   const isComplete = completedCount >= totalQuizzes;
-  const categories = ['attention','memory','learning-style','critical-thinking','perception','oral-language','phonics','blending-segmenting','spelling','writing','vocabulary'];
+  const categories = ['attention','memory','learning-style','critical-thinking','perception','oral-language','phonics','spelling','writing','vocabulary'];
   const Watermark = showWatermark ? (
     <View fixed style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: watermarkOpacity, justifyContent: 'center', alignItems: 'center', transform: 'rotate(-45deg)', zIndex: -1 }}>
       <Text style={{ fontSize: 110, color: '#000000', letterSpacing: 5, fontWeight: 'bold' }}>{watermarkText}</Text>

@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { X, Download, Share2, Brain, Award, Database, CheckCircle, LogIn } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
-import { ProgressTracker, MIND_QUIZZES, ORAL_QUIZZES, ALL_TRACKED_QUIZZES, QuizResult } from '../utils/progressTracker';
+import { ProgressTracker, ALL_TRACKED_QUIZZES, QuizResult } from '../utils/progressTracker';
 import { ReportPDFEnglish, ReportPDFArabic } from './ReportPDF';
 
 import { generateReport } from '../services/reportService';
@@ -19,7 +19,7 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = React.useState(false);
   const [isSavingToDatabase, setIsSavingToDatabase] = React.useState(false);
   const [savedToDatabase, setSavedToDatabase] = React.useState(false);
-  const [saveError, setSaveError] = React.useState<string | null>(null);
+  const [_saveError, setSaveError] = React.useState<string | null>(null);
 
   
   const isAuthenticated = ProgressTracker.isAuthenticated();
@@ -98,7 +98,6 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       'perception': 'Perception',
       'oral-language': 'Oral Language',
       'phonics': 'Beginning & Ending Sounds',
-      'blending-segmenting': 'Blending & Segmenting',
       'spelling': 'Spelling',
       'writing': 'Writing',
       'vocabulary': 'Vocabulary'
@@ -115,7 +114,6 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       'perception': 'text-indigo-600',
       'oral-language': 'text-sky-600',
       'phonics': 'text-pink-600',
-      'blending-segmenting': 'text-teal-600',
       'spelling': 'text-violet-600',
       'writing': 'text-amber-600',
       'vocabulary': 'text-rose-600'
@@ -125,7 +123,7 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
 
   const remapQuizCategory = (result: QuizResult): string => {
     // Remap certain quizzes to correct categories based on user specification
-    if (result.quizId === 'memory-assessment' || result.quizId === 'memory-quiz') {
+    if (result.quizId === 'memory-assessment') {
       return 'memory';
     }
     if (result.quizId === 'attention-assessment') {
@@ -143,7 +141,6 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       'perception': 'Perception involves how your child interprets and understands visual and spatial information. This includes recognizing patterns, understanding spatial relationships, and processing visual details.',
       'oral-language': 'Oral Language skills measure vocabulary breadth, sentence construction, story sequencing, and narrative retelling abilities essential for communication and literacy development.',
       'phonics': 'Phonics skills assess the ability to identify letter-sound relationships, recognize beginning and ending sounds, and decode words — foundational skills for reading.',
-      'blending-segmenting': 'Blending and Segmenting skills measure the ability to combine individual sounds into words (blending) and break words into component sounds (segmenting), both critical for reading fluency.',
       'spelling': 'Spelling skills measure the ability to correctly write words, demonstrating phonetic knowledge and orthographic awareness.',
       'writing': 'Writing skills assess the ability to compose text with proper structure, grammar, vocabulary usage, and creative expression.',
       'vocabulary': 'Vocabulary skills measure word knowledge, including understanding word meanings and the ability to match words with their definitions.'
@@ -167,29 +164,14 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
         analysis = 'Your child may benefit from additional support in developing attention skills. Simple focusing exercises and structured activities can be helpful.';
       }
     } else if (category === 'memory') {
-      // Special handling for Memory Quiz with additional data
-      if (result.quizId === 'memory-quiz' && result.additionalData) {
-        const { levelsCompleted, endReason, attemptsPerLevel } = result.additionalData;
-        const totalAttempts = Object.values(attemptsPerLevel || {}).reduce((sum: number, attempts: any) => sum + attempts, 0);
-        
-        if (result.percentage >= 90) {
-          analysis = `Excellent memory performance! Your child completed all 6 levels with ${totalAttempts} total attempts. They demonstrate strong visual memory and pattern recognition skills.`;
-        } else if (result.percentage >= 75) {
-          analysis = `Good memory skills shown. Your child completed the memory challenge with ${totalAttempts} attempts, displaying solid visual memory abilities with room for improvement.`;
-        } else {
-          analysis = `Your child shows developing memory skills. They completed ${levelsCompleted} levels correctly out of 6. Regular practice with memory games can strengthen these important cognitive abilities.`;
-        }
+      if (result.percentage >= 90) {
+        analysis = 'Your child demonstrates excellent memory capabilities. They can retain and recall information effectively. This is a strong foundation for academic learning.';
+      } else if (result.percentage >= 75) {
+        analysis = 'Your child shows good memory skills. They generally retain information well, with some areas for continued development.';
+      } else if (result.percentage >= 60) {
+        analysis = 'Your child has developing memory skills. Consider activities that help improve memory techniques to support their learning.';
       } else {
-        // Standard memory analysis
-        if (result.percentage >= 90) {
-          analysis = 'Your child demonstrates excellent memory capabilities. They can retain and recall information effectively. This is a strong foundation for academic learning.';
-        } else if (result.percentage >= 75) {
-          analysis = 'Your child shows good memory skills. They generally retain information well, with some areas for continued development.';
-        } else if (result.percentage >= 60) {
-          analysis = 'Your child has developing memory skills. Consider activities that help improve memory techniques to support their learning.';
-        } else {
-          analysis = 'Your child may benefit from additional support in developing memory skills. Memory games and exercises can be helpful.';
-        }
+        analysis = 'Your child may benefit from additional support in developing memory skills. Memory games and exercises can be helpful.';
       }
     } else if (category === 'learning-style') {
       // For learning style, provide specific guidance based on the identified style
@@ -319,7 +301,7 @@ DETAILED SKILL ANALYSIS
 `;
 
     // Group results by skill category
-    ['attention', 'memory', 'learning-style', 'critical-thinking', 'perception', 'oral-language', 'phonics', 'phonics-awareness', 'blending-segmenting'].forEach(category => {
+    ['attention', 'memory', 'learning-style', 'critical-thinking', 'perception', 'oral-language', 'phonics', 'phonics-awareness'].forEach(category => {
       const categoryResults = results.filter(r => remapQuizCategory(r) === category);
       if (categoryResults.length === 0) return;
       
@@ -499,7 +481,7 @@ Assessment Results:
             <h3 className="text-xl font-bold text-gray-800 mb-6">🧠 Detailed Skill Analysis</h3>
             
             {/* Group results by skill category */}
-            {['attention', 'memory', 'learning-style', 'critical-thinking', 'perception', 'oral-language', 'phonics', 'blending-segmenting', 'spelling', 'writing', 'vocabulary'].map(category => {
+            {['attention', 'memory', 'learning-style', 'critical-thinking', 'perception', 'oral-language', 'phonics', 'spelling', 'writing', 'vocabulary'].map(category => {
               const categoryResults = results.filter(r => remapQuizCategory(r) === category);
               if (categoryResults.length === 0) return null;
               
