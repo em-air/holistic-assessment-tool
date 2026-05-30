@@ -467,7 +467,7 @@ export async function getOralLanguageQuestions(
 ) {
   let query = supabaseAdmin
     .from('questions')
-    .select('id, content')
+    .select('id, content, answer_data')
     .eq('quiz_type', 'oral-language')
     .order('order_index');
 
@@ -480,6 +480,9 @@ export async function getOralLanguageQuestions(
 
   return rows.map(r => {
     const c = r.content as Record<string, unknown>;
+    const a = r.answer_data as Record<string, unknown> | null;
+    const sequenceCorrectOrders = a?.sequenceCorrectOrders as Record<string, number> | null;
+    const rawImages = c.sequenceImages as Array<{ id: string; src: string; alt: string }> | null;
     return {
       id: r.id as string,
       type: c.type as string,
@@ -487,8 +490,15 @@ export async function getOralLanguageQuestions(
       question: c.question as string,
       image: c.image as string | undefined,
       options: c.options as Array<{ id: string; text: string }>,
-      sequenceImages: c.sequenceImages as Array<{ id: string; src: string; alt: string }> | null,
-      correctSequence: c.correctSequence as string[] | null,
+      // Re-attach correctOrder per image from answer_data (was stripped from content during seed)
+      sequenceImages: rawImages
+        ? rawImages.map(img => ({
+            ...img,
+            correctOrder: sequenceCorrectOrders?.[img.id] ?? undefined,
+          }))
+        : null,
+      // correctSequence is stored in answer_data, not content
+      correctSequence: (a?.correctSequence as string[] | null) ?? null,
       feedback: c.feedback as string | null,
     };
   });
@@ -641,4 +651,53 @@ export async function getSentenceDifferenceAnswerData(questionId: number): Promi
     .single();
   if (error) return null;
   return ((data?.answer_data) as Record<string, unknown>)?.correctAnswer as string ?? null;
+}
+
+// ─── Category Quiz ────────────────────────────────────────────────────────────
+
+export async function getCategoryQuizQuestions(grade: string) {
+  // Frontend sends 'grade1'/'grade2' etc; DB stores 'Grade 1'/'Grade 2'
+  const dbGrade = grade.replace(/^grade(\d)$/, 'Grade $1');
+  const { data, error } = await supabaseAdmin
+    .from('questions')
+    .select('id, content')
+    .eq('quiz_type', 'category-quiz')
+    .eq('grade', dbGrade)
+    .order('order_index');
+  if (error) throw new Error(`getCategoryQuizQuestions: ${error.message}`);
+  return (data ?? []).map(r => ({
+    id: r.id as string,
+    instruction: (r.content as Record<string, unknown>).instruction as string,
+    categories: (r.content as Record<string, unknown>).categories as string[],
+    items: (r.content as Record<string, unknown>).items as { id: string; name: string; image: string }[],
+  }));
+}
+
+export async function getCategoryItemAnswerData(questionId: string, itemId: string): Promise<string | null> {
+  const { data, error } = await supabaseAdmin
+    .from('questions')
+    .select('answer_data')
+    .eq('quiz_type', 'category-quiz')
+    .eq('id', questionId)
+    .single();
+  if (error || !data) return null;
+  const answerItems = ((data.answer_data) as Record<string, unknown>).items as { id: string; correctCategory: string }[];
+  return answerItems?.find(i => i.id === itemId)?.correctCategory ?? null;
+}
+
+// ─── Memory Items ─────────────────────────────────────────────────────────────
+
+export async function getMemoryItems() {
+  const { data, error } = await supabaseAdmin
+    .from('questions')
+    .select('id, content')
+    .eq('quiz_type', 'memory-items')
+    .order('order_index');
+  if (error) throw new Error(`getMemoryItems: ${error.message}`);
+  return (data ?? []).map(r => ({
+    id: r.id as string,
+    name: (r.content as Record<string, unknown>).name as string,
+    image: (r.content as Record<string, unknown>).image as string,
+    category: 'object' as const,
+  }));
 }

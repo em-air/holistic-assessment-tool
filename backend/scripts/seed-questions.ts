@@ -561,29 +561,186 @@ async function seedSentenceDifference(): Promise<void> {
   await upsert(rows, 'sentence-difference');
 }
 
-// memory-assessment is dynamically generated at runtime — no static rows to seed.
+// memory-assessment algorithm is dynamically generated at runtime,
+// but the item pool is static content that belongs in the database.
+
+async function seedMemoryItems(): Promise<void> {
+  const items = [
+    { id: 'apple',   name: 'Apple',   image: 'https://cdn.pixabay.com/photo/2018/04/12/11/37/apple-3313209_640.jpg' },
+    { id: 'dog',     name: 'Dog',     image: 'https://cdn.pixabay.com/photo/2019/08/19/07/45/corgi-4415649_640.jpg' },
+    { id: 'ball',    name: 'Ball',    image: 'https://cdn.pixabay.com/photo/2018/07/28/14/30/soccer-3568168_1280.jpg' },
+    { id: 'car',     name: 'Car',     image: 'https://cdn.pixabay.com/photo/2012/05/29/00/43/car-49278_640.jpg' },
+    { id: 'house',   name: 'House',   image: 'https://cdn.pixabay.com/photo/2014/07/10/17/18/large-home-389271_1280.jpg' },
+    { id: 'tree',    name: 'Tree',    image: 'https://cdn.pixabay.com/photo/2014/12/22/00/07/tree-576847_1280.png' },
+    { id: 'book',    name: 'Book',    image: 'https://cdn.pixabay.com/photo/2015/11/19/21/10/glasses-1052010_640.jpg' },
+    { id: 'chair',   name: 'Chair',   image: 'https://cdn.pixabay.com/photo/2022/08/06/20/46/coffee-shop-7369404_1280.jpg' },
+    { id: 'cat',     name: 'Cat',     image: 'https://cdn.pixabay.com/photo/2014/11/30/14/11/cat-551554_640.jpg' },
+    { id: 'flower',  name: 'Flower',  image: 'https://cdn.pixabay.com/photo/2015/04/19/08/32/marguerite-729510_640.jpg' },
+    { id: 'bicycle', name: 'Bicycle', image: 'https://cdn.pixabay.com/photo/2016/11/18/12/49/bicycle-1834265_1280.jpg' },
+    { id: 'cup',     name: 'Cup',     image: 'https://cdn.pixabay.com/photo/2017/05/12/08/29/coffee-2306471_640.jpg' },
+  ];
+  const rows: QuestionRow[] = items.map((item, i) => ({
+    id: item.id,
+    quiz_type: 'memory-items',
+    grade: null,
+    difficulty: null,
+    order_index: i,
+    content: { name: item.name, image: item.image, category: 'object' },
+    answer_data: {},
+  }));
+  await upsert(rows, 'memory-items');
+}
+
+async function seedCategoryQuiz(): Promise<void> {
+  type CatItem = { id: string; name: string; image: string; correctCategory: string };
+  type CatQuestion = { id: string; grade: string; instruction: string; categories: string[]; items: CatItem[] };
+
+  const questions: CatQuestion[] = [
+    { id: 'c1_1', grade: 'Grade 1',
+      instruction: 'Sort these into Animals and Fruits',
+      categories: ['Animals', 'Fruits'],
+      items: [
+        { id: 'cat',    name: 'Cat',    image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=150&h=150&fit=crop&crop=center', correctCategory: 'Animals' },
+        { id: 'dog',    name: 'Dog',    image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=150&h=150&fit=crop&crop=center', correctCategory: 'Animals' },
+        { id: 'apple',  name: 'Apple',  image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=150&h=150&fit=crop&crop=center', correctCategory: 'Fruits' },
+        { id: 'banana', name: 'Banana', image: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=150&h=150&fit=crop&crop=center', correctCategory: 'Fruits' },
+      ],
+    },
+    { id: 'c1_2', grade: 'Grade 1',
+      instruction: 'Sort these into Colors and Numbers',
+      categories: ['Colors', 'Numbers'],
+      items: [
+        { id: 'ten',  name: 'Ten',  image: 'https://images.unsplash.com/photo-1631453494181-f762d692583a?auto=format&fit=crop&q=60&w=600',  correctCategory: 'Numbers' },
+        { id: 'red',  name: 'Red',  image: 'https://images.unsplash.com/photo-1611242320536-f12d3541249b?auto=format&fit=crop&q=80&w=1170', correctCategory: 'Colors' },
+        { id: 'blue', name: 'Blue', image: 'https://images.unsplash.com/photo-1614850523011-8f49ffc73908?auto=format&fit=crop&q=80&w=1170', correctCategory: 'Colors' },
+        { id: 'five', name: 'Five', image: 'https://plus.unsplash.com/premium_photo-1669349127530-23d9e3dab307?auto=format&fit=crop&q=80&w=880', correctCategory: 'Numbers' },
+      ],
+    },
+    { id: 'c2_1', grade: 'Grade 2',
+      instruction: 'Sort these into School Items and Toys',
+      categories: ['School Items', 'Toys'],
+      items: [
+        { id: 'pencil', name: 'Pencil',  image: 'https://plus.unsplash.com/premium_vector-1720893352647-9afd7d84fa79?auto=format&fit=crop&q=80&w=880',  correctCategory: 'School Items' },
+        { id: 'eraser', name: 'Eraser',  image: 'https://images.unsplash.com/photo-1667532447990-51c6704ef358?auto=format&fit=crop&q=80&w=2080',        correctCategory: 'School Items' },
+        { id: 'book',   name: 'Book',    image: 'https://images.unsplash.com/photo-1541963463532-d68292c34b19?auto=format&fit=crop&q=80&w=1976',        correctCategory: 'School Items' },
+        { id: 'ball',   name: 'Ball',    image: 'https://plus.unsplash.com/premium_photo-1709589145461-4797b4e80e9c?auto=format&fit=crop&q=80&w=2070',  correctCategory: 'Toys' },
+        { id: 'doll',   name: 'Doll',    image: 'https://images.unsplash.com/photo-1612506001235-f0d0892aa11b?auto=format&fit=crop&q=60&w=600',         correctCategory: 'Toys' },
+        { id: 'toycar', name: 'Toy Car', image: 'https://images.unsplash.com/photo-1609708536965-6e5b915b195b?auto=format&fit=crop&q=60&w=600',         correctCategory: 'Toys' },
+      ],
+    },
+    { id: 'c2_2', grade: 'Grade 2',
+      instruction: 'Sort these into Indoor and Outdoor activities',
+      categories: ['Indoor', 'Outdoor'],
+      items: [
+        { id: 'reading',  name: 'Reading',  image: 'https://plus.unsplash.com/premium_vector-1727952231396-e301fbf4ef1b?auto=format&fit=crop&q=80&w=880', correctCategory: 'Indoor' },
+        { id: 'cooking',  name: 'Cooking',  image: 'https://images.unsplash.com/photo-1528712306091-ed0763094c98?auto=format&fit=crop&q=60&w=600',         correctCategory: 'Indoor' },
+        { id: 'running',  name: 'Running',  image: 'https://images.unsplash.com/photo-1486218119243-13883505764c?auto=format&fit=crop&q=60&w=600',         correctCategory: 'Outdoor' },
+        { id: 'swimming', name: 'Swimming', image: 'https://plus.unsplash.com/premium_photo-1664475361436-e37f6f2ba407?auto=format&fit=crop&q=60&w=600',  correctCategory: 'Outdoor' },
+      ],
+    },
+    { id: 'c3_1', grade: 'Grade 3',
+      instruction: 'Sort these into Fruits and Vegetables',
+      categories: ['Fruits', 'Vegetables'],
+      items: [
+        { id: 'apple',      name: 'Apple',      image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=150&h=150&fit=crop&crop=center',    correctCategory: 'Fruits' },
+        { id: 'kiwi',       name: 'Kiwi',       image: 'https://images.unsplash.com/photo-1585059895524-72359e06133a?w=150&h=150&fit=crop&crop=center', correctCategory: 'Fruits' },
+        { id: 'strawberry', name: 'Strawberry', image: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=150&h=150&fit=crop&crop=center', correctCategory: 'Fruits' },
+        { id: 'tomato',     name: 'Tomato',     image: 'https://images.unsplash.com/photo-1582284540020-8acbe03f4924?auto=format&fit=crop&q=80&w=735',  correctCategory: 'Fruits' },
+        { id: 'cucumber',   name: 'Cucumber',   image: 'https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?w=150&h=150&fit=crop&crop=center', correctCategory: 'Vegetables' },
+        { id: 'spinach',    name: 'Spinach',    image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=150&h=150&fit=crop&crop=center', correctCategory: 'Vegetables' },
+      ],
+    },
+    { id: 'c3_2', grade: 'Grade 3',
+      instruction: 'Sort these by Size',
+      categories: ['Small', 'Large'],
+      items: [
+        { id: 'mouse',    name: 'Mouse',    image: 'https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=150&h=150&fit=crop&crop=center',       correctCategory: 'Small' },
+        { id: 'ant',      name: 'Ant',      image: 'https://plus.unsplash.com/premium_vector-1732722159929-50a849c772ce?auto=format&fit=crop&q=80&w=996', correctCategory: 'Small' },
+        { id: 'elephant', name: 'Elephant', image: 'https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=150&h=150&fit=crop&crop=center',       correctCategory: 'Large' },
+        { id: 'whale',    name: 'Whale',    image: 'https://plus.unsplash.com/premium_vector-1722145193505-ac236cb1d8e4?auto=format&fit=crop&q=60&w=600', correctCategory: 'Large' },
+      ],
+    },
+    { id: 'c4_1', grade: 'Grade 4',
+      instruction: 'Sort these animals by their habitat',
+      categories: ['Land Animals', 'Water Animals', 'Air Animals'],
+      items: [
+        { id: 'lion',    name: 'Lion',    image: 'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=150&h=150&fit=crop&crop=center',           correctCategory: 'Land Animals' },
+        { id: 'frog',    name: 'Frog',    image: 'https://plus.unsplash.com/premium_vector-1731552809287-77ae59448109?auto=format&fit=crop&q=60&w=600',  correctCategory: 'Land Animals' },
+        { id: 'dolphin', name: 'Dolphin', image: 'https://plus.unsplash.com/premium_vector-1722145193220-5eb206260842?auto=format&fit=crop&q=60&w=600',  correctCategory: 'Water Animals' },
+        { id: 'shark',   name: 'Shark',   image: 'https://plus.unsplash.com/premium_vector-1741191978319-3ff9d0e3e9ae?auto=format&fit=crop&q=80&w=1112', correctCategory: 'Water Animals' },
+        { id: 'eagle',   name: 'Eagle',   image: 'https://plus.unsplash.com/premium_vector-1719245268509-2cd8228d06ee?auto=format&fit=crop&q=60&w=600',  correctCategory: 'Air Animals' },
+        { id: 'parrot',  name: 'Parrot',  image: 'https://images.unsplash.com/photo-1552728089-57bdde30beb3?auto=format&fit=crop&q=80&w=725',            correctCategory: 'Air Animals' },
+      ],
+    },
+    { id: 'c4_2', grade: 'Grade 4',
+      instruction: 'Sort these by their state of matter',
+      categories: ['Solid', 'Liquid', 'Gas'],
+      items: [
+        { id: 'rock',  name: 'Rock',  image: 'https://images.unsplash.com/vector-1752609379935-1e3a71d8dc78?auto=format&fit=crop&q=80&w=880',      correctCategory: 'Solid' },
+        { id: 'ice',   name: 'Ice',   image: 'https://images.unsplash.com/photo-1737099950797-d0a4baf12af3?auto=format&fit=crop&q=60&w=600',       correctCategory: 'Solid' },
+        { id: 'water', name: 'Water', image: 'https://plus.unsplash.com/premium_vector-1727952230707-372d1ba06834?auto=format&fit=crop&q=60&w=600', correctCategory: 'Liquid' },
+        { id: 'juice', name: 'Juice', image: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&q=60&w=600',       correctCategory: 'Liquid' },
+        { id: 'air',   name: 'Air',   image: 'https://media.istockphoto.com/id/1347708317/vector/wind-weather-thin-line-icon.jpg',                  correctCategory: 'Gas' },
+        { id: 'steam', name: 'Steam', image: 'https://images.unsplash.com/photo-1635191535841-a6d4d88e1612?auto=format&fit=crop&q=80&w=2070',      correctCategory: 'Gas' },
+      ],
+    },
+  ];
+
+  const rows: QuestionRow[] = questions.map((q, i) => ({
+    id: q.id,
+    quiz_type: 'category-quiz',
+    grade: q.grade,
+    difficulty: null,
+    order_index: i,
+    content: {
+      instruction: q.instruction,
+      categories: q.categories,
+      items: q.items.map(({ correctCategory: _c, ...item }) => item),
+    },
+    answer_data: {
+      items: q.items.map(({ id, correctCategory }) => ({ id, correctCategory })),
+    },
+  }));
+  await upsert(rows, 'category-quiz');
+}
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
   console.log('🌱 Seeding questions table...\n');
 
-  await seedSpelling();
-  await seedVocabulary();
-  await seedVocabularyMatching();
-  await seedMissingObject();
-  await seedFlashWords();
-  await seedReadingAssessment();
-  await seedStoryRetell();
-  await seedCriticalThinking();
-  await seedLearningStyles();
-  await seedSentenceBuilding();
-  await seedWriting();
-  await seedOralLanguage();
-  await seedLogicalSequencing();
-  await seedAttentionControl();
-  await seedSpotTheDifference();
-  await seedSentenceDifference();
+  const legacy = [
+    { name: 'spelling',            fn: seedSpelling },
+    { name: 'vocabulary',          fn: seedVocabulary },
+    { name: 'vocabulary-matching', fn: seedVocabularyMatching },
+    { name: 'missing-object',      fn: seedMissingObject },
+    { name: 'flash-words',         fn: seedFlashWords },
+    { name: 'reading-assessment',  fn: seedReadingAssessment },
+    { name: 'story-retell',        fn: seedStoryRetell },
+    { name: 'critical-thinking',   fn: seedCriticalThinking },
+    { name: 'learning-styles',     fn: seedLearningStyles },
+    { name: 'sentence-building',   fn: seedSentenceBuilding },
+    { name: 'writing',             fn: seedWriting },
+    { name: 'oral-language',       fn: seedOralLanguage },
+    { name: 'logical-sequencing',  fn: seedLogicalSequencing },
+    { name: 'attention-control',   fn: seedAttentionControl },
+    { name: 'spot-the-difference', fn: seedSpotTheDifference },
+    { name: 'sentence-difference', fn: seedSentenceDifference },
+  ];
+
+  for (const { name, fn } of legacy) {
+    try {
+      await fn();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      // Source data files have been deleted or their exports removed after the
+      // initial seed run. Skip gracefully — data is already in the database.
+      console.log(`  ⏭️  ${name}: skipping (${msg.split('\n')[0]})`);
+    }
+  }
+
+  await seedMemoryItems();
+  await seedCategoryQuiz();
 
   console.log('\n✅ Done.');
 }

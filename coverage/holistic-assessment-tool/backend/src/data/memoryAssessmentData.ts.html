@@ -221,23 +221,7 @@
 <a name='L156'></a><a href='#L156'>156</a>
 <a name='L157'></a><a href='#L157'>157</a>
 <a name='L158'></a><a href='#L158'>158</a>
-<a name='L159'></a><a href='#L159'>159</a>
-<a name='L160'></a><a href='#L160'>160</a>
-<a name='L161'></a><a href='#L161'>161</a>
-<a name='L162'></a><a href='#L162'>162</a>
-<a name='L163'></a><a href='#L163'>163</a>
-<a name='L164'></a><a href='#L164'>164</a>
-<a name='L165'></a><a href='#L165'>165</a>
-<a name='L166'></a><a href='#L166'>166</a>
-<a name='L167'></a><a href='#L167'>167</a>
-<a name='L168'></a><a href='#L168'>168</a>
-<a name='L169'></a><a href='#L169'>169</a>
-<a name='L170'></a><a href='#L170'>170</a>
-<a name='L171'></a><a href='#L171'>171</a>
-<a name='L172'></a><a href='#L172'>172</a>
-<a name='L173'></a><a href='#L173'>173</a>
-<a name='L174'></a><a href='#L174'>174</a>
-<a name='L175'></a><a href='#L175'>175</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L159'></a><a href='#L159'>159</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -395,23 +379,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >/**<span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" ></span></span></span>
+<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >/**<span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" ></span></span></span>
  * Memory Assessment Data
  * Working memory tests with sequence recall and missing object tasks.
  */
@@ -435,164 +403,148 @@ export interface SequenceQuestion {
   difficulty: 1 | 2 | 3 | 4 | 5;
 }
 &nbsp;
-// Sample memory items with reliable image URLs (Pexels/Pixabay)
-<span class="cstat-no" title="statement not covered" >export const memoryItems: MemoryItem[] = [</span>
-<span class="cstat-no" title="statement not covered" >  { id: 'apple', name: 'Apple', image: 'https://cdn.pixabay.com/photo/2018/04/12/11/37/apple-3313209_640.jpg', category: 'object' },</span>
-<span class="cstat-no" title="statement not covered" >  { id: 'dog', name: 'Dog', image: 'https://cdn.pixabay.com/photo/2019/08/19/07/45/corgi-4415649_640.jpg', category: 'object' },</span>
-<span class="cstat-no" title="statement not covered" >  { id: 'ball', name: 'Ball', image: 'https://cdn.pixabay.com/photo/2018/07/28/14/30/soccer-3568168_1280.jpg', category: 'object' },</span>
-<span class="cstat-no" title="statement not covered" >  { id: 'car', name: 'Car', image: 'https://cdn.pixabay.com/photo/2012/05/29/00/43/car-49278_640.jpg', category: 'object' },</span>
-<span class="cstat-no" title="statement not covered" >  { id: 'house', name: 'House', image: 'https://cdn.pixabay.com/photo/2014/07/10/17/18/large-home-389271_1280.jpg', category: 'object' },</span>
-<span class="cstat-no" title="statement not covered" >  { id: 'tree', name: 'Tree', image: 'https://cdn.pixabay.com/photo/2014/12/22/00/07/tree-576847_1280.png', category: 'object' },</span>
-<span class="cstat-no" title="statement not covered" >  { id: 'book', name: 'Book', image: 'https://cdn.pixabay.com/photo/2015/11/19/21/10/glasses-1052010_640.jpg', category: 'object' },</span>
-<span class="cstat-no" title="statement not covered" >  { id: 'chair', name: 'Chair', image: 'https://cdn.pixabay.com/photo/2022/08/06/20/46/coffee-shop-7369404_1280.jpg', category: 'object' },</span>
-<span class="cstat-no" title="statement not covered" >  { id: 'cat', name: 'Cat', image: 'https://cdn.pixabay.com/photo/2014/11/30/14/11/cat-551554_640.jpg', category: 'object' },</span>
-<span class="cstat-no" title="statement not covered" >  { id: 'flower', name: 'Flower', image: 'https://cdn.pixabay.com/photo/2015/04/19/08/32/marguerite-729510_640.jpg', category: 'object' },</span>
-<span class="cstat-no" title="statement not covered" >  { id: 'bicycle', name: 'Bicycle', image: 'https://cdn.pixabay.com/photo/2016/11/18/12/49/bicycle-1834265_1280.jpg', category: 'object' },</span>
-<span class="cstat-no" title="statement not covered" >  { id: 'cup', name: 'Cup', image: 'https://cdn.pixabay.com/photo/2017/05/12/08/29/coffee-2306471_640.jpg', category: 'object' }</span>
-<span class="cstat-no" title="statement not covered" >];</span>
-&nbsp;
 /**
- * Generate a sequence recall question
- */
-<span class="cstat-no" title="statement not covered" >export const generateSequenceQuestion = (difficulty: number): SequenceQuestion =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >  const objects = [...memoryItems];</span>
+<span class="cstat-no" title="statement not covered" > * Generate a sequence recall question</span>
+<span class="cstat-no" title="statement not covered" > */</span>
+<span class="cstat-no" title="statement not covered" >export const generateSequenceQuestion = (difficulty: number, items: MemoryItem[]): SequenceQuestion =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  const objects = [...items];</span>
 <span class="cstat-no" title="statement not covered" >  const itemCount = Math.min(3 + difficulty - 1, 5);</span>
-  
-  // Shuffle and select items
+<span class="cstat-no" title="statement not covered" >  </span>
+<span class="cstat-no" title="statement not covered" >  // Shuffle and select items</span>
 <span class="cstat-no" title="statement not covered" >  for (let i = objects.length - 1; i &gt; 0; i--) {</span>
 <span class="cstat-no" title="statement not covered" >    const j = Math.floor(Math.random() * (i + 1));</span>
 <span class="cstat-no" title="statement not covered" >    [objects[i], objects[j]] = [objects[j], objects[i]];</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
-  
+<span class="cstat-no" title="statement not covered" >  </span>
 <span class="cstat-no" title="statement not covered" >  const selectedItems = objects.slice(0, itemCount);</span>
-<span class="cstat-no" title="statement not covered" >  const correctSequence = selectedItems.map(item =&gt; item.id);</span>
+<span class="cstat-no" title="statement not covered" >  c</span>onst correctSequence = selectedItems.map(item =&gt; item.id);
   
-<span class="cstat-no" title="statement not covered" >  return {</span>
-<span class="cstat-no" title="statement not covered" >    id: `sequence_${Date.now()}`,</span>
-<span class="cstat-no" title="statement not covered" >    type: 'sequence_recall',</span>
+  return {
+    id: `sequence_${Date.now()}`,
+    type: 'sequence_recall',
 <span class="cstat-no" title="statement not covered" >    title: 'Picture Sequence Memory',</span>
-<span class="cstat-no" title="statement not covered" >    instruction: `Remember the order of these ${itemCount} pictures. You'll need to put them back in the correct order.`,</span>
+<span class="cstat-no" title="statement not covered" >    instruction: `Remember the order</span> of these ${itemCount} pictures. You'll need to put them back in the correct order.`,
 <span class="cstat-no" title="statement not covered" >    items: selectedItems,</span>
-<span class="cstat-no" title="statement not covered" >    correctSequence,</span>
-<span class="cstat-no" title="statement not covered" >    difficulty: difficulty as 1 | 2 | 3 | 4 | 5</span>
+    correctSequence,
+    difficulty: difficulty as 1 | 2 | 3 | 4 | 5
 <span class="cstat-no" title="statement not covered" >  };</span>
 <span class="cstat-no" title="statement not covered" >};</span>
-&nbsp;
-/**
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
  * Generate a missing object question
- */
-<span class="cstat-no" title="statement not covered" >export const generateMissingObjectQuestion = (difficulty: number): SequenceQuestion =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >  const objects = [...memoryItems];</span>
-<span class="cstat-no" title="statement not covered" >  const showCount = Math.min(4 + difficulty, 6);</span>
+<span class="cstat-no" title="statement not covered" > */</span>
+<span class="cstat-no" title="statement not covered" >export const generateMissingObjectQuestion = (difficulty: numb</span>er, items: MemoryItem[]): SequenceQuestion =&gt; {
+  const objects = [...items];
+<span class="cstat-no" title="statement not covered" >  const sho</span>wCount = Math.min(4 + difficulty, 6);
 <span class="cstat-no" title="statement not covered" >  const choiceCount = 4;</span>
-  
-  // Shuffle objects
+<span class="cstat-no" title="statement not covered" >  </span>
+<span class="cstat-no" title="statement not covered" >  // Shuffle objects</span>
 <span class="cstat-no" title="statement not covered" >  for (let i = objects.length - 1; i &gt; 0; i--) {</span>
-<span class="cstat-no" title="statement not covered" >    const j = Math.floor(Math.random() * (i + 1));</span>
-<span class="cstat-no" title="statement not covered" >    [objects[i], objects[j]] = [objects[j], objects[i]];</span>
+<span class="cstat-no" title="statement not covered" >    const j = Math.floor(M</span>ath.random() * (i + 1));
+<span class="cstat-no" title="statement not covered" >    [objects[i], obje</span>cts[j]] = [objects[j], objects[i]];
 <span class="cstat-no" title="statement not covered" >  }</span>
+<span class="cstat-no" title="statement not covered" >  </span>
+<span class="cstat-no" title="statement not covered" >  c</span>onst objectsToShow = objects.slice(0, showCount);
+  const correctAnswerItem = objectsToShow[Math.floor(Math.random() * objectsToShow.length)];
   
-<span class="cstat-no" title="statement not covered" >  const objectsToShow = objects.slice(0, showCount);</span>
-<span class="cstat-no" title="statement not covered" >  const correctAnswerItem = objectsToShow[Math.floor(Math.random() * objectsToShow.length)];</span>
-  
-<span class="cstat-no" title="statement not covered" >  const remainingObjects = objects.filter(item =&gt; !objectsToShow.some(shown =&gt; shown.id === item.id));</span>
-<span class="cstat-no" title="statement not covered" >  const decoyChoices = remainingObjects.slice(0, choiceCount - 1);</span>
-  
-  // Shuffle choices
-<span class="cstat-no" title="statement not covered" >  const allChoices = [correctAnswerItem, ...decoyChoices];</span>
-<span class="cstat-no" title="statement not covered" >  for (let i = allChoices.length - 1; i &gt; 0; i--) {</span>
-<span class="cstat-no" title="statement not covered" >    const j = Math.floor(Math.random() * (i + 1));</span>
-<span class="cstat-no" title="statement not covered" >    [allChoices[i], allChoices[j]] = [allChoices[j], allChoices[i]];</span>
+  const remainingObjects = objects.filter(item =&gt; !objectsToShow.some(shown =&gt; shown.id === item.id));
+  const decoyChoices = remainingObjects.slice(0, choiceCount - 1);
+<span class="cstat-no" title="statement not covered" >  </span>
+<span class="cstat-no" title="statement not covered" >  // Shuffle choices</span>
+<span class="cstat-no" title="statement not covered" >  const allChoices = [correctAnswerItem, ...decoy</span>Choices];
+<span class="cstat-no" title="statement not covered" >  for (let i = allChoices</span>.length - 1; i &gt; 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [allChoices[i], allChoices[j]] = [allChoices[j], allChoices[i]];
 <span class="cstat-no" title="statement not covered" >  }</span>
-  
+<span class="cstat-no" title="statement not covered" >  </span>
 <span class="cstat-no" title="statement not covered" >  return {</span>
-<span class="cstat-no" title="statement not covered" >    id: `missing_${Date.now()}`,</span>
-<span class="cstat-no" title="statement not covered" >    type: 'missing_object',</span>
+<span class="cstat-no" title="statement not covered" ></span>    id: `missing_${Date.now()}`,
+    type: 'missing_object',
 <span class="cstat-no" title="statement not covered" >    title: 'Missing Object Memory',</span>
-<span class="cstat-no" title="statement not covered" >    instruction: `Look at these ${showCount} objects carefully. Then pick the one that was in the original group!`,</span>
-<span class="cstat-no" title="statement not covered" >    items: objectsToShow,</span>
+<span class="cstat-no" title="statement not covered" >    instruction: `Look at these ${showCount} objects carefully. Then pick the one that was in</span> the original group!`,
+    items: objectsToShow,
 <span class="cstat-no" title="statement not covered" >    missingItemId: correctAnswerItem.id,</span>
 <span class="cstat-no" title="statement not covered" >    allChoices,</span>
-<span class="cstat-no" title="statement not covered" >    difficulty: difficulty as 1 | 2 | 3 | 4 | 5</span>
-<span class="cstat-no" title="statement not covered" >  };</span>
+    difficulty: difficulty as 1 | 2 | 3 | 4 | 5
+  };
 <span class="cstat-no" title="statement not covered" >};</span>
-&nbsp;
-/**
- * Verify sequence answer (server-side validation)
- */
-<span class="cstat-no" title="statement not covered" >export const checkSequenceAnswer = (submittedSequence: string[], correctSequence: string[]): boolean =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >  if (submittedSequence.length !== correctSequence.length) return false;</span>
-<span class="cstat-no" title="statement not covered" >  return submittedSequence.every((id, index) =&gt; id === correctSequence[index]);</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
+<span class="cstat-no" title="statement not covered" > * Verify sequence answer (server-side validation)</span>
+<span class="cstat-no" title="statement not covered" > */</span>
+export const checkSequenceAnswer = (submittedSequence: string[], correctSequence: string[]): boolean =&gt; {
+<span class="cstat-no" title="statement not covered" >  if (submi</span>ttedSequence.length !== correctSequence.length) return false;
+<span class="cstat-no" title="statement not covered" >  return submittedSequence.every(</span>(id, index) =&gt; id === correctSequence[index]);
 <span class="cstat-no" title="statement not covered" >};</span>
-&nbsp;
-/**
- * Verify missing object answer (server-side validation)
- */
-<span class="cstat-no" title="statement not covered" >export const checkMissingObjectAnswer = (selectedId: string, correctId: string): boolean =&gt; {</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
+<span class="cstat-no" title="statement not covered" > * Verify missing object a</span>nswer (server-side validation)
+<span class="cstat-no" title="statement not covered" > */</span>
+<span class="cstat-no" title="statement not covered" >export const che</span>ckMissingObjectAnswer = (selectedId: string, correctId: string): boolean =&gt; {
 <span class="cstat-no" title="statement not covered" >  return selectedId === correctId;</span>
 <span class="cstat-no" title="statement not covered" >};</span>
-&nbsp;
+<span class="cstat-no" title="statement not covered" ></span>
 /**
  * Performance evaluation
  */
-<span class="cstat-no" title="statement not covered" >export const evaluatePerformance = (correctAnswers: number, totalQuestions: number, difficulty: number) =&gt; {</span>
+export const evaluatePerformance = (correctAnswers: number, totalQuestions: number, difficulty: number) =&gt; {
 <span class="cstat-no" title="statement not covered" >  const percentage = (correctAnswers / totalQuestions) * 100;</span>
 <span class="cstat-no" title="statement not covered" >  const difficultyBonus = difficulty * 5;</span>
 <span class="cstat-no" title="statement not covered" >  const finalScore = Math.min(percentage + difficultyBonus, 100);</span>
-  
-<span class="cstat-no" title="statement not covered" >  let level = 'Needs Practice';</span>
-<span class="cstat-no" title="statement not covered" >  if (finalScore &gt;= 90) level = 'Excellent';</span>
-<span class="cstat-no" title="statement not covered" >  else if (finalScore &gt;= 75) level = 'Very Good';</span>
-<span class="cstat-no" title="statement not covered" >  else if (finalScore &gt;= 60) level = 'Good';</span>
+<span class="cstat-no" title="statement not covered" >  </span>
+  let level = 'Needs Practice';
+  if (finalScore &gt;= 90) level = 'Excellent';
+  else if (finalScore &gt;= 75) level = 'Very Good';
+  else if (finalScore &gt;= 60) level = 'Good';
 <span class="cstat-no" title="statement not covered" >  else if (finalScore &gt;= 45) level = 'Fair';</span>
-  
-<span class="cstat-no" title="statement not covered" >  return {</span>
-<span class="cstat-no" title="statement not covered" >    percentage: Math.round(percentage),</span>
-<span class="cstat-no" title="statement not covered" >    finalScore: Math.round(finalScore),</span>
-<span class="cstat-no" title="statement not covered" >    level,</span>
-<span class="cstat-no" title="statement not covered" >    recommendations: getRecommendations(level)</span>
+<span class="cstat-no" title="statement not covered" >  </span>
+<span class="cstat-no" title="statement not covered" >  r</span>eturn {
+    percentage: Math.round(percentage),
+    finalScore: Math.round(finalScore),
+    level,
+    recommendations: getRecommendations(level)
 <span class="cstat-no" title="statement not covered" >  };</span>
 <span class="cstat-no" title="statement not covered" >};</span>
-&nbsp;
+<span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >const getRecommendations = (level: string): string[] =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >  const recommendations: Record&lt;string, string[]&gt; = {</span>
+  const recommendations: Record&lt;string, string[]&gt; = {
 <span class="cstat-no" title="statement not covered" >    'Excellent': [</span>
-<span class="cstat-no" title="statement not covered" >      'Continue challenging yourself with more complex sequences',</span>
+<span class="cstat-no" title="statement not covered" >      'Continue challenging yourself with mor</span>e complex sequences',
 <span class="cstat-no" title="statement not covered" >      'Try real-world memory games and puzzles',</span>
-<span class="cstat-no" title="statement not covered" >      'Practice with longer sequences to maintain skills'</span>
+<span class="cstat-no" title="statement not covered" >      'Practice with longer sequences to main</span>tain skills'
 <span class="cstat-no" title="statement not covered" >    ],</span>
-<span class="cstat-no" title="statement not covered" >    'Very Good': [</span>
-<span class="cstat-no" title="statement not covered" >      'Practice with slightly longer sequences',</span>
-<span class="cstat-no" title="statement not covered" >      'Try memory games with more items',</span>
-<span class="cstat-no" title="statement not covered" >      'Focus on visual attention during presentations'</span>
+    'Very Good': [
+<span class="cstat-no" title="statement not covered" >      'Prac</span>tice with slightly longer sequences',
+<span class="cstat-no" title="statement not covered" >      'Try memory games with more items'</span>,
+<span class="cstat-no" title="statement not covered" >      'Focus on visual attention during </span>presentations'
 <span class="cstat-no" title="statement not covered" >    ],</span>
 <span class="cstat-no" title="statement not covered" >    'Good': [</span>
-<span class="cstat-no" title="statement not covered" >      'Practice daily with simple memory exercises',</span>
-<span class="cstat-no" title="statement not covered" >      'Use memory strategies like grouping items',</span>
-<span class="cstat-no" title="statement not covered" >      'Increase focus time gradually'</span>
+<span class="cstat-no" title="statement not covered" ></span>      'Practice daily with simple memory exercises',
+<span class="cstat-no" title="statement not covered" ></span>      'Use memory strategies like grouping items',
+      'Increase focus time gradually'
 <span class="cstat-no" title="statement not covered" >    ],</span>
 <span class="cstat-no" title="statement not covered" >    'Fair': [</span>
-<span class="cstat-no" title="statement not covered" >      'Start with shorter sequences (2-3 items)',</span>
+<span class="cstat-no" title="statement not covered" >      'Start with s</span>horter sequences (2-3 items)',
 <span class="cstat-no" title="statement not covered" >      'Practice memory games regularly',</span>
-<span class="cstat-no" title="statement not covered" >      'Use visual and verbal rehearsal strategies'</span>
+<span class="cstat-no" title="statement not covered" >      'Use visual and verbal rehearsal strategies</span>'
 <span class="cstat-no" title="statement not covered" >    ],</span>
-<span class="cstat-no" title="statement not covered" >    'Needs Practice': [</span>
-<span class="cstat-no" title="statement not covered" >      'Begin with very simple 2-item sequences',</span>
-<span class="cstat-no" title="statement not covered" >      'Practice basic attention and focus exercises',</span>
-<span class="cstat-no" title="statement not covered" >      'Consider working with a learning specialist'</span>
+<span class="cstat-no" title="statement not covered" >    'Ne</span>eds Practice': [
+<span class="cstat-no" title="statement not covered" >      'Begin with v</span>ery simple 2-item sequences',
+<span class="cstat-no" title="statement not covered" >      'Practice basic attention and focus exercis</span>es',
+<span class="cstat-no" title="statement not covered" >      'Consider working with a learning sp</span>ecialist'
 <span class="cstat-no" title="statement not covered" >    ]</span>
 <span class="cstat-no" title="statement not covered" >  };</span>
-  
-<span class="cstat-no" title="statement not covered" >  return recommendations[level] || recommendations['Fair'];</span>
+<span class="cstat-no" title="statement not covered" >  </span>
+<span class="cstat-no" title="statement not covered" >  return recommendations[level] || recommendations['F</span>air'];
 <span class="cstat-no" title="statement not covered" >};</span>
-&nbsp;</pre></td></tr></table></pre>
+<span class="cstat-no" title="statement not covered" ></span></pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-05-02T08:57:13.328Z
+                at 2026-05-30T07:42:16.084Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/270</span>
+                <span class='fraction'>0/266</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/270</span>
+                <span class='fraction'>0/266</span>
             </div>
         
             
@@ -391,30 +391,12 @@
 <a name='L326'></a><a href='#L326'>326</a>
 <a name='L327'></a><a href='#L327'>327</a>
 <a name='L328'></a><a href='#L328'>328</a>
-<a name='L329'></a><a href='#L329'>329</a>
-<a name='L330'></a><a href='#L330'>330</a>
-<a name='L331'></a><a href='#L331'>331</a>
-<a name='L332'></a><a href='#L332'>332</a>
-<a name='L333'></a><a href='#L333'>333</a>
-<a name='L334'></a><a href='#L334'>334</a>
-<a name='L335'></a><a href='#L335'>335</a>
-<a name='L336'></a><a href='#L336'>336</a>
-<a name='L337'></a><a href='#L337'>337</a>
-<a name='L338'></a><a href='#L338'>338</a>
-<a name='L339'></a><a href='#L339'>339</a>
-<a name='L340'></a><a href='#L340'>340</a>
-<a name='L341'></a><a href='#L341'>341</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L329'></a><a href='#L329'>329</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -445,12 +427,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -749,16 +725,10 @@
 <span class="cstat-no" title="statement not covered" >import { ProgressTracker } from '../utils/progressTracker';</span>
 <span class="cstat-no" title="statement not covered" >import { ROUTES } from '../routes';</span>
 <span class="cstat-no" title="statement not covered" >import FloatingBackground from '../components/FloatingBackground';</span>
-&nbsp;
-// API types (no correctAnswer exposed)
-interface SentenceDifferenceQuestion {
-  id: number;
-  sentenceA: string;
-  sentenceB: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-}
-&nbsp;
-<span class="cstat-no" title="statement not covered" >const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';</span>
+import {
+  getSentenceDifferenceQuestions,
+  type SentenceDifferenceQuestion,
+<span class="cstat-no" title="statement not covered" >} from '../services/sentenceDifferenceService';</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >const SentenceDifferenceQuiz: React.FC = () =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >  const navigate = useNavigate();</span>
@@ -783,18 +753,12 @@ interface SentenceDifferenceQuestion {
 <span class="cstat-no" title="statement not covered" >      setError(null);</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      try {</span>
-<span class="cstat-no" title="statement not covered" >        const response = await fetch(`${API_BASE_URL}/api/quiz-content/sentence-difference/questions`);</span>
-<span class="cstat-no" title="statement not covered" >        if (!response.ok) {</span>
-<span class="cstat-no" title="statement not covered" >          throw new Error('Failed to fetch questions');</span>
-<span class="cstat-no" title="statement not covered" >        }</span>
-&nbsp;
-<span class="cstat-no" title="statement not covered" >        const data = await response.json();</span>
-<span class="cstat-no" title="statement not covered" >        if (data.success &amp;&amp; data.questions) {</span>
-          // Shuffle and take a subset for the quiz
-<span class="cstat-no" title="statement not covered" >          const shuffled = [...data.questions].sort(() =&gt; Math.random() - 0.5);</span>
+<span class="cstat-no" title="statement not covered" >        const loadedQuestions = await getSentenceDifferenceQuestions();</span>
+<span class="cstat-no" title="statement not covered" >        if (loadedQuestions.length &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >          const shuffled = [...loadedQuestions].sort(() =&gt; Math.random() - 0.5);</span>
 <span class="cstat-no" title="statement not covered" >          setQuestions(shuffled.slice(0, 10)); // Limit to 10 questions</span>
 <span class="cstat-no" title="statement not covered" >        } else {</span>
-<span class="cstat-no" title="statement not covered" >          throw new Error(data.error || 'Invalid response');</span>
+<span class="cstat-no" title="statement not covered" >          throw new Error('No sentence difference questions are available.');</span>
 <span class="cstat-no" title="statement not covered" >        }</span>
 <span class="cstat-no" title="statement not covered" >      } catch (err) {</span>
 <span class="cstat-no" title="statement not covered" >        setError(err instanceof Error ? err.message : 'Failed to load questions');</span>
@@ -1090,7 +1054,7 @@ interface SentenceDifferenceQuestion {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-05-02T08:57:13.328Z
+                at 2026-05-30T07:42:16.084Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
