@@ -29,7 +29,7 @@ export interface ProgressData {
 }
 
 // Mind section quiz configurations - Only Mind category quizzes
-// Attention/Memory: Attention Questionnaire, Picture Sequence, Flash Word
+// Attention/Memory: Attention Questionnaire, Picture Sequence
 // Learning Style: Learning Style Quiz
 // Critical Thinking: Analogy Quiz, Category Quiz
 // Perception: Find Sentence Differences, Logical Sequencing, Missing Object
@@ -45,12 +45,6 @@ export const MIND_QUIZZES = [
     name: 'Picture Sequence',
     subcategory: 'memory',
     route: '/memory-assessment'
-  },
-  {
-    id: 'flash-word-quiz',
-    name: 'Flash Word Quiz',
-    subcategory: 'memory',
-    route: '/flash-word-quiz'
   },
   {
     id: 'learning-styles',

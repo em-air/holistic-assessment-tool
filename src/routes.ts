@@ -27,7 +27,6 @@ export const ROUTES = {
   ATTENTION_MEMORY: '/category/mind/attention-memory',
   ATTENTION_QUIZ: '/category/mind/attention-memory/attention-quiz',
   PICTURE_SEQUENCE: '/category/mind/attention-memory/picture-sequence',
-  FLASH_WORD: '/category/mind/attention-memory/flash-word',
 
   // Perception
   PERCEPTION_SELECTION: '/category/mind/perception-selection',
@@ -42,6 +41,7 @@ export const ROUTES = {
 
   // Learning Style
   LEARNING_STYLES_QUIZ: '/learning-styles-quiz',
+  KOLB_LEARNING_STYLE_QUIZ: '/kolb-learning-style-quiz',
 
   // ── Oral Skills ──────────────────────────────────────────────────
   ORAL_LANGUAGE_SELECTION: '/category/oral-skills/oral-language-selection',
@@ -70,7 +70,6 @@ export const ROUTES = {
   CRITICAL_THINKING_FLAT: '/critical-thinking',
   ANALOGY_QUIZ_FLAT: '/analogy-quiz',
   CATEGORY_QUIZ_FLAT: '/category-quiz',
-  FLASH_WORD_QUIZ_FLAT: '/flash-word-quiz',
   ORAL_LANGUAGE_QUIZ_FLAT: '/oral-language-quiz',
   STORY_RETELL_QUIZ_FLAT: '/story-retell-quiz',
 } as const;

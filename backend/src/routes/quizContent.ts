@@ -92,8 +92,6 @@ const missingObjectValidateSchema = z.object({
   answer: z.string().min(1),
 });
 
-const flashWordGradeSchema = z.enum(['grade1', 'grade2', 'grade3', 'grade4']);
-
 const readingAssessmentGradeSchema = z.coerce.number().int().min(1).max(8);
 
 const criticalThinkingValidateSchema = z.object({
@@ -365,28 +363,6 @@ router.post('/story-retell/validate', verifySupabaseToken, async (req: Request, 
   } catch (error) {
     logger.error(error, 'Validate story retell error:');
     res.status(500).json({ error: 'Failed to validate' });
-  }
-});
-
-// ─── FLASH WORD ROUTES ───────────────────────────────────────────────────────
-
-router.get('/flash-word/grades', async (_req: Request, res: Response) => {
-  try {
-    res.json({ success: true, grades: await QuizDb.getFlashWordGrades() });
-  } catch (error) {
-    logger.error(error, 'Get flash word grades error:');
-    res.status(500).json({ error: 'Failed to get flash word grades' });
-  }
-});
-
-router.get('/flash-word/questions/:grade', async (req: Request, res: Response) => {
-  try {
-    const validation = flashWordGradeSchema.safeParse(req.params.grade);
-    if (!validation.success) return res.status(400).json({ error: 'Invalid grade' });
-    res.json({ success: true, words: await QuizDb.getFlashWordsByGrade(validation.data) });
-  } catch (error) {
-    logger.error(error, 'Get flash word questions error:');
-    res.status(500).json({ error: 'Failed to get flash word questions' });
   }
 });
 

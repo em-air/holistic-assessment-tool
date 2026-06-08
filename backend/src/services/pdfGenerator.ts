@@ -357,7 +357,7 @@ function createDocSetup(data: ReportData, arabicFont: Buffer | null): DocSetup {
 // ═══════════════════════════════════════════════════════════════════
 
 const MIND_QUIZ_IDS = [
-  'attention-assessment', 'picture-sequence', 'flash-word-quiz',
+  'attention-assessment', 'picture-sequence',
   'learning-styles', 'analogy-quiz', 'category-quiz',
   'sentence-difference-quiz', 'logical-sequencing-quiz', 'missing-object-quiz',
 ];
@@ -365,7 +365,6 @@ const MIND_QUIZ_IDS = [
 const mindQuizDisplayName: Record<string, string> = {
   'attention-assessment': 'Attention Control Assessment',
   'picture-sequence': 'Picture Sequence Memory',
-  'flash-word-quiz': 'Flash Word Recognition',
   'learning-styles': 'Learning Style Inventory',
   'analogy-quiz': 'Analogy Reasoning',
   'category-quiz': 'Category Classification',
@@ -415,10 +414,6 @@ function getTeacherParagraphEn(result: QuizResult): string {
       if (pct >= 75) return 'The student demonstrates strong sequential memory and the ability to organise events in logical order. This skill supports reading comprehension, following multi-step classroom instructions, and understanding cause-and-effect relationships in subjects like science and history.';
       if (pct >= 60) return 'The student shows developing sequential memory. They can order familiar events but may need visual supports for complex sequences. Consider using graphic organisers, story maps, and numbered step-by-step instructions.';
       return 'The student finds it challenging to arrange events in order. They may benefit from daily sequencing practice such as retelling a story in order, arranging picture cards, and using visual timelines alongside verbal instructions.';
-    case 'flash-word-quiz':
-      if (pct >= 75) return 'The student shows rapid word recognition and strong visual memory for text. This supports reading fluency because the student can identify words quickly without needing to decode each one. Encourage exposure to varied reading materials to continue building sight-word vocabulary.';
-      if (pct >= 60) return 'The student is developing automatic word recognition. Some common words are recognised quickly, while others may still require decoding. Flash card practice and repeated reading of familiar texts can build speed and confidence.';
-      return 'The student needs significant support with rapid word recognition. Slow word identification affects reading fluency and comprehension. Consider daily flash-card drills with high-frequency words, paired reading, and multi-sensory word games.';
     case 'learning-styles': {
       const style = ad?.dominantStyle;
       if (style === 'visual') return 'The student is a visual learner who learns best through diagrams, charts, colour-coding, and written instructions. Provide written task outlines, use highlighters for key information, and incorporate visual aids such as mind maps or infographics.';
@@ -490,10 +485,6 @@ function getParentAdviceEn(result: QuizResult): string {
       if (pct >= 75) return 'Your child is great at remembering things in order! You can keep building this by asking them to retell their day in sequence ("What happened first? Then what?") and by reading stories together and discussing the order of events.';
       if (pct >= 60) return 'Your child is developing their ability to put events in order. At home, try letting them help with step-by-step tasks like following a simple recipe or arranging family photos by date. This everyday practice strengthens sequencing skills.';
       return 'Your child finds it a bit tricky to arrange things in order. You can help by doing simple sequencing activities together—like sorting picture cards of a story, describing what you did today step by step, or numbering instructions before starting a task.';
-    case 'flash-word-quiz':
-      if (pct >= 75) return 'Your child recognises words quickly, which is great for reading fluency! Continue reading together daily and point out new words in books, signs, and menus to keep expanding their sight-word vocabulary.';
-      if (pct >= 60) return 'Your child is building their ability to recognise words quickly. Play simple word games at home—flash cards with common words, labelling items around the house, and reading favourite books repeatedly so words become familiar.';
-      return 'Your child needs practice recognising common words quickly, which is important for smooth reading. Try daily flash-card games with 5–10 high-frequency words, read together every night, and point out familiar words on signs and packaging during outings.';
     case 'learning-styles': {
       const style = ad?.dominantStyle;
       if (style === 'visual') return 'Your child learns best by seeing. When helping with homework, use colours, drawings, and diagrams. Watch educational videos together and hang visual reminders (charts or checklists) in their study area.';
@@ -564,10 +555,6 @@ function getTeacherParagraphAr(result: QuizResult): string {
       if (pct >= 75) return reshapeArabic('يُظهر الطالب ذاكرة تسلسلية قوية وقدرة على ترتيب الأحداث بشكل منطقي. تدعم هذه المهارة فهم القراءة واتباع التعليمات متعددة الخطوات.');
       if (pct >= 60) return reshapeArabic('يُظهر الطالب ذاكرة تسلسلية متطورة. يمكنه ترتيب الأحداث المألوفة لكنه قد يحتاج دعمًا بصريًا للتسلسلات المعقدة. يُنصح باستخدام المنظمات البيانية وخرائط القصص.');
       return reshapeArabic('يجد الطالب صعوبة في ترتيب الأحداث. قد يستفيد من ممارسة التسلسل اليومية مثل إعادة سرد القصص بالترتيب واستخدام بطاقات الصور والجداول الزمنية المرئية.');
-    case 'flash-word-quiz':
-      if (pct >= 75) return reshapeArabic('يُظهر الطالب تعرفًا سريعًا على الكلمات وذاكرة بصرية قوية للنص. يدعم ذلك طلاقة القراءة. شجع التعرض لمواد قراءة متنوعة لبناء مفردات الكلمات البصرية.');
-      if (pct >= 60) return reshapeArabic('يطور الطالب التعرف التلقائي على الكلمات. بعض الكلمات الشائعة يتعرف عليها بسرعة بينما قد تحتاج أخرى للفك. يُنصح بتدريبات البطاقات والقراءة المتكررة.');
-      return reshapeArabic('يحتاج الطالب دعمًا كبيرًا في التعرف السريع على الكلمات. فكر في تدريبات البطاقات اليومية للكلمات عالية التردد والقراءة المزدوجة وألعاب الكلمات متعددة الحواس.');
     case 'learning-styles': {
       const ad = parseAdditionalData(result.additional_data);
       const style = ad?.dominantStyle;
@@ -639,10 +626,6 @@ function getParentAdviceAr(result: QuizResult): string {
       if (pct >= 75) return reshapeArabic('طفلك رائع في تذكر الأشياء بالترتيب! يمكنك تعزيز ذلك بسؤاله عن إعادة سرد يومه بالتسلسل وقراءة القصص معًا ومناقشة ترتيب الأحداث.');
       if (pct >= 60) return reshapeArabic('طفلك يطور قدرته على ترتيب الأحداث. جرب إشراكه في مهام تتبع خطوات مثل اتباع وصفة بسيطة أو ترتيب صور العائلة حسب التاريخ.');
       return reshapeArabic('يجد طفلك صعوبة في ترتيب الأشياء. يمكنك المساعدة بأنشطة تسلسل بسيطة مثل فرز بطاقات الصور لقصة أو وصف ما فعلتم اليوم خطوة بخطوة.');
-    case 'flash-word-quiz':
-      if (pct >= 75) return reshapeArabic('طفلك يتعرف على الكلمات بسرعة وهذا رائع لطلاقة القراءة! استمر في القراءة معًا يوميًا وأشر إلى كلمات جديدة في الكتب والعلامات.');
-      if (pct >= 60) return reshapeArabic('طفلك يبني قدرته على التعرف السريع على الكلمات. العب ألعاب كلمات بسيطة في المنزل مثل البطاقات للكلمات الشائعة وتسمية الأشياء حول المنزل.');
-      return reshapeArabic('يحتاج طفلك لممارسة التعرف على الكلمات الشائعة بسرعة. جرب ألعاب البطاقات اليومية واقرأ معًا كل ليلة وأشر إلى الكلمات المألوفة أثناء الخروج.');
     case 'learning-styles': {
       const ad = parseAdditionalData(result.additional_data);
       const style = ad?.dominantStyle;

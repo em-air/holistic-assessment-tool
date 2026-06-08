@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Brain, Target, Eye, Focus, Hash, Zap } from 'lucide-react';
+import { ArrowLeft, Brain, Target, Eye, Focus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
@@ -31,16 +31,6 @@ const AttentionMemorySelection: React.FC = () => {
       color: 'bg-purple-500',
       route: ROUTES.PICTURE_SEQUENCE,
       startType: 'sequence_recall',
-      duration: '10 minutes'
-    },
-    {
-      id: 'flash-word-quiz',
-      title: 'Flash Word Quiz',
-      subtitle: 'Memory',
-      description: 'Quickly memorize and recall words shown briefly on screen.',
-      icon: Zap,
-      color: 'bg-orange-500',
-      route: ROUTES.FLASH_WORD,
       duration: '10 minutes'
     }
   ];
@@ -83,7 +73,7 @@ const AttentionMemorySelection: React.FC = () => {
         </motion.div>
 
         {/* Assessment Options */}
-        <div className="max-w-5xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="max-w-3xl mx-auto grid md:grid-cols-2 gap-6 justify-center">
           {assessmentOptions.map((option, index) => (
             <motion.div
               key={option.id}

@@ -38,6 +38,7 @@ const AttentionMemorySelection = lazy(() => import('./pages/AttentionMemorySelec
 const AttentionAssessment = lazy(() => import('./pages/AttentionAssessment'));
 const MemoryAssessment = lazy(() => import('./pages/MemoryAssessment'));
 const LearningStylesQuiz = lazy(() => import('./pages/LearningStylesQuiz'));
+const KolbLearningStyleQuiz = lazy(() => import('./pages/KolbLearningStyleQuiz'));
 const CriticalThinkingPage = lazy(() => import('./pages/CriticalThinkingPage'));
 const AnalogyQuiz = lazy(() => import('./pages/AnalogyQuiz'));
 const CategoryQuiz = lazy(() => import('./pages/CategoryQuiz'));
@@ -48,8 +49,6 @@ const OralLanguageSelection = lazy(() => import('./pages/OralLanguageSelection')
 const StoryRetellQuiz = lazy(() => import('./pages/StoryRetellQuiz'));
 const SentenceBuildingQuiz = lazy(() => import('./pages/SentenceBuildingQuiz'));
 const VocabularyMatching = lazy(() => import('./pages/VocabularyMatching'));
-const FlashWordQuiz = lazy(() => import('./pages/FlashWordQuiz'));
-
 // Academic assessments
 const SpellingTest = lazy(() => import('./pages/SpellingTest'));
 const WritingTest = lazy(() => import('./pages/WritingTest'));
@@ -86,7 +85,6 @@ const routeConfig: RouteEntry[] = [
   { path: ROUTES.ATTENTION_MEMORY, Component: AttentionMemorySelection },
   { path: ROUTES.ATTENTION_QUIZ, Component: AttentionAssessment },
   { path: ROUTES.PICTURE_SEQUENCE, Component: MemoryAssessment },
-  { path: ROUTES.FLASH_WORD, Component: FlashWordQuiz },
 
   // ── Mind – Perception ─────────────────────────────────────────────
   { path: ROUTES.PERCEPTION_SELECTION, Component: PerceptionQuizSelection },
@@ -100,8 +98,7 @@ const routeConfig: RouteEntry[] = [
   { path: ROUTES.CATEGORY_QUIZ, Component: CategoryQuiz },
 
   // ── Mind – Learning Style ─────────────────────────────────────────
-  { path: ROUTES.LEARNING_STYLES_QUIZ, Component: LearningStylesQuiz },
-
+  { path: ROUTES.LEARNING_STYLES_QUIZ, Component: LearningStylesQuiz },  { path: ROUTES.KOLB_LEARNING_STYLE_QUIZ, Component: KolbLearningStyleQuiz },
   // ── Oral Skills ───────────────────────────────────────────────────
   { path: ROUTES.ORAL_LANGUAGE_SELECTION, Component: OralLanguageSelection },
   { path: ROUTES.ORAL_SENTENCE_BUILDING, Component: SharedGradeSelectorPage },
@@ -137,7 +134,6 @@ const routeConfig: RouteEntry[] = [
   { path: ROUTES.CRITICAL_THINKING_FLAT, Component: CriticalThinkingPage },
   { path: ROUTES.ANALOGY_QUIZ_FLAT, Component: AnalogyQuiz },
   { path: ROUTES.CATEGORY_QUIZ_FLAT, Component: CategoryQuiz },
-  { path: ROUTES.FLASH_WORD_QUIZ_FLAT, Component: FlashWordQuiz },
 ];
 
 const motionProps = {

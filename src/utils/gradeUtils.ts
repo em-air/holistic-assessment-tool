@@ -38,7 +38,6 @@ export const QUIZ_ACCESS_RULES: Record<string, CategoryRules> = {
       'oral-language': { maxGrade: 4 },
       'sentence-building': { maxGrade: 4 },
       'vocabulary': { maxGrade: 6 },
-      'flash-words': { maxGrade: 3 },
     }
   },
   academic: {

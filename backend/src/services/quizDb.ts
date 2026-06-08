@@ -171,47 +171,6 @@ export async function getMissingObjectAnswerData(questionId: number): Promise<st
   return ((data?.answer_data) as Record<string, unknown>)?.correctAnswer as string ?? null;
 }
 
-// ─── Flash Words ──────────────────────────────────────────────────────────────
-
-export async function getFlashWordGrades() {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('grade')
-    .eq('quiz_type', 'flash-words')
-    .not('grade', 'is', null);
-  if (error) throw new Error(`getFlashWordGrades: ${error.message}`);
-  const grades = [...new Set((data ?? []).map(r => r.grade as string))].sort();
-  return grades.map(g => {
-    const gradeNum = Number(g.replace('Grade ', ''));
-    return {
-      grade: `grade${gradeNum}` as string,
-      wordCount: (data ?? []).filter(r => r.grade === g).length,
-    };
-  });
-}
-
-export async function getFlashWordsByGrade(gradeStr: string) {
-  // gradeStr is like 'grade1', 'grade2', etc.
-  const gradeNum = Number(gradeStr.replace('grade', ''));
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('id, content')
-    .eq('quiz_type', 'flash-words')
-    .eq('grade', `Grade ${gradeNum}`)
-    .order('order_index');
-  if (error) throw new Error(`getFlashWordsByGrade: ${error.message}`);
-  return (data ?? []).map(r => {
-    const c = r.content as Record<string, unknown>;
-    // id format: 'gradeN-wordId' — strip grade prefix
-    const wordId = (r.id as string).replace(`grade${gradeNum}-`, '');
-    return {
-      id: wordId,
-      image: c.image as string,
-      word: c.word as string,
-    };
-  });
-}
-
 // ─── Reading Assessment ───────────────────────────────────────────────────────
 
 export async function getReadingAssessmentContent(grade: number) {
