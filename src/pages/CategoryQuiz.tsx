@@ -6,7 +6,6 @@ import type { GradeLevel, CategoryQuestion, CategoryItem } from '../types/quiz';
 import { ROUTES } from '../routes';
 import FloatingBackground from '../components/FloatingBackground';
 import { ProgressTracker } from '../utils/progressTracker';
-import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 import {
   getCategoryQuestions,
@@ -391,13 +390,6 @@ const CategoryQuiz: React.FC = () => {
           </div>
 
           <div className="w-20"></div>
-        </div>
-
-        {/* Progress Bar for Mind Section */}
-        <div className="mb-6">
-          <AssessmentProgressBar
-            onShowReport={() => setShowReport(true)}
-          />
         </div>
 
         <AnimatePresence mode="wait">

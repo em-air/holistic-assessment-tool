@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, CheckCircle, Brain, Target, TrendingUp, AlertCircle, Star, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ProgressTracker } from '../utils/progressTracker';
-import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 import { ROUTES } from '../routes';
 import FloatingBackground from '../components/FloatingBackground';
@@ -138,13 +137,6 @@ const AttentionAssessment: React.FC = () => {
       <div className="min-h-screen bg-indigo-50 relative overflow-hidden py-8">
         <FloatingBackground />
         <div className="container mx-auto px-4 max-w-4xl relative z-10">
-          {/* Mind Section Progress Bar */}
-          <div className="mb-6">
-            <AssessmentProgressBar
-              onShowReport={() => setShowReport(true)}
-            />
-          </div>
-
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -350,13 +342,6 @@ const AttentionAssessment: React.FC = () => {
           </div>
         </div>
 
-        {/* Mind Section Progress Bar */}
-        <div className="mb-6">
-          <AssessmentProgressBar
-            onShowReport={() => setShowReport(true)}
-          />
-        </div>
-
         {/* Progress Bar */}
         <div className="w-full bg-white/30 rounded-full h-3 mb-8">
           <motion.div
@@ -403,7 +388,7 @@ const AttentionAssessment: React.FC = () => {
 
             {/* Response Options */}
             <div className="space-y-3">
-              {['Never', 'Sometimes', 'Often', 'Always'].map((option, index) => (
+              {['Never', 'Sometimes', 'Many Times', 'Always'].map((option, index) => (
                 <motion.button
                   key={index}
                   whileHover={{ scale: 1.02 }}

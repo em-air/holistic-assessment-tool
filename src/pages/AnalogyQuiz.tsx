@@ -12,7 +12,6 @@ const gradeOptions = [
   { value: 'grade4', label: 'Grade 4', description: 'Abstract reasoning and complex relationships' }
 ];
 import { ProgressTracker } from '../utils/progressTracker';
-import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 import FloatingBackground from '../components/FloatingBackground';
 import {
@@ -331,13 +330,6 @@ const AnalogyQuiz: React.FC = () => {
           </div>
 
           <div className="w-20"></div>
-        </div>
-
-        {/* Progress Bar for Mind Section */}
-        <div className="mb-6">
-          <AssessmentProgressBar
-            onShowReport={() => setShowReport(true)}
-          />
         </div>
 
         <AnimatePresence mode="wait">

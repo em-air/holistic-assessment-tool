@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import FloatingBackground from '../components/FloatingBackground';
-import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import { ROUTES } from '../routes';
 import {
   kolbQuestions,
@@ -426,11 +425,6 @@ const KolbLearningStyleQuiz: React.FC = () => {
           >
             Learning Style Quiz
           </motion.h1>
-        </div>
-
-        {/* Mind section progress bar */}
-        <div className="mb-6">
-          <AssessmentProgressBar onShowReport={() => setShowReport(true)} />
         </div>
 
         <AnimatePresence mode="wait">

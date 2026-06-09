@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Delete, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ProgressTracker } from '../utils/progressTracker';
-import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 import { ROUTES } from '../routes';
 import FloatingBackground from '../components/FloatingBackground';
@@ -201,11 +200,6 @@ const FlashWordQuiz: React.FC = () => {
               <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform duration-300" />
               <span className="font-medium">Back</span>
             </button>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="mb-8">
-            <AssessmentProgressBar onShowReport={() => setShowReport(true)} />
           </div>
 
           {/* Title */}

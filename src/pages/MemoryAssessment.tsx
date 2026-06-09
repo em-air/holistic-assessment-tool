@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Star, CheckCircle, XCircle, Clock, Brain } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ProgressTracker } from '../utils/progressTracker';
-import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 import { ROUTES } from '../routes';
 import FloatingBackground from '../components/FloatingBackground';
@@ -230,13 +229,6 @@ const MemoryAssessment: React.FC = () => {
       <div className="min-h-screen bg-indigo-50 relative overflow-hidden py-8">
         <FloatingBackground />
         <div className="container mx-auto px-4 max-w-4xl relative z-10">
-          {/* Mind Section Progress Bar */}
-          <div className="mb-6">
-            <AssessmentProgressBar
-              onShowReport={() => setShowReport(true)}
-            />
-          </div>
-
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -394,13 +386,6 @@ const MemoryAssessment: React.FC = () => {
           </div>
 
           <div className="w-20"></div> {/* Spacer for centering */}
-        </div>
-
-        {/* Mind Section Progress Bar */}
-        <div className="mb-6">
-          <AssessmentProgressBar
-            onShowReport={() => setShowReport(true)}
-          />
         </div>
 
         {/* Game Content */}

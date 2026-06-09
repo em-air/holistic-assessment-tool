@@ -701,7 +701,7 @@ router.get('/attention-control/questions', async (_req: Request, res: Response) 
   try {
     const allQuestions = await QuizDb.getAttentionControlQuestions();
     const questions = allQuestions.map(({ reverse: _r, ...q }) => q);
-    res.json({ success: true, questions, ratingLabels: { 1: 'Never', 2: 'Sometimes', 3: 'Often', 4: 'Always' } });
+    res.json({ success: true, questions, ratingLabels: { 1: 'Never', 2: 'Sometimes', 3: 'Many Times', 4: 'Always' } });
   } catch (error) {
     logger.error(error, 'Get attention control error:');
     res.status(500).json({ error: 'Failed to get questions' });

@@ -2,7 +2,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import FloatingBackground from '../components/FloatingBackground';
-import AssessmentProgressBar from '../components/AssessmentProgressBar';
 import MindSectionReport from '../components/MindSectionReport';
 import { ROUTES } from '../routes';
 import {
@@ -460,10 +459,6 @@ const LearningStylesQuiz: React.FC = () => {
           >
             Learning Styles Quiz
           </motion.h1>
-        </div>
-
-        <div className="mb-6">
-          <AssessmentProgressBar onShowReport={() => setShowReport(true)} />
         </div>
 
         <AnimatePresence mode="wait">
