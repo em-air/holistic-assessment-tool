@@ -43,6 +43,11 @@ export const ROUTES = {
   LEARNING_STYLES_QUIZ: '/learning-styles-quiz',
   KOLB_LEARNING_STYLE_QUIZ: '/kolb-learning-style-quiz',
 
+  // Learning Assessments (new structured routes)
+  LEARNING_ASSESSMENTS: '/assessments/learning',
+  LEARNING_PREFERENCES_QUIZ: '/assessments/learning/preferences',
+  SEL_QUIZ: '/assessments/learning/social-emotional',
+
   // ── Oral Skills ──────────────────────────────────────────────────
   ORAL_LANGUAGE_SELECTION: '/category/oral-skills/oral-language-selection',
   ORAL_SENTENCE_BUILDING: '/category/oral-skills/sentence-building',

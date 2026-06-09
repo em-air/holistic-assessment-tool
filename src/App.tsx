@@ -39,6 +39,8 @@ const AttentionAssessment = lazy(() => import('./pages/AttentionAssessment'));
 const MemoryAssessment = lazy(() => import('./pages/MemoryAssessment'));
 const LearningStylesQuiz = lazy(() => import('./pages/LearningStylesQuiz'));
 const KolbLearningStyleQuiz = lazy(() => import('./pages/KolbLearningStyleQuiz'));
+const LearningAssessmentsPage = lazy(() => import('./pages/LearningAssessmentsPage'));
+const SocialEmotionalQuiz = lazy(() => import('./pages/SocialEmotionalQuiz'));
 const CriticalThinkingPage = lazy(() => import('./pages/CriticalThinkingPage'));
 const AnalogyQuiz = lazy(() => import('./pages/AnalogyQuiz'));
 const CategoryQuiz = lazy(() => import('./pages/CategoryQuiz'));
@@ -98,7 +100,11 @@ const routeConfig: RouteEntry[] = [
   { path: ROUTES.CATEGORY_QUIZ, Component: CategoryQuiz },
 
   // ── Mind – Learning Style ─────────────────────────────────────────
-  { path: ROUTES.LEARNING_STYLES_QUIZ, Component: LearningStylesQuiz },  { path: ROUTES.KOLB_LEARNING_STYLE_QUIZ, Component: KolbLearningStyleQuiz },
+  { path: ROUTES.LEARNING_STYLES_QUIZ, Component: LearningStylesQuiz },
+  { path: ROUTES.KOLB_LEARNING_STYLE_QUIZ, Component: KolbLearningStyleQuiz },
+  { path: ROUTES.LEARNING_ASSESSMENTS, Component: LearningAssessmentsPage },
+  { path: ROUTES.LEARNING_PREFERENCES_QUIZ, Component: LearningStylesQuiz },
+  { path: ROUTES.SEL_QUIZ, Component: SocialEmotionalQuiz },
   // ── Oral Skills ───────────────────────────────────────────────────
   { path: ROUTES.ORAL_LANGUAGE_SELECTION, Component: OralLanguageSelection },
   { path: ROUTES.ORAL_SENTENCE_BUILDING, Component: SharedGradeSelectorPage },

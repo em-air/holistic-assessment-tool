@@ -18,7 +18,7 @@ export function getAssessmentSubcategoryTarget(
     case 'sentence-formation':
       return { path: ROUTES.VOCABULARY_MATCHING };
     case 'learning-style':
-      return { path: ROUTES.LEARNING_STYLES_QUIZ };
+      return { path: ROUTES.LEARNING_ASSESSMENTS };
     case 'perception':
       return { path: ROUTES.PERCEPTION_SELECTION };
     case 'spelling':
