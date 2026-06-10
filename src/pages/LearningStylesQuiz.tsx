@@ -406,7 +406,8 @@ const LearningStylesQuiz: React.FC = () => {
 
       ProgressTracker.saveQuizResult({
         quizId: 'learning-styles',
-        quizName: 'Learning Styles Quiz',
+        quizName: 'Learning Preferences Quiz',
+        category: 'learning',
         subcategory: 'learning-style',
         score: topScore,
         totalQuestions,
@@ -414,6 +415,10 @@ const LearningStylesQuiz: React.FC = () => {
         timeSpent,
         completedAt: new Date().toISOString(),
         additionalData: {
+          dominantStyle:
+            varkResult.primaryDimension === 'reading'
+              ? 'reading-writing'
+              : varkResult.primaryDimension,
           profileKey: varkResult.profileKey,
           isMixed: varkResult.isMixed,
           primaryDimension: varkResult.primaryDimension,

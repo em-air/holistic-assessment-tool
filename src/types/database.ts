@@ -15,7 +15,7 @@ export type GradeLevel =
 
 export type UserRole = 'student' | 'teacher' | 'admin';
 
-export type AssessmentCategory = 'mind' | 'oral' | 'academic';
+export type AssessmentCategory = 'mind' | 'oral' | 'academic' | 'learning';
 
 export type SessionStatus = 'in_progress' | 'completed' | 'abandoned';
 

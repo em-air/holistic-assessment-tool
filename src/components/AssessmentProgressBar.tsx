@@ -2,16 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckCircle, Circle, Trash2, Loader, LogIn,
-  ChevronDown, ChevronUp, Brain, MessageSquare, BookOpen, Download,
+  ChevronDown, ChevronUp, Brain, MessageSquare, BookOpen, Download, Heart,
 } from 'lucide-react';
 import {
   ProgressTracker,
   MIND_QUIZZES,
   ORAL_QUIZZES,
   ACADEMIC_QUIZZES,
+  LEARNING_QUIZZES,
   type ProgressData,
   type QuizResult,
 } from '../utils/progressTracker';
+import { getQuizResultLabel } from '../utils/quizResultDisplay';
 import { generateReport } from '../services/reportService';
 import { useNavigate } from 'react-router-dom';
 import { logger } from '../utils/logger';
@@ -35,6 +37,7 @@ const subcategoryMeta: Record<string, { label: string; color: string; bg: string
   'writing':            { label: 'Writing',                color: 'text-amber-600',  bg: 'bg-amber-100' },
   'reading':            { label: 'Reading',                color: 'text-emerald-600', bg: 'bg-emerald-100' },
   'vocabulary':         { label: 'Vocabulary',             color: 'text-rose-600',   bg: 'bg-rose-100' },
+  'social-emotional':   { label: 'Social-Emotional',       color: 'text-teal-600',   bg: 'bg-teal-100' },
 };
 
 const getSubMeta = (sub: string) =>
@@ -43,7 +46,7 @@ const getSubMeta = (sub: string) =>
 const perfLabel = (pct: number) =>
   pct >= 90 ? 'Excellent' : pct >= 75 ? 'Good' : pct >= 60 ? 'Developing' : 'Needs Support';
 
-type CategoryTab = 'cognition' | 'oral' | 'academic';
+type CategoryTab = 'cognition' | 'oral' | 'academic' | 'learning';
 
 /* ─── component ───────────────────────────────────────── */
 
@@ -102,15 +105,22 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
   const mindResults = progress.mindSectionResults ?? [];
   const oralResults = progress.oralSectionResults ?? [];
   const academicResults = progress.academicSectionResults ?? [];
+  const learningResults = progress.learningSectionResults ?? [];
 
-  const totalQuizzes = MIND_QUIZZES.length + ORAL_QUIZZES.length + ACADEMIC_QUIZZES.length;
+  const totalQuizzes =
+    MIND_QUIZZES.length +
+    ORAL_QUIZZES.length +
+    ACADEMIC_QUIZZES.length +
+    LEARNING_QUIZZES.length;
   const mindIds = new Set(MIND_QUIZZES.map(q => q.id));
   const oralIds = new Set(ORAL_QUIZZES.map(q => q.id));
   const acadIds = new Set(ACADEMIC_QUIZZES.map(q => q.id));
+  const learningIds = new Set(LEARNING_QUIZZES.map(q => q.id));
   const mindCount = mindResults.filter(r => mindIds.has(r.quizId)).length;
   const oralCount = oralResults.filter(r => oralIds.has(r.quizId)).length;
   const academicCount = academicResults.filter(r => acadIds.has(r.quizId)).length;
-  const completedCount = mindCount + oralCount + academicCount;
+  const learningCount = learningResults.filter(r => learningIds.has(r.quizId)).length;
+  const completedCount = mindCount + oralCount + academicCount + learningCount;
 
   const overallPct = totalQuizzes > 0 ? Math.round((completedCount / totalQuizzes) * 100) : 0;
   const hasAnyProgress = completedCount > 0;
@@ -250,33 +260,23 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
               <span className={`text-xs font-medium ${meta.color}`}>{meta.label}</span>
             </div>
           </div>
-          {done && result && (
-            <div className="text-right">
-              {result.quizId === 'learning-styles' && result.additionalData?.dominantStyle ? (
-                <>
-                  <div className={`text-sm font-bold ${meta.color}`}>
-                    {result.additionalData.dominantStyle === 'visual' ? 'Visual'
-                      : result.additionalData.dominantStyle === 'auditory' ? 'Auditory'
-                      : result.additionalData.dominantStyle === 'kinesthetic' ? 'Kinesthetic'
-                      : 'Reading/Writing'}
-                  </div>
-                  <div className="text-xs text-gray-500">Learning Style</div>
-                </>
-              ) : result.quizId === 'attention-assessment' ? (
-                <>
-                  <div className={`text-sm font-bold ${meta.color}`}>
-                    {result.additionalData?.attentionLevel || (result.percentage >= 75 ? 'Strong' : result.percentage >= 60 ? 'Moderate' : 'Developing')}
-                  </div>
-                  <div className="text-xs text-gray-500">Attention Level</div>
-                </>
-              ) : (
-                <>
-                  <div className={`text-sm font-bold ${meta.color}`}>{result.percentage}%</div>
-                  <div className="text-xs text-gray-500">{perfLabel(result.percentage)}</div>
-                </>
-              )}
-            </div>
-          )}
+          {done && result && (() => {
+            const label = getQuizResultLabel(result);
+            if (label) {
+              return (
+                <div className="text-right">
+                  <div className={`text-sm font-bold ${meta.color}`}>{label.value}</div>
+                  <div className="text-xs text-gray-500">{label.caption}</div>
+                </div>
+              );
+            }
+            return (
+              <div className="text-right">
+                <div className={`text-sm font-bold ${meta.color}`}>{result.percentage}%</div>
+                <div className="text-xs text-gray-500">{perfLabel(result.percentage)}</div>
+              </div>
+            );
+          })()}
         </div>
       );
     });
@@ -326,6 +326,7 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
     { key: 'cognition', icon: Brain, label: 'Cognition', completed: mindCount, total: MIND_QUIZZES.length, color: 'indigo' },
     { key: 'oral', icon: MessageSquare, label: 'Oral', completed: oralCount, total: ORAL_QUIZZES.length, color: 'sky' },
     { key: 'academic', icon: BookOpen, label: 'Academic', completed: academicCount, total: ACADEMIC_QUIZZES.length, color: 'amber' },
+    { key: 'learning', icon: Heart, label: 'Learning', completed: learningCount, total: LEARNING_QUIZZES.length, color: 'rose' },
   ];
 
   /* ── main render ─── */
@@ -395,8 +396,8 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
         </div>
       </div>
 
-      {/* Three category mini-bars */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
+      {/* Category mini-bars */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         <MiniBar
           icon={Brain}
           label="Cognition"
@@ -423,6 +424,15 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
           barColor="bg-amber-500"
           bgColor="bg-amber-50"
           textColor="text-amber-700"
+        />
+        <MiniBar
+          icon={Heart}
+          label="Learning"
+          completed={learningCount}
+          total={LEARNING_QUIZZES.length}
+          barColor="bg-rose-500"
+          bgColor="bg-rose-50"
+          textColor="text-rose-700"
         />
       </div>
 
@@ -485,6 +495,7 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
                   indigo: { active: 'bg-indigo-100 text-indigo-700', inactive: 'text-gray-600 hover:bg-gray-100' },
                   sky:    { active: 'bg-sky-100 text-sky-700',       inactive: 'text-gray-600 hover:bg-gray-100' },
                   amber:  { active: 'bg-amber-100 text-amber-700',  inactive: 'text-gray-600 hover:bg-gray-100' },
+                  rose:   { active: 'bg-rose-100 text-rose-700',    inactive: 'text-gray-600 hover:bg-gray-100' },
                 };
                 return (
                   <button
@@ -505,6 +516,7 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
               {detailTab === 'cognition' && renderQuizList(MIND_QUIZZES, mindResults)}
               {detailTab === 'oral' && renderQuizList(ORAL_QUIZZES, oralResults)}
               {detailTab === 'academic' && renderQuizList(ACADEMIC_QUIZZES, academicResults)}
+              {detailTab === 'learning' && renderQuizList(LEARNING_QUIZZES, learningResults)}
             </div>
           </motion.div>
         )}

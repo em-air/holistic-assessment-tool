@@ -43,7 +43,7 @@ router.post('/generate', verifySupabaseToken, async (req: Request, res: Response
     const { report_type, audience, language } = validation.data;
 
     // Fetch all quiz results
-    const [mindResults, oralResults, academicResults] = await Promise.all([
+    const [mindResults, oralResults, academicResults, learningResults] = await Promise.all([
       supabaseAdmin
         .from('quiz_results')
         .select('*')
@@ -62,14 +62,27 @@ router.post('/generate', verifySupabaseToken, async (req: Request, res: Response
         .eq('user_id', req.user.id)
         .eq('category', 'academic')
         .then(r => r.data || []),
+      supabaseAdmin
+        .from('quiz_results')
+        .select('*')
+        .eq('user_id', req.user.id)
+        .eq('category', 'learning')
+        .then(r => r.data || []),
     ]);
+
+    const filteredMindResults = mindResults.filter(r => !['learning-styles', 'social-emotional'].includes(r.quiz_id));
+    const mergedLearningResults = [
+      ...learningResults,
+      ...mindResults.filter(r => ['learning-styles', 'social-emotional'].includes(r.quiz_id)),
+    ];
 
     // Filter by report type
     const reportData = {
       profile: req.user.profile,
-      mindResults: report_type === 'full' || report_type === 'mind' ? mindResults : [],
+      mindResults: report_type === 'full' || report_type === 'mind' ? filteredMindResults : [],
       oralResults: report_type === 'full' || report_type === 'oral' ? oralResults : [],
       academicResults: report_type === 'full' || report_type === 'academic' ? academicResults : [],
+      learningResults: report_type === 'full' ? mergedLearningResults : [],
       generatedAt: new Date(),
       audience,
     };

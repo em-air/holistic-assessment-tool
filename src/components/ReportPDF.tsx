@@ -7,7 +7,8 @@ import {
   StyleSheet,
   Font,
 } from '@react-pdf/renderer';
-import { ProgressData, MIND_QUIZZES, ORAL_QUIZZES, ACADEMIC_QUIZZES } from '../utils/progressTracker';
+import { ProgressData, MIND_QUIZZES, ORAL_QUIZZES, ACADEMIC_QUIZZES, LEARNING_QUIZZES } from '../utils/progressTracker';
+import { getQuizResultLabel } from '../utils/quizResultDisplay';
 import {
   getSubcategoryNameBilingual,
   getSkillDescriptionBilingual,
@@ -115,6 +116,7 @@ const s = StyleSheet.create({
 
 const subName: Record<string, string> = {
   attention: 'Attention', memory: 'Memory', 'learning-style': 'Learning Style',
+  'social-emotional': 'Social-Emotional',
   'critical-thinking': 'Critical Thinking', perception: 'Perception',
   'oral-language': 'Oral Language',
   spelling: 'Spelling', writing: 'Writing Skills', vocabulary: 'Vocabulary',
@@ -144,16 +146,29 @@ const getAnalysis = (result: any): string => {
       ? 'Shows strong memory and recall abilities.'
       : 'Developing memory skills — memory games and exercises recommended.';
   if (cat === 'learning-style') {
-    if (result.additionalData?.dominantStyle) {
+    const style = result.additionalData?.dominantStyle
+      ?? (result.additionalData?.primaryDimension === 'reading'
+        ? 'reading-writing'
+        : result.additionalData?.primaryDimension);
+    if (style) {
       const d: Record<string, string> = {
         visual: 'Visual Learner — learns best through seeing, diagrams, charts.',
         auditory: 'Auditory Learner — learns best through listening and discussion.',
         'reading-writing': 'Reading/Writing Learner — learns best through written words.',
         kinesthetic: 'Kinesthetic Learner — learns best through hands-on activities.',
       };
-      return d[result.additionalData.dominantStyle] || 'Adapt teaching methods to match this preference.';
+      return d[style] || 'Adapt teaching methods to match this preference.';
     }
     return 'Still discovering optimal learning style — try different approaches.';
+  }
+  if (cat === 'social-emotional') {
+    if (result.additionalData?.description) return result.additionalData.description;
+    const labels: Record<string, string> = {
+      EA: 'Emotional Awareness Strength — good at noticing and understanding feelings.',
+      PS: 'Prosocial Strength — good at helping others and cooperating.',
+      SR: 'Self-Regulation Strength — good at staying calm and trying again.',
+    };
+    return labels[result.additionalData?.primaryStrength] || 'Social-emotional strengths identified through the SEL assessment.';
   }
   if (cat === 'critical-thinking')
     return pct >= 75 ? 'Demonstrates solid critical thinking abilities.' : 'Developing reasoning and problem-solving skills.';
@@ -281,6 +296,14 @@ const getTeacherParagraph = (result: any): string => {
       if (pct >= 75) return 'The student demonstrates strong visual perception and observation skills. They can quickly identify missing elements in visual scenes, which supports attention to detail, visual analysis, and spatial awareness in the classroom.';
       if (pct >= 60) return 'The student shows developing visual perception skills. They can identify some missing objects but may miss others. Practice with visual puzzles, spot-the-difference games, and observation activities can help strengthen this ability.';
       return 'The student has difficulty identifying missing objects in visual scenes, suggesting challenges with visual perception and observation. This may affect their ability to notice important details in visual materials and classroom activities. Consider using visual scanning exercises, I-spy games, and guided observation activities to develop these skills.';
+    case 'social-emotional': {
+      const ad = result.additionalData || {};
+      if (ad.description) return ad.description;
+      if (ad.primaryStrength === 'EA') return 'The student shows strength in emotional awareness and understanding feelings.';
+      if (ad.primaryStrength === 'PS') return 'The student shows prosocial strengths in helping others and cooperating with peers.';
+      if (ad.primaryStrength === 'SR') return 'The student shows self-regulation strengths in staying calm and persevering through challenges.';
+      return 'The student completed the Social-Emotional Learning assessment.';
+    }
     default:
       return '';
   }
@@ -382,12 +405,22 @@ const ReportPDF: React.FC<ReportPDFProps> = ({
   watermarkText = 'Bloom Tutoring',
   watermarkOpacity = 0.08,
 }) => {
-  const mindResults = progress.mindSectionResults ?? [];
+  const mindResults = (progress.mindSectionResults ?? []).filter(
+    r => !LEARNING_QUIZZES.some(q => q.id === r.quizId),
+  );
   const oralResults = progress.oralSectionResults ?? [];
   const academicResults = progress.academicSectionResults ?? [];
-  const allResults = [...mindResults, ...oralResults, ...academicResults];
+  const learningResults = [
+    ...(progress.learningSectionResults ?? []),
+    ...(progress.mindSectionResults ?? []).filter(r => LEARNING_QUIZZES.some(q => q.id === r.quizId)),
+  ];
+  const allResults = [...mindResults, ...oralResults, ...academicResults, ...learningResults];
 
-  const totalQuizzes = MIND_QUIZZES.length + ORAL_QUIZZES.length + ACADEMIC_QUIZZES.length;
+  const totalQuizzes =
+    MIND_QUIZZES.length +
+    ORAL_QUIZZES.length +
+    ACADEMIC_QUIZZES.length +
+    LEARNING_QUIZZES.length;
   const completedCount = allResults.length;
   const avgScore =
     allResults.length > 0
@@ -396,7 +429,7 @@ const ReportPDF: React.FC<ReportPDFProps> = ({
   const isComplete = completedCount >= totalQuizzes;
 
   const categories = [
-    'attention', 'memory', 'learning-style', 'critical-thinking', 'perception',
+    'attention', 'memory', 'learning-style', 'social-emotional', 'critical-thinking', 'perception',
     'oral-language',
     'spelling', 'writing', 'vocabulary',
   ];
@@ -518,6 +551,25 @@ const ReportPDF: React.FC<ReportPDFProps> = ({
                 <Text style={done ? s.checkTextDone : s.checkTextPending}>
                   {q.name} ({subName[q.subcategory] || q.subcategory})
                   {done && result ? ` — ${result.percentage}%` : ' — not yet completed'}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+
+        {/* Learning quizzes */}
+        <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#e11d48', marginBottom: 6, marginTop: 4 }}>Learning & SEL Section ({learningResults.length}/{LEARNING_QUIZZES.length} completed)</Text>
+        <View style={{ ...s.checklistSection, backgroundColor: '#fff1f2' }}>
+          {LEARNING_QUIZZES.map((q) => {
+            const done = allResults.some((r) => r.quizId === q.id);
+            const result = allResults.find((r) => r.quizId === q.id);
+            const label = done && result ? getQuizResultLabel(result) : null;
+            return (
+              <View key={q.id} style={s.checkItem}>
+                <Text style={s.checkIcon}>{done ? '✓' : '○'}</Text>
+                <Text style={done ? s.checkTextDone : s.checkTextPending}>
+                  {q.name} ({subName[q.subcategory] || q.subcategory})
+                  {label ? ` — ${label.value}` : done ? '' : ' — not yet completed'}
                 </Text>
               </View>
             );
@@ -857,11 +909,18 @@ export const ReportPDFEnglish: React.FC<ReportPDFProps> = (props) => {
     watermarkText = 'Bloom Tutoring',
     watermarkOpacity = 0.08,
   } = props;
-  const mindResults = progress.mindSectionResults ?? [];
+  const mindResults = (progress.mindSectionResults ?? []).filter(
+    r => !LEARNING_QUIZZES.some(q => q.id === r.quizId),
+  );
   const oralResults = progress.oralSectionResults ?? [];
   const academicResults = progress.academicSectionResults ?? [];
-  const allResults = [...mindResults, ...oralResults, ...academicResults];
-  const totalQuizzes = MIND_QUIZZES.length + ORAL_QUIZZES.length + ACADEMIC_QUIZZES.length;
+  const learningResults = [
+    ...(progress.learningSectionResults ?? []),
+    ...(progress.mindSectionResults ?? []).filter(r => LEARNING_QUIZZES.some(q => q.id === r.quizId)),
+  ];
+  const allResults = [...mindResults, ...oralResults, ...academicResults, ...learningResults];
+  const totalQuizzes =
+    MIND_QUIZZES.length + ORAL_QUIZZES.length + ACADEMIC_QUIZZES.length + LEARNING_QUIZZES.length;
   const completedCount = allResults.length;
   const avgScore = allResults.length > 0
     ? Math.round(allResults.reduce((sum, r) => sum + r.percentage, 0) / allResults.length) : 0;
@@ -1032,11 +1091,18 @@ export const ReportPDFArabic: React.FC<ReportPDFProps> = (props) => {
     watermarkText = 'Bloom Tutoring',
     watermarkOpacity = 0.08,
   } = props;
-  const mindResults = progress.mindSectionResults ?? [];
+  const mindResults = (progress.mindSectionResults ?? []).filter(
+    r => !LEARNING_QUIZZES.some(q => q.id === r.quizId),
+  );
   const oralResults = progress.oralSectionResults ?? [];
   const academicResults = progress.academicSectionResults ?? [];
-  const allResults = [...mindResults, ...oralResults, ...academicResults];
-  const totalQuizzes = MIND_QUIZZES.length + ORAL_QUIZZES.length + ACADEMIC_QUIZZES.length;
+  const learningResults = [
+    ...(progress.learningSectionResults ?? []),
+    ...(progress.mindSectionResults ?? []).filter(r => LEARNING_QUIZZES.some(q => q.id === r.quizId)),
+  ];
+  const allResults = [...mindResults, ...oralResults, ...academicResults, ...learningResults];
+  const totalQuizzes =
+    MIND_QUIZZES.length + ORAL_QUIZZES.length + ACADEMIC_QUIZZES.length + LEARNING_QUIZZES.length;
   const completedCount = allResults.length;
   const avgScore = allResults.length > 0
     ? Math.round(allResults.reduce((sum, r) => sum + r.percentage, 0) / allResults.length) : 0;

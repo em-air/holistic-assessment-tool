@@ -530,11 +530,20 @@ router.get('/reports/:reportId/download', validateParams(reportIdParams), async 
     const { generateReportPDF } = await import('../services/pdfGenerator.js');
     
     const profileData = (report as Record<string, unknown>).profiles as Profile | undefined ?? { student_name: 'Student' } as Profile;
+    const filteredMind = (quizResults || []).filter(
+      r => r.category === 'mind' && !['learning-styles', 'social-emotional'].includes(r.quiz_id),
+    );
     const reportData = {
       profile: profileData,
-      mindResults: (quizResults || []).filter(r => r.category === 'mind'),
+      mindResults: filteredMind,
       oralResults: (quizResults || []).filter(r => r.category === 'oral'),
       academicResults: (quizResults || []).filter(r => r.category === 'academic'),
+      learningResults: [
+        ...(quizResults || []).filter(r => r.category === 'learning'),
+        ...(quizResults || []).filter(
+          r => r.category === 'mind' && ['learning-styles', 'social-emotional'].includes(r.quiz_id),
+        ),
+      ],
       generatedAt: new Date(report.generated_at),
     };
 

@@ -3,10 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import FloatingBackground from '../components/FloatingBackground';
 import { ROUTES } from '../routes';
+import { ProgressTracker } from '../utils/progressTracker';
+import {
+  SEL_DIMENSION_LABELS,
+  SEL_RESULT_PROFILES,
+  getSelPrimaryStrength,
+  type SelDimensionKey,
+} from '../data/socialEmotionalQuizData';
 
 // ─── Types ────────────────────────────────────────────────────────
 
-type DimensionKey = 'EA' | 'PS' | 'SR';
+type DimensionKey = SelDimensionKey;
 
 type DimensionScores = {
   EA?: number;
@@ -184,11 +191,7 @@ const questions: QuizQuestion[] = [
 
 // ─── Result profiles ──────────────────────────────────────────────
 
-const DIMENSION_LABELS: Record<DimensionKey, string> = {
-  EA: 'Emotional Awareness',
-  PS: 'Prosocial Skills',
-  SR: 'Self-Regulation',
-};
+const DIMENSION_LABELS = SEL_DIMENSION_LABELS;
 
 const DIMENSION_ICONS: Record<DimensionKey, string> = {
   EA: '💛',
@@ -202,29 +205,17 @@ const DIMENSION_COLORS: Record<DimensionKey, { bar: string; bg: string; text: st
   SR: { bar: 'bg-indigo-400', bg: 'bg-indigo-50', text: 'text-indigo-700' },
 };
 
-const RESULT_PROFILES: Record<DimensionKey, { title: string; description: string; suggestions: string[]; bgColor: string }> = {
-  EA: {
-    title: 'Emotional Awareness Strength',
-    description:
-      'You seem good at noticing and understanding feelings. Recognizing emotions can help you communicate and solve problems.',
-    suggestions: ['Talk about feelings with people you trust', 'Keep a feelings journal', 'Practice naming emotions when you notice them'],
-    bgColor: 'bg-amber-400',
-  },
-  PS: {
-    title: 'Prosocial Strength',
-    description:
-      'You seem good at helping others, cooperating, and being a supportive friend.',
-    suggestions: ['Include others in activities', 'Practice teamwork', 'Continue showing kindness every day'],
-    bgColor: 'bg-teal-500',
-  },
-  SR: {
-    title: 'Self-Regulation Strength',
-    description:
-      'You seem good at staying calm, handling challenges, and trying again when things are difficult.',
-    suggestions: ['Keep practicing perseverance', 'Use calming strategies when things feel hard', 'Break difficult tasks into smaller steps'],
-    bgColor: 'bg-violet-500',
-  },
-};
+const RESULT_PROFILES = Object.fromEntries(
+  (Object.entries(SEL_RESULT_PROFILES) as [DimensionKey, typeof SEL_RESULT_PROFILES[DimensionKey]][]).map(
+    ([key, profile]) => [
+      key,
+      {
+        ...profile,
+        bgColor: key === 'EA' ? 'bg-amber-400' : key === 'PS' ? 'bg-teal-500' : 'bg-violet-500',
+      },
+    ],
+  ),
+) as Record<DimensionKey, { title: string; description: string; suggestions: string[]; bgColor: string }>;
 
 // ─── Option colours ───────────────────────────────────────────────
 
@@ -273,7 +264,7 @@ function computeScores(answers: Record<number, string>): Record<DimensionKey, nu
 }
 
 function getPrimaryStrength(scores: Record<DimensionKey, number>): DimensionKey {
-  return (Object.entries(scores) as [DimensionKey, number][]).sort((a, b) => b[1] - a[1])[0][0];
+  return getSelPrimaryStrength(scores);
 }
 
 // ─── Screen: Welcome ──────────────────────────────────────────────
@@ -573,9 +564,39 @@ const SocialEmotionalQuiz: React.FC = () => {
   const [phase, setPhase] = useState<Phase>('welcome');
   const [questionIndex, setQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [startTime] = useState(() => Date.now());
 
   const currentQuestion = questions[questionIndex];
   const selectedOption = answers[currentQuestion?.id] ?? null;
+
+  function saveResults(finalAnswers: Record<number, string>) {
+    const finalScores = computeScores(finalAnswers);
+    const primaryKey = getPrimaryStrength(finalScores);
+    const profile = SEL_RESULT_PROFILES[primaryKey];
+    const maxScore = Math.max(4, ...Object.values(finalScores));
+    const primaryScore = finalScores[primaryKey];
+    const percentage = Math.max(0, Math.round((primaryScore / maxScore) * 100));
+    const timeSpent = Math.round((Date.now() - startTime) / 1000);
+
+    ProgressTracker.saveQuizResult({
+      quizId: 'social-emotional',
+      quizName: 'Social-Emotional Learning Quiz',
+      category: 'learning',
+      subcategory: 'social-emotional',
+      score: primaryScore,
+      totalQuestions: questions.length,
+      percentage,
+      timeSpent,
+      completedAt: new Date().toISOString(),
+      additionalData: {
+        primaryStrength: primaryKey,
+        primaryTitle: profile.title,
+        dimensionScores: finalScores,
+        description: profile.description,
+        suggestions: profile.suggestions,
+      },
+    });
+  }
 
   function handleStart() {
     setPhase('quiz');
@@ -587,9 +608,15 @@ const SocialEmotionalQuiz: React.FC = () => {
   }
 
   function handleNext() {
+    if (!selectedOption) return;
+    const mergedAnswers = { ...answers, [currentQuestion.id]: selectedOption };
+
     if (questionIndex < questions.length - 1) {
+      setAnswers(mergedAnswers);
       setQuestionIndex(i => i + 1);
     } else {
+      saveResults(mergedAnswers);
+      setAnswers(mergedAnswers);
       setPhase('results');
     }
   }

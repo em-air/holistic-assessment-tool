@@ -8,7 +8,7 @@ export interface QuizResult {
   quizId: string;
   quizName: string;
   /** Defaults to 'mind' when omitted */
-  category?: 'mind' | 'oral' | 'academic';
+  category?: 'mind' | 'oral' | 'academic' | 'learning';
   subcategory: string;
   score: number;
   totalQuestions: number;
@@ -23,6 +23,7 @@ export interface ProgressData {
   mindSectionResults: QuizResult[];
   oralSectionResults: QuizResult[];
   academicSectionResults: QuizResult[];
+  learningSectionResults: QuizResult[];
   overallProgress: number; // 0-100
   lastUpdated: string;
   userId?: string;
@@ -45,12 +46,6 @@ export const MIND_QUIZZES = [
     name: 'Picture Sequence',
     subcategory: 'memory',
     route: '/memory-assessment'
-  },
-  {
-    id: 'learning-styles',
-    name: 'Learning Style Quiz',
-    subcategory: 'learning-style',
-    route: '/learning-styles-quiz'
   },
   {
     id: 'analogy-quiz',
@@ -99,7 +94,34 @@ export const ACADEMIC_QUIZZES = [
   { id: 'vocabulary-matching', name: 'Vocabulary Matching', subcategory: 'vocabulary', route: '/vocabulary-matching' },
 ];
 
-export const ALL_TRACKED_QUIZZES = [...MIND_QUIZZES, ...ORAL_QUIZZES, ...ACADEMIC_QUIZZES];
+// Learning & social-emotional assessments
+export const LEARNING_QUIZZES = [
+  {
+    id: 'learning-styles',
+    name: 'Learning Preferences Quiz',
+    subcategory: 'learning-style',
+    route: '/assessments/learning/preferences',
+  },
+  {
+    id: 'social-emotional',
+    name: 'Social-Emotional Learning Quiz',
+    subcategory: 'social-emotional',
+    route: '/assessments/learning/social-emotional',
+  },
+];
+
+export const ALL_TRACKED_QUIZZES = [
+  ...MIND_QUIZZES,
+  ...ORAL_QUIZZES,
+  ...ACADEMIC_QUIZZES,
+  ...LEARNING_QUIZZES,
+];
+
+const LEARNING_QUIZ_IDS = new Set(LEARNING_QUIZZES.map(q => q.id));
+
+function isLearningQuizResult(result: QuizResult): boolean {
+  return LEARNING_QUIZ_IDS.has(result.quizId);
+}
 
 // Get user-specific storage key
 function getStorageKey(userId: string): string {
@@ -159,6 +181,7 @@ supabase.auth.onAuthStateChange((event, session) => {
         mindSectionResults: [],
         oralSectionResults: [],
         academicSectionResults: [],
+        learningSectionResults: [],
         overallProgress: 0,
         lastUpdated: new Date().toISOString()
       }
@@ -202,6 +225,7 @@ export class ProgressTracker {
         mindSectionResults: [],
         oralSectionResults: [],
         academicSectionResults: [],
+        learningSectionResults: [],
         overallProgress: 0,
         lastUpdated: new Date().toISOString()
       };
@@ -213,7 +237,7 @@ export class ProgressTracker {
     if (stored) {
       try {
         const data = JSON.parse(stored);
-        return { oralSectionResults: [], academicSectionResults: [], ...data, userId };
+        return { oralSectionResults: [], academicSectionResults: [], learningSectionResults: [], ...data, userId };
       } catch (error) {
         logger.error('Error parsing progress data:', error);
       }
@@ -223,6 +247,7 @@ export class ProgressTracker {
       mindSectionResults: [],
       oralSectionResults: [],
       academicSectionResults: [],
+      learningSectionResults: [],
       overallProgress: 0,
       lastUpdated: new Date().toISOString(),
       userId
@@ -258,7 +283,10 @@ export class ProgressTracker {
     }
 
     const progress = this.getProgress();
-    const category = result.category || 'mind';
+    let category = result.category || 'mind';
+    if (isLearningQuizResult(result)) {
+      category = 'learning';
+    }
 
     if (category === 'academic') {
       progress.academicSectionResults = progress.academicSectionResults.filter(
@@ -270,6 +298,11 @@ export class ProgressTracker {
         r => r.quizId !== result.quizId
       );
       progress.oralSectionResults.push(result);
+    } else if (category === 'learning') {
+      progress.learningSectionResults = (progress.learningSectionResults ?? []).filter(
+        r => r.quizId !== result.quizId
+      );
+      progress.learningSectionResults.push({ ...result, category: 'learning' });
     } else {
       progress.mindSectionResults = progress.mindSectionResults.filter(
         r => r.quizId !== result.quizId
@@ -281,7 +314,8 @@ export class ProgressTracker {
     progress.overallProgress = this.calculateOverallProgress(
       progress.mindSectionResults,
       progress.oralSectionResults,
-      progress.academicSectionResults
+      progress.academicSectionResults,
+      progress.learningSectionResults ?? []
     );
     progress.lastUpdated = new Date().toISOString();
     
@@ -314,7 +348,7 @@ export class ProgressTracker {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         const { saveQuizResult } = await import('../services/quizResultsService');
-        const category = result.category || 'mind';
+        const category = isLearningQuizResult(result) ? 'learning' : (result.category || 'mind');
         const response = await saveQuizResult({
           quiz_id: result.quizId,
           quiz_name: result.quizName,
@@ -364,6 +398,7 @@ export class ProgressTracker {
         mindSectionResults: [],
         oralSectionResults: [],
         academicSectionResults: [],
+        learningSectionResults: [],
         overallProgress: 0,
         lastUpdated: new Date().toISOString()
       };
@@ -373,17 +408,18 @@ export class ProgressTracker {
       const { getQuizResults } = await import('../services/quizResultsService');
       
       // Load mind, oral, and academic results in parallel
-      const [mindResponse, oralResponse, academicResponse] = await Promise.all([
+      const [mindResponse, oralResponse, academicResponse, learningResponse] = await Promise.all([
         getQuizResults('mind'),
         getQuizResults('oral'),
         getQuizResults('academic'),
+        getQuizResults('learning'),
       ]);
 
       const mapResults = (results: any[]): QuizResult[] =>
         results.map(r => ({
           quizId: r.quiz_id,
           quizName: r.quiz_name,
-          category: r.category as 'mind' | 'oral',
+          category: (isLearningQuizResult({ quizId: r.quiz_id } as QuizResult) ? 'learning' : r.category) as QuizResult['category'],
           subcategory: r.subcategory,
           score: r.score,
           totalQuestions: r.total_questions,
@@ -395,13 +431,16 @@ export class ProgressTracker {
         }));
 
       const dbMindResults = mindResponse.success && mindResponse.results
-        ? mapResults(mindResponse.results)
+        ? mapResults(mindResponse.results).filter(r => !isLearningQuizResult(r))
         : [];
       const dbOralResults = oralResponse.success && oralResponse.results
         ? mapResults(oralResponse.results)
         : [];
       const dbAcademicResults = academicResponse.success && academicResponse.results
         ? mapResults(academicResponse.results)
+        : [];
+      const dbLearningResults = learningResponse.success && learningResponse.results
+        ? mapResults(learningResponse.results)
         : [];
 
       // Merge DB results with any local results that haven't synced yet.
@@ -420,15 +459,23 @@ export class ProgressTracker {
         return Array.from(merged.values());
       };
 
-      const mindResults = mergeResults(dbMindResults, localProgress.mindSectionResults);
+      const mindResults = mergeResults(dbMindResults, localProgress.mindSectionResults.filter(r => !isLearningQuizResult(r)));
       const oralResults = mergeResults(dbOralResults, localProgress.oralSectionResults ?? []);
       const academicResults = mergeResults(dbAcademicResults, localProgress.academicSectionResults ?? []);
+      const learningResults = mergeResults(
+        dbLearningResults,
+        [
+          ...(localProgress.learningSectionResults ?? []),
+          ...localProgress.mindSectionResults.filter(isLearningQuizResult),
+        ]
+      );
 
       const progress: ProgressData = {
         mindSectionResults: mindResults,
         oralSectionResults: oralResults,
         academicSectionResults: academicResults,
-        overallProgress: this.calculateOverallProgress(mindResults, oralResults, academicResults),
+        learningSectionResults: learningResults,
+        overallProgress: this.calculateOverallProgress(mindResults, oralResults, academicResults, learningResults),
         lastUpdated: new Date().toISOString(),
         userId
       };
@@ -457,16 +504,23 @@ export class ProgressTracker {
   static calculateOverallProgress(
     mindResults: QuizResult[],
     oralResults: QuizResult[] = [],
-    academicResults: QuizResult[] = []
+    academicResults: QuizResult[] = [],
+    learningResults: QuizResult[] = []
   ): number {
-    const totalQuizzes = MIND_QUIZZES.length + ORAL_QUIZZES.length + ACADEMIC_QUIZZES.length;
+    const totalQuizzes =
+      MIND_QUIZZES.length +
+      ORAL_QUIZZES.length +
+      ACADEMIC_QUIZZES.length +
+      LEARNING_QUIZZES.length;
     const mindIds = new Set(MIND_QUIZZES.map(q => q.id));
     const oralIds = new Set(ORAL_QUIZZES.map(q => q.id));
     const acadIds = new Set(ACADEMIC_QUIZZES.map(q => q.id));
+    const learningIds = new Set(LEARNING_QUIZZES.map(q => q.id));
     const completedQuizzes =
       mindResults.filter(r => mindIds.has(r.quizId)).length +
       oralResults.filter(r => oralIds.has(r.quizId)).length +
-      academicResults.filter(r => acadIds.has(r.quizId)).length;
+      academicResults.filter(r => acadIds.has(r.quizId)).length +
+      learningResults.filter(r => learningIds.has(r.quizId)).length;
     return Math.round((completedQuizzes / totalQuizzes) * 100);
   }
 
@@ -475,6 +529,7 @@ export class ProgressTracker {
     return progress.mindSectionResults.find(r => r.quizId === quizId)
       || progress.oralSectionResults.find(r => r.quizId === quizId)
       || progress.academicSectionResults.find(r => r.quizId === quizId)
+      || (progress.learningSectionResults ?? []).find(r => r.quizId === quizId)
       || null;
   }
 
@@ -484,7 +539,12 @@ export class ProgressTracker {
 
   static getCompletedQuizzes(): QuizResult[] {
     const progress = this.getProgress();
-    return [...progress.mindSectionResults, ...progress.oralSectionResults, ...progress.academicSectionResults];
+    return [
+      ...progress.mindSectionResults,
+      ...progress.oralSectionResults,
+      ...progress.academicSectionResults,
+      ...(progress.learningSectionResults ?? []),
+    ];
   }
 
   static getIncompleteQuizzes(): typeof MIND_QUIZZES {
@@ -505,6 +565,7 @@ export class ProgressTracker {
         mindSectionResults: [],
         oralSectionResults: [],
         academicSectionResults: [],
+        learningSectionResults: [],
         overallProgress: 0,
         lastUpdated: new Date().toISOString()
       }
@@ -517,7 +578,7 @@ export class ProgressTracker {
   private static async clearFromDatabase(): Promise<void> {
     try {
       const { deleteAllResults } = await import('../services/quizResultsService');
-      const result = await deleteAllResults(['mind', 'oral', 'academic']);
+      const result = await deleteAllResults(['mind', 'oral', 'academic', 'learning']);
       if (!result.success) {
         logger.error('Failed to clear results from database:', result.error);
       }

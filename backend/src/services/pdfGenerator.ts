@@ -73,6 +73,7 @@ export interface ReportData {
   mindResults: QuizResult[];
   oralResults: QuizResult[];
   academicResults: QuizResult[];
+  learningResults: QuizResult[];
   generatedAt: Date;
   audience?: 'parent' | 'teacher';
 }
@@ -138,7 +139,8 @@ const styleAr: Record<string, string> = {
 
 const subNameEn: Record<string, string> = {
   attention: 'Attention & Focus', memory: 'Memory & Recall',
-  'learning-style': 'Learning Style', 'critical-thinking': 'Critical Thinking',
+  'learning-style': 'Learning Style', 'social-emotional': 'Social-Emotional Learning',
+  'critical-thinking': 'Critical Thinking',
   perception: 'Visual Perception', 'oral-language': 'Oral Language',
   reading: 'Reading Skills', phonics: 'Beginning and Ending Sounds',
   'phonics-awareness': 'Beginning and Ending Sounds',
@@ -146,7 +148,8 @@ const subNameEn: Record<string, string> = {
 };
 const subNameAr: Record<string, string> = {
   attention: reshapeArabic('الانتباه والتركيز'), memory: reshapeArabic('الذاكرة والاسترجاع'),
-  'learning-style': reshapeArabic('أسلوب التعلم'), 'critical-thinking': reshapeArabic('التفكير النقدي'),
+  'learning-style': reshapeArabic('أسلوب التعلم'), 'social-emotional': reshapeArabic('التعلم الاجتماعي العاطفي'),
+  'critical-thinking': reshapeArabic('التفكير النقدي'),
   perception: reshapeArabic('الإدراك البصري'), 'oral-language': reshapeArabic('اللغة الشفهية'),
   reading: reshapeArabic('مهارات القراءة'), phonics: reshapeArabic('أصوات البداية والنهاية'),
   'phonics-awareness': reshapeArabic('أصوات البداية والنهاية'),
@@ -166,9 +169,20 @@ function scoreStr(r: QuizResult) {
 }
 
 function qualitativeEn(sub: string, result: QuizResult): string | null {
-  if (sub === 'learning-style') {
+  if (sub === 'learning-style' || result.quiz_id === 'learning-styles') {
     const ad = parseAdditionalData(result.additional_data);
-    if (ad?.dominantStyle) return styleEn[ad.dominantStyle] ?? `${ad.dominantStyle} Learner`;
+    const style = ad?.dominantStyle ?? (ad?.primaryDimension === 'reading' ? 'reading-writing' : ad?.primaryDimension);
+    if (style) return styleEn[style] ?? `${style} Learner`;
+  }
+  if (sub === 'social-emotional' || result.quiz_id === 'social-emotional') {
+    const ad = parseAdditionalData(result.additional_data);
+    if (ad?.primaryTitle) return ad.primaryTitle;
+    const labels: Record<string, string> = {
+      EA: 'Emotional Awareness Strength',
+      PS: 'Prosocial Strength',
+      SR: 'Self-Regulation Strength',
+    };
+    if (ad?.primaryStrength) return labels[ad.primaryStrength] ?? ad.primaryStrength;
   }
   if (sub === 'attention' || result.quiz_id === 'attention-assessment') {
     const ad = parseAdditionalData(result.additional_data);
@@ -178,9 +192,19 @@ function qualitativeEn(sub: string, result: QuizResult): string | null {
 }
 
 function qualitativeAr(sub: string, result: QuizResult): string | null {
-  if (sub === 'learning-style') {
+  if (sub === 'learning-style' || result.quiz_id === 'learning-styles') {
     const ad = parseAdditionalData(result.additional_data);
-    if (ad?.dominantStyle) return styleAr[ad.dominantStyle] ?? ad.dominantStyle;
+    const style = ad?.dominantStyle ?? (ad?.primaryDimension === 'reading' ? 'reading-writing' : ad?.primaryDimension);
+    if (style) return styleAr[style] ?? style;
+  }
+  if (sub === 'social-emotional' || result.quiz_id === 'social-emotional') {
+    const ad = parseAdditionalData(result.additional_data);
+    const labels: Record<string, string> = {
+      EA: reshapeArabic('قوة الوعي العاطفي'),
+      PS: reshapeArabic('قوة المهارات الاجتماعية'),
+      SR: reshapeArabic('قوة التنظيم الذاتي'),
+    };
+    if (ad?.primaryStrength) return labels[ad.primaryStrength] ?? ad.primaryStrength;
   }
   if (sub === 'attention' || result.quiz_id === 'attention-assessment') {
     return attnLabelAr(result.percentage);
@@ -358,19 +382,25 @@ function createDocSetup(data: ReportData, arabicFont: Buffer | null): DocSetup {
 
 const MIND_QUIZ_IDS = [
   'attention-assessment', 'picture-sequence',
-  'learning-styles', 'analogy-quiz', 'category-quiz',
+  'analogy-quiz', 'category-quiz',
   'sentence-difference-quiz', 'logical-sequencing-quiz', 'missing-object-quiz',
 ];
+
+const LEARNING_QUIZ_IDS = ['learning-styles', 'social-emotional'];
 
 const mindQuizDisplayName: Record<string, string> = {
   'attention-assessment': 'Attention Control Assessment',
   'picture-sequence': 'Picture Sequence Memory',
-  'learning-styles': 'Learning Style Inventory',
   'analogy-quiz': 'Analogy Reasoning',
   'category-quiz': 'Category Classification',
   'sentence-difference-quiz': 'Sentence Difference Detection',
   'logical-sequencing-quiz': 'Logical Sequencing',
   'missing-object-quiz': 'Missing Object Identification',
+};
+
+const learningQuizDisplayName: Record<string, string> = {
+  'learning-styles': 'Learning Preferences Quiz',
+  'social-emotional': 'Social-Emotional Learning Quiz',
 };
 
 /* ── English teacher paragraphs ── */
@@ -659,6 +689,112 @@ function getParentAdviceAr(result: QuizResult): string {
   }
 }
 
+function getLearningStyleFromResult(result: QuizResult): string | null {
+  const ad = parseAdditionalData(result.additional_data);
+  if (!ad) return null;
+  return ad.dominantStyle ?? (ad.primaryDimension === 'reading' ? 'reading-writing' : ad.primaryDimension) ?? null;
+}
+
+function formatSelScores(ad: Record<string, any> | null): string {
+  const scores = ad?.dimensionScores;
+  if (!scores) return '';
+  return ` Emotional Awareness: ${scores.EA ?? 0}, Prosocial Skills: ${scores.PS ?? 0}, Self-Regulation: ${scores.SR ?? 0}.`;
+}
+
+function getLearningTeacherParagraphEn(result: QuizResult): string {
+  if (result.quiz_id === 'learning-styles') {
+    const style = getLearningStyleFromResult(result);
+    if (style === 'visual') return 'The Learning Preferences assessment indicates a visual learning preference. The student learns best through diagrams, charts, colour-coding, and written instructions. Provide written task outlines, use highlighters for key information, and incorporate visual aids such as mind maps or infographics.';
+    if (style === 'auditory') return 'The Learning Preferences assessment indicates an auditory learning preference. The student learns best through listening and discussion. Encourage verbal explanations, use audio recordings of lessons, allow the student to talk through problems, and incorporate songs or rhymes for memorisation.';
+    if (style === 'reading-writing') return 'The Learning Preferences assessment indicates a reading/writing learning preference. The student benefits most from text-based input and output. Provide written instructions, encourage note-taking and journaling, assign reading activities, and let the student express understanding through writing.';
+    if (style === 'kinesthetic') return 'The Learning Preferences assessment indicates a kinesthetic learning preference. The student learns best through hands-on activities and movement. Incorporate manipulatives, role-play, experiments, and movement breaks. Allow the student to stand or move while learning when possible.';
+    return 'The student\'s learning preferences were assessed. Adapt teaching methods to match their preferred style for best results.';
+  }
+
+  const ad = parseAdditionalData(result.additional_data);
+  const key = ad?.primaryStrength as string | undefined;
+  const scoreText = formatSelScores(ad);
+  const description = ad?.description as string | undefined;
+
+  switch (key) {
+    case 'EA':
+      return `The Social-Emotional Learning assessment identified Emotional Awareness as the student's current strength.${scoreText} ${description || 'They seem good at noticing and understanding feelings, which supports communication and problem solving.'} Continue building this through reflective discussions and emotion vocabulary in the classroom.`;
+    case 'PS':
+      return `The Social-Emotional Learning assessment identified Prosocial Skills as the student's current strength.${scoreText} ${description || 'They seem good at helping others, cooperating, and being a supportive peer.'} Provide cooperative learning opportunities and recognise acts of kindness to reinforce this strength.`;
+    case 'SR':
+      return `The Social-Emotional Learning assessment identified Self-Regulation as the student's current strength.${scoreText} ${description || 'They seem good at staying calm, handling challenges, and trying again when things are difficult.'} Offer appropriately challenging tasks and praise persistence to continue developing this skill.`;
+    default:
+      return description || 'The student completed the Social-Emotional Learning assessment. Use the results to support their emotional and social development in the classroom.';
+  }
+}
+
+function getLearningParentAdviceEn(result: QuizResult): string {
+  if (result.quiz_id === 'learning-styles') {
+    const style = getLearningStyleFromResult(result);
+    if (style === 'visual') return 'Your child learns best by seeing. When helping with homework, use colours, drawings, and diagrams. Watch educational videos together and hang visual reminders (charts or checklists) in their study area.';
+    if (style === 'auditory') return 'Your child learns best by listening. Read aloud together, discuss what they\'re learning, and let them explain concepts back to you. Audiobooks and educational podcasts are also great tools for them.';
+    if (style === 'reading-writing') return 'Your child learns best through reading and writing. Encourage them to keep a journal, write lists, and read for pleasure. When studying, writing notes or summaries in their own words helps information stick.';
+    if (style === 'kinesthetic') return 'Your child learns best through hands-on activities. Let them build models, act things out, or use objects to count and sort. Incorporate movement into study time—for example, spelling words while bouncing a ball.';
+    return 'Understanding how your child prefers to learn helps you support them better. Try different approaches—visual (charts), auditory (discussion), reading/writing (notes), and hands-on (building)—and see which they enjoy most.';
+  }
+
+  const ad = parseAdditionalData(result.additional_data);
+  const description = ad?.description as string | undefined;
+  const suggestions = Array.isArray(ad?.suggestions) ? ad.suggestions as string[] : [];
+  const suggestionText = suggestions.length > 0
+    ? ` At home, you can support this by: ${suggestions.join('; ')}.`
+    : '';
+  return `${description || 'This assessment highlights one of your child\'s current social-emotional strengths.'}${suggestionText}`;
+}
+
+function getLearningTeacherParagraphAr(result: QuizResult): string {
+  if (result.quiz_id === 'learning-styles') {
+    const style = getLearningStyleFromResult(result);
+    if (style === 'visual') return reshapeArabic('يشير تقييم تفضيلات التعلم إلى تفضيل بصري. يتعلم الطالب بشكل أفضل من خلال الرسوم البيانية والمخططات والتعليمات المكتوبة.');
+    if (style === 'auditory') return reshapeArabic('يشير تقييم تفضيلات التعلم إلى تفضيل سمعي. يتعلم الطالب بشكل أفضل من خلال الاستماع والمناقشة.');
+    if (style === 'reading-writing') return reshapeArabic('يشير تقييم تفضيلات التعلم إلى تفضيل قرائي/كتابي. يستفيد الطالب من التعليمات المكتوبة وتدوين الملاحظات.');
+    if (style === 'kinesthetic') return reshapeArabic('يشير تقييم تفضيلات التعلم إلى تفضيل حركي. يتعلم الطالب بشكل أفضل من خلال الأنشطة العملية والحركة.');
+    return reshapeArabic('تم تقييم تفضيلات تعلم الطالب. كيّف طرق التدريس لتتناسب مع أسلوبه.');
+  }
+
+  const ad = parseAdditionalData(result.additional_data);
+  const key = ad?.primaryStrength as string | undefined;
+  switch (key) {
+    case 'EA':
+      return reshapeArabic('حدد تقييم التعلم الاجتماعي العاطفي أن الوعي العاطفي هو نقطة القوة الحالية للطالب. يبدو أنه جيد في ملاحظة المشاعر وفهمها، مما يدعم التواصل وحل المشكلات.');
+    case 'PS':
+      return reshapeArabic('حدد تقييم التعلم الاجتماعي العاطفي أن المهارات الاجتماعية الإيجابية هي نقطة القوة الحالية للطالب. يبدو أنه جيد في مساعدة الآخرين والتعاون.');
+    case 'SR':
+      return reshapeArabic('حدد تقييم التعلم الاجتماعي العاطفي أن التنظيم الذاتي هو نقطة القوة الحالية للطالب. يبدو أنه جيد في البقاء هادئًا والتعامل مع التحديات.');
+    default:
+      return reshapeArabic('أكمل الطالب تقييم التعلم الاجتماعي العاطفي. استخدم النتائج لدعم نموه العاطفي والاجتماعي.');
+  }
+}
+
+function getLearningParentAdviceAr(result: QuizResult): string {
+  if (result.quiz_id === 'learning-styles') {
+    const style = getLearningStyleFromResult(result);
+    if (style === 'visual') return reshapeArabic('يتعلم طفلك بشكل أفضل عن طريق الرؤية. استخدم الألوان والرسومات والمخططات عند المساعدة في الواجبات.');
+    if (style === 'auditory') return reshapeArabic('يتعلم طفلك بشكل أفضل عن طريق الاستماع. اقرأوا بصوت عالٍ معًا وناقشوا ما يتعلمه.');
+    if (style === 'reading-writing') return reshapeArabic('يتعلم طفلك بشكل أفضل من خلال القراءة والكتابة. شجعه على كتابة الملاحظات والقراءة للمتعة.');
+    if (style === 'kinesthetic') return reshapeArabic('يتعلم طفلك بشكل أفضل من خلال الأنشطة العملية. دعه يبني نماذج ويستخدم أدوات ملموسة.');
+    return reshapeArabic('فهم كيف يفضل طفلك التعلم يساعدك على دعمه بشكل أفضل.');
+  }
+
+  const ad = parseAdditionalData(result.additional_data);
+  const key = ad?.primaryStrength as string | undefined;
+  switch (key) {
+    case 'EA':
+      return reshapeArabic('يبدو أن طفلك جيد في ملاحظة المشاعر وفهمها. تحدثوا معًا عن المشاعر وسمّواها عندما يلاحظها.');
+    case 'PS':
+      return reshapeArabic('يبدو أن طفلك جيد في مساعدة الآخرين والتعاون. شجعه على تضمين الآخرين وممارسة العمل الجماعي.');
+    case 'SR':
+      return reshapeArabic('يبدو أن طفلك جيد في البقاء هادئًا والمحاولة مرة أخرى. ساعده على استخدام استراتيجيات الهدوء وتقسيم المهام الصعبة.');
+    default:
+      return reshapeArabic('يُظهر هذا التقييم أحد نقاط القوة الاجتماعية العاطفية الحالية لطفلك.');
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════════
 //  TEACHER SUMMARY HELPERS
 // ═══════════════════════════════════════════════════════════════════
@@ -672,12 +808,17 @@ interface TeacherSummary {
   quickTip: string;
 }
 
-function buildTeacherSummaryEn(mindResults: QuizResult[], oralResults: QuizResult[], academicResults: QuizResult[]): TeacherSummary {
+function buildTeacherSummaryEn(
+  mindResults: QuizResult[],
+  oralResults: QuizResult[],
+  academicResults: QuizResult[],
+  learningResults: QuizResult[] = [],
+): TeacherSummary {
   const allResults = [...mindResults, ...oralResults, ...academicResults];
   const avg = allResults.length > 0 ? Math.round(allResults.reduce((s, r) => s + r.percentage, 0) / allResults.length) : 0;
 
-  const lsResult = mindResults.find(r => r.quiz_id === 'learning-styles');
-  const style: string | null = lsResult ? (parseAdditionalData(lsResult.additional_data)?.dominantStyle ?? null) : null;
+  const lsResult = learningResults.find(r => r.quiz_id === 'learning-styles');
+  const style: string | null = lsResult ? (getLearningStyleFromResult(lsResult) ?? null) : null;
 
   const attnResult = mindResults.find(r => r.quiz_id === 'attention-assessment');
   const attnAd = attnResult ? parseAdditionalData(attnResult.additional_data) : null;
@@ -759,12 +900,17 @@ function buildTeacherSummaryEn(mindResults: QuizResult[], oralResults: QuizResul
   return { cognitiveProfile, observations, strategies, accommodations, goals, quickTip };
 }
 
-function buildTeacherSummaryAr(mindResults: QuizResult[], oralResults: QuizResult[], academicResults: QuizResult[]): TeacherSummary {
+function buildTeacherSummaryAr(
+  mindResults: QuizResult[],
+  oralResults: QuizResult[],
+  academicResults: QuizResult[],
+  learningResults: QuizResult[] = [],
+): TeacherSummary {
   const allResults = [...mindResults, ...oralResults, ...academicResults];
   const avg = allResults.length > 0 ? Math.round(allResults.reduce((s, r) => s + r.percentage, 0) / allResults.length) : 0;
 
-  const lsResult = mindResults.find(r => r.quiz_id === 'learning-styles');
-  const style: string | null = lsResult ? (parseAdditionalData(lsResult.additional_data)?.dominantStyle ?? null) : null;
+  const lsResult = learningResults.find(r => r.quiz_id === 'learning-styles');
+  const style: string | null = lsResult ? (getLearningStyleFromResult(lsResult) ?? null) : null;
 
   const attnResult = mindResults.find(r => r.quiz_id === 'attention-assessment');
   const attnAd = attnResult ? parseAdditionalData(attnResult.additional_data) : null;
@@ -859,7 +1005,12 @@ export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
-      const allResults = [...data.mindResults, ...data.oralResults, ...data.academicResults];
+      const allResults = [
+        ...data.mindResults,
+        ...data.oralResults,
+        ...data.academicResults,
+        ...(data.learningResults ?? []),
+      ];
       const totalCount = allResults.length;
       const overallAvg = totalCount > 0 ? Math.round(allResults.reduce((s, r) => s + r.percentage, 0) / totalCount) : 0;
       const totalTime = allResults.reduce((s, r) => s + (r.time_spent || 0), 0);
@@ -935,6 +1086,11 @@ export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
         doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill(C.emerald); doc.restore();
         y = 50; y = renderSectionEn(y, 'Academic Skills Assessment', C.emerald, data.academicResults, subNameEn); pageFooter();
       }
+      // Learning & Social-Emotional
+      if ((data.learningResults ?? []).length > 0) {
+        doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill('#e11d48'); doc.restore();
+        y = 50; y = renderSectionEn(y, 'Learning & Social-Emotional Assessment', '#e11d48', data.learningResults, subNameEn); pageFooter();
+      }
 
       // ── Audience-specific section ──
       const audience = data.audience || 'parent';
@@ -986,11 +1142,60 @@ export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
         }
       }
 
+      const allLearningResults = data.learningResults ?? [];
+      if (allLearningResults.length > 0) {
+        doc.addPage(); y = 50;
+
+        const learningSectionTitle = audience === 'teacher'
+          ? 'FOR TEACHERS: LEARNING & SOCIAL-EMOTIONAL DETAILS'
+          : 'FOR PARENTS: LEARNING & SOCIAL-EMOTIONAL GUIDANCE';
+        const learningSectionIntro = audience === 'teacher'
+          ? 'This section summarises the student\'s learning preferences and social-emotional strengths based on their quiz results.'
+          : 'This section explains your child\'s learning preferences and social-emotional strengths, with ideas to support them at home.';
+
+        doc.save(); doc.roundedRect(L, y, W, 28, 4).fill('#ffe4e6'); doc.restore();
+        doc.font('Helvetica-Bold').fontSize(12).fillColor('#9f1239').text(learningSectionTitle, L + 14, y + 7, { width: W - 28 });
+        y += 36;
+        doc.font('Helvetica').fontSize(9).fillColor('#9f1239').text(learningSectionIntro, L + 14, y, { width: W - 28, lineGap: 2 });
+        y += doc.heightOfString(learningSectionIntro, { width: W - 28 }) + 14;
+
+        for (const qId of LEARNING_QUIZ_IDS) {
+          const result = allLearningResults.find(r => r.quiz_id === qId);
+          if (!result) continue;
+          const paragraph = audience === 'teacher'
+            ? getLearningTeacherParagraphEn(result)
+            : getLearningParentAdviceEn(result);
+          if (!paragraph) continue;
+
+          const nameLabel = learningQuizDisplayName[qId] || result.quiz_name;
+          const subLabel = subNameEn[result.subcategory] || result.subcategory;
+          let resultLabel = '';
+          if (qId === 'learning-styles') {
+            const style = getLearningStyleFromResult(result);
+            if (style) resultLabel = ` — ${styleEn[style] || style}`;
+          } else if (qId === 'social-emotional') {
+            const ad = parseAdditionalData(result.additional_data);
+            if (ad?.primaryTitle) resultLabel = ` — ${ad.primaryTitle}`;
+          }
+          const heading = `${nameLabel} (${subLabel}${resultLabel})`;
+
+          doc.font('Helvetica').fontSize(9);
+          const paraH = doc.heightOfString(paragraph, { width: W - 28 });
+          y = ensureSpace(y, paraH + 30);
+
+          doc.save(); doc.roundedRect(L, y, W, paraH + 28, 4).fill('#ffe4e6'); doc.restore();
+          doc.font('Helvetica-Bold').fontSize(10).fillColor('#9f1239').text(heading, L + 12, y + 6, { width: W - 24 });
+          y += 20;
+          doc.font('Helvetica').fontSize(9).fillColor('#881337').text(paragraph, L + 12, y, { width: W - 28, lineGap: 2 });
+          y += paraH + 16;
+        }
+      }
+
       pageFooter();
 
       // ── Teacher Summary Page (teacher audience only) ──
-      if (audience === 'teacher' && allMindResults.length > 0) {
-        const summary = buildTeacherSummaryEn(allMindResults, data.oralResults, data.academicResults);
+      if (audience === 'teacher' && (allMindResults.length > 0 || allLearningResults.length > 0)) {
+        const summary = buildTeacherSummaryEn(allMindResults, data.oralResults, data.academicResults, allLearningResults);
         doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill(C.blue); doc.restore();
         y = 50;
 
@@ -1098,7 +1303,12 @@ export async function generateArabicPDF(data: ReportData): Promise<Buffer> {
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
-      const allResults = [...data.mindResults, ...data.oralResults, ...data.academicResults];
+      const allResults = [
+        ...data.mindResults,
+        ...data.oralResults,
+        ...data.academicResults,
+        ...(data.learningResults ?? []),
+      ];
       const totalCount = allResults.length;
       const overallAvg = totalCount > 0 ? Math.round(allResults.reduce((s, r) => s + r.percentage, 0) / totalCount) : 0;
       const totalTime = allResults.reduce((s, r) => s + (r.time_spent || 0), 0);
@@ -1181,6 +1391,11 @@ export async function generateArabicPDF(data: ReportData): Promise<Buffer> {
         doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill(C.emerald); doc.restore();
         y = 50; y = renderSectionAr(y, reshapeArabic('تقييم المهارات الأكاديمية'), C.emerald, data.academicResults, subNameAr); pageFooter(true);
       }
+      // Learning & Social-Emotional (Arabic)
+      if ((data.learningResults ?? []).length > 0) {
+        doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill('#e11d48'); doc.restore();
+        y = 50; y = renderSectionAr(y, reshapeArabic('تقييم التعلم والاجتماعي العاطفي'), '#e11d48', data.learningResults, subNameAr); pageFooter(true);
+      }
 
       // ── Audience-specific section (Arabic) ──
       const audience = data.audience || 'parent';
@@ -1232,11 +1447,52 @@ export async function generateArabicPDF(data: ReportData): Promise<Buffer> {
         }
       }
 
+      const allLearningResultsAr = data.learningResults ?? [];
+      if (allLearningResultsAr.length > 0) {
+        doc.addPage(); y = 50;
+
+        const learningSectionTitleAr = audience === 'teacher'
+          ? reshapeArabic('للمعلمين: تفاصيل التعلم والاجتماعي العاطفي')
+          : reshapeArabic('لأولياء الأمور: إرشادات التعلم والاجتماعي العاطفي');
+        const learningSectionIntroAr = audience === 'teacher'
+          ? reshapeArabic('يلخص هذا القسم تفضيلات التعلم ونقاط القوة الاجتماعية العاطفية للطالب بناءً على نتائج الاختبارات.')
+          : reshapeArabic('يشرح هذا القسم تفضيلات تعلم طفلك ونقاط قوته الاجتماعية العاطفية مع أفكار لدعمه في المنزل.');
+
+        doc.save(); doc.roundedRect(L, y, W, 28, 4).fill('#ffe4e6'); doc.restore();
+        doc.font('Arabic').fontSize(12).fillColor('#9f1239').text(learningSectionTitleAr, L + 14, y + 7, { width: W - 28, align: 'right' });
+        y += 36;
+        doc.font('Arabic').fontSize(9).fillColor('#9f1239').text(learningSectionIntroAr, L + 14, y, { width: W - 28, align: 'right', lineGap: 2 });
+        y += doc.heightOfString(learningSectionIntroAr, { width: W - 28 }) + 14;
+
+        for (const qId of LEARNING_QUIZ_IDS) {
+          const result = allLearningResultsAr.find(r => r.quiz_id === qId);
+          if (!result) continue;
+          const paragraph = audience === 'teacher'
+            ? getLearningTeacherParagraphAr(result)
+            : getLearningParentAdviceAr(result);
+          if (!paragraph) continue;
+
+          const nameLabel = learningQuizDisplayName[qId] || result.quiz_name;
+          const subLabel = subNameAr[result.subcategory] || result.subcategory;
+          const heading = `(${subLabel}) ${nameLabel}`;
+
+          doc.font('Arabic').fontSize(9);
+          const paraH = doc.heightOfString(paragraph, { width: W - 28, align: 'right' });
+          y = ensureSpace(y, paraH + 30, true);
+
+          doc.save(); doc.roundedRect(L, y, W, paraH + 28, 4).fill('#ffe4e6'); doc.restore();
+          doc.font('Arabic').fontSize(10).fillColor('#9f1239').text(heading, L + 12, y + 6, { width: W - 24, align: 'right' });
+          y += 20;
+          doc.font('Arabic').fontSize(9).fillColor('#881337').text(paragraph, L + 12, y, { width: W - 28, align: 'right', lineGap: 2 });
+          y += paraH + 16;
+        }
+      }
+
       pageFooter(true);
 
       // ── Teacher Summary Page — Arabic (teacher audience only) ──
-      if (audience === 'teacher' && allMindResults.length > 0) {
-        const summaryAr = buildTeacherSummaryAr(allMindResults, data.oralResults, data.academicResults);
+      if (audience === 'teacher' && (allMindResults.length > 0 || allLearningResultsAr.length > 0)) {
+        const summaryAr = buildTeacherSummaryAr(allMindResults, data.oralResults, data.academicResults, allLearningResultsAr);
         doc.addPage(); doc.save(); doc.rect(0, 0, pageW, 4).fill(C.blue); doc.restore();
         y = 50;
 

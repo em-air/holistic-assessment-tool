@@ -9,7 +9,7 @@ import { logger } from '../utils/logger';
 export interface QuizResultData {
   quiz_id: string;
   quiz_name: string;
-  category: 'mind' | 'oral' | 'academic';
+  category: 'mind' | 'oral' | 'academic' | 'learning';
   subcategory: string;
   score: number;
   total_questions: number;
@@ -47,7 +47,7 @@ export async function saveQuizResult(result: QuizResultData): Promise<{ success:
 /**
  * Get all quiz results for the current user from the database
  */
-export async function getQuizResults(category?: 'mind' | 'oral' | 'academic'): Promise<{ success: boolean; results?: SavedQuizResult[]; error?: string }> {
+export async function getQuizResults(category?: 'mind' | 'oral' | 'academic' | 'learning'): Promise<{ success: boolean; results?: SavedQuizResult[]; error?: string }> {
   try {
     const endpoint = category ? `/api/results?category=${category}` : '/api/results';
     const response = await api.get<{ results: SavedQuizResult[] }>(endpoint);
@@ -65,7 +65,7 @@ export async function getQuizResults(category?: 'mind' | 'oral' | 'academic'): P
 /**
  * Delete all quiz results for the given categories from the database
  */
-export async function deleteAllResults(categories: Array<'mind' | 'oral' | 'academic'> = ['mind', 'oral']): Promise<{ success: boolean; error?: string }> {
+export async function deleteAllResults(categories: Array<'mind' | 'oral' | 'academic' | 'learning'> = ['mind', 'oral']): Promise<{ success: boolean; error?: string }> {
   try {
     const results = await Promise.allSettled(
       categories.map(cat => api.delete(`/api/results/category/${cat}`))

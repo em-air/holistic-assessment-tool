@@ -2,11 +2,11 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import {
-  User, Download, FileText, ArrowLeft, Brain, Mic, BookOpen,
+  User, Download, FileText, ArrowLeft, Brain, Mic, BookOpen, Heart,
   Award, Clock, CheckCircle, RefreshCw, AlertCircle, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { ProgressTracker, MIND_QUIZZES, ORAL_QUIZZES, ACADEMIC_QUIZZES } from '../utils/progressTracker';
+import { ProgressTracker, MIND_QUIZZES, ORAL_QUIZZES, ACADEMIC_QUIZZES, LEARNING_QUIZZES } from '../utils/progressTracker';
 import { getMyReports, downloadReport, type ProfileReport } from '../services/profileService';
 import { generateReport } from '../services/reportService';
 import { logger } from '../utils/logger';
@@ -24,7 +24,7 @@ interface SubcategoryStats {
 }
 
 interface CategoryStats {
-  key: 'mind' | 'oral' | 'academic';
+  key: 'mind' | 'oral' | 'academic' | 'learning';
   label: string;
   icon: React.ReactNode;
   color: string;         // Tailwind text colour
@@ -191,6 +191,7 @@ function CategoryCard({ cat }: { cat: CategoryStats }) {
     mind: '#8b5cf6',
     oral: '#10b981',
     academic: '#3b82f6',
+    learning: '#f43f5e',
   };
 
   return (
@@ -492,10 +493,12 @@ const ProfilePage: React.FC = () => {
   const mindIds = new Set(MIND_QUIZZES.map(q => q.id));
   const oralIds = new Set(ORAL_QUIZZES.map(q => q.id));
   const acadIds = new Set(ACADEMIC_QUIZZES.map(q => q.id));
+  const learningIds = new Set(LEARNING_QUIZZES.map(q => q.id));
 
   const mindResults = progressData.mindSectionResults.filter(r => mindIds.has(r.quizId));
   const oralResults = progressData.oralSectionResults.filter(r => oralIds.has(r.quizId));
   const acadResults = progressData.academicSectionResults.filter(r => acadIds.has(r.quizId));
+  const learningResults = (progressData.learningSectionResults ?? []).filter(r => learningIds.has(r.quizId));
 
   const avgOf = (arr: { percentage: number }[]) =>
     arr.length > 0 ? Math.round(arr.reduce((s, r) => s + r.percentage, 0) / arr.length) : 0;
@@ -540,10 +543,25 @@ const ProfilePage: React.FC = () => {
       avgScore: avgOf(acadResults),
       subcategories: buildSubcategoryStats(acadResults, ACADEMIC_QUIZZES),
     },
+    {
+      key: 'learning',
+      label: 'Learning & SEL',
+      icon: <Heart size={20} />,
+      color: 'text-rose-600',
+      ring: '#f43f5e',
+      bg: 'bg-rose-50',
+      completed: learningResults.length,
+      total: LEARNING_QUIZZES.length,
+      pct: LEARNING_QUIZZES.length > 0 ? Math.round((learningResults.length / LEARNING_QUIZZES.length) * 100) : 0,
+      avgScore: avgOf(learningResults),
+      subcategories: buildSubcategoryStats(learningResults, LEARNING_QUIZZES),
+    },
   ];
 
-  const totalCompleted = mindResults.length + oralResults.length + acadResults.length;
-  const totalQuizzes = MIND_QUIZZES.length + ORAL_QUIZZES.length + ACADEMIC_QUIZZES.length;
+  const totalCompleted =
+    mindResults.length + oralResults.length + acadResults.length + learningResults.length;
+  const totalQuizzes =
+    MIND_QUIZZES.length + ORAL_QUIZZES.length + ACADEMIC_QUIZZES.length + LEARNING_QUIZZES.length;
   const overallPct = totalQuizzes > 0 ? Math.round((totalCompleted / totalQuizzes) * 100) : 0;
 
   // ── Loading state ─────────────────────────────────────────────────────────
@@ -716,7 +734,7 @@ const ProfilePage: React.FC = () => {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             {categoryStats.map((cat, i) => (
               <motion.div
                 key={cat.key}

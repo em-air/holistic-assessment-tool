@@ -12,7 +12,7 @@ const router = Router();
 const saveResultSchema = z.object({
   quiz_id: z.string().min(1),
   quiz_name: z.string().min(1),
-  category: z.enum(['mind', 'oral', 'academic']),
+  category: z.enum(['mind', 'oral', 'academic', 'learning']),
   subcategory: z.string().min(1),
   score: z.number().int().min(0),
   total_questions: z.number().int().min(1),
@@ -139,7 +139,7 @@ router.get('/category/:category', verifySupabaseToken, async (req: Request, res:
 
     const { category } = req.params;
     
-    if (!['mind', 'oral', 'academic'].includes(category)) {
+    if (!['mind', 'oral', 'academic', 'learning'].includes(category)) {
       return res.status(400).json({ error: 'Invalid category' });
     }
 
@@ -250,7 +250,7 @@ router.delete('/category/:category', verifySupabaseToken, async (req: Request, r
 
     const { category } = req.params;
     
-    if (!['mind', 'oral', 'academic'].includes(category)) {
+    if (!['mind', 'oral', 'academic', 'learning'].includes(category)) {
       return res.status(400).json({ error: 'Invalid category' });
     }
 
