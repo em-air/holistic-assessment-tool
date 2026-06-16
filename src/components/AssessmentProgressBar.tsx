@@ -116,7 +116,11 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
   const oralIds = new Set(ORAL_QUIZZES.map(q => q.id));
   const acadIds = new Set(ACADEMIC_QUIZZES.map(q => q.id));
   const learningIds = new Set(LEARNING_QUIZZES.map(q => q.id));
-  const mindCount = mindResults.filter(r => mindIds.has(r.quizId)).length;
+  // learning-styles and social-emotional may still be in learningResults for users with old data (pre-migration)
+  const migratedInLearning = learningResults.filter(
+    r => (r.quizId === 'social-emotional' || r.quizId === 'learning-styles') && !mindResults.some(m => m.quizId === r.quizId)
+  );
+  const mindCount = mindResults.filter(r => mindIds.has(r.quizId)).length + migratedInLearning.length;
   const oralCount = oralResults.filter(r => oralIds.has(r.quizId)).length;
   const academicCount = academicResults.filter(r => acadIds.has(r.quizId)).length;
   const learningCount = learningResults.filter(r => learningIds.has(r.quizId)).length;
@@ -153,43 +157,30 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
 
         const dateSuffix = new Date().toISOString().split('T')[0];
         const audienceLabel = audience === 'teacher' ? 'teacher' : 'parent';
-        // Download English PDF
+
+        // Trigger downloads as fire-and-forget so the dialog doesn't stay stuck
+        // waiting for potentially slow signed-URL fetches.
+        const triggerDownload = (url: string, filename: string) => {
+          fetch(url)
+            .then(r => r.ok ? r.blob() : Promise.reject(new Error(`HTTP ${r.status}`)))
+            .then(blob => {
+              const objUrl = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = objUrl;
+              a.download = filename;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(objUrl);
+            })
+            .catch(err => logger.error('PDF download error:', err));
+        };
+
         if (result.downloadUrl && (language === 'english' || language === 'both')) {
-          try {
-            const pdfResp = await fetch(result.downloadUrl);
-            if (pdfResp.ok) {
-              const blob = await pdfResp.blob();
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `en_${audienceLabel}_assessment-report-${dateSuffix}.pdf`;
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              URL.revokeObjectURL(url);
-            }
-          } catch (dlErr) {
-            logger.error('EN PDF download error:', dlErr);
-          }
+          triggerDownload(result.downloadUrl, `en_${audienceLabel}_assessment-report-${dateSuffix}.pdf`);
         }
-        // Download Arabic PDF
         if (result.downloadUrlAr && (language === 'arabic' || language === 'both')) {
-          try {
-            const pdfResp = await fetch(result.downloadUrlAr);
-            if (pdfResp.ok) {
-              const blob = await pdfResp.blob();
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `ar_${audienceLabel}_assessment-report-${dateSuffix}.pdf`;
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              URL.revokeObjectURL(url);
-            }
-          } catch (dlErr) {
-            logger.error('AR PDF download error:', dlErr);
-          }
+          triggerDownload(result.downloadUrlAr, `ar_${audienceLabel}_assessment-report-${dateSuffix}.pdf`);
         }
       } else {
         setSaveStatus('error');
@@ -291,7 +282,7 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
     bgColor,
     textColor,
   }: {
-    icon: React.FC<{ size?: number; className?: string }>;
+    icon: React.FC<{ size?: number | string; className?: string }>;
     label: string;
     completed: number;
     total: number;
@@ -322,12 +313,13 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
   };
 
   /* ── tab config ─── */
-  const tabs: { key: CategoryTab; icon: React.FC<{ size?: number; className?: string }>; label: string; completed: number; total: number; color: string }[] = [
-    { key: 'cognition', icon: Brain, label: 'Cognition', completed: mindCount, total: MIND_QUIZZES.length, color: 'indigo' },
-    { key: 'oral', icon: MessageSquare, label: 'Oral', completed: oralCount, total: ORAL_QUIZZES.length, color: 'sky' },
-    { key: 'academic', icon: BookOpen, label: 'Academic', completed: academicCount, total: ACADEMIC_QUIZZES.length, color: 'amber' },
-    { key: 'learning', icon: Heart, label: 'Learning', completed: learningCount, total: LEARNING_QUIZZES.length, color: 'rose' },
+  const allTabs = [
+    { key: 'cognition' as CategoryTab, icon: Brain, label: 'Cognition', completed: mindCount, total: MIND_QUIZZES.length, color: 'indigo' },
+    { key: 'oral' as CategoryTab, icon: MessageSquare, label: 'Oral', completed: oralCount, total: ORAL_QUIZZES.length, color: 'sky' },
+    { key: 'academic' as CategoryTab, icon: BookOpen, label: 'Academic', completed: academicCount, total: ACADEMIC_QUIZZES.length, color: 'amber' },
+    { key: 'learning' as CategoryTab, icon: Heart, label: 'Learning', completed: learningCount, total: LEARNING_QUIZZES.length, color: 'rose' },
   ];
+  const tabs = allTabs.filter(t => t.total > 0);
 
   /* ── main render ─── */
   return (
@@ -397,7 +389,7 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
       </div>
 
       {/* Category mini-bars */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+      <div className={`grid grid-cols-2 gap-3 mb-4 ${LEARNING_QUIZZES.length > 0 ? 'sm:grid-cols-4' : 'sm:grid-cols-3'}`}>
         <MiniBar
           icon={Brain}
           label="Cognition"
@@ -425,15 +417,17 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
           bgColor="bg-amber-50"
           textColor="text-amber-700"
         />
-        <MiniBar
-          icon={Heart}
-          label="Learning"
-          completed={learningCount}
-          total={LEARNING_QUIZZES.length}
-          barColor="bg-rose-500"
-          bgColor="bg-rose-50"
-          textColor="text-rose-700"
-        />
+        {LEARNING_QUIZZES.length > 0 && (
+          <MiniBar
+            icon={Heart}
+            label="Learning"
+            completed={learningCount}
+            total={LEARNING_QUIZZES.length}
+            barColor="bg-rose-500"
+            bgColor="bg-rose-50"
+            textColor="text-rose-700"
+          />
+        )}
       </div>
 
       {/* Success message */}
@@ -513,7 +507,7 @@ const AssessmentProgressBar: React.FC<AssessmentProgressBarProps> = ({
             </div>
 
             <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
-              {detailTab === 'cognition' && renderQuizList(MIND_QUIZZES, mindResults)}
+              {detailTab === 'cognition' && renderQuizList(MIND_QUIZZES, [...mindResults, ...migratedInLearning])}
               {detailTab === 'oral' && renderQuizList(ORAL_QUIZZES, oralResults)}
               {detailTab === 'academic' && renderQuizList(ACADEMIC_QUIZZES, academicResults)}
               {detailTab === 'learning' && renderQuizList(LEARNING_QUIZZES, learningResults)}

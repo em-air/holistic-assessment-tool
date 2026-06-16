@@ -645,7 +645,7 @@ async function seedCategoryQuiz(): Promise<void> {
         { id: 'apple',      name: 'Apple',      image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=150&h=150&fit=crop&crop=center',    correctCategory: 'Fruits' },
         { id: 'kiwi',       name: 'Kiwi',       image: 'https://images.unsplash.com/photo-1585059895524-72359e06133a?w=150&h=150&fit=crop&crop=center', correctCategory: 'Fruits' },
         { id: 'strawberry', name: 'Strawberry', image: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=150&h=150&fit=crop&crop=center', correctCategory: 'Fruits' },
-        { id: 'tomato',     name: 'Tomato',     image: 'https://images.unsplash.com/photo-1582284540020-8acbe03f4924?auto=format&fit=crop&q=80&w=735',  correctCategory: 'Fruits' },
+        { id: 'tomato',     name: 'Tomato',     image: 'https://images.unsplash.com/photo-1582284540020-8acbe03f4924?auto=format&fit=crop&q=80&w=735',  correctCategory: 'Vegetables' },
         { id: 'cucumber',   name: 'Cucumber',   image: 'https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?w=150&h=150&fit=crop&crop=center', correctCategory: 'Vegetables' },
         { id: 'spinach',    name: 'Spinach',    image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=150&h=150&fit=crop&crop=center', correctCategory: 'Vegetables' },
       ],

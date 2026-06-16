@@ -32,8 +32,8 @@ export interface ProgressData {
 // Mind section quiz configurations - Only Mind category quizzes
 // Attention/Memory: Attention Questionnaire, Picture Sequence
 // Learning Style: Learning Style Quiz
-// Critical Thinking: Analogy Quiz, Category Quiz
-// Perception: Find Sentence Differences, Logical Sequencing, Missing Object
+// Critical Thinking: Critical Thinking Test
+// Perception: Picture Difference Test, Logical Sequencing, Missing Object
 export const MIND_QUIZZES = [
   {
     id: 'attention-assessment',
@@ -48,22 +48,16 @@ export const MIND_QUIZZES = [
     route: '/memory-assessment'
   },
   {
-    id: 'analogy-quiz',
-    name: 'Analogy Quiz',
+    id: 'critical-thinking-quiz',
+    name: 'Critical Thinking Test',
     subcategory: 'critical-thinking',
     route: '/analogy-quiz'
   },
   {
-    id: 'category-quiz',
-    name: 'Category Quiz',
-    subcategory: 'critical-thinking',
-    route: '/category-quiz'
-  },
-  {
-    id: 'sentence-difference-quiz',
-    name: 'Find Sentence Differences',
+    id: 'picture-difference-quiz',
+    name: 'Picture Difference Test',
     subcategory: 'perception',
-    route: '/sentence-difference-quiz'
+    route: '/picture-difference-quiz'
   },
   {
     id: 'logical-sequencing-quiz',
@@ -76,7 +70,19 @@ export const MIND_QUIZZES = [
     name: 'Missing Object',
     subcategory: 'perception',
     route: '/missing-object-quiz'
-  }
+  },
+  {
+    id: 'social-emotional',
+    name: 'Social-Emotional Learning Quiz',
+    subcategory: 'social-emotional',
+    route: '/assessments/learning/social-emotional',
+  },
+  {
+    id: 'learning-styles',
+    name: 'Learning Preferences Quiz',
+    subcategory: 'learning-style',
+    route: '/assessments/learning/preferences',
+  },
 ];
 
 // Oral language section quiz configurations
@@ -94,21 +100,8 @@ export const ACADEMIC_QUIZZES = [
   { id: 'vocabulary-matching', name: 'Vocabulary Matching', subcategory: 'vocabulary', route: '/vocabulary-matching' },
 ];
 
-// Learning & social-emotional assessments
-export const LEARNING_QUIZZES = [
-  {
-    id: 'learning-styles',
-    name: 'Learning Preferences Quiz',
-    subcategory: 'learning-style',
-    route: '/assessments/learning/preferences',
-  },
-  {
-    id: 'social-emotional',
-    name: 'Social-Emotional Learning Quiz',
-    subcategory: 'social-emotional',
-    route: '/assessments/learning/social-emotional',
-  },
-];
+// Learning assessments (learning-styles and social-emotional moved to MIND_QUIZZES/Cognition)
+export const LEARNING_QUIZZES: { id: string; name: string; subcategory: string; route: string }[] = [];
 
 export const ALL_TRACKED_QUIZZES = [
   ...MIND_QUIZZES,
@@ -459,13 +452,25 @@ export class ProgressTracker {
         return Array.from(merged.values());
       };
 
-      const mindResults = mergeResults(dbMindResults, localProgress.mindSectionResults.filter(r => !isLearningQuizResult(r)));
+      // Migrate quizzes that were saved under 'learning' category but now belong in 'mind' (Cognition)
+      const migratedIds = new Set(['social-emotional', 'learning-styles']);
+      const migratedFromDbLearning = dbLearningResults.filter(r => migratedIds.has(r.quizId));
+      const dbLearningFiltered = dbLearningResults.filter(r => !migratedIds.has(r.quizId));
+      const migratedFromLocalLearning = (localProgress.learningSectionResults ?? []).filter(r => migratedIds.has(r.quizId));
+
+      const mindResults = mergeResults(
+        [...dbMindResults, ...migratedFromDbLearning],
+        [
+          ...localProgress.mindSectionResults.filter(r => !isLearningQuizResult(r)),
+          ...migratedFromLocalLearning,
+        ]
+      );
       const oralResults = mergeResults(dbOralResults, localProgress.oralSectionResults ?? []);
       const academicResults = mergeResults(dbAcademicResults, localProgress.academicSectionResults ?? []);
       const learningResults = mergeResults(
-        dbLearningResults,
+        dbLearningFiltered,
         [
-          ...(localProgress.learningSectionResults ?? []),
+          ...(localProgress.learningSectionResults ?? []).filter(r => !migratedIds.has(r.quizId)),
           ...localProgress.mindSectionResults.filter(isLearningQuizResult),
         ]
       );

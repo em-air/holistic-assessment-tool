@@ -407,7 +407,6 @@ const LearningStylesQuiz: React.FC = () => {
       ProgressTracker.saveQuizResult({
         quizId: 'learning-styles',
         quizName: 'Learning Preferences Quiz',
-        category: 'learning',
         subcategory: 'learning-style',
         score: topScore,
         totalQuestions,

@@ -70,11 +70,17 @@ router.post('/generate', verifySupabaseToken, async (req: Request, res: Response
         .then(r => r.data || []),
     ]);
 
-    const filteredMindResults = mindResults.filter(r => !['learning-styles', 'social-emotional'].includes(r.quiz_id));
-    const mergedLearningResults = [
-      ...learningResults,
-      ...mindResults.filter(r => ['learning-styles', 'social-emotional'].includes(r.quiz_id)),
+    // Both learning-styles and social-emotional are Cognition quizzes (same as progress bar).
+    // Pull any copies still in the learning bucket (saved before category migration).
+    const COGNITION_IDS = ['learning-styles', 'social-emotional'];
+    const filteredMindResults = [
+      ...mindResults,
+      ...learningResults.filter(
+        r => COGNITION_IDS.includes(r.quiz_id) && !mindResults.some(m => m.quiz_id === r.quiz_id)
+      ),
     ];
+    // Only truly "learning" category rows (none expected now, kept for safety)
+    const mergedLearningResults = learningResults.filter(r => !COGNITION_IDS.includes(r.quiz_id));
 
     // Filter by report type
     const reportData = {

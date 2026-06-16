@@ -21,14 +21,14 @@ const PerceptionQuizSelection: React.FC = () => {
       difficulty: 'All Ages'
     },
     {
-      id: 'sentence-difference',
-      title: 'Find Sentence Differences',
-      subtitle: 'Text Perception',
-      description: 'Identify differences between similar sentences',
+      id: 'picture-difference',
+      title: 'Picture Difference Test',
+      subtitle: 'Visual Attention',
+      description: 'Spot whether two images are the same or subtly different',
       icon: Search,
-      route: ROUTES.PERCEPTION_SENTENCE_DIFF,
+      route: ROUTES.PERCEPTION_PICTURE_DIFF,
       color: 'from-green-500 to-emerald-600',
-      difficulty: 'Grades 1-4'
+      difficulty: 'All Ages'
     },
     {
       id: 'logical-sequencing',

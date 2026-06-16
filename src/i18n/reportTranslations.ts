@@ -89,6 +89,7 @@ export const reportTranslations = {
   'sub.attention': { en: 'Attention', ar: 'الانتباه' },
   'sub.memory': { en: 'Memory', ar: 'الذاكرة' },
   'sub.learning-style': { en: 'Learning Style', ar: 'أسلوب التعلم' },
+  'sub.social-emotional': { en: 'Social-Emotional', ar: 'الاجتماعي-العاطفي' },
   'sub.critical-thinking': { en: 'Critical Thinking', ar: 'التفكير النقدي' },
   'sub.perception': { en: 'Perception', ar: 'الإدراك' },
   'sub.oral-language': { en: 'Oral Language', ar: 'اللغة الشفهية' },
@@ -109,6 +110,10 @@ export const reportTranslations = {
   'desc.learning-style': {
     en: 'Learning Styles refer to how your child best receives, processes, and retains information.',
     ar: 'تشير أساليب التعلم إلى الطريقة المثلى التي يستقبل بها طفلك المعلومات ويعالجها ويحتفظ بها.',
+  },
+  'desc.social-emotional': {
+    en: 'Social-Emotional Learning (SEL) measures how well your child recognises emotions, cooperates with others, and manages their own feelings and behaviour.',
+    ar: 'يقيس التعلم الاجتماعي-العاطفي (SEL) مدى قدرة طفلك على التعرف على المشاعر والتعاون مع الآخرين وإدارة مشاعره وسلوكياته.',
   },
   'desc.critical-thinking': {
     en: 'Critical Thinking encompasses reasoning, problem-solving, and analytical skills.',

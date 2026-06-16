@@ -35,7 +35,7 @@ const SentenceDifferenceQuiz: React.FC = () => {
         const loadedQuestions = await getSentenceDifferenceQuestions();
         if (loadedQuestions.length > 0) {
           const shuffled = [...loadedQuestions].sort(() => Math.random() - 0.5);
-          setQuestions(shuffled.slice(0, 10)); // Limit to 10 questions
+          setQuestions(shuffled.slice(0, 5));
         } else {
           throw new Error('No sentence difference questions are available.');
         }
@@ -102,16 +102,14 @@ const SentenceDifferenceQuiz: React.FC = () => {
       setTimeout(() => {
         handleNext();
       }, 2000);
-    } else if (selectedWordsA.length > 0 || selectedWordsB.length > 0) {
-      setFeedbackMessage("not quite right. keep looking for the differences!");
+    } else {
+      setFeedbackMessage("not quite right!");
+      setTimeout(() => {
+        handleNext();
+      }, 750);
     }
   };
 
-  useEffect(() => {
-    if (currentQuestion) {
-      checkAnswer();
-    }
-  }, [selectedWordsA, selectedWordsB]);
 
   const handleNext = () => {
     if (currentQuestionIndex < questions.length - 1) {
@@ -309,17 +307,25 @@ const SentenceDifferenceQuiz: React.FC = () => {
             </div>
           )}
 
-          {/* Next button (only shown after correct answer) */}
-          {showNext && (
-            <div className="text-center">
+          {/* Submit / Next buttons */}
+          <div className="text-center">
+            {showNext ? (
               <button
                 onClick={handleNext}
                 className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full text-lg transition-colors shadow-lg"
               >
                 {currentQuestionIndex < questions.length - 1 ? "next question" : "finish quiz"}
               </button>
-            </div>
-          )}
+            ) : (
+              <button
+                onClick={checkAnswer}
+                disabled={selectedWordsA.length === 0 || selectedWordsB.length === 0}
+                className="bg-purple-500 hover:bg-purple-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-full text-lg transition-colors shadow-lg"
+              >
+                submit
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -384,9 +384,10 @@ const MIND_QUIZ_IDS = [
   'attention-assessment', 'picture-sequence',
   'analogy-quiz', 'category-quiz',
   'sentence-difference-quiz', 'logical-sequencing-quiz', 'missing-object-quiz',
+  'social-emotional', 'learning-styles',
 ];
 
-const LEARNING_QUIZ_IDS = ['learning-styles', 'social-emotional'];
+const LEARNING_QUIZ_IDS: string[] = [];
 
 const mindQuizDisplayName: Record<string, string> = {
   'attention-assessment': 'Attention Control Assessment',
@@ -396,6 +397,8 @@ const mindQuizDisplayName: Record<string, string> = {
   'sentence-difference-quiz': 'Sentence Difference Detection',
   'logical-sequencing-quiz': 'Logical Sequencing',
   'missing-object-quiz': 'Missing Object Identification',
+  'social-emotional': 'Social-Emotional Learning Assessment',
+  'learning-styles': 'Learning Preferences Quiz',
 };
 
 const learningQuizDisplayName: Record<string, string> = {
@@ -472,6 +475,17 @@ function getTeacherParagraphEn(result: QuizResult): string {
       if (pct >= 75) return 'The student demonstrates strong visual perception and the ability to identify missing elements in a scene. This supports attention to detail in reading, mathematics, and real-world problem solving.';
       if (pct >= 60) return 'The student shows developing visual perception. They can find missing elements in simpler scenes but may miss details in complex images. Use "spot the missing item" games and observational drawing exercises.';
       return 'The student needs support with visual perception and identifying missing elements. Consider I-spy activities, hidden-picture puzzles, and guided observation exercises to strengthen visual scanning and analysis.';
+    case 'social-emotional': {
+      const ad = parseAdditionalData(result.additional_data);
+      const strength = ad?.primaryStrength as string | undefined;
+      const description = ad?.description as string | undefined;
+      const scores = ad?.dimensionScores as Record<string, number> | undefined;
+      const scoreText = scores ? ` (Emotional Awareness: ${scores.EA ?? 0}, Prosocial Skills: ${scores.PS ?? 0}, Self-Regulation: ${scores.SR ?? 0})` : '';
+      if (strength === 'EA') return `The Social-Emotional Learning assessment identified Emotional Awareness as this student's current strength.${scoreText} ${description || 'The student appears skilled at noticing and naming feelings in themselves and others.'} In the classroom, build on this by encouraging the student to articulate their feelings during check-ins, use emotion vocabulary in discussions, and take on peer-support roles where empathy is valued.`;
+      if (strength === 'PS') return `The Social-Emotional Learning assessment identified Prosocial Skills as this student's current strength.${scoreText} ${description || 'The student tends to help others, cooperate, and act as a supportive peer.'} Harness this by assigning collaborative learning tasks, recognising acts of kindness publicly, and giving the student opportunities to mentor or assist classmates.`;
+      if (strength === 'SR') return `The Social-Emotional Learning assessment identified Self-Regulation as this student's current strength.${scoreText} ${description || 'The student tends to stay calm under pressure and persist through challenges.'} Continue developing this by setting appropriately challenging goals, praising effort and resilience, and modelling coping strategies when things go wrong.`;
+      return description || 'The student completed the Social-Emotional Learning assessment. Use the results to support their emotional and social development in the classroom.';
+    }
     default: return '';
   }
 }
@@ -543,6 +557,17 @@ function getParentAdviceEn(result: QuizResult): string {
       if (pct >= 75) return 'Your child is very good at noticing what\'s missing or different in a picture. This is a great sign for visual awareness! I-spy games, picture puzzles, and observation walks ("What\'s new on this street?") keep this skill sharp.';
       if (pct >= 60) return 'Your child can find some missing items but may overlook details in busy scenes. Play "what\'s different?" and "what\'s missing?" games at home. Try placing a few objects on a tray, covering them, and removing one—can they guess which one is gone?';
       return 'Your child needs practice noticing missing things in pictures. Play the "tray game" (display objects, cover and remove one, can they guess?). I-spy books and hidden-picture puzzles are fun ways to build this skill.';
+    case 'social-emotional': {
+      const ad = parseAdditionalData(result.additional_data);
+      const strength = ad?.primaryStrength as string | undefined;
+      const description = ad?.description as string | undefined;
+      const suggestions = Array.isArray(ad?.suggestions) ? (ad.suggestions as string[]) : [];
+      const suggestionText = suggestions.length > 0 ? ` You can support this at home by: ${suggestions.join('; ')}.` : '';
+      if (strength === 'EA') return `This assessment found that your child's current strength is Emotional Awareness — they are good at noticing and understanding feelings. ${description || ''}${suggestionText} At home, name and talk about emotions together: "You look frustrated — what happened?" Naming feelings helps children build emotional intelligence over time.`;
+      if (strength === 'PS') return `This assessment found that your child's current strength is Prosocial Skills — they naturally help others and work well with friends. ${description || ''}${suggestionText} Reinforce this at home by noticing and praising acts of kindness, encouraging team activities, and discussing how to include and support friends.`;
+      if (strength === 'SR') return `This assessment found that your child's current strength is Self-Regulation — they can stay calm and keep trying even when things are hard. ${description || ''}${suggestionText} You can build on this at home by acknowledging their persistence, practising calming strategies together (like deep breathing), and celebrating effort rather than just results.`;
+      return `${description || 'This assessment highlights one of your child\'s current social-emotional strengths.'}${suggestionText}`;
+    }
     default: return '';
   }
 }
@@ -614,6 +639,14 @@ function getTeacherParagraphAr(result: QuizResult): string {
       if (pct >= 75) return reshapeArabic('يُظهر الطالب إدراكًا بصريًا قويًا وقدرة على تحديد العناصر المفقودة. يدعم ذلك الانتباه للتفاصيل في القراءة والرياضيات وحل المشكلات.');
       if (pct >= 60) return reshapeArabic('يُظهر الطالب إدراكًا بصريًا متطورًا. يمكنه إيجاد العناصر المفقودة في المشاهد البسيطة لكنه قد يفوت التفاصيل في الصور المعقدة. يُنصح بألعاب البحث عن العنصر المفقود.');
       return reshapeArabic('يحتاج الطالب دعمًا في الإدراك البصري. فكر في أنشطة البحث والصور المخفية والتمارين التوجيهية لتعزيز المسح البصري والتحليل.');
+    case 'social-emotional': {
+      const ad = parseAdditionalData(result.additional_data);
+      const strength = ad?.primaryStrength as string | undefined;
+      if (strength === 'EA') return reshapeArabic('حدد تقييم التعلم الاجتماعي العاطفي أن الوعي العاطفي هو نقطة القوة الحالية للطالب. يبدو أنه بارع في ملاحظة المشاعر وفهمها، مما يدعم التواصل وحل المشكلات. في الفصل الدراسي، استغل هذه القوة من خلال تشجيع الطالب على التعبير عن مشاعره خلال نشاطات المراجعة اليومية، وإثراء قاموسه العاطفي، وإسناد أدوار الدعم الاجتماعي إليه.');
+      if (strength === 'PS') return reshapeArabic('حدد تقييم التعلم الاجتماعي العاطفي أن المهارات الاجتماعية الإيجابية هي نقطة القوة الحالية للطالب. يتميز بمساعدة الآخرين والتعاون والدعم بين الزملاء. طوّر هذه القوة من خلال تكليفه بمهام تعاونية، والاعتراف بأفعاله الطيبة علنًا، ومنحه فرصًا لمرافقة أو مساعدة زملائه.');
+      if (strength === 'SR') return reshapeArabic('حدد تقييم التعلم الاجتماعي العاطفي أن التنظيم الذاتي هو نقطة القوة الحالية للطالب. يُظهر ثباتًا تحت الضغط ومثابرة أمام التحديات. عزز هذه القوة بتحديد أهداف مناسبة وتحفيزية، والثناء على الجهد والمرونة، ونمذجة استراتيجيات التكيف حين تظهر الصعوبات.');
+      return reshapeArabic('أكمل الطالب تقييم التعلم الاجتماعي العاطفي. استخدم النتائج لدعم نموه العاطفي والاجتماعي في الفصل الدراسي.');
+    }
     default: return '';
   }
 }
@@ -685,6 +718,14 @@ function getParentAdviceAr(result: QuizResult): string {
       if (pct >= 75) return reshapeArabic('طفلك جيد جدًا في ملاحظة ما هو مفقود! ألعاب البحث وألغاز الصور ونزهات الملاحظة تحافظ على هذه المهارة قوية.');
       if (pct >= 60) return reshapeArabic('طفلك يجد بعض العناصر المفقودة لكنه قد يتجاهل التفاصيل. العب ألعاب "ما المختلف؟" و"ما المفقود؟". جرب وضع أشياء على صينية ثم إزالة واحد.');
       return reshapeArabic('يحتاج طفلك ممارسة في ملاحظة الأشياء المفقودة. العب لعبة الصينية وكتب البحث وألغاز الصور المخفية هي طرق ممتعة لبناء هذه المهارة.');
+    case 'social-emotional': {
+      const ad = parseAdditionalData(result.additional_data);
+      const strength = ad?.primaryStrength as string | undefined;
+      if (strength === 'EA') return reshapeArabic('وجد هذا التقييم أن نقطة قوة طفلك الحالية هي الوعي العاطفي — فهو بارع في ملاحظة المشاعر وفهمها. في المنزل، تحدثوا عن المشاعر معًا: "يبدو أنك محبط — ماذا حدث؟" تسمية المشاعر تساعد في بناء الذكاء العاطفي مع مرور الوقت.');
+      if (strength === 'PS') return reshapeArabic('وجد هذا التقييم أن نقطة قوة طفلك الحالية هي المهارات الاجتماعية الإيجابية — فهو يساعد الآخرين ويتعاون بشكل جيد. عزز ذلك في المنزل بملاحظة أفعاله الطيبة والثناء عليها، وتشجيعه على الأنشطة الجماعية، ومناقشة طرق دعم الأصدقاء وإشراكهم.');
+      if (strength === 'SR') return reshapeArabic('وجد هذا التقييم أن نقطة قوة طفلك الحالية هي التنظيم الذاتي — فهو يستطيع البقاء هادئًا والمحاولة مرة أخرى حتى في المواقف الصعبة. عزز ذلك في المنزل بالاعتراف بمثابرته، والتدرب على استراتيجيات الهدوء معًا كالتنفس العميق، والاحتفاء بالجهد لا فقط بالنتائج.');
+      return reshapeArabic('يُظهر هذا التقييم أحد نقاط القوة الاجتماعية العاطفية الحالية لطفلك. هذه القوة تدعم صحته العاطفية وعلاقاته الإيجابية مع الآخرين.');
+    }
     default: return '';
   }
 }
@@ -1125,7 +1166,16 @@ export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
           if (qId === 'attention-assessment') {
             const adH = parseAdditionalData(result.additional_data);
             scoreLabel = adH?.attentionLevel ? ` \u2014 ${adH.attentionLevel}` : '';
-          } else if (qId !== 'learning-styles') {
+          } else if (qId === 'social-emotional') {
+            const adSel = parseAdditionalData(result.additional_data);
+            const selLabels: Record<string, string> = { EA: 'Emotional Awareness', PS: 'Prosocial Skills', SR: 'Self-Regulation' };
+            const selTitle = adSel?.primaryTitle || (adSel?.primaryStrength ? selLabels[adSel.primaryStrength] : null);
+            scoreLabel = selTitle ? ` \u2014 ${selTitle}` : '';
+          } else if (qId === 'learning-styles') {
+            const adLs = parseAdditionalData(result.additional_data);
+            const lsStyle = adLs?.dominantStyle ?? (adLs?.primaryDimension === 'reading' ? 'reading-writing' : adLs?.primaryDimension);
+            scoreLabel = lsStyle ? ` \u2014 ${styleEn[lsStyle as string] ?? lsStyle}` : '';
+          } else {
             scoreLabel = ` \u2014 ${result.percentage}%`;
           }
           const heading = `${nameLabel} (${subLabel}${scoreLabel})`;
@@ -1430,7 +1480,20 @@ export async function generateArabicPDF(data: ReportData): Promise<Buffer> {
           if (qId === 'attention-assessment') {
             const adH = parseAdditionalData(result.additional_data);
             scoreLabel = adH?.attentionLevel ? ` \u2014 ${adH.attentionLevel}` : '';
-          } else if (qId !== 'learning-styles') {
+          } else if (qId === 'social-emotional') {
+            const adSel = parseAdditionalData(result.additional_data);
+            const selLabelsAr: Record<string, string> = {
+              EA: reshapeArabic('\u0627\u0644\u0648\u0639\u064a \u0627\u0644\u0639\u0627\u0637\u0641\u064a'),
+              PS: reshapeArabic('\u0627\u0644\u0645\u0647\u0627\u0631\u0627\u062a \u0627\u0644\u0627\u062c\u062a\u0645\u0627\u0639\u064a\u0629'),
+              SR: reshapeArabic('\u0627\u0644\u062a\u0646\u0638\u064a\u0645 \u0627\u0644\u0630\u0627\u062a\u064a'),
+            };
+            const selTitle = adSel?.primaryTitle || (adSel?.primaryStrength ? selLabelsAr[adSel.primaryStrength] : null);
+            scoreLabel = selTitle ? ` \u2014 ${selTitle}` : '';
+          } else if (qId === 'learning-styles') {
+            const adLs = parseAdditionalData(result.additional_data);
+            const lsStyle = adLs?.dominantStyle ?? (adLs?.primaryDimension === 'reading' ? 'reading-writing' : adLs?.primaryDimension);
+            scoreLabel = lsStyle ? ` \u2014 ${styleAr[lsStyle as string] ?? lsStyle}` : '';
+          } else {
             scoreLabel = ` \u2014 ${result.percentage}%`;
           }
           const heading = `(${scoreLabel}${subLabel}) ${nameLabel}`;

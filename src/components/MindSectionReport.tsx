@@ -25,7 +25,13 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
   const isAuthenticated = ProgressTracker.isAuthenticated();
   const progress = ProgressTracker.getProgress();
   // Deduplicate results by quizId (keep latest by completedAt)
-  const allResults = [...progress.mindSectionResults, ...(progress.oralSectionResults ?? []), ...(progress.academicSectionResults ?? [])];
+  const allResults = [
+    ...progress.mindSectionResults,
+    ...(progress.oralSectionResults ?? []),
+    ...(progress.academicSectionResults ?? []),
+    // Include social-emotional from learning section (also handles old data stored there)
+    ...(progress.learningSectionResults ?? []).filter(r => r.quizId === 'social-emotional'),
+  ];
   const resultMap = new Map<string, QuizResult>();
   for (const r of allResults) {
     const existing = resultMap.get(r.quizId);
@@ -94,6 +100,7 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       'attention': 'Attention',
       'memory': 'Memory',
       'learning-style': 'Learning Style',
+      'social-emotional': 'Social-Emotional Learning',
       'critical-thinking': 'Critical Thinking',
       'perception': 'Perception',
       'oral-language': 'Oral Language',
@@ -110,6 +117,7 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       'attention': 'text-yellow-600',
       'memory': 'text-orange-600',
       'learning-style': 'text-green-600',
+      'social-emotional': 'text-teal-600',
       'critical-thinking': 'text-purple-600',
       'perception': 'text-indigo-600',
       'oral-language': 'text-sky-600',
@@ -143,7 +151,8 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       'phonics': 'Phonics skills assess the ability to identify letter-sound relationships, recognize beginning and ending sounds, and decode words — foundational skills for reading.',
       'spelling': 'Spelling skills measure the ability to correctly write words, demonstrating phonetic knowledge and orthographic awareness.',
       'writing': 'Writing skills assess the ability to compose text with proper structure, grammar, vocabulary usage, and creative expression.',
-      'vocabulary': 'Vocabulary skills measure word knowledge, including understanding word meanings and the ability to match words with their definitions.'
+      'vocabulary': 'Vocabulary skills measure word knowledge, including understanding word meanings and the ability to match words with their definitions.',
+      'social-emotional': 'Social-Emotional Learning measures emotional awareness, prosocial skills, and self-regulation. These strengths support healthy relationships, emotional well-being, and resilience in learning.'
     };
     return descriptions[subcategory] || 'This skill area measures important cognitive abilities.';
   };
@@ -207,8 +216,21 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       } else {
         analysis = 'Your child may benefit from activities that strengthen visual processing skills, such as puzzles, drawing, and pattern recognition games.';
       }
+    } else if (category === 'social-emotional') {
+      const ad = result.additionalData;
+      if (ad?.description) {
+        analysis = ad.description;
+      } else if (ad?.primaryStrength === 'EA') {
+        analysis = 'Your child shows strength in emotional awareness — recognizing and understanding their own feelings and those of others. This supports empathy and effective communication.';
+      } else if (ad?.primaryStrength === 'PS') {
+        analysis = 'Your child shows strength in prosocial skills — helping others, cooperating, and being a supportive peer. This is a great foundation for positive relationships.';
+      } else if (ad?.primaryStrength === 'SR') {
+        analysis = 'Your child shows strength in self-regulation — staying calm, handling challenges, and persevering. This resilience is very supportive of learning and growth.';
+      } else {
+        analysis = 'Your child completed the Social-Emotional Learning assessment. Their social-emotional strengths support healthy development and positive relationships.';
+      }
     }
-    
+
     return analysis;
   };
 
@@ -301,7 +323,7 @@ DETAILED SKILL ANALYSIS
 `;
 
     // Group results by skill category
-    ['attention', 'memory', 'learning-style', 'critical-thinking', 'perception', 'oral-language', 'phonics', 'phonics-awareness'].forEach(category => {
+    ['attention', 'memory', 'social-emotional', 'learning-style', 'critical-thinking', 'perception', 'oral-language', 'phonics', 'phonics-awareness'].forEach(category => {
       const categoryResults = results.filter(r => remapQuizCategory(r) === category);
       if (categoryResults.length === 0) return;
       
@@ -481,7 +503,7 @@ Assessment Results:
             <h3 className="text-xl font-bold text-gray-800 mb-6">🧠 Detailed Skill Analysis</h3>
             
             {/* Group results by skill category */}
-            {['attention', 'memory', 'learning-style', 'critical-thinking', 'perception', 'oral-language', 'phonics', 'spelling', 'writing', 'vocabulary'].map(category => {
+            {['attention', 'memory', 'social-emotional', 'learning-style', 'critical-thinking', 'perception', 'oral-language', 'phonics', 'spelling', 'writing', 'vocabulary'].map(category => {
               const categoryResults = results.filter(r => remapQuizCategory(r) === category);
               if (categoryResults.length === 0) return null;
               
@@ -530,6 +552,13 @@ Assessment Results:
                       const attentionLevel = isAttention
                         ? (result.additionalData?.attentionLevel || (result.percentage >= 75 ? 'Strong Focus' : result.percentage >= 60 ? 'Moderate Focus' : 'Developing Focus'))
                         : null;
+
+                      // For social-emotional, show the strength label instead of percentage
+                      const isSEL = result.quizId === 'social-emotional';
+                      const selStrengthLabels: Record<string, string> = { EA: 'Emotional Awareness', PS: 'Prosocial Skills', SR: 'Self-Regulation' };
+                      const selLabel = isSEL
+                        ? (result.additionalData?.primaryTitle || (result.additionalData?.primaryStrength ? selStrengthLabels[result.additionalData.primaryStrength] : null))
+                        : null;
                       
                       return (
                         <div key={`${category}-${result.quizId}`} className={`border-l-4 pl-4 ${getCategoryColor(category).replace('text-', 'border-')}`}>
@@ -556,6 +585,13 @@ Assessment Results:
                                     {attentionLevel}
                                   </div>
                                   <div className="text-sm text-gray-500">Attention Level</div>
+                                </>
+                              ) : isSEL && selLabel ? (
+                                <>
+                                  <div className={`text-lg font-bold ${getCategoryColor(category)}`}>
+                                    {selLabel}
+                                  </div>
+                                  <div className="text-sm text-gray-500">Top Strength</div>
                                 </>
                               ) : (
                                 <>

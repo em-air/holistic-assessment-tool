@@ -581,7 +581,6 @@ const SocialEmotionalQuiz: React.FC = () => {
     ProgressTracker.saveQuizResult({
       quizId: 'social-emotional',
       quizName: 'Social-Emotional Learning Quiz',
-      category: 'learning',
       subcategory: 'social-emotional',
       score: primaryScore,
       totalQuestions: questions.length,

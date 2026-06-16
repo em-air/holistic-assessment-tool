@@ -22,11 +22,11 @@ const PerceptionQuiz: React.FC = () => {
       hoverColor: 'hover:border-blue-400'
     },
     {
-      id: 'sentence-difference',
-      title: 'Find the Difference',
-      description: 'spot the single word that differs between two sentences',
+      id: 'picture-difference',
+      title: 'Picture Difference Test',
+      description: 'decide whether two images are the same or subtly different',
       icon: FileText,
-      route: ROUTES.SENTENCE_DIFFERENCE_QUIZ_FLAT,
+      route: ROUTES.PICTURE_DIFFERENCE_QUIZ_FLAT,
       color: 'from-purple-500 to-pink-500',
       bgColor: 'bg-purple-50',
       borderColor: 'border-purple-200',

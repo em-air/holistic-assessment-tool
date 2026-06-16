@@ -1,232 +1,169 @@
 /**
- * Quiz Database Service
+ * Quiz Data Service
  *
- * All quiz content is fetched from the Supabase `questions` table.
- * Content columns are returned to callers; answer_data is only returned
- * by the *AnswerData helpers, which are called server-side for validation.
+ * All quiz content is served from hardcoded data files.
+ * Answer data is only returned by the *AnswerData helpers,
+ * which are called server-side for validation.
  *
- * SECURITY: Never return answer_data columns to callers that send data to
+ * SECURITY: Never return answer fields to callers that send data to
  * the frontend. Only call *AnswerData helpers during server-side validation.
  */
 
-import supabaseAdmin from '../config/supabase.js';
+import { spellingData } from '../data/spellingData.js';
+import { vocabularyWords } from '../data/vocabularyData.js';
+import {
+  getVocabularyMatchingGrades as _getVMGrades,
+  getVocabularyMatchingQuestions as _getVMQuestions,
+} from '../data/vocabularyMatchingData.js';
+import { missingObjectQuestions } from '../data/missingObjectData.js';
+import { getReadingAssessmentContent as _getReadingContent } from '../data/readingAssessmentData.js';
+import {
+  grade1Stories,
+  grade2Stories,
+  grade3Stories,
+  grade4Stories,
+} from '../data/storyRetellData.js';
+import { criticalThinkingQuestions, categoryQuestions } from '../data/criticalThinkingData.js';
+import { learningStyleQuestions } from '../data/learningStylesData.js';
+import {
+  sentenceBuildingGrades,
+  grade1Questions as sb1,
+  grade2Questions as sb2,
+  grade3Questions as sb3,
+  grade4Questions as sb4,
+  type SentenceBuildingQuestion,
+} from '../data/sentenceBuildingData.js';
+import { writingData } from '../data/writingData.js';
+import { oralLanguageQuestions } from '../data/oralLanguageData.js';
+import {
+  grade1Questions as ls1,
+  grade2Questions as ls2,
+  grade3Questions as ls3,
+  grade4Questions as ls4,
+} from '../data/logicalSequencingData.js';
+import { attentionControlQuestions } from '../data/attentionControlData.js';
+import { spotTheDifferenceData } from '../data/spotTheDifferenceData.js';
+import { sentenceDifferenceQuestions } from '../data/sentenceDifferenceData.js';
+import { memoryItems, generateSequenceQuestion } from '../data/memoryAssessmentData.js';
+
+export { generateSequenceQuestion };
 
 // ─── Spelling ────────────────────────────────────────────────────────────────
 
 export async function getSpellingWordsByGrade(grade: number) {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('id, difficulty, content')
-    .eq('quiz_type', 'spelling')
-    .eq('grade', `Grade ${grade}`)
-    .order('order_index');
-  if (error) throw new Error(`getSpellingWordsByGrade: ${error.message}`);
-  return (data ?? []).map(r => ({
-    id: r.id as string,
-    difficulty: r.difficulty as string,
-    hint: (r.content as Record<string, unknown>).hint as string | null,
-    audioUrl: (r.content as Record<string, unknown>).audioUrl as string | null,
+  const gradeData = spellingData.find(g => g.grade === grade);
+  return (gradeData?.words ?? []).map(w => ({
+    id: w.id,
+    difficulty: w.difficulty,
+    hint: w.hint ?? null,
+    audioUrl: w.audioUrl ?? null,
   }));
 }
 
 export async function getSpellingAnswerData(wordId: string): Promise<string | null> {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('answer_data')
-    .eq('quiz_type', 'spelling')
-    .eq('id', wordId)
-    .single();
-  if (error) return null;
-  return ((data?.answer_data) as Record<string, unknown>)?.word as string ?? null;
+  for (const g of spellingData) {
+    const word = g.words.find(w => w.id === wordId);
+    if (word) return word.word;
+  }
+  return null;
 }
 
-export async function getSpellingGrades() {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('grade')
-    .eq('quiz_type', 'spelling')
-    .not('grade', 'is', null);
-  if (error) throw new Error(`getSpellingGrades: ${error.message}`);
-  const grades = [...new Set((data ?? []).map(r => r.grade as string))].sort();
-  return grades.map(g => Number(g.replace('Grade ', '')));
+export async function getSpellingGrades(): Promise<number[]> {
+  return spellingData.map(g => g.grade).sort((a, b) => a - b);
 }
 
 // ─── Vocabulary ───────────────────────────────────────────────────────────────
 
 export async function getVocabularyByLevel(level: number) {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('id, content')
-    .eq('quiz_type', 'vocabulary')
-    .order('order_index');
-  if (error) throw new Error(`getVocabularyByLevel: ${error.message}`);
-  return (data ?? [])
-    .filter(r => (r.content as Record<string, unknown>).level === level)
-    .map(r => {
-      const c = r.content as Record<string, unknown>;
-      return {
-        id: r.id as string,
-        word: c.word as string,
-        example: c.example as string,
-        level: c.level as number,
-        definition: c.definition as string,
-        options: c.options as Array<{ id: string; text: string }>,
-      };
-    });
+  return vocabularyWords
+    .filter(w => w.level === level)
+    .map(w => ({
+      id: w.id,
+      word: w.word,
+      example: w.example,
+      level: w.level,
+      definition: w.definition,
+      options: w.options.map(o => ({ id: o.id, text: o.text })),
+    }));
 }
 
 export async function getVocabularyAnswerData(wordId: string): Promise<string | null> {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('answer_data')
-    .eq('quiz_type', 'vocabulary')
-    .eq('id', wordId)
-    .single();
-  if (error) return null;
-  return ((data?.answer_data) as Record<string, unknown>)?.correctOptionId as string ?? null;
+  const word = vocabularyWords.find(w => w.id === wordId);
+  if (!word) return null;
+  const correct = word.options.find(o => o.isCorrect);
+  return correct?.id ?? null;
 }
 
 // ─── Vocabulary Matching ──────────────────────────────────────────────────────
 
 export async function getVocabularyMatchingGrades() {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('grade, content')
-    .eq('quiz_type', 'vocabulary-matching')
-    .not('grade', 'is', null);
-  if (error) throw new Error(`getVocabularyMatchingGrades: ${error.message}`);
-
-  const gradeMap = new Map<number, Set<number>>();
-  for (const row of data ?? []) {
-    const gradeNum = Number((row.grade as string).replace('Grade ', ''));
-    const level = (row.content as Record<string, unknown>).level as number;
-    if (!gradeMap.has(gradeNum)) gradeMap.set(gradeNum, new Set());
-    gradeMap.get(gradeNum)!.add(level);
-  }
-
-  return [...gradeMap.entries()]
-    .sort(([a], [b]) => a - b)
-    .map(([grade, levels]) => ({
-      grade,
-      levels: [...levels].sort().map(level => ({
-        level,
-        questionCount: (data ?? []).filter(
-          r =>
-            Number((r.grade as string).replace('Grade ', '')) === grade &&
-            (r.content as Record<string, unknown>).level === level
-        ).length,
-      })),
-    }));
+  return _getVMGrades();
 }
 
 export async function getVocabularyMatchingQuestions(grade: number, level: number) {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('id, content')
-    .eq('quiz_type', 'vocabulary-matching')
-    .eq('grade', `Grade ${grade}`)
-    .order('order_index');
-  if (error) throw new Error(`getVocabularyMatchingQuestions: ${error.message}`);
-  return (data ?? [])
-    .filter(r => (r.content as Record<string, unknown>).level === level)
-    .map(r => {
-      const c = r.content as Record<string, unknown>;
-      return {
-        id: r.id as string,
-        word: c.word as string,
-        definition: c.definition as string,
-        level: c.level as number,
-      };
-    });
+  return _getVMQuestions(grade, level).map(q => ({
+    id: q.id,
+    word: q.word,
+    definition: q.definition,
+    level,
+  }));
 }
 
 // ─── Missing Object ───────────────────────────────────────────────────────────
 
 export async function getMissingObjectQuestions() {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('id, content')
-    .eq('quiz_type', 'missing-object')
-    .order('order_index');
-  if (error) throw new Error(`getMissingObjectQuestions: ${error.message}`);
-  return (data ?? []).map(r => {
-    const c = r.content as Record<string, unknown>;
-    return {
-      id: Number(r.id),
-      image: c.image as string,
-      question: c.question as string,
-      options: c.options as Array<{ id: string; text: string }>,
-    };
-  });
+  return missingObjectQuestions.map(q => ({
+    id: q.id,
+    image: q.image,
+    question: q.question,
+    options: q.options as string[],
+  }));
 }
 
 export async function getMissingObjectAnswerData(questionId: number): Promise<string | null> {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('answer_data')
-    .eq('quiz_type', 'missing-object')
-    .eq('id', String(questionId))
-    .single();
-  if (error) return null;
-  return ((data?.answer_data) as Record<string, unknown>)?.correctAnswer as string ?? null;
+  const q = missingObjectQuestions.find(q => q.id === questionId);
+  return q?.correctAnswer ?? null;
 }
 
 // ─── Reading Assessment ───────────────────────────────────────────────────────
 
 export async function getReadingAssessmentContent(grade: number) {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('content')
-    .eq('quiz_type', 'reading-assessment')
-    .eq('grade', `Grade ${grade}`)
-    .single();
-  if (error) return null;
-  const c = data?.content as Record<string, unknown>;
-  return c ? { title: c.title as string, text: c.text as string } : null;
+  const content = _getReadingContent(grade);
+  if (!content) return null;
+  return { title: content.title, text: content.text };
 }
 
 // ─── Story Retell ─────────────────────────────────────────────────────────────
 
+const allStories = [...grade1Stories, ...grade2Stories, ...grade3Stories, ...grade4Stories];
+
 export async function getStoriesByGrade(grade: number) {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('id, content')
-    .eq('quiz_type', 'story-retell')
-    .eq('grade', `Grade ${grade}`)
-    .order('order_index');
-  if (error) throw new Error(`getStoriesByGrade: ${error.message}`);
-  return (data ?? []).map(r => {
-    const c = r.content as Record<string, unknown>;
-    return {
-      id: Number(r.id),
-      title: c.title as string,
-      story: c.story as string,
-      grade,
-      readingLevel: c.readingLevel as string,
-      wordCount: c.wordCount as number,
-      beginningOptions: c.beginningOptions as Array<{ id: string; text: string }>,
-      middleOptions: c.middleOptions as Array<{ id: string; text: string }>,
-      endOptions: c.endOptions as Array<{ id: string; text: string }>,
-    };
-  });
+  return allStories
+    .filter(s => s.grade === grade)
+    .map(s => ({
+      id: s.id,
+      title: s.title,
+      story: s.story,
+      grade: s.grade,
+      readingLevel: s.readingLevel,
+      wordCount: s.wordCount,
+      beginningOptions: s.beginningOptions.map(o => ({ id: o.id, text: o.text })),
+      middleOptions: s.middleOptions.map(o => ({ id: o.id, text: o.text })),
+      endOptions: s.endOptions.map(o => ({ id: o.id, text: o.text })),
+    }));
 }
 
 export async function getStoryAnswerData(storyId: number) {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('answer_data')
-    .eq('quiz_type', 'story-retell')
-    .eq('id', String(storyId))
-    .single();
-  if (error) return null;
-  const a = data?.answer_data as Record<string, unknown>;
-  return a
-    ? {
-        beginningCorrectId: a.beginningCorrectId as string,
-        middleCorrectId: a.middleCorrectId as string,
-        endCorrectId: a.endCorrectId as string,
-      }
-    : null;
+  const story = allStories.find(s => s.id === storyId);
+  if (!story) return null;
+  const beginningCorrect = story.beginningOptions.find(o => o.isCorrect);
+  const middleCorrect = story.middleOptions.find(o => o.isCorrect);
+  const endCorrect = story.endOptions.find(o => o.isCorrect);
+  return {
+    beginningCorrectId: beginningCorrect?.id ?? '',
+    middleCorrectId: middleCorrect?.id ?? '',
+    endCorrectId: endCorrect?.id ?? '',
+  };
 }
 
 // ─── Critical Thinking ────────────────────────────────────────────────────────
@@ -235,185 +172,107 @@ export async function getCriticalThinkingQuestions(
   type?: 'analogy' | 'category' | 'sequence' | 'odd-one-out',
   difficulty?: 'easy' | 'medium' | 'hard'
 ) {
-  let query = supabaseAdmin
-    .from('questions')
-    .select('id, difficulty, content')
-    .eq('quiz_type', 'critical-thinking')
-    .order('order_index');
-  if (difficulty) query = query.eq('difficulty', difficulty);
-
-  const { data, error } = await query;
-  if (error) throw new Error(`getCriticalThinkingQuestions: ${error.message}`);
-
-  let rows = data ?? [];
-  if (type) {
-    rows = rows.filter(r => (r.content as Record<string, unknown>).type === type);
-  }
-  return rows.map(r => {
-    const c = r.content as Record<string, unknown>;
-    return {
-      id: r.id as string,
-      type: c.type as string,
-      question: c.question as string,
-      difficulty: r.difficulty as string,
-      options: c.options as Array<{ id: string; text: string }>,
-    };
-  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let qs: any[] = criticalThinkingQuestions;
+  if (type) qs = qs.filter((q: any) => q.type === type);
+  if (difficulty) qs = qs.filter((q: any) => q.difficulty === difficulty);
+  return qs.map((q: any) => ({
+    id: q.id,
+    type: q.type,
+    question: q.question,
+    difficulty: q.difficulty,
+    options: q.options.map((o: any) => ({ id: o.id, text: o.text })),
+  }));
 }
 
 export async function getCriticalThinkingAnswerData(questionId: string) {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('answer_data')
-    .eq('quiz_type', 'critical-thinking')
-    .eq('id', questionId)
-    .single();
-  if (error) return null;
-  const a = data?.answer_data as Record<string, unknown>;
-  return a
-    ? {
-        correctOptionId: a.correctOptionId as string,
-        explanation: a.explanation as string | null,
-      }
-    : null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const q = (criticalThinkingQuestions as any[]).find((q: any) => q.id === questionId);
+  if (!q) return null;
+  const correctOption = q.options?.find((o: any) => o.isCorrect);
+  return {
+    correctOptionId: correctOption?.id ?? q.correctOptionId ?? null,
+    explanation: q.explanation ?? null,
+  };
 }
 
 // ─── Learning Styles ──────────────────────────────────────────────────────────
 
 export async function getLearningStyleQuestions() {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('id, content')
-    .eq('quiz_type', 'learning-styles')
-    .order('order_index');
-  if (error) throw new Error(`getLearningStyleQuestions: ${error.message}`);
-  return (data ?? []).map(r => {
-    const c = r.content as Record<string, unknown>;
-    return {
-      id: r.id as string,
-      category: c.category as string,
-      question: c.question as string,
-      options: c.options as Array<{ id: string; text: string; style: string }>,
-    };
-  });
+  return learningStyleQuestions.map(q => ({
+    id: q.id,
+    category: q.category,
+    question: q.question,
+    options: q.options,
+  }));
 }
 
 // ─── Sentence Building ────────────────────────────────────────────────────────
 
-export async function getSentenceBuildingGrades() {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('grade')
-    .eq('quiz_type', 'sentence-building')
-    .not('grade', 'is', null);
-  if (error) throw new Error(`getSentenceBuildingGrades: ${error.message}`);
-  const grades = [...new Set((data ?? []).map(r => r.grade as string))].sort();
-  return grades.map(g => Number(g.replace('Grade ', '')));
+const sentenceBuildingByGrade: Record<number, SentenceBuildingQuestion[]> = { 1: sb1, 2: sb2, 3: sb3, 4: sb4 };
+const allSentenceBuilding = [...sb1, ...sb2, ...sb3, ...sb4];
+
+export async function getSentenceBuildingGrades(): Promise<number[]> {
+  return sentenceBuildingGrades.map(g => g.grade).sort((a, b) => a - b);
 }
 
 export async function getSentenceBuildingQuestions(grade: number) {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('id, content')
-    .eq('quiz_type', 'sentence-building')
-    .eq('grade', `Grade ${grade}`)
-    .order('order_index');
-  if (error) throw new Error(`getSentenceBuildingQuestions: ${error.message}`);
-  return (data ?? []).map(r => {
-    const c = r.content as Record<string, unknown>;
-    return {
-      id: r.id as string,
-      level: c.level as number,
-      question: c.question as string,
-      image: c.image as string,
-      options: c.options as Array<{ id: string; text: string }>,
-      feedback: c.feedback as { correct: string; incorrect: string },
-    };
-  });
+  const qs = sentenceBuildingByGrade[grade] ?? [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return qs.map((q: any) => ({
+    id: q.id,
+    level: q.level,
+    question: q.question,
+    image: q.image,
+    options: q.options.map((o: any) => ({ id: o.id, text: o.text })),
+    feedback: q.feedback,
+  }));
 }
 
-export async function getSentenceBuildingAnswerData(questionId: string) {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('answer_data')
-    .eq('quiz_type', 'sentence-building')
-    .eq('id', questionId)
-    .single();
-  if (error) return null;
-  return ((data?.answer_data) as Record<string, unknown>)?.correctOptionId as string ?? null;
+export async function getSentenceBuildingAnswerData(questionId: string): Promise<string | null> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const q = allSentenceBuilding.find((q: any) => q.id === questionId) as any;
+  if (!q) return null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const correct = q.options?.find((o: any) => o.isCorrect);
+  return correct?.id ?? null;
 }
 
 // ─── Writing ──────────────────────────────────────────────────────────────────
 
-export async function getWritingGrades() {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('grade')
-    .eq('quiz_type', 'writing')
-    .not('grade', 'is', null);
-  if (error) throw new Error(`getWritingGrades: ${error.message}`);
-  const grades = [...new Set((data ?? []).map(r => r.grade as string))].sort();
-  return grades.map(g => Number(g.replace('Grade ', '')));
+export async function getWritingGrades(): Promise<number[]> {
+  return writingData.map(g => g.grade).sort((a, b) => a - b);
 }
 
 export async function getWritingTopicsByGrade(grade: number) {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('id, content')
-    .eq('quiz_type', 'writing')
-    .eq('grade', `Grade ${grade}`)
-    .order('order_index');
-  if (error) throw new Error(`getWritingTopicsByGrade: ${error.message}`);
-  if (!data || data.length === 0) return null;
-
-  const firstContent = data[0].content as Record<string, unknown>;
+  const g = writingData.find(g => g.grade === grade);
+  if (!g || !g.topics || g.topics.length === 0) return null;
   return {
-    grade,
-    skillFocus: firstContent.skillFocus as string[],
-    rubric: firstContent.rubric as Record<string, unknown>,
-    topics: data.map(r => {
-      const c = r.content as Record<string, unknown>;
-      return {
-        id: r.id as string,
-        title: c.title as string,
-        prompt: c.prompt as string,
-        description: c.description as string,
-        wordCount: c.wordCount as { min: number; max: number },
-        criteria: c.criteria as string[],
-      };
-    }),
+    grade: g.grade,
+    skillFocus: g.skillFocus,
+    rubric: g.rubric,
+    topics: g.topics.map(t => ({
+      id: t.id,
+      title: t.title,
+      prompt: t.prompt,
+      description: t.description,
+      wordCount: t.wordCount,
+      criteria: t.criteria,
+    })),
   };
 }
 
 export async function getAllWritingGradesData() {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('grade, content')
-    .eq('quiz_type', 'writing')
-    .not('grade', 'is', null)
-    .order('grade')
-    .order('order_index');
-  if (error) throw new Error(`getAllWritingGradesData: ${error.message}`);
-
-  const gradeMap = new Map<number, { skillFocus: string[]; topics: Array<{ wordCount: { min: number; max: number } }> }>();
-  for (const row of data ?? []) {
-    const gradeNum = Number((row.grade as string).replace('Grade ', ''));
-    const c = row.content as Record<string, unknown>;
-    if (!gradeMap.has(gradeNum)) {
-      gradeMap.set(gradeNum, { skillFocus: c.skillFocus as string[], topics: [] });
-    }
-    gradeMap.get(gradeNum)!.topics.push({ wordCount: c.wordCount as { min: number; max: number } });
-  }
-
-  return [...gradeMap.entries()]
-    .sort(([a], [b]) => a - b)
-    .map(([grade, info]) => ({
-      grade,
-      skillFocus: info.skillFocus,
-      topicCount: info.topics.length,
+  return writingData
+    .filter(g => g.topics && g.topics.length > 0)
+    .sort((a, b) => a.grade - b.grade)
+    .map(g => ({
+      grade: g.grade,
+      skillFocus: g.skillFocus,
+      topicCount: g.topics.length,
       wordCount: {
-        min: Math.min(...info.topics.map(t => t.wordCount.min)),
-        max: Math.max(...info.topics.map(t => t.wordCount.max)),
+        min: Math.min(...g.topics.map(t => t.wordCount.min)),
+        max: Math.max(...g.topics.map(t => t.wordCount.max)),
       },
     }));
 }
@@ -424,239 +283,183 @@ export async function getOralLanguageQuestions(
   type?: 'vocabulary' | 'sentence-building' | 'storytelling',
   level?: number
 ) {
-  let query = supabaseAdmin
-    .from('questions')
-    .select('id, content, answer_data')
-    .eq('quiz_type', 'oral-language')
-    .order('order_index');
+  let qs = oralLanguageQuestions as Array<{
+    id: string;
+    type: string;
+    level: number;
+    question: string;
+    image?: string;
+    options: Array<{ id: string; text: string; isCorrect?: boolean }>;
+    sequenceImages?: Array<{ id: string; image: string; correctOrder: number; description?: string }>;
+    correctSequence?: string[];
+    feedback?: { correct: string; incorrect: string } | string | null;
+  }>;
+  if (type) qs = qs.filter(q => q.type === type);
+  if (level !== undefined) qs = qs.filter(q => q.level === level);
 
-  const { data, error } = await query;
-  if (error) throw new Error(`getOralLanguageQuestions: ${error.message}`);
-
-  let rows = data ?? [];
-  if (type) rows = rows.filter(r => (r.content as Record<string, unknown>).type === type);
-  if (level !== undefined) rows = rows.filter(r => (r.content as Record<string, unknown>).level === level);
-
-  return rows.map(r => {
-    const c = r.content as Record<string, unknown>;
-    const a = r.answer_data as Record<string, unknown> | null;
-    const sequenceCorrectOrders = a?.sequenceCorrectOrders as Record<string, number> | null;
-    const rawImages = c.sequenceImages as Array<{ id: string; src: string; alt: string }> | null;
+  return qs.map(q => {
+    const correctOptionId = q.options.find(o => o.isCorrect)?.id ?? null;
+    const sequenceCorrectOrders = q.sequenceImages
+      ? Object.fromEntries(q.sequenceImages.map(img => [img.id, img.correctOrder]))
+      : null;
     return {
-      id: r.id as string,
-      type: c.type as string,
-      level: c.level as number,
-      question: c.question as string,
-      image: c.image as string | undefined,
-      options: c.options as Array<{ id: string; text: string }>,
-      // Re-attach correctOrder per image from answer_data (was stripped from content during seed)
-      sequenceImages: rawImages
-        ? rawImages.map(img => ({
-            ...img,
-            correctOrder: sequenceCorrectOrders?.[img.id] ?? undefined,
+      id: q.id,
+      type: q.type,
+      level: q.level,
+      question: q.question,
+      image: q.image,
+      options: q.options.map(o => ({ id: o.id, text: o.text })),
+      sequenceImages: q.sequenceImages
+        ? q.sequenceImages.map(img => ({
+            id: img.id,
+            src: img.image,
+            alt: img.description ?? '',
+            correctOrder: img.correctOrder,
           }))
         : null,
-      // correctSequence is stored in answer_data, not content
-      correctSequence: (a?.correctSequence as string[] | null) ?? null,
-      feedback: c.feedback as string | null,
+      correctSequence: q.correctSequence ?? null,
+      feedback: typeof q.feedback === 'object' && q.feedback !== null
+        ? (q.feedback as { correct: string; incorrect: string }).correct ?? null
+        : (q.feedback as string | null) ?? null,
+      _correctOptionId: correctOptionId,
+      _sequenceCorrectOrders: sequenceCorrectOrders,
     };
   });
 }
 
 export async function getOralLanguageAnswerData(questionId: string) {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('answer_data')
-    .eq('quiz_type', 'oral-language')
-    .eq('id', questionId)
-    .single();
-  if (error) return null;
-  const a = data?.answer_data as Record<string, unknown>;
-  return a
-    ? {
-        correctOptionId: a.correctOptionId as string | null,
-        correctSequence: a.correctSequence as string[] | null,
-        sequenceCorrectOrders: a.sequenceCorrectOrders as Record<string, number[]> | null,
-      }
+  const q = (oralLanguageQuestions as Array<{
+    id: string;
+    options?: Array<{ id: string; isCorrect?: boolean }>;
+    correctSequence?: string[];
+    sequenceImages?: Array<{ id: string; correctOrder: number }>;
+  }>).find(q => q.id === questionId);
+  if (!q) return null;
+  const correctOptionId = q.options?.find(o => o.isCorrect)?.id ?? null;
+  const sequenceCorrectOrders = q.sequenceImages
+    ? Object.fromEntries(q.sequenceImages.map(img => [img.id, img.correctOrder]))
     : null;
+  return {
+    correctOptionId,
+    correctSequence: q.correctSequence ?? null,
+    sequenceCorrectOrders,
+  };
 }
 
 // ─── Logical Sequencing ───────────────────────────────────────────────────────
 
+const allLogicalSequencing = [...ls1, ...ls2, ...ls3, ...ls4];
+
 export async function getLogicalSequencingByGrade(grade: number) {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('id, content')
-    .eq('quiz_type', 'logical-sequencing')
-    .eq('grade', `Grade ${grade}`)
-    .order('order_index');
-  if (error) throw new Error(`getLogicalSequencingByGrade: ${error.message}`);
-  return (data ?? []).map(r => {
-    const c = r.content as Record<string, unknown>;
-    return {
-      id: Number(r.id),
-      title: c.title as string,
-      sentences: c.sentences as string[],
-      topic: c.topic as string,
-      hint: c.hint as string | null,
-      grade,
-    };
-  });
+  return allLogicalSequencing
+    .filter(q => q.grade === grade)
+    .map(q => ({
+      id: q.id,
+      title: q.title,
+      sentences: q.sentences,
+      topic: q.topic,
+      hint: q.hint ?? null,
+      grade: q.grade,
+    }));
 }
 
 export async function getLogicalSequencingAnswerData(questionId: number): Promise<number[] | null> {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('answer_data')
-    .eq('quiz_type', 'logical-sequencing')
-    .eq('id', String(questionId))
-    .single();
-  if (error) return null;
-  return ((data?.answer_data) as Record<string, unknown>)?.correctOrder as number[] ?? null;
+  const q = allLogicalSequencing.find(q => q.id === questionId);
+  return q?.correctOrder ?? null;
 }
 
 // ─── Attention Control ────────────────────────────────────────────────────────
 
 export async function getAttentionControlQuestions() {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('id, content, answer_data')
-    .eq('quiz_type', 'attention-control')
-    .order('order_index');
-  if (error) throw new Error(`getAttentionControlQuestions: ${error.message}`);
-  return (data ?? []).map(r => {
-    const c = r.content as Record<string, unknown>;
-    const a = r.answer_data as Record<string, unknown>;
-    return {
-      id: Number(r.id),
-      subscale: c.subscale as 'focusing' | 'shifting',
-      question: c.question as string,
-      kidFriendlyQuestion: c.kidFriendlyQuestion as string,
-      example: c.example as string,
-      type: c.type as string,
-      options: c.options as Array<{ value: number; label: string }>,
-      reverse: a.reverse as boolean,
-    };
-  });
+  return attentionControlQuestions.map(q => ({
+    id: q.id,
+    subscale: q.subscale,
+    question: q.question,
+    kidFriendlyQuestion: q.kidFriendlyQuestion,
+    example: q.example,
+    type: q.type,
+    options: q.options.map((value: number) => ({
+      value,
+      label: String(value),
+    })),
+    reverse: q.reverse,
+  }));
 }
 
 // ─── Spot the Difference ──────────────────────────────────────────────────────
 
 export async function getSpotTheDifferenceByGrade(grade: number) {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('id, content')
-    .eq('quiz_type', 'spot-the-difference')
-    .eq('grade', `Grade ${grade}`)
-    .order('order_index');
-  if (error) throw new Error(`getSpotTheDifferenceByGrade: ${error.message}`);
-  return (data ?? []).map(r => {
-    const c = r.content as Record<string, unknown>;
-    return {
-      id: Number(r.id),
-      imageA: c.imageA as string,
-      imageB: c.imageB as string,
-      sceneConfig: c.sceneConfig as unknown,
-      useCartoonScene: c.useCartoonScene as boolean,
-    };
-  });
+  return spotTheDifferenceData
+    .filter(l => l.grade === grade)
+    .map(l => ({
+      id: l.id,
+      imageA: l.imageA,
+      imageB: l.imageB,
+      sceneConfig: l.sceneConfig,
+      useCartoonScene: l.useCartoonScene,
+    }));
 }
 
 export async function getSpotTheDifferenceAnswerData(levelId: number) {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('answer_data')
-    .eq('quiz_type', 'spot-the-difference')
-    .eq('id', String(levelId))
-    .single();
-  if (error) return null;
-  const a = data?.answer_data as Record<string, unknown>;
-  return a
-    ? { differences: a.differences as Array<{ x: number; y: number; radius: number }> }
-    : null;
+  const level = spotTheDifferenceData.find(l => l.id === levelId);
+  if (!level) return null;
+  return { differences: level.differences };
 }
 
 export async function getSpotTheDifferenceCount(levelId: number): Promise<number> {
-  const answerData = await getSpotTheDifferenceAnswerData(levelId);
-  return answerData?.differences.length ?? 0;
+  const level = spotTheDifferenceData.find(l => l.id === levelId);
+  return level?.differences.length ?? 0;
 }
 
 // ─── Sentence Difference ──────────────────────────────────────────────────────
 
 export async function getSentenceDifferenceQuestions() {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('id, difficulty, content')
-    .eq('quiz_type', 'sentence-difference')
-    .order('order_index');
-  if (error) throw new Error(`getSentenceDifferenceQuestions: ${error.message}`);
-  return (data ?? []).map(r => {
-    const c = r.content as Record<string, unknown>;
-    return {
-      id: Number(r.id),
-      sentenceA: c.sentenceA as string,
-      sentenceB: c.sentenceB as string,
-      difficulty: r.difficulty as string,
-    };
-  });
+  return sentenceDifferenceQuestions.map(q => ({
+    id: q.id,
+    sentenceA: q.sentenceA,
+    sentenceB: q.sentenceB,
+    difficulty: q.difficulty,
+  }));
 }
 
 export async function getSentenceDifferenceAnswerData(questionId: number): Promise<string | null> {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('answer_data')
-    .eq('quiz_type', 'sentence-difference')
-    .eq('id', String(questionId))
-    .single();
-  if (error) return null;
-  return ((data?.answer_data) as Record<string, unknown>)?.correctAnswer as string ?? null;
+  const q = sentenceDifferenceQuestions.find(q => q.id === questionId);
+  return q?.correctAnswer ?? null;
 }
 
 // ─── Category Quiz ────────────────────────────────────────────────────────────
 
 export async function getCategoryQuizQuestions(grade: string) {
-  // Frontend sends 'grade1'/'grade2' etc; DB stores 'Grade 1'/'Grade 2'
   const dbGrade = grade.replace(/^grade(\d)$/, 'Grade $1');
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('id, content')
-    .eq('quiz_type', 'category-quiz')
-    .eq('grade', dbGrade)
-    .order('order_index');
-  if (error) throw new Error(`getCategoryQuizQuestions: ${error.message}`);
-  return (data ?? []).map(r => ({
-    id: r.id as string,
-    instruction: (r.content as Record<string, unknown>).instruction as string,
-    categories: (r.content as Record<string, unknown>).categories as string[],
-    items: (r.content as Record<string, unknown>).items as { id: string; name: string; image: string }[],
+  const gradeKey = (dbGrade.replace('Grade ', 'grade').replace(' ', '')) as keyof typeof categoryQuestions;
+  const gradeKeyAlt = grade as keyof typeof categoryQuestions;
+  const questions = categoryQuestions[gradeKey] ?? categoryQuestions[gradeKeyAlt] ?? [];
+  return questions.map(q => ({
+    id: q.id,
+    instruction: q.instruction,
+    categories: q.categories,
+    items: q.items.map(item => ({ id: item.id, name: item.name, image: item.image })),
   }));
 }
 
 export async function getCategoryItemAnswerData(questionId: string, itemId: string): Promise<string | null> {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('answer_data')
-    .eq('quiz_type', 'category-quiz')
-    .eq('id', questionId)
-    .single();
-  if (error || !data) return null;
-  const answerItems = ((data.answer_data) as Record<string, unknown>).items as { id: string; correctCategory: string }[];
-  return answerItems?.find(i => i.id === itemId)?.correctCategory ?? null;
+  for (const gradeQuestions of Object.values(categoryQuestions)) {
+    const q = gradeQuestions.find(q => q.id === questionId);
+    if (q) {
+      const item = q.items.find(i => i.id === itemId);
+      return item?.correctCategory ?? null;
+    }
+  }
+  return null;
 }
 
 // ─── Memory Items ─────────────────────────────────────────────────────────────
 
 export async function getMemoryItems() {
-  const { data, error } = await supabaseAdmin
-    .from('questions')
-    .select('id, content')
-    .eq('quiz_type', 'memory-items')
-    .order('order_index');
-  if (error) throw new Error(`getMemoryItems: ${error.message}`);
-  return (data ?? []).map(r => ({
-    id: r.id as string,
-    name: (r.content as Record<string, unknown>).name as string,
-    image: (r.content as Record<string, unknown>).image as string,
+  return memoryItems.map(item => ({
+    id: item.id,
+    name: item.name,
+    image: item.image,
     category: 'object' as const,
   }));
 }

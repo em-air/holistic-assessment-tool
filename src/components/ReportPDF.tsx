@@ -124,6 +124,7 @@ const subName: Record<string, string> = {
 
 const catColor: Record<string, string> = {
   attention: '#eab308', memory: '#f97316', 'learning-style': '#22c55e',
+  'social-emotional': '#ec4899',
   'critical-thinking': '#a855f7', perception: '#6366f1',
   'oral-language': '#0ea5e9',
   spelling: '#7c3aed', writing: '#d97706', vocabulary: '#e11d48',
@@ -204,6 +205,21 @@ const getAnalysisAr = (result: any): string => {
     }
     return rtl('لا يزال يكتشف أسلوب التعلم الأمثل — جرب أساليب مختلفة.');
   }
+  if (cat === 'social-emotional') {
+    const ad = result.additionalData || {};
+    const scoreNote = rtl(pct >= 75
+      ? 'نتيجة قوية تعكس مهارات اجتماعية-عاطفية متطورة.'
+      : pct >= 60
+      ? 'نتيجة تشير إلى مهارات قيد التطور — مع التشجيع والممارسة ستستمر هذه المهارات في النمو.'
+      : 'يستفيد هذا المجال من دعم إضافي وممارسة موجهة لتعزيز المهارات الاجتماعية-العاطفية.');
+    const strengthNote = rtl(
+      ad.primaryStrength === 'EA' ? 'يُظهر الطالب قوة في الوعي العاطفي وفهم المشاعر.' :
+      ad.primaryStrength === 'PS' ? 'يُظهر الطالب قوة اجتماعية في مساعدة الآخرين والتعاون مع الأقران.' :
+      ad.primaryStrength === 'SR' ? 'يُظهر الطالب قوة في ضبط النفس والهدوء والمثابرة في مواجهة التحديات.' :
+      'أكمل الطالب تقييم التعلم الاجتماعي-العاطفي.'
+    );
+    return `${strengthNote} ${scoreNote}`;
+  }
   if (cat === 'critical-thinking')
     return rtl(pct >= 75 ? 'يُظهر قدرات قوية في التفكير النقدي.' : 'مهارات الاستدلال وحل المشكلات قيد التطوير.');
   if (cat === 'perception')
@@ -276,6 +292,10 @@ const getTeacherParagraph = (result: any): string => {
       if (style === 'reading-writing') return 'The student has been identified as a reading/writing learner. They learn best through reading text and writing notes. To support this student, provide written instructions, encourage note-taking, and use reading-based assignments. Allow them to express understanding through written responses and journaling.';
       return 'The learning style assessment has been completed. Understanding the student\'s preferred learning style can help tailor instruction to their strengths.';
     }
+    case 'critical-thinking-quiz':
+      if (pct >= 75) return 'The student demonstrates strong critical thinking skills across both analogical reasoning and classification tasks. They can identify relationships between concepts and effectively group items by shared characteristics, which supports problem-solving, organisational thinking, and academic reasoning.';
+      if (pct >= 60) return 'The student shows developing critical thinking abilities. They can sometimes identify relationships and classify items correctly but may struggle with more complex reasoning tasks. Practice with analogy exercises, sorting games, and guided classification activities can help strengthen these skills.';
+      return 'The student has difficulty with critical thinking tasks involving analogical reasoning and classification. Consider using concrete examples, visual analogy cards, and hands-on sorting activities to build these foundational reasoning skills.';
     case 'analogy-quiz':
       if (pct >= 75) return 'The student demonstrates strong analogical reasoning skills. They can identify relationships between concepts and apply that understanding to new situations. This is an important foundation for critical thinking, problem-solving, and understanding complex academic content.';
       if (pct >= 60) return 'The student shows developing analogical reasoning abilities. They can sometimes identify relationships between concepts but may struggle with more complex analogies. Practice with word relationship games and guided analogy exercises can help strengthen this skill.';
@@ -284,10 +304,10 @@ const getTeacherParagraph = (result: any): string => {
       if (pct >= 75) return 'The student demonstrates strong categorization and classification skills. They can effectively group items based on shared characteristics, which supports organizational thinking, vocabulary development, and the ability to identify patterns in information.';
       if (pct >= 60) return 'The student shows developing categorization skills. They can group some items correctly but may have difficulty with less obvious groupings. Sorting activities, classification games, and discussions about how things are alike and different can help improve this skill.';
       return 'The student struggles with categorization and classification tasks. They have difficulty grouping items by shared characteristics, which may impact their ability to organize information and see patterns. Consider using hands-on sorting activities, visual grouping exercises, and explicit instruction on identifying common features among items.';
-    case 'sentence-difference-quiz':
-      if (pct >= 75) return 'The student shows strong attention to detail and comparison skills. They can effectively identify differences between sentences, which is important for reading comprehension, editing, and careful analysis of written information.';
-      if (pct >= 60) return 'The student shows developing skills in identifying differences between sentences. They can spot some changes but may miss subtle differences. Practice with spot-the-difference exercises and careful reading activities can help sharpen this skill.';
-      return 'The student has difficulty finding differences between sentences, suggesting challenges with attention to detail and careful comparison of written information. This may affect proofreading and reading comprehension. Consider using side-by-side comparison exercises, highlighting activities, and guided practice in identifying small changes in text.';
+    case 'picture-difference-quiz':
+      if (pct >= 75) return 'The student demonstrates strong visual attention to detail. They can accurately detect whether two images are the same or subtly different, which reflects well-developed visual discrimination and perceptual acuity.';
+      if (pct >= 60) return 'The student shows developing visual attention skills. They can identify some image differences but may miss subtle variations. Practice with visual comparison activities and spot-the-difference puzzles can help sharpen this skill.';
+      return 'The student has difficulty detecting subtle differences between images, suggesting challenges with visual attention to detail. Consider using guided visual comparison exercises and spot-the-difference activities to build perceptual awareness.';
     case 'logical-sequencing-quiz':
       if (pct >= 75) return 'The student demonstrates strong logical sequencing abilities. They can arrange information in a logical order, which is essential for understanding cause and effect, following procedures, and constructing well-organized written and verbal responses.';
       if (pct >= 60) return 'The student shows developing logical sequencing skills. They can sometimes order events or steps correctly but may struggle with more complex sequences. Practice with timeline activities, process ordering, and sequential storytelling can help strengthen this ability.';
@@ -298,11 +318,22 @@ const getTeacherParagraph = (result: any): string => {
       return 'The student has difficulty identifying missing objects in visual scenes, suggesting challenges with visual perception and observation. This may affect their ability to notice important details in visual materials and classroom activities. Consider using visual scanning exercises, I-spy games, and guided observation activities to develop these skills.';
     case 'social-emotional': {
       const ad = result.additionalData || {};
-      if (ad.description) return ad.description;
-      if (ad.primaryStrength === 'EA') return 'The student shows strength in emotional awareness and understanding feelings.';
-      if (ad.primaryStrength === 'PS') return 'The student shows prosocial strengths in helping others and cooperating with peers.';
-      if (ad.primaryStrength === 'SR') return 'The student shows self-regulation strengths in staying calm and persevering through challenges.';
-      return 'The student completed the Social-Emotional Learning assessment.';
+      const description = ad.description || (
+        ad.primaryStrength === 'EA' ? 'The student shows strength in emotional awareness and understanding feelings.' :
+        ad.primaryStrength === 'PS' ? 'The student shows prosocial strengths in helping others and cooperating with peers.' :
+        ad.primaryStrength === 'SR' ? 'The student shows self-regulation strengths in staying calm and persevering through challenges.' :
+        'The student completed the Social-Emotional Learning assessment.'
+      );
+      const suggestions: string[] = Array.isArray(ad.suggestions) ? ad.suggestions : [];
+      const scoreNote = pct >= 75
+        ? 'This is a strong result that reflects well-developed social-emotional skills.'
+        : pct >= 60
+        ? 'This is a developing result — with encouragement and practice, these skills will continue to grow.'
+        : 'This area would benefit from additional support and guided practice to strengthen social-emotional skills.';
+      const suggestionText = suggestions.length > 0
+        ? ` Suggested activities: ${suggestions.join('; ')}.`
+        : '';
+      return `${description} ${scoreNote}${suggestionText}`;
     }
     default:
       return '';
@@ -361,6 +392,32 @@ const getTeacherParagraphAr = (result: any): string => {
       if (style === 'reading-writing') return rtl('تم تحديد الطالب كمتعلم قرائي/كتابي. يتعلم بشكل أفضل من خلال قراءة النصوص وكتابة الملاحظات. لدعم هذا الطالب، قدم تعليمات مكتوبة وشجع على تدوين الملاحظات واستخدم المهام المبنية على القراءة. اسمح له بالتعبير عن فهمه من خلال الاستجابات المكتوبة والتدوين.');
       return rtl('تم إكمال تقييم أسلوب التعلم للطالب. يمكن أن يساعد فهم أسلوب التعلم المفضل للطالب في تخصيص التعليم بما يتناسب مع نقاط قوته.');
     }
+    case 'social-emotional': {
+      const ad = result.additionalData || {};
+      const profileDesc = rtl(
+        ad.primaryStrength === 'EA'
+          ? 'يبدو أن الطالب جيد في ملاحظة المشاعر وفهمها، مما يساعده على التواصل وحل المشكلات.'
+          : ad.primaryStrength === 'PS'
+          ? 'يبدو أن الطالب جيد في مساعدة الآخرين والتعاون معهم وكونه صديقاً داعماً.'
+          : ad.primaryStrength === 'SR'
+          ? 'يبدو أن الطالب جيد في الحفاظ على الهدوء والتعامل مع التحديات والمحاولة مرة أخرى عند مواجهة الصعوبات.'
+          : 'أكمل الطالب تقييم التعلم الاجتماعي-العاطفي.'
+      );
+      const scoreAdvice = rtl(pct >= 75
+        ? 'هذه نتيجة قوية. لمواصلة الدعم، شجّع الطالب على مناقشة المشاعر ولعب الأدوار في المواقف الاجتماعية وممارسة الاستراتيجيات التي اكتشفها.'
+        : pct >= 60
+        ? 'هذه نتيجة متطورة. يُنصح بتوفير فرص منتظمة لممارسة المهارات الاجتماعية-العاطفية مثل العمل الجماعي والحوارات حول المشاعر وتقنيات الاسترخاء.'
+        : 'يستفيد هذا الطالب من دعم إضافي في المجال الاجتماعي-العاطفي. يُنصح بتوفير تدريب منظم على مهارات الوعي العاطفي والتنظيم الذاتي والتعاون من خلال أنشطة تفاعلية وموجهة.');
+      const suggestions: string[] = Array.isArray(ad.suggestions) ? ad.suggestions : [];
+      const suggestionText = suggestions.length > 0
+        ? ' ' + rtl(`أنشطة مقترحة: ${suggestions.join('؛ ')}.`)
+        : '';
+      return `${profileDesc} ${scoreAdvice}${suggestionText}`;
+    }
+    case 'critical-thinking-quiz':
+      if (pct >= 75) return rtl('يُظهر الطالب مهارات قوية في التفكير النقدي في كل من التفكير القياسي ومهام التصنيف. يمكنه تحديد العلاقات بين المفاهيم وتجميع العناصر بفعالية بناءً على الخصائص المشتركة، مما يدعم حل المشكلات والتفكير التنظيمي والتفكير الأكاديمي.');
+      if (pct >= 60) return rtl('يُظهر الطالب قدرات متطورة في التفكير النقدي. يمكنه أحياناً تحديد العلاقات وتصنيف العناصر بشكل صحيح لكنه قد يواجه صعوبة في مهام التفكير الأكثر تعقيداً. يمكن أن تساعد تمارين القياس وألعاب الفرز وأنشطة التصنيف الموجهة في تعزيز هذه المهارات.');
+      return rtl('يواجه الطالب صعوبة في مهام التفكير النقدي المتعلقة بالتفكير القياسي والتصنيف. يُنصح باستخدام أمثلة ملموسة وبطاقات القياس البصرية وأنشطة الفرز العملية لبناء مهارات التفكير الأساسية هذه.');
     case 'analogy-quiz':
       if (pct >= 75) return rtl('يُظهر الطالب مهارات قوية في التفكير القياسي. يمكنه تحديد العلاقات بين المفاهيم وتطبيق هذا الفهم على مواقف جديدة. هذا أساس مهم للتفكير النقدي وحل المشكلات وفهم المحتوى الأكاديمي المعقد.');
       if (pct >= 60) return rtl('يُظهر الطالب قدرات متطورة في التفكير القياسي. يمكنه أحياناً تحديد العلاقات بين المفاهيم لكنه قد يواجه صعوبة مع القياسات الأكثر تعقيداً. يمكن أن تساعد الممارسة مع ألعاب علاقات الكلمات وتمارين القياس الموجهة في تعزيز هذه المهارة.');
@@ -369,10 +426,10 @@ const getTeacherParagraphAr = (result: any): string => {
       if (pct >= 75) return rtl('يُظهر الطالب مهارات قوية في التصنيف والتبويب. يمكنه تجميع العناصر بفعالية بناءً على الخصائص المشتركة، مما يدعم التفكير التنظيمي وتطوير المفردات والقدرة على تحديد الأنماط في المعلومات.');
       if (pct >= 60) return rtl('يُظهر الطالب مهارات متطورة في التصنيف. يمكنه تجميع بعض العناصر بشكل صحيح لكنه قد يواجه صعوبة مع التجميعات الأقل وضوحاً. يمكن أن تساعد أنشطة الفرز وألعاب التصنيف والمناقشات حول أوجه التشابه والاختلاف في تحسين هذه المهارة.');
       return rtl('يواجه الطالب صعوبة في مهام التصنيف والتبويب. يجد صعوبة في تجميع العناصر حسب الخصائص المشتركة، مما قد يؤثر على قدرته على تنظيم المعلومات ورؤية الأنماط. يُنصح باستخدام أنشطة الفرز العملية وتمارين التجميع البصري والتعليم المباشر لتحديد السمات المشتركة بين العناصر.');
-    case 'sentence-difference-quiz':
-      if (pct >= 75) return rtl('يُظهر الطالب اهتماماً قوياً بالتفاصيل ومهارات المقارنة. يمكنه تحديد الاختلافات بين الجمل بفعالية، وهو أمر مهم للفهم القرائي والتحرير والتحليل الدقيق للمعلومات المكتوبة.');
-      if (pct >= 60) return rtl('يُظهر الطالب مهارات متطورة في تحديد الاختلافات بين الجمل. يمكنه اكتشاف بعض التغييرات لكنه قد يفوت الاختلافات الدقيقة. يمكن أن تساعد الممارسة مع تمارين اكتشاف الاختلافات وأنشطة القراءة المتأنية في صقل هذه المهارة.');
-      return rtl('يواجه الطالب صعوبة في إيجاد الاختلافات بين الجمل، مما يشير إلى تحديات في الاهتمام بالتفاصيل والمقارنة الدقيقة للمعلومات المكتوبة. قد يؤثر ذلك على التدقيق اللغوي والفهم القرائي. يُنصح باستخدام تمارين المقارنة جنباً إلى جنب وأنشطة التظليل والممارسة الموجهة في تحديد التغييرات الصغيرة في النص.');
+    case 'picture-difference-quiz':
+      if (pct >= 75) return rtl('يُظهر الطالب انتباهاً بصرياً قوياً للتفاصيل. يمكنه تحديد ما إذا كانت الصورتان متطابقتين أم مختلفتين بدقة، مما يعكس مهارات تمييز بصري متطورة وقدرة إدراكية عالية.');
+      if (pct >= 60) return rtl('يُظهر الطالب مهارات انتباه بصري في طور التطور. يمكنه اكتشاف بعض الاختلافات بين الصور لكنه قد يفوت الفروق الدقيقة. يمكن أن تساعد أنشطة المقارنة البصرية وألعاب اكتشاف الاختلافات في صقل هذه المهارة.');
+      return rtl('يواجه الطالب صعوبة في اكتشاف الاختلافات الدقيقة بين الصور، مما يشير إلى تحديات في الانتباه البصري للتفاصيل. يُنصح باستخدام تمارين المقارنة البصرية الموجهة وأنشطة اكتشاف الاختلافات لتنمية الوعي الإدراكي.');
     case 'logical-sequencing-quiz':
       if (pct >= 75) return rtl('يُظهر الطالب قدرات قوية في التسلسل المنطقي. يمكنه ترتيب المعلومات بترتيب منطقي، وهو أمر أساسي لفهم السبب والنتيجة واتباع الإجراءات وبناء استجابات مكتوبة وشفهية منظمة.');
       if (pct >= 60) return rtl('يُظهر الطالب مهارات متطورة في التسلسل المنطقي. يمكنه أحياناً ترتيب الأحداث أو الخطوات بشكل صحيح لكنه قد يواجه صعوبة مع التسلسلات الأكثر تعقيداً. يمكن أن تساعد الممارسة مع أنشطة الجدول الزمني وترتيب العمليات والسرد المتسلسل في تعزيز هذه القدرة.');

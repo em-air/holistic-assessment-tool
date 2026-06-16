@@ -79,7 +79,6 @@ const AnalogyQuiz: React.FC = () => {
     if (showFeedback) return;
 
     setSelectedAnswer(answerIndex);
-    setShowFeedback(true);
     setSubmissionError(null);
 
     const currentQuestion = questions[currentQuestionIndex];
@@ -87,7 +86,6 @@ const AnalogyQuiz: React.FC = () => {
     const selectedOption = optionsList[answerIndex];
 
     if (!selectedOption) {
-      setShowFeedback(false);
       setSelectedAnswer(null);
       setSubmissionError('Unable to validate that answer. Please try again.');
       return;
@@ -95,7 +93,6 @@ const AnalogyQuiz: React.FC = () => {
 
     const result = await validateCriticalThinkingAnswer(currentQuestion.id, selectedOption.id);
     if (!result) {
-      setShowFeedback(false);
       setSelectedAnswer(null);
       setSubmissionError('Unable to validate your answer right now. Please try again.');
       return;
@@ -107,6 +104,7 @@ const AnalogyQuiz: React.FC = () => {
     } else {
       setAnswerCorrect(false);
     }
+    setShowFeedback(true);
     if (result.correctAnswer) {
       const correctIdx = optionsList.findIndex((o: { id: string }) => o.id === result.correctAnswer);
       setCorrectAnswerIndex(correctIdx);

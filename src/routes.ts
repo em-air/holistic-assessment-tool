@@ -31,7 +31,7 @@ export const ROUTES = {
   // Perception
   PERCEPTION_SELECTION: '/category/mind/perception-selection',
   PERCEPTION_MISSING_OBJECT: '/category/mind/perception/missing-object',
-  PERCEPTION_SENTENCE_DIFF: '/category/mind/perception/sentence-difference',
+  PERCEPTION_PICTURE_DIFF: '/category/mind/perception/picture-difference',
   PERCEPTION_LOGICAL_SEQ: '/category/mind/perception/logical-sequencing',
 
   // Critical Thinking
@@ -67,7 +67,7 @@ export const ROUTES = {
   LOGICAL_SEQUENCING_GRADES: '/logical-sequencing-quiz',
   PERCEPTION_QUIZ_FLAT: '/perception-quiz',
   MISSING_OBJECT_QUIZ_FLAT: '/missing-object-quiz',
-  SENTENCE_DIFFERENCE_QUIZ_FLAT: '/sentence-difference-quiz',
+  PICTURE_DIFFERENCE_QUIZ_FLAT: '/picture-difference-quiz',
   ATTENTION_MEMORY_FLAT: '/attention-memory-selection',
   ATTENTION_ASSESSMENT_FLAT: '/attention-assessment',
   MEMORY_ASSESSMENT_FLAT: '/memory-assessment',

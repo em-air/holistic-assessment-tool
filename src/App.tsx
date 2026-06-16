@@ -29,7 +29,7 @@ const AdminReports = lazy(() => import('./pages/AdminReports'));
 const PerceptionQuiz = lazy(() => import('./pages/PerceptionQuiz'));
 const PerceptionQuizSelection = lazy(() => import('./pages/PerceptionQuizSelection'));
 const MissingObjectQuizPage = lazy(() => import('./pages/MissingObjectQuizPage'));
-const SentenceDifferenceQuiz = lazy(() => import('./pages/SentenceDifferenceQuiz'));
+const PictureDifferenceQuiz = lazy(() => import('./pages/PictureDifferenceQuiz'));
 
 // Cognitive assessments
 const LogicalSequencingQuiz = lazy(() => import('./pages/LogicalSequencingQuiz'));
@@ -42,8 +42,7 @@ const KolbLearningStyleQuiz = lazy(() => import('./pages/KolbLearningStyleQuiz')
 const LearningAssessmentsPage = lazy(() => import('./pages/LearningAssessmentsPage'));
 const SocialEmotionalQuiz = lazy(() => import('./pages/SocialEmotionalQuiz'));
 const CriticalThinkingPage = lazy(() => import('./pages/CriticalThinkingPage'));
-const AnalogyQuiz = lazy(() => import('./pages/AnalogyQuiz'));
-const CategoryQuiz = lazy(() => import('./pages/CategoryQuiz'));
+const CriticalThinkingQuiz = lazy(() => import('./pages/CriticalThinkingQuiz'));
 
 // Oral language quizzes
 const OralLanguageQuiz = lazy(() => import('./pages/OralLanguageQuiz'));
@@ -91,13 +90,13 @@ const routeConfig: RouteEntry[] = [
   // ── Mind – Perception ─────────────────────────────────────────────
   { path: ROUTES.PERCEPTION_SELECTION, Component: PerceptionQuizSelection },
   { path: ROUTES.PERCEPTION_MISSING_OBJECT, Component: MissingObjectQuizPage },
-  { path: ROUTES.PERCEPTION_SENTENCE_DIFF, Component: SentenceDifferenceQuiz },
+  { path: ROUTES.PERCEPTION_PICTURE_DIFF, Component: PictureDifferenceQuiz },
   { path: ROUTES.PERCEPTION_LOGICAL_SEQ, Component: SharedGradeSelectorPage },
 
   // ── Mind – Critical Thinking ──────────────────────────────────────
   { path: ROUTES.CRITICAL_THINKING_SELECTION, Component: CriticalThinkingPage },
-  { path: ROUTES.ANALOGY_QUIZ, Component: AnalogyQuiz },
-  { path: ROUTES.CATEGORY_QUIZ, Component: CategoryQuiz },
+  { path: ROUTES.ANALOGY_QUIZ, Component: CriticalThinkingQuiz },
+  { path: ROUTES.CATEGORY_QUIZ, Component: CriticalThinkingQuiz },
 
   // ── Mind – Learning Style ─────────────────────────────────────────
   { path: ROUTES.LEARNING_STYLES_QUIZ, Component: LearningStylesQuiz },
@@ -126,7 +125,7 @@ const routeConfig: RouteEntry[] = [
   { path: ROUTE_PATTERNS.PERCEPTION_QUIZ_SELECTION, Component: PerceptionQuizSelection },
   { path: ROUTES.PERCEPTION_QUIZ_FLAT, Component: PerceptionQuiz },
   { path: ROUTES.MISSING_OBJECT_QUIZ_FLAT, Component: MissingObjectQuizPage },
-  { path: ROUTES.SENTENCE_DIFFERENCE_QUIZ_FLAT, Component: SentenceDifferenceQuiz },
+  { path: ROUTES.PICTURE_DIFFERENCE_QUIZ_FLAT, Component: PictureDifferenceQuiz },
   { path: ROUTES.LOGICAL_SEQUENCING_GRADES, Component: SharedGradeSelectorPage },
   { path: ROUTE_PATTERNS.LOGICAL_SEQUENCING_GRADE, Component: LogicalSequencingQuiz },
   { path: ROUTE_PATTERNS.ORAL_LANGUAGE_SELECTION_WITH_ID, Component: OralLanguageSelection },
@@ -138,8 +137,8 @@ const routeConfig: RouteEntry[] = [
   { path: ROUTES.MEMORY_ASSESSMENT_FLAT, Component: MemoryAssessment },
   { path: ROUTES.ATTENTION_QUIZ_FLAT, Component: AttentionAssessment },
   { path: ROUTES.CRITICAL_THINKING_FLAT, Component: CriticalThinkingPage },
-  { path: ROUTES.ANALOGY_QUIZ_FLAT, Component: AnalogyQuiz },
-  { path: ROUTES.CATEGORY_QUIZ_FLAT, Component: CategoryQuiz },
+  { path: ROUTES.ANALOGY_QUIZ_FLAT, Component: CriticalThinkingQuiz },
+  { path: ROUTES.CATEGORY_QUIZ_FLAT, Component: CriticalThinkingQuiz },
 ];
 
 const motionProps = {

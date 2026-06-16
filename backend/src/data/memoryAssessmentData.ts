@@ -22,11 +22,27 @@ export interface SequenceQuestion {
   difficulty: 1 | 2 | 3 | 4 | 5;
 }
 
+// Sample memory items with reliable image URLs (Pexels/Pixabay)
+export const memoryItems: MemoryItem[] = [
+  { id: 'apple', name: 'Apple', image: 'https://cdn.pixabay.com/photo/2018/04/12/11/37/apple-3313209_640.jpg', category: 'object' },
+  { id: 'dog', name: 'Dog', image: 'https://cdn.pixabay.com/photo/2019/08/19/07/45/corgi-4415649_640.jpg', category: 'object' },
+  { id: 'ball', name: 'Ball', image: 'https://cdn.pixabay.com/photo/2018/07/28/14/30/soccer-3568168_1280.jpg', category: 'object' },
+  { id: 'car', name: 'Car', image: 'https://cdn.pixabay.com/photo/2012/05/29/00/43/car-49278_640.jpg', category: 'object' },
+  { id: 'house', name: 'House', image: 'https://cdn.pixabay.com/photo/2014/07/10/17/18/large-home-389271_1280.jpg', category: 'object' },
+  { id: 'tree', name: 'Tree', image: 'https://cdn.pixabay.com/photo/2014/12/22/00/07/tree-576847_1280.png', category: 'object' },
+  { id: 'book', name: 'Book', image: 'https://cdn.pixabay.com/photo/2015/11/19/21/10/glasses-1052010_640.jpg', category: 'object' },
+  { id: 'chair', name: 'Chair', image: 'https://cdn.pixabay.com/photo/2022/08/06/20/46/coffee-shop-7369404_1280.jpg', category: 'object' },
+  { id: 'cat', name: 'Cat', image: 'https://cdn.pixabay.com/photo/2014/11/30/14/11/cat-551554_640.jpg', category: 'object' },
+  { id: 'flower', name: 'Flower', image: 'https://cdn.pixabay.com/photo/2015/04/19/08/32/marguerite-729510_640.jpg', category: 'object' },
+  { id: 'bicycle', name: 'Bicycle', image: 'https://cdn.pixabay.com/photo/2016/11/18/12/49/bicycle-1834265_1280.jpg', category: 'object' },
+  { id: 'cup', name: 'Cup', image: 'https://cdn.pixabay.com/photo/2017/05/12/08/29/coffee-2306471_640.jpg', category: 'object' }
+];
+
 /**
  * Generate a sequence recall question
  */
-export const generateSequenceQuestion = (difficulty: number, items: MemoryItem[]): SequenceQuestion => {
-  const objects = [...items];
+export const generateSequenceQuestion = (difficulty: number, items?: MemoryItem[]): SequenceQuestion => {
+  const objects = [...(items ?? memoryItems)];
   const itemCount = Math.min(3 + difficulty - 1, 5);
   
   // Shuffle and select items
@@ -52,8 +68,8 @@ export const generateSequenceQuestion = (difficulty: number, items: MemoryItem[]
 /**
  * Generate a missing object question
  */
-export const generateMissingObjectQuestion = (difficulty: number, items: MemoryItem[]): SequenceQuestion => {
-  const objects = [...items];
+export const generateMissingObjectQuestion = (difficulty: number, items?: MemoryItem[]): SequenceQuestion => {
+  const objects = [...(items ?? memoryItems)];
   const showCount = Math.min(4 + difficulty, 6);
   const choiceCount = 4;
   
