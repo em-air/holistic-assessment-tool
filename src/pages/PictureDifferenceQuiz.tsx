@@ -14,7 +14,7 @@ interface PictureDifferencePair {
 
 const QUESTIONS: PictureDifferencePair[] = [
   { id: 1, imageA: 'https://i.postimg.cc/VkJ6GyG9/05098f55-883b-4147-8d3d-d4841d7d6da3.jpg', imageB: 'https://i.postimg.cc/QMxr4cdx/diff1.png', hasDifference: true },
-  { id: 2, imageA: 'https://i.postimg.cc/VkX6Q9wC/cls1.avif', imageB: 'https://i.postimg.cc/1zH349f5/cls2.png', hasDifference: true },
+  { id: 2, imageA: 'https://i.imgur.com/mXdS2pF.png', imageB: 'https://i.imgur.com/iDxKo9o.png', hasDifference: true },
   { id: 3, imageA: 'https://i.postimg.cc/SKNJ620G/cty1.avif', imageB: 'https://i.postimg.cc/SKNJ620G/cty1.avif', hasDifference: false },
   { id: 4, imageA: 'https://i.postimg.cc/8zwCzpFg/schlyrd.avif', imageB: 'https://i.postimg.cc/8zwCzpFg/schlyrd.avif', hasDifference: false },
   { id: 5, imageA: 'https://i.postimg.cc/hGx30j9R/pnclset1.avif', imageB: 'https://i.postimg.cc/kGjj5tdt/pnclset2.png', hasDifference: true },

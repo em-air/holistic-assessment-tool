@@ -56,7 +56,8 @@ function levenshtein(a: string, b: string): number {
 }
 
 function fuzzyMatch(heard: string, expected: string): boolean {
-  return levenshtein(heard, expected) <= Math.ceil(expected.length * 0.25);
+  // Allow ~30% edit distance so minor mispronunciations still count correct
+  return levenshtein(heard, expected) <= Math.ceil(expected.length * 0.30);
 }
 
 interface WCPMResult {
@@ -75,31 +76,68 @@ function calculateWCPM(transcriptText: string, passageText: string, timeElapsed:
   let pIdx = 0;
   let correctWords = 0;
   const errorLog: Array<{ heard: string; expected: string }> = [];
+  let insertionStreak = 0; // consecutive heard words that matched nothing in passage
 
   for (let i = 0; i < heard.length && pIdx < passage.length; i++) {
     const h = heard[i];
-    const e = passage[pIdx];
 
-    if (fuzzyMatch(h, e)) {
+    // Search up to 5 passage words ahead for a match (handles skips)
+    let bestSkip = -1;
+    for (let skip = 0; skip <= 5 && pIdx + skip < passage.length; skip++) {
+      if (fuzzyMatch(h, passage[pIdx + skip])) {
+        bestSkip = skip;
+        break;
+      }
+    }
+
+    if (bestSkip === 0) {
+      // Direct match
       correctWords++;
       pIdx++;
-    } else {
-      // Lookahead up to 2 passage words (handle skips)
-      let matched = false;
-      for (let skip = 1; skip <= 2 && pIdx + skip < passage.length; skip++) {
-        if (fuzzyMatch(h, passage[pIdx + skip])) {
-          for (let s = 0; s < skip; s++) {
-            errorLog.push({ heard: '(skipped)', expected: passage[pIdx + s] });
-          }
-          correctWords++;
-          pIdx += skip + 1;
-          matched = true;
-          break;
-        }
+      insertionStreak = 0;
+    } else if (bestSkip > 0) {
+      // Match found after skipping some passage words — reader skipped them
+      for (let s = 0; s < bestSkip; s++) {
+        errorLog.push({ heard: '(skipped)', expected: passage[pIdx + s] });
       }
-      if (!matched) {
-        errorLog.push({ heard: h, expected: e });
+      correctWords++;
+      pIdx += bestSkip + 1;
+      insertionStreak = 0;
+    } else {
+      // No match in window.
+      // If the NEXT heard word matches the current passage word, treat this as an
+      // insertion (reader added an extra word) — don't advance pIdx or log an error.
+      const nextHeardMatchesCurrent =
+        i + 1 < heard.length && fuzzyMatch(heard[i + 1], passage[pIdx]);
+
+      if (nextHeardMatchesCurrent) {
+        // Insertion: reader said an extra word; skip it silently
+        insertionStreak = 0;
+      } else {
+        // Substitution: reader said the wrong word
+        insertionStreak++;
+        errorLog.push({ heard: h, expected: passage[pIdx] });
         pIdx++;
+        // After 4 consecutive substitutions, try a hard re-sync: scan up to 8
+        // passage words ahead for two consecutive matches to recover alignment
+        if (insertionStreak >= 4) {
+          outer: for (let ahead = 1; ahead <= 8 && pIdx + ahead < passage.length; ahead++) {
+            for (let j = i + 1; j < Math.min(i + 3, heard.length); j++) {
+              if (
+                fuzzyMatch(heard[j], passage[pIdx + ahead]) &&
+                j + 1 < heard.length &&
+                fuzzyMatch(heard[j + 1], passage[pIdx + ahead + 1])
+              ) {
+                for (let s = 0; s < ahead; s++) {
+                  errorLog.push({ heard: '(skipped)', expected: passage[pIdx + s] });
+                }
+                pIdx += ahead;
+                insertionStreak = 0;
+                break outer;
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -116,15 +154,16 @@ function countMatchedPassageWords(transcriptText: string, passageTokens: string[
   let pIdx = 0;
   for (let i = 0; i < heard.length && pIdx < passageTokens.length; i++) {
     const h = heard[i];
-    if (fuzzyMatch(h, passageTokens[pIdx])) {
-      pIdx++;
+    let bestSkip = -1;
+    for (let skip = 0; skip <= 5 && pIdx + skip < passageTokens.length; skip++) {
+      if (fuzzyMatch(h, passageTokens[pIdx + skip])) { bestSkip = skip; break; }
+    }
+    if (bestSkip >= 0) {
+      pIdx += bestSkip + 1;
     } else {
-      for (let skip = 1; skip <= 2 && pIdx + skip < passageTokens.length; skip++) {
-        if (fuzzyMatch(h, passageTokens[pIdx + skip])) {
-          pIdx += skip + 1;
-          break;
-        }
-      }
+      const nextMatchesCurrent =
+        i + 1 < heard.length && fuzzyMatch(heard[i + 1], passageTokens[pIdx]);
+      if (!nextMatchesCurrent) pIdx++;
     }
   }
   return pIdx;
@@ -187,6 +226,7 @@ const ReadingAssessment: React.FC = () => {
   const [isLoadingContent, setIsLoadingContent] = useState(true);
   const [contentError, setContentError] = useState<string | null>(null);
   const [highlightedWordIndex, setHighlightedWordIndex] = useState(0);
+  const maxHighlightRef = useRef(0);
   const [showErrorLog, setShowErrorLog] = useState(true);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -240,19 +280,24 @@ const ReadingAssessment: React.FC = () => {
       setInterimTranscript(interimText);
       currentInterimRef.current = interimText;
 
+      const advanceHighlight = (newIdx: number) => {
+        if (newIdx > maxHighlightRef.current) {
+          maxHighlightRef.current = newIdx;
+          setHighlightedWordIndex(newIdx);
+        }
+      };
+
       if (finalTranscript) {
         setTranscript(prev => {
           const next = prev + finalTranscript;
           currentTranscriptRef.current = next;
-          // Update live highlight
           const combined = next + ' ' + currentInterimRef.current;
-          setHighlightedWordIndex(countMatchedPassageWords(combined, passageTokensRef.current));
+          advanceHighlight(countMatchedPassageWords(combined, passageTokensRef.current));
           return next;
         });
       } else {
-        // Update highlight from interim only
         const combined = currentTranscriptRef.current + ' ' + interimText;
-        setHighlightedWordIndex(countMatchedPassageWords(combined, passageTokensRef.current));
+        advanceHighlight(countMatchedPassageWords(combined, passageTokensRef.current));
       }
     };
 
@@ -343,6 +388,7 @@ const ReadingAssessment: React.FC = () => {
     setShowResults(false);
     setCountdown(0);
     setHighlightedWordIndex(0);
+    maxHighlightRef.current = 0;
 
     currentTranscriptRef.current = '';
     currentInterimRef.current = '';
@@ -457,6 +503,7 @@ const ReadingAssessment: React.FC = () => {
     setShowResults(false);
     setResults(null);
     setHighlightedWordIndex(0);
+    maxHighlightRef.current = 0;
     setShowErrorLog(false);
     currentTranscriptRef.current = '';
     currentInterimRef.current = '';
