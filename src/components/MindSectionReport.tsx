@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { X, Download, Share2, Brain, Award, Database, CheckCircle, LogIn } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { ProgressTracker, ALL_TRACKED_QUIZZES, QuizResult } from '../utils/progressTracker';
-import { ReportPDFEnglish, ReportPDFArabic } from './ReportPDF';
+import { ReportPDFEnglish } from './ReportPDF';
 
 import { generateReport } from '../services/reportService';
 import { useNavigate } from 'react-router-dom';
@@ -280,16 +280,6 @@ const MindSectionReport: React.FC<MindSectionReportProps> = ({ onClose }) => {
       document.body.removeChild(enLink);
       URL.revokeObjectURL(enUrl);
 
-      // Generate Arabic PDF
-      const arBlob = await pdf(<ReportPDFArabic progress={progress} studentName={undefined} />).toBlob();
-      const arUrl = URL.createObjectURL(arBlob);
-      const arLink = document.createElement('a');
-      arLink.href = arUrl;
-      arLink.download = `ar_cognitive-skills-report${partialSuffix}-${dateSuffix}.pdf`;
-      document.body.appendChild(arLink);
-      arLink.click();
-      document.body.removeChild(arLink);
-      URL.revokeObjectURL(arUrl);
     } catch (error) {
       logger.error('Error generating PDF:', error);
       // Fallback to text export if PDF generation fails

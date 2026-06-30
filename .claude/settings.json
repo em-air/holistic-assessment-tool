@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(sed -n '/^export const getCategoryQuestions/,/^};/p' /tmp/criticalThinkingData.ts | head -25 *)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "WebSearch",
+      "Bash(npx tsc *)"
     ],
     "additionalDirectories": [
       "\\tmp"

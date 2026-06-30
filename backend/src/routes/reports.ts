@@ -3,13 +3,12 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { supabaseAdmin } from '../config/supabase.js';
 import { verifySupabaseToken, requireRole, isAdmin, validateParams, commonSchemas } from '../middleware/index.js';
-import { 
+import {
   generateEnglishPDF,
-  generateArabicPDF,
-  generateReportPDF, 
-  uploadPDF, 
-  getSignedUrl, 
-  deletePDF 
+  generateReportPDF,
+  uploadPDF,
+  getSignedUrl,
+  deletePDF
 } from '../services/index.js';
 import type { ReportInsert, ReportType } from '../types/database.js';
 
@@ -29,7 +28,7 @@ router.post('/generate', verifySupabaseToken, async (req: Request, res: Response
     const generateSchema = z.object({
       report_type: z.enum(['mind', 'oral', 'academic', 'full']).default('full'),
       audience: z.enum(['parent', 'teacher']).default('parent'),
-      language: z.enum(['english', 'arabic', 'both']).default('both'),
+      language: z.enum(['english']).default('english'),
     });
 
     const validation = generateSchema.safeParse(req.body);
@@ -40,7 +39,7 @@ router.post('/generate', verifySupabaseToken, async (req: Request, res: Response
       });
     }
 
-    const { report_type, audience, language } = validation.data;
+    const { report_type, audience } = validation.data;
 
     // Fetch all quiz results
     const [mindResults, oralResults, academicResults, learningResults] = await Promise.all([
@@ -93,36 +92,17 @@ router.post('/generate', verifySupabaseToken, async (req: Request, res: Response
       audience,
     };
 
-    // Generate PDFs based on language selection
-    let storageResult: { path: string } | null = null;
-    let storageResultAr: { path: string } | null = null;
-
-    if (language === 'english' || language === 'both') {
-      const pdfBuffer = await generateEnglishPDF(reportData);
-      storageResult = await uploadPDF(req.user.id, pdfBuffer, `en_${audience}_${report_type}`);
-      if (!storageResult) {
-        return res.status(500).json({ error: 'Failed to upload English report' });
-      }
-    }
-
-    if (language === 'arabic' || language === 'both') {
-      try {
-        const pdfBufferAr = await generateArabicPDF(reportData);
-        storageResultAr = await uploadPDF(req.user.id, pdfBufferAr, `ar_${audience}_${report_type}`);
-      } catch (err) {
-        logger.warn(err, 'Arabic PDF generation failed (font may be unavailable):');
-      }
-    }
-
-    if (!storageResult && !storageResultAr) {
-      return res.status(500).json({ error: 'Failed to upload any report' });
+    const pdfBuffer = await generateEnglishPDF(reportData);
+    const storageResult = await uploadPDF(req.user.id, pdfBuffer, `en_${audience}_${report_type}`);
+    if (!storageResult) {
+      return res.status(500).json({ error: 'Failed to upload report' });
     }
 
     // Save report record
     const reportInsert: ReportInsert = {
       user_id: req.user.id,
       report_type: report_type as ReportType,
-      pdf_url: (storageResult || storageResultAr)!.path,
+      pdf_url: storageResult.path,
       emailed_to: [],
     };
 
@@ -137,15 +117,12 @@ router.post('/generate', verifySupabaseToken, async (req: Request, res: Response
       return res.status(500).json({ error: 'Failed to save report record' });
     }
 
-    // Get download URLs
-    const downloadUrl = storageResult ? await getSignedUrl(storageResult.path) : undefined;
-    const downloadUrlAr = storageResultAr ? await getSignedUrl(storageResultAr.path) : undefined;
+    const downloadUrl = await getSignedUrl(storageResult.path);
 
     res.json({
       success: true,
       report,
       downloadUrl,
-      downloadUrlAr,
     });
   } catch (error) {
     logger.error(error, 'Generate report error:');

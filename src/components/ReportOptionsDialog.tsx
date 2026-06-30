@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Globe, X } from 'lucide-react';
+import { FileText, X } from 'lucide-react';
 
 const PROGRESS_STEPS: Array<{ threshold: number; label: string }> = [
   { threshold: 0,  label: 'Fetching assessment results…' },
@@ -33,7 +33,6 @@ const ReportOptionsDialog: React.FC<ReportOptionsDialogProps> = ({
   isGenerating = false,
 }) => {
   const [audience, setAudience] = useState<ReportAudience>('parent');
-  const [language, setLanguage] = useState<ReportLanguage>('both');
   const [progress, setProgress] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -43,7 +42,6 @@ const ReportOptionsDialog: React.FC<ReportOptionsDialogProps> = ({
       intervalRef.current = setInterval(() => {
         setProgress(prev => {
           if (prev >= 90) return prev;
-          // Fast early, slow near 90% — simulates realistic generation phases
           const increment = prev < 30 ? 2 : prev < 60 ? 1 : 0.5;
           return Math.min(prev + increment, 90);
         });
@@ -55,9 +53,7 @@ const ReportOptionsDialog: React.FC<ReportOptionsDialogProps> = ({
       }
       setProgress(0);
     }
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [isGenerating]);
 
   if (!open) return null;
@@ -77,7 +73,7 @@ const ReportOptionsDialog: React.FC<ReportOptionsDialogProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-gray-800">Report Options</h3>
+          <h3 className="text-xl font-bold text-gray-800">Generate Report</h3>
           {!isGenerating && (
             <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 transition-colors">
               <X size={20} className="text-gray-400" />
@@ -86,65 +82,31 @@ const ReportOptionsDialog: React.FC<ReportOptionsDialogProps> = ({
         </div>
 
         {/* Audience selection */}
-        <div className="mb-6">
+        <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <FileText size={16} className="text-violet-500" />
             <span className="text-sm font-semibold text-gray-700">Report Type</span>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              disabled={isGenerating}
-              onClick={() => setAudience('parent')}
-              className={`px-4 py-3 rounded-xl text-sm font-medium border-2 transition-all duration-200 ${
-                audience === 'parent'
-                  ? 'border-violet-500 bg-violet-50 text-violet-700'
-                  : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-              } disabled:opacity-60 disabled:cursor-not-allowed`}
-            >
-              For Parents
-            </button>
-            <button
-              type="button"
-              disabled={isGenerating}
-              onClick={() => setAudience('teacher')}
-              className={`px-4 py-3 rounded-xl text-sm font-medium border-2 transition-all duration-200 ${
-                audience === 'teacher'
-                  ? 'border-violet-500 bg-violet-50 text-violet-700'
-                  : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-              } disabled:opacity-60 disabled:cursor-not-allowed`}
-            >
-              For Teachers
-            </button>
-          </div>
-        </div>
-
-        {/* Language selection */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-3">
-            <Globe size={16} className="text-violet-500" />
-            <span className="text-sm font-semibold text-gray-700">Language</span>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            {(['english', 'arabic', 'both'] as const).map((lang) => (
+            {(['parent', 'teacher'] as const).map((opt) => (
               <button
-                key={lang}
+                key={opt}
                 type="button"
                 disabled={isGenerating}
-                onClick={() => setLanguage(lang)}
-                className={`px-3 py-3 rounded-xl text-sm font-medium border-2 transition-all duration-200 ${
-                  language === lang
+                onClick={() => setAudience(opt)}
+                className={`px-4 py-3 rounded-xl text-sm font-medium border-2 transition-all duration-200 ${
+                  audience === opt
                     ? 'border-violet-500 bg-violet-50 text-violet-700'
                     : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                 } disabled:opacity-60 disabled:cursor-not-allowed`}
               >
-                {lang === 'english' ? 'English' : lang === 'arabic' ? 'Arabic' : 'Both'}
+                {opt === 'parent' ? 'For Parents' : 'For Teachers'}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Progress bar — visible while generating */}
+        {/* Progress bar */}
         {isGenerating && (
           <div className="mb-6">
             <div className="flex justify-between items-center mb-1.5">
@@ -157,7 +119,7 @@ const ReportOptionsDialog: React.FC<ReportOptionsDialogProps> = ({
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="text-xs text-gray-400 mt-2 text-center">This may take up to 2 minutes</p>
+            <p className="text-xs text-gray-400 mt-2 text-center">This may take up to a minute</p>
           </div>
         )}
 
@@ -171,7 +133,7 @@ const ReportOptionsDialog: React.FC<ReportOptionsDialogProps> = ({
             Cancel
           </button>
           <button
-            onClick={() => onConfirm(audience, language)}
+            onClick={() => onConfirm(audience, 'english')}
             disabled={isGenerating}
             className="flex-1 px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-2xl transition-all duration-200 font-semibold shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
