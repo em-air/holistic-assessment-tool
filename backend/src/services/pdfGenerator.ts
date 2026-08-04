@@ -170,8 +170,22 @@ function getParentAdvice(result: QuizResult): string {
       if (strength === 'SR') return `This assessment found that your child's current social-emotional strength is Self-Regulation — they tend to stay calm under pressure, manage their emotions well, and persist through challenges without giving up easily. ${description || 'This is one of the most predictive indicators of long-term academic and personal success.'} ${suggText} Build on this strength at home by acknowledging and praising their persistence: "I noticed you kept trying even when it was hard — I'm really proud of you." Setting slightly challenging goals and celebrating the effort (not just the outcome) reinforces a growth mindset and helps them apply their self-regulation skills to new situations.`;
       return `${description || "This assessment has identified your child's current social-emotional strengths across three areas: Emotional Awareness, Prosocial Skills, and Self-Regulation."}${suggText} Social-emotional skills are closely linked to academic success and general wellbeing. At home, the best support you can offer is open, emotionally honest communication — naming feelings, discussing challenges, and modelling the behaviours you want to encourage. Even brief daily check-ins ("What was the best part of your day? What was hard?") make a meaningful difference over time.`;
     }
-    default: return '';
+    default: {
+      const home = homeActivitySuggestion(result.subcategory, result.quiz_id);
+      if (pct >= 75) return `Your child scored ${pct}% on the ${result.quiz_name}, which reflects a strong grasp of this skill area — well above what is typically expected at this stage. This is a genuine strength worth celebrating, and it's one you can keep building on rather than leaving to look after itself. ${home} Try to keep the activities varied and slightly more challenging over time so your child stays engaged rather than coasting on what already comes easily to them.`;
+      if (pct >= 60) return `Your child scored ${pct}% on the ${result.quiz_name}, showing that this skill is developing steadily but hasn't fully solidified yet. This is a completely normal stage, and the right kind of regular, low-pressure practice at home makes a real difference here. ${home} Aim for short, consistent sessions — a few focused minutes several times a week will do more than one long session, and will help your child build confidence alongside the skill itself.`;
+      return `Your child scored ${pct}% on the ${result.quiz_name}, suggesting this is currently an area of real need and one worth prioritising at home. ${home} Keep sessions short (5–10 minutes), frequent, and low-pressure, and make a point of noticing and praising small improvements rather than focusing on mistakes — building confidence alongside the skill itself will help your child stay motivated as they catch up.`;
+    }
   }
+}
+
+function homeActivitySuggestion(subcategory: string, quizId: string): string {
+  if (/spelling/i.test(quizId)) return 'At home, practise little and often — five or six words a day is more effective than a long weekly list. Break words into syllables or sounds, use "look, cover, write, check," and revisit misspelt words a few days later to check they have stuck.';
+  if (/writing/i.test(quizId)) return "At home, encourage short, low-stakes writing — a diary entry, a text-style message, a caption for a photo — rather than only formal school writing. Talk through ideas together before your child writes, and focus feedback on one or two things at a time rather than every error at once.";
+  if (/vocabulary/i.test(quizId)) return 'At home, introduce new words in context rather than as isolated definitions — through shared reading, conversation, and everyday explanations. Encourage your child to use new words themselves within a day or two of learning them, as this is what makes vocabulary stick.';
+  if (/phonics/i.test(quizId) || /phonics/i.test(subcategory)) return 'At home, keep phonics practice playful and short — sounding out words together during reading, playing rhyming or sound-matching games, and revisiting tricky letter-sound combinations regularly rather than all at once.';
+  if (/oral-language/i.test(quizId) || subcategory === 'oral-language' || /story-retell|sentence-building/i.test(quizId)) return 'At home, everyday conversation is the best practice ground — ask open-ended questions, encourage full-sentence answers, and give your child time to finish their thought before jumping in. Retelling stories, describing their day in order, and simple "tell me more" prompts all build this skill naturally.';
+  return 'At home, keep practice for this skill short, regular, and connected to everyday activities rather than treating it as extra schoolwork — a few minutes of focused, encouraging practice a few times a week is more effective than occasional long sessions.';
 }
 
 // ─── Teacher notes ────────────────────────────────────────────────────
@@ -252,8 +266,22 @@ function getTeacherNote(result: QuizResult): string {
       if (strength === 'SR') return `The Social-Emotional Learning assessment identified Self-Regulation as this student's current strength${scoreText}. ${description || 'The student tends to stay calm under pressure, manage frustration constructively, and persist through challenges without giving up easily.'} This is one of the most academically protective social-emotional capacities. In the classroom, this student is likely to respond well to appropriately challenging tasks and recover from setbacks without significant disruption. Continue to develop this strength by setting stretch goals, praising effort and persistence explicitly (rather than only outcomes), and modelling reflective coping strategies that the whole class can benefit from.`;
       return `${description || `The Social-Emotional Learning assessment evaluated this student across three dimensions${scoreText}.`} Social-emotional skills are a significant factor in academic engagement and classroom wellbeing. Use these results to inform how you support this student's emotional and social development. Regular brief check-ins, a calm and predictable classroom environment, and explicit teaching of emotional vocabulary and coping strategies will all contribute positively — both for this student and for the broader class culture.`;
     }
-    default: return '';
+    default: {
+      const classroom = classroomStrategySuggestion(result.subcategory, result.quiz_id);
+      if (pct >= 75) return `This student scored ${pct}% on the ${result.quiz_name}, reflecting a strong command of this skill area — well ahead of what is typically expected at this stage. This is a genuine strength to leverage rather than treat as settled. In the classroom, they are ready to be extended with more challenging, open-ended tasks in this area, and can act as a peer model or peer-tutor for classmates who are still developing this skill. ${classroom}`;
+      if (pct >= 60) return `This student scored ${pct}% on the ${result.quiz_name}, showing developing but not yet consolidated competence in this skill area. They are likely to manage familiar, well-scaffolded tasks but may falter on more complex or unfamiliar applications of the skill. ${classroom} Regular, brief formative checks will help you catch and address gaps before they compound.`;
+      return `This student scored ${pct}% on the ${result.quiz_name}, indicating this is a significant area of need requiring targeted, ongoing support. Left unaddressed, difficulty in this area is likely to affect performance in related tasks across the curriculum, so early, consistent intervention matters. ${classroom} Break related classroom tasks into smaller, clearly sequenced steps, provide additional scaffolding and modelling, and monitor progress with frequent, low-stakes checks for understanding rather than waiting for the next formal assessment.`;
+    }
   }
+}
+
+function classroomStrategySuggestion(subcategory: string, quizId: string): string {
+  if (/spelling/i.test(quizId)) return 'In the classroom, embed short, frequent spelling practice (little and often) rather than a single weekly test, use word-sorting by pattern or sound, and encourage proof-reading of written work with a specific focus on spelling.';
+  if (/writing/i.test(quizId)) return 'In the classroom, use structured writing frames and sentence starters to reduce the cognitive load of getting started, model the writing process explicitly (think-alouds), and give feedback on one or two focus areas at a time rather than correcting every error at once.';
+  if (/vocabulary/i.test(quizId)) return 'In the classroom, pre-teach key vocabulary before new topics, provide multiple exposures to new words in varied contexts, and encourage the student to use new vocabulary actively in speaking and writing rather than only recognising it passively.';
+  if (/phonics/i.test(quizId) || /phonics/i.test(subcategory)) return 'In the classroom, keep phonics instruction systematic and cumulative, provide extra decoding practice with texts matched to the student\'s current phonics knowledge, and revisit previously taught sound-letter patterns regularly to build automaticity.';
+  if (/oral-language/i.test(quizId) || subcategory === 'oral-language' || /story-retell|sentence-building/i.test(quizId)) return 'In the classroom, provide regular structured opportunities for spoken language — retelling, explaining, and discussion — with sentence starters or visual prompts if needed, and allow processing time before expecting a verbal response.';
+  return 'In the classroom, provide additional structured practice for this skill embedded in regular lessons rather than as an isolated add-on, and use frequent, low-stakes formative checks to track progress.';
 }
 
 // ─── Learning / SEL advice ────────────────────────────────────────────
@@ -460,10 +488,6 @@ export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
       y += 36;
       doc.font('Helvetica-Bold').fontSize(28).fillColor(C.navy)
         .text('ASSESSMENT REPORT', L, y, { width: W, align: 'center', lineBreak: false });
-      y += 22;
-
-      // Short accent rule
-      doc.moveTo(L + W / 2 - 40, y).lineTo(L + W / 2 + 40, y).lineWidth(2).strokeColor(C.accent).stroke();
       y += 28;
 
       // Student name + date
@@ -508,84 +532,133 @@ export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
       y += doc.heightOfString(intro, { width: W, lineGap: 2 }) + 18;
 
       y = rule(y);
-      drawFooter();
 
-      // ═══════════════════════
-      //  RESULTS (all sections flow on same pages, no forced breaks)
-      // ═══════════════════════
-      doc.addPage();
-      drawTopRule();
-      drawFooter();
-      let ry = 50;
+      // ── Teacher Summary (teacher edition only) ──────────────────────────
+      const mindResultsCover = data.mindResults;
+      const learningResultsCover = data.learningResults ?? [];
 
+      if (audience === 'teacher' && mindResultsCover.length > 0) {
+        const sum = buildTeacherSummary(mindResultsCover, data.oralResults, data.academicResults, learningResultsCover);
+
+        y = ensureSpace(y, 60);
+        doc.font('Helvetica-Bold').fontSize(12).fillColor(C.navy)
+          .text('TEACHER SUMMARY', L, y, { lineBreak: false, characterSpacing: 0.5 });
+        y += 8;
+        doc.moveTo(L, y + 6).lineTo(L + 180, y + 6).lineWidth(1.5).strokeColor(C.navy).stroke();
+        y += 26;
+
+        const summaryBlocks = [
+          { label: 'Cognitive Profile',      text: sum.profile },
+          { label: 'Classroom Observations', text: sum.observations.map(o => `•  ${o}`).join('\n') },
+          { label: 'Teaching Strategies',    text: sum.strategies.map(s => `•  ${s}`).join('\n') },
+          { label: 'Accommodations',         text: sum.accommodations.map(a => `•  ${a}`).join('\n') },
+          { label: 'Learning Goals',         text: sum.goals.map((g, i) => `${i + 1}.  ${g}`).join('\n') },
+        ];
+
+        for (const block of summaryBlocks) {
+          doc.font('Helvetica').fontSize(9);
+          const bh = doc.heightOfString(block.text, { width: W - 8, lineGap: 3 });
+          y = ensureSpace(y, bh + 40);
+          doc.font('Helvetica-Bold').fontSize(10).fillColor(C.ink)
+            .text(block.label, L, y, { lineBreak: false });
+          y += 16;
+          doc.font('Helvetica').fontSize(9).fillColor(C.sub)
+            .text(block.text, L + 8, y, { width: W - 8, lineGap: 3 });
+          y += bh + 6;
+          doc.moveTo(L, y).lineTo(R, y).lineWidth(0.5).strokeColor(C.divider).stroke();
+          y += 14;
+        }
+
+        // Quick Tip
+        y = ensureSpace(y, 56);
+        doc.font('Helvetica-Bold').fontSize(10).fillColor(C.navy)
+          .text('Quick Tip', L, y, { lineBreak: false });
+        y += 16;
+        doc.font('Helvetica').fontSize(9).fillColor(C.sub)
+          .text(sum.quickTip, L + 8, y, { width: W - 8, lineGap: 2 });
+        y += doc.heightOfString(sum.quickTip, { width: W - 8, lineGap: 2 }) + 14;
+        doc.moveTo(L, y).lineTo(R, y).lineWidth(0.5).strokeColor(C.divider).stroke();
+        y += 14;
+      }
+
+      // ── Section Results ─────────────────────────────────────────────────
       const sections = [
-        { title: 'MIND SKILLS',               results: data.mindResults },
-        { title: 'ORAL LANGUAGE',             results: data.oralResults },
-        { title: 'ACADEMIC SKILLS',           results: data.academicResults },
+        { title: 'MIND SKILLS',                 results: data.mindResults },
+        { title: 'ORAL LANGUAGE',               results: data.oralResults },
+        { title: 'ACADEMIC SKILLS',             results: data.academicResults },
         { title: 'LEARNING & SOCIAL-EMOTIONAL', results: data.learningResults ?? [] },
       ];
 
       for (const section of sections) {
         if (section.results.length === 0) continue;
 
-        ry = ensureSpace(ry, 60);
+        y = ensureSpace(y, 60);
 
-        // Section heading
         doc.font('Helvetica-Bold').fontSize(12).fillColor(C.navy)
-          .text(section.title, L, ry, { lineBreak: false, characterSpacing: 0.5 });
-        ry += 8;
-        doc.moveTo(L, ry + 6).lineTo(L + 180, ry + 6).lineWidth(1.5).strokeColor(C.navy).stroke();
-        ry += 22;
+          .text(section.title, L, y, { lineBreak: false, characterSpacing: 0.5 });
+        y += 8;
+        doc.moveTo(L, y + 6).lineTo(L + 180, y + 6).lineWidth(1.5).strokeColor(C.navy).stroke();
+        y += 22;
 
         const groups = groupBySub(section.results);
         for (const [sub, items] of Object.entries(groups)) {
-          ry = ensureSpace(ry, 50);
+          y = ensureSpace(y, 50);
 
-          // Subcategory label
           doc.font('Helvetica-Bold').fontSize(10).fillColor(C.ink)
-            .text(subNames[sub] || sub, L, ry, { lineBreak: false });
-          ry += 14;
-          doc.moveTo(L, ry).lineTo(R, ry).lineWidth(0.5).strokeColor(C.divider).stroke();
-          ry += 8;
+            .text(subNames[sub] || sub, L, y, { lineBreak: false });
+          y += 14;
+          doc.moveTo(L, y).lineTo(R, y).lineWidth(0.5).strokeColor(C.divider).stroke();
+          y += 8;
 
           for (const result of items) {
-            ry = ensureSpace(ry, 22);
+            y = ensureSpace(y, 22);
             const ql = qualitativeLabel(sub, result);
             doc.font('Helvetica').fontSize(9.5).fillColor(C.sub)
-              .text(result.quiz_name, L + 8, ry, { width: W * 0.55, lineBreak: false });
+              .text(result.quiz_name, L + 8, y, { width: W * 0.55, lineBreak: false });
 
             if (ql) {
               doc.font('Helvetica-Bold').fontSize(9.5).fillColor(C.ink)
-                .text(ql, L + 8, ry, { width: W - 16, align: 'right', lineBreak: false });
+                .text(ql, L + 8, y, { width: W - 16, align: 'right', lineBreak: false });
             } else {
               const barW = 100;
               const barX = R - barW - 52;
-              drawBar(barX, ry + 5, barW, result.percentage);
+              drawBar(barX, y + 5, barW, result.percentage);
               doc.font('Helvetica-Bold').fontSize(9.5).fillColor(C.ink)
-                .text(`${result.percentage}%`, R - 48, ry, { width: 44, align: 'right', lineBreak: false });
+                .text(`${result.percentage}%`, R - 48, y, { width: 44, align: 'right', lineBreak: false });
               doc.font('Helvetica').fontSize(8).fillColor(C.muted)
-                .text(perfLabel(result.percentage), R - 48, ry + 12, { width: 44, align: 'right', lineBreak: false });
+                .text(perfLabel(result.percentage), R - 48, y + 12, { width: 44, align: 'right', lineBreak: false });
             }
-            ry += 28;
+            y += 28;
           }
-          ry += 6;
+          y += 6;
         }
-        ry += 14;
+        y += 14;
       }
 
+      drawFooter();
+
       // ═══════════════════════
-      //  ADVICE / TEACHER NOTES  (continues from results, no forced page break)
+      //  ADVICE / TEACHER NOTES  (new page)
+      // ═══════════════════════
+      doc.addPage();
+      drawTopRule();
+      drawFooter();
+      let ry = 50;
+
+      // ═══════════════════════
+      //  ADVICE / TEACHER NOTES
       // ═══════════════════════
       const mindResults = data.mindResults;
       const learningResults = data.learningResults ?? [];
-      const adviceResults = [...mindResults, ...learningResults];
+      const oralResults = data.oralResults ?? [];
+      const academicResults = data.academicResults ?? [];
+      const adviceResults = [...mindResults, ...learningResults, ...oralResults, ...academicResults];
 
-      ry = ensureSpace(ry, 60);
       let ay = ry;
 
       if (adviceResults.length > 0) {
 
-        const pageTitle = audience === 'teacher' ? 'TEACHER NOTES' : 'GUIDANCE & ACTIVITIES';
+        const pageTitle = audience === 'teacher' ? 'ASSESSMENT BY ASSESSMENT ANALYSIS' : 'GUIDANCE & ACTIVITIES';
         doc.font('Helvetica-Bold').fontSize(12).fillColor(C.navy)
           .text(pageTitle, L, ay, { lineBreak: false, characterSpacing: 0.5 });
         ay += 8;
@@ -604,7 +677,12 @@ export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
           .map(id => mindResults.find(r => r.quiz_id === id))
           .filter(Boolean) as QuizResult[];
 
-        const allAdvice = [...orderedMind, ...learningResults.filter(r => !mindResults.some(m => m.quiz_id === r.quiz_id))];
+        const allAdvice = [
+          ...orderedMind,
+          ...learningResults.filter(r => !mindResults.some(m => m.quiz_id === r.quiz_id)),
+          ...oralResults,
+          ...academicResults,
+        ];
 
         for (const result of allAdvice) {
           const paragraph = result.quiz_id === 'learning-styles' || result.quiz_id === 'social-emotional'
@@ -642,49 +720,6 @@ export async function generateEnglishPDF(data: ReportData): Promise<Buffer> {
         }
       }
 
-      // ═══════════════════════
-      //  TEACHER SUMMARY  (continues after notes, no forced page break)
-      // ═══════════════════════
-      if (audience === 'teacher' && mindResults.length > 0) {
-        const sum = buildTeacherSummary(mindResults, data.oralResults, data.academicResults, learningResults);
-        ay = ensureSpace(ay, 60);
-        let ty = ay;
-
-        doc.font('Helvetica-Bold').fontSize(12).fillColor(C.navy)
-          .text('TEACHER SUMMARY', L, ty, { lineBreak: false, characterSpacing: 0.5 });
-        ty += 8;
-        doc.moveTo(L, ty + 6).lineTo(L + 180, ty + 6).lineWidth(1.5).strokeColor(C.navy).stroke();
-        ty += 26;
-
-        const blocks = [
-          { label: 'Cognitive Profile',      text: sum.profile },
-          { label: 'Classroom Observations', text: sum.observations.map(o => `•  ${o}`).join('\n') },
-          { label: 'Teaching Strategies',    text: sum.strategies.map(s => `•  ${s}`).join('\n') },
-          { label: 'Accommodations',         text: sum.accommodations.map(a => `•  ${a}`).join('\n') },
-          { label: 'Learning Goals',         text: sum.goals.map((g, i) => `${i + 1}.  ${g}`).join('\n') },
-        ];
-
-        for (const block of blocks) {
-          ty = ensureSpace(ty, 60);
-          doc.font('Helvetica-Bold').fontSize(10).fillColor(C.ink)
-            .text(block.label, L, ty, { lineBreak: false });
-          ty += 16;
-          doc.font('Helvetica').fontSize(9).fillColor(C.sub)
-            .text(block.text, L + 8, ty, { width: W - 8, lineGap: 3 });
-          ty += doc.heightOfString(block.text, { width: W - 8, lineGap: 3 }) + 6;
-          doc.moveTo(L, ty).lineTo(R, ty).lineWidth(0.5).strokeColor(C.divider).stroke();
-          ty += 16;
-        }
-
-        // Quick Tip
-        ty = ensureSpace(ty, 56);
-        doc.font('Helvetica-Bold').fontSize(10).fillColor(C.navy)
-          .text('Quick Tip', L, ty, { lineBreak: false });
-        ty += 16;
-        doc.font('Helvetica').fontSize(9).fillColor(C.sub)
-          .text(sum.quickTip, L + 8, ty, { width: W - 8, lineGap: 2 });
-        ty += doc.heightOfString(sum.quickTip, { width: W - 8, lineGap: 2 }) + 6;
-      }
 
       doc.end();
     } catch (error) {
