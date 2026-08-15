@@ -246,7 +246,7 @@ const CategoriesPage: React.FC = () => {
 
           {/* Subject Categories Grid */}
           <motion.div
-            className="flex flex-wrap justify-center gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
@@ -258,7 +258,7 @@ const CategoriesPage: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 whileHover={{ y: -5 }}
-                className="group w-full max-w-sm"
+                className="group"
               >
                 <CategoryCard category={category} />
               </motion.div>
