@@ -97,7 +97,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
 
   return (
     <div
-      className={`group rounded-2xl p-6 shadow-sm ${isBlocked ? '' : 'hover:shadow-lg'} ${getCardBgColor(category.color, isBlocked)} max-w-sm mx-auto transform transition-all duration-500 ease-out ${isBlocked ? 'cursor-not-allowed' : 'hover:scale-105 cursor-pointer'} overflow-hidden relative`}
+      className={`group rounded-2xl p-6 shadow-sm ${isBlocked ? '' : 'hover:shadow-lg'} ${getCardBgColor(category.color, isBlocked)} w-full mx-auto transform transition-all duration-500 ease-out ${isBlocked ? 'cursor-not-allowed' : 'hover:scale-105 cursor-pointer'} overflow-hidden relative`}
       title={blockedMessage || undefined}
     >
       {/* Lock overlay for blocked categories */}
