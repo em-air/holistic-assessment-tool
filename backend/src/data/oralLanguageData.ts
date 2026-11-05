@@ -70,19 +70,19 @@ export const oralLanguageQuestions: OralLanguageQuestion[] = [
     sequenceImages: [
       {
         id: 'wake_up',
-        image: 'https://images.pexels.com/photos/7504649/pexels-photo-7504649.jpeg',
+        image: '/story-images/wake_up.jpg',
         correctOrder: 1,
         description: 'Child waking up in bed'
       },
       {
         id: 'go_to_school',
-        image: 'https://cdn.pixabay.com/photo/2016/09/12/23/59/student-1666118_1280.jpg',
+        image: '/story-images/go_to_school.jpg',
         correctOrder: 3,
         description: 'Child walking to school'
       },
       {
         id: 'brush_teeth',
-        image: 'https://images.pexels.com/photos/7086233/pexels-photo-7086233.jpeg',
+        image: '/story-images/brush_teeth.jpg',
         correctOrder: 2,
         description: 'Child brushing teeth'
       }
@@ -103,19 +103,19 @@ export const oralLanguageQuestions: OralLanguageQuestion[] = [
     sequenceImages: [
       {
         id: 'add_filling',
-        image: 'https://images.unsplash.com/photo-1717048888698-277377758ff1?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170',
+        image: '/story-images/add_filling.jpg',
         correctOrder: 2,
         description: 'Adding peanut butter and jam'
       },
       {
         id: 'get_bread',
-        image: 'https://plus.unsplash.com/premium_photo-1700767194982-b72f275582bd?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aG9sZGluZyUyMGJyZWFkfGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=600',
+        image: '/story-images/get_bread.jpg',
         correctOrder: 1,
         description: 'Taking bread from the bag'
       },
       {
         id: 'eat_sandwich',
-        image: 'https://plus.unsplash.com/premium_photo-1679166276587-0085a4bf7aef?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8ZWF0aW5nJTIwc2FuZHdpY2h8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&q=60&w=600',
+        image: '/story-images/eat_sandwich.jpg',
         correctOrder: 3,
         description: 'Child eating the finished sandwich'
       }
@@ -136,19 +136,19 @@ export const oralLanguageQuestions: OralLanguageQuestion[] = [
     sequenceImages: [
       {
         id: 'flower_grows',
-        image: 'https://images.unsplash.com/photo-1592683249810-bdf5c51eaf0a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170',
+        image: '/story-images/flower_grows.jpg',
         correctOrder: 3,
         description: 'Beautiful flower blooming'
       },
       {
         id: 'plant_seed',
-        image: 'https://images.pexels.com/photos/169523/pexels-photo-169523.jpeg',
+        image: '/story-images/plant_seed.jpg',
         correctOrder: 1,
         description: 'Putting seed in the soil'
       },
       {
         id: 'water_plant',
-        image: 'https://images.unsplash.com/photo-1599277100479-3252d492a19a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1112',
+        image: '/story-images/water_plant.jpg',
         correctOrder: 2,
         description: 'Watering the planted seed'
       }
