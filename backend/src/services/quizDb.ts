@@ -314,6 +314,8 @@ export async function getOralLanguageQuestions(
             id: img.id,
             src: img.image,
             alt: img.description ?? '',
+            image: img.image,
+            description: img.description ?? '',
             correctOrder: img.correctOrder,
           }))
         : null,
